@@ -213,6 +213,32 @@ final class tv.nomercy.player.video/ViewModeChange { // tv.nomercy.player.video/
     final fun toString(): kotlin/String // tv.nomercy.player.video/ViewModeChange.toString|toString(){}[0]
 }
 
+open class tv.nomercy.player.video/NMVideoPlayer : tv.nomercy.player.core.controllers/ComposedPlayer { // tv.nomercy.player.video/NMVideoPlayer|null[0]
+    constructor <init>(tv.nomercy.player.core.ports/MediaBackend? = ...) // tv.nomercy.player.video/NMVideoPlayer.<init>|<init>(tv.nomercy.player.core.ports.MediaBackend?){}[0]
+
+    open fun aspectRatio(): tv.nomercy.player.video/Stretching // tv.nomercy.player.video/NMVideoPlayer.aspectRatio|aspectRatio(){}[0]
+    open fun aspectRatio(tv.nomercy.player.video/Stretching) // tv.nomercy.player.video/NMVideoPlayer.aspectRatio|aspectRatio(tv.nomercy.player.video.Stretching){}[0]
+    open fun clearMessage() // tv.nomercy.player.video/NMVideoPlayer.clearMessage|clearMessage(){}[0]
+    open fun cycleAspectRatio() // tv.nomercy.player.video/NMVideoPlayer.cycleAspectRatio|cycleAspectRatio(){}[0]
+    open fun fullscreen(): kotlin/Boolean // tv.nomercy.player.video/NMVideoPlayer.fullscreen|fullscreen(){}[0]
+    open fun fullscreen(kotlin/Boolean) // tv.nomercy.player.video/NMVideoPlayer.fullscreen|fullscreen(kotlin.Boolean){}[0]
+    open fun message(kotlin/String, kotlin/Double? = ...) // tv.nomercy.player.video/NMVideoPlayer.message|message(kotlin.String;kotlin.Double?){}[0]
+    open fun pip(): kotlin/Boolean // tv.nomercy.player.video/NMVideoPlayer.pip|pip(){}[0]
+    open fun pip(kotlin/Boolean) // tv.nomercy.player.video/NMVideoPlayer.pip|pip(kotlin.Boolean){}[0]
+    open fun theater(): kotlin/Boolean // tv.nomercy.player.video/NMVideoPlayer.theater|theater(){}[0]
+    open fun theater(kotlin/Boolean) // tv.nomercy.player.video/NMVideoPlayer.theater|theater(kotlin.Boolean){}[0]
+    open fun toggleFullscreen() // tv.nomercy.player.video/NMVideoPlayer.toggleFullscreen|toggleFullscreen(){}[0]
+    open fun togglePip() // tv.nomercy.player.video/NMVideoPlayer.togglePip|togglePip(){}[0]
+    open fun toggleTheater() // tv.nomercy.player.video/NMVideoPlayer.toggleTheater|toggleTheater(){}[0]
+    open fun videoRect(): tv.nomercy.player.video/VideoRect? // tv.nomercy.player.video/NMVideoPlayer.videoRect|videoRect(){}[0]
+    open fun videoRect(tv.nomercy.player.video/VideoRect?) // tv.nomercy.player.video/NMVideoPlayer.videoRect|videoRect(tv.nomercy.player.video.VideoRect?){}[0]
+    open suspend fun playSegment(tv.nomercy.player.video/SegmentBoundary) // tv.nomercy.player.video/NMVideoPlayer.playSegment|playSegment(tv.nomercy.player.video.SegmentBoundary){}[0]
+
+    final object Companion { // tv.nomercy.player.video/NMVideoPlayer.Companion|null[0]
+        final fun instances(): kotlin.collections/List<tv.nomercy.player.video/NMVideoPlayer> // tv.nomercy.player.video/NMVideoPlayer.Companion.instances|instances(){}[0]
+    }
+}
+
 final object tv.nomercy.player.video/VideoEvents { // tv.nomercy.player.video/VideoEvents|null[0]
     final val AspectRatio // tv.nomercy.player.video/VideoEvents.AspectRatio|{}AspectRatio[0]
         final fun <get-AspectRatio>(): tv.nomercy.player.core.events/EventKey<tv.nomercy.player.video/AspectRatioChange> // tv.nomercy.player.video/VideoEvents.AspectRatio.<get-AspectRatio>|<get-AspectRatio>(){}[0]

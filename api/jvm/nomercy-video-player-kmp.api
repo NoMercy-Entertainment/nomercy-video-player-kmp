@@ -65,6 +65,35 @@ public final class tv/nomercy/player/video/LevelsChange {
 	public fun toString ()Ljava/lang/String;
 }
 
+public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/controllers/ComposedPlayer {
+	public static final field Companion Ltv/nomercy/player/video/NMVideoPlayer$Companion;
+	public fun <init> ()V
+	public fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;)V
+	public synthetic fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun aspectRatio ()Ltv/nomercy/player/video/Stretching;
+	public fun aspectRatio (Ltv/nomercy/player/video/Stretching;)V
+	public fun clearMessage ()V
+	public fun cycleAspectRatio ()V
+	public fun fullscreen ()Z
+	public fun fullscreen (Z)V
+	public fun message (Ljava/lang/String;Ljava/lang/Double;)V
+	public static synthetic fun message$default (Ltv/nomercy/player/video/NMVideoPlayer;Ljava/lang/String;Ljava/lang/Double;ILjava/lang/Object;)V
+	public fun pip ()Z
+	public fun pip (Z)V
+	public fun playSegment (Ltv/nomercy/player/video/SegmentBoundary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun theater ()Z
+	public fun theater (Z)V
+	public fun toggleFullscreen ()V
+	public fun togglePip ()V
+	public fun toggleTheater ()V
+	public fun videoRect ()Ltv/nomercy/player/video/VideoRect;
+	public fun videoRect (Ltv/nomercy/player/video/VideoRect;)V
+}
+
+public final class tv/nomercy/player/video/NMVideoPlayer$Companion {
+	public final fun instances ()Ljava/util/List;
+}
+
 public final class tv/nomercy/player/video/QualityLevel {
 	public fun <init> (IILjava/lang/String;Ljava/lang/String;)V
 	public synthetic fun <init> (IILjava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
