@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video
 
+import tv.nomercy.player.core.media.QualityDescriptor
+
 // The payloads only a video player has. Everything else a video player emits is
 // a core event with a core payload, which is the point of the split: the video
 // library adds a surface, it does not restate one.
@@ -42,16 +44,10 @@ public data class AudioTrack(
 
 public data class AudioTracksChange(val tracks: List<AudioTrack>)
 
-// One rung of the quality ladder. Height and bitrate together, never an index —
-// the same reason as audio tracks, and the ladder changes shape between streams.
-public data class QualityLevel(
-    val height: Int,
-    val bitrate: Int,
-    val codec: String? = null,
-    val dynamicRange: String? = null,
-)
-
-public data class LevelsChange(val levels: List<QualityLevel>)
+// The ladder, using core's QualityDescriptor rather than a second type that
+// means the same thing. Two identity types for one rendition is how a menu and
+// a backend end up disagreeing about which rung is selected.
+public data class LevelsChange(val levels: List<QualityDescriptor>)
 
 // The requested rung, or null for automatic. Null rather than a sentinel number
 // so "let ABR decide" cannot be confused with a real level.

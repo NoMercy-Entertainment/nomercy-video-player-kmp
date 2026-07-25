@@ -93,38 +93,16 @@ final class tv.nomercy.player.video/DisplayMessage { // tv.nomercy.player.video/
 }
 
 final class tv.nomercy.player.video/LevelsChange { // tv.nomercy.player.video/LevelsChange|null[0]
-    constructor <init>(kotlin.collections/List<tv.nomercy.player.video/QualityLevel>) // tv.nomercy.player.video/LevelsChange.<init>|<init>(kotlin.collections.List<tv.nomercy.player.video.QualityLevel>){}[0]
+    constructor <init>(kotlin.collections/List<tv.nomercy.player.core.media/QualityDescriptor>) // tv.nomercy.player.video/LevelsChange.<init>|<init>(kotlin.collections.List<tv.nomercy.player.core.media.QualityDescriptor>){}[0]
 
     final val levels // tv.nomercy.player.video/LevelsChange.levels|{}levels[0]
-        final fun <get-levels>(): kotlin.collections/List<tv.nomercy.player.video/QualityLevel> // tv.nomercy.player.video/LevelsChange.levels.<get-levels>|<get-levels>(){}[0]
+        final fun <get-levels>(): kotlin.collections/List<tv.nomercy.player.core.media/QualityDescriptor> // tv.nomercy.player.video/LevelsChange.levels.<get-levels>|<get-levels>(){}[0]
 
-    final fun component1(): kotlin.collections/List<tv.nomercy.player.video/QualityLevel> // tv.nomercy.player.video/LevelsChange.component1|component1(){}[0]
-    final fun copy(kotlin.collections/List<tv.nomercy.player.video/QualityLevel> = ...): tv.nomercy.player.video/LevelsChange // tv.nomercy.player.video/LevelsChange.copy|copy(kotlin.collections.List<tv.nomercy.player.video.QualityLevel>){}[0]
+    final fun component1(): kotlin.collections/List<tv.nomercy.player.core.media/QualityDescriptor> // tv.nomercy.player.video/LevelsChange.component1|component1(){}[0]
+    final fun copy(kotlin.collections/List<tv.nomercy.player.core.media/QualityDescriptor> = ...): tv.nomercy.player.video/LevelsChange // tv.nomercy.player.video/LevelsChange.copy|copy(kotlin.collections.List<tv.nomercy.player.core.media.QualityDescriptor>){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video/LevelsChange.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video/LevelsChange.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video/LevelsChange.toString|toString(){}[0]
-}
-
-final class tv.nomercy.player.video/QualityLevel { // tv.nomercy.player.video/QualityLevel|null[0]
-    constructor <init>(kotlin/Int, kotlin/Int, kotlin/String? = ..., kotlin/String? = ...) // tv.nomercy.player.video/QualityLevel.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.String?;kotlin.String?){}[0]
-
-    final val bitrate // tv.nomercy.player.video/QualityLevel.bitrate|{}bitrate[0]
-        final fun <get-bitrate>(): kotlin/Int // tv.nomercy.player.video/QualityLevel.bitrate.<get-bitrate>|<get-bitrate>(){}[0]
-    final val codec // tv.nomercy.player.video/QualityLevel.codec|{}codec[0]
-        final fun <get-codec>(): kotlin/String? // tv.nomercy.player.video/QualityLevel.codec.<get-codec>|<get-codec>(){}[0]
-    final val dynamicRange // tv.nomercy.player.video/QualityLevel.dynamicRange|{}dynamicRange[0]
-        final fun <get-dynamicRange>(): kotlin/String? // tv.nomercy.player.video/QualityLevel.dynamicRange.<get-dynamicRange>|<get-dynamicRange>(){}[0]
-    final val height // tv.nomercy.player.video/QualityLevel.height|{}height[0]
-        final fun <get-height>(): kotlin/Int // tv.nomercy.player.video/QualityLevel.height.<get-height>|<get-height>(){}[0]
-
-    final fun component1(): kotlin/Int // tv.nomercy.player.video/QualityLevel.component1|component1(){}[0]
-    final fun component2(): kotlin/Int // tv.nomercy.player.video/QualityLevel.component2|component2(){}[0]
-    final fun component3(): kotlin/String? // tv.nomercy.player.video/QualityLevel.component3|component3(){}[0]
-    final fun component4(): kotlin/String? // tv.nomercy.player.video/QualityLevel.component4|component4(){}[0]
-    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/String? = ..., kotlin/String? = ...): tv.nomercy.player.video/QualityLevel // tv.nomercy.player.video/QualityLevel.copy|copy(kotlin.Int;kotlin.Int;kotlin.String?;kotlin.String?){}[0]
-    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video/QualityLevel.equals|equals(kotlin.Any?){}[0]
-    final fun hashCode(): kotlin/Int // tv.nomercy.player.video/QualityLevel.hashCode|hashCode(){}[0]
-    final fun toString(): kotlin/String // tv.nomercy.player.video/QualityLevel.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video/QualityRequest { // tv.nomercy.player.video/QualityRequest|null[0]

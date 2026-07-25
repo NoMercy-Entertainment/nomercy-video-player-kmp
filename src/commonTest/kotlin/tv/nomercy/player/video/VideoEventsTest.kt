@@ -10,6 +10,7 @@ package tv.nomercy.player.video
 
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.EventEmitter
+import tv.nomercy.player.core.media.QualityDescriptor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -74,13 +75,14 @@ class VideoEventsTest {
     }
 
     @Test
-    fun aQualityLevelIsDescribedByHeightAndBitrateNotByAnIndex() {
-        val level = QualityLevel(height = 1080, bitrate = 6_000_000, codec = "hevc")
+    fun theLadderUsesCoresIdentityTypeRatherThanASecondOne() {
+        val level = QualityDescriptor(height = 1080, bitrate = 6_000_000, codec = "hevc")
+        val change = LevelsChange(listOf(level))
 
-        // An engine reorders its ladder between streams, so an index taken
-        // before a reload points at something else afterwards.
-        assertEquals(1080, level.height)
-        assertEquals(6_000_000, level.bitrate)
+        // Two identity types for one rendition is how a quality menu and a
+        // backend end up disagreeing about which rung is selected.
+        assertEquals(1080, change.levels.single().height)
+        assertEquals("1080p", change.levels.single().label())
     }
 
     @Test
