@@ -76,6 +76,7 @@ public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/cont
 	public fun cycleAspectRatio ()V
 	public fun fullscreen ()Z
 	public fun fullscreen (Z)V
+	public final fun getVideoBridge ()Ltv/nomercy/player/video/VideoBackendBridge;
 	public fun message (Ljava/lang/String;Ljava/lang/Double;)V
 	public static synthetic fun message$default (Ltv/nomercy/player/video/NMVideoPlayer;Ljava/lang/String;Ljava/lang/Double;ILjava/lang/Object;)V
 	public fun pip ()Z
@@ -139,6 +140,13 @@ public final class tv/nomercy/player/video/Stretching : java/lang/Enum {
 
 public final class tv/nomercy/player/video/Stretching$Companion {
 	public final fun fromToken (Ljava/lang/String;)Ltv/nomercy/player/video/Stretching;
+}
+
+public final class tv/nomercy/player/video/VideoBackendBridge {
+	public fun <init> (Ltv/nomercy/player/core/controllers/PlayerContext;)V
+	public final fun announceLevels (Ljava/util/List;)V
+	public final fun attach (Ltv/nomercy/player/core/ports/MediaBackend;)V
+	public final fun detach (Ltv/nomercy/player/core/ports/MediaBackend;)V
 }
 
 public final class tv/nomercy/player/video/VideoEvents {

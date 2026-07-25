@@ -29,7 +29,7 @@ import tv.nomercy.player.core.ports.MediaBackend
 // job is to be passed through.
 @Suppress("TooManyFunctions")
 public open class NMVideoPlayer(
-    backend: MediaBackend? = null,
+    private val backend: MediaBackend? = null,
 ) : ComposedPlayer(backend) {
 
     private var fullscreenActive: Boolean = false
@@ -38,8 +38,13 @@ public open class NMVideoPlayer(
     private var stretching: Stretching = Stretching.Uniform
     private var rect: VideoRect? = null
 
+    // The video half of what the engine reports. Core's bridge handles the
+    // transport events; these are the ones only a video player has a name for.
+    public val videoBridge: VideoBackendBridge = VideoBackendBridge(context)
+
     init {
         register(this)
+        backend?.let { videoBridge.attach(it) }
     }
 
     public open fun fullscreen(): Boolean = fullscreenActive
