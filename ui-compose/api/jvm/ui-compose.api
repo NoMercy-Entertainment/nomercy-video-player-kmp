@@ -1,0 +1,29 @@
+public final class tv/nomercy/player/video/ui/NMVideoPlayerViewKt {
+	public static final fun NMVideoPlayerView (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/video/ui/VideoSurface;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun PlayerControls (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun rememberIsPlaying (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/runtime/Composer;I)Z
+	public static final fun togglePlayback (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/core/player/PlayerState;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class tv/nomercy/player/video/ui/PlayPauseControlKt {
+	public static final fun PlayPauseControl-ww6aTOc (ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;JLandroidx/compose/runtime/Composer;II)V
+}
+
+public final class tv/nomercy/player/video/ui/PlayerSurface_jvmKt {
+	public static final fun PlayerSurface (Ltv/nomercy/player/video/ui/VideoSurface;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;I)V
+}
+
+public final class tv/nomercy/player/video/ui/RemoteControlKt {
+	public static final fun remoteControl (Landroidx/compose/ui/Modifier;Ltv/nomercy/player/core/controllers/ComposedPlayer;ZLandroidx/compose/runtime/Composer;II)Landroidx/compose/ui/Modifier;
+}
+
+public final class tv/nomercy/player/video/ui/VideoSurface {
+	public static final field $stable I
+	public fun <init> (Luk/co/caprica/vlcj/player/embedded/EmbeddedMediaPlayer;)V
+	public final fun getEmbeddedPlayer ()Luk/co/caprica/vlcj/player/embedded/EmbeddedMediaPlayer;
+}
+
+public final class tv/nomercy/player/video/ui/VideoSurface_jvmKt {
+	public static final fun VideoSurface (Ltv/nomercy/player/core/ports/VlcjVideoBackend;)Ltv/nomercy/player/video/ui/VideoSurface;
+}
+

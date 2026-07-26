@@ -43,3 +43,8 @@ if (coreCheckout.resolve("settings.gradle.kts").exists()) {
         }
     }
 }
+
+// The drop-in view is its own module because Compose is a dependency a consumer
+// should be able to decline. An app with its own chrome takes the library and
+// never sees Compose on its classpath; an app that wants the view asks for it.
+include(":ui-compose")

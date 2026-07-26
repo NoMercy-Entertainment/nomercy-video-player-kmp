@@ -1,0 +1,98 @@
+// -----------------------------------------------------------------------------
+//  Copyright (c) NoMercy Entertainment
+//
+//  Licensed under the Apache License, Version 2.0. See LICENSE for details.
+//
+//  SPDX-License-Identifier: Apache-2.0
+// -----------------------------------------------------------------------------
+
+package tv.nomercy.player.video.ui
+
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import org.jetbrains.skia.ColorAlphaType
+import org.jetbrains.skia.ColorType
+import org.jetbrains.skia.Image
+import org.jetbrains.skia.ImageInfo
+import uk.co.caprica.vlcj.player.base.MediaPlayer
+import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
+import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
+import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
+import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32BufferFormat
+import java.nio.ByteBuffer
+
+// libVLC's frames, turned into something Compose can draw.
+//
+// This is the answer to the seam the plan called unproven. An embedded surface
+// hands libVLC a native window handle, and a native window on the desktop paints
+// above everything the toolkit draws — the video would cover the play button
+// rather than sit under it, and no amount of Compose z-ordering would move it,
+// because the two are not in the same compositor at all.
+//
+// Rendering into a buffer sidesteps the question instead of fighting it. The
+// frame becomes an ImageBitmap like any other, Compose composites it with the
+// controls the same way it composites everything else, and there is no Swing in
+// the window. It costs one copy per frame, which is the price of compositing at
+// all.
+internal class ComposeFrameSink : RenderCallback, BufferFormatCallback {
+
+    val frame: MutableState<ImageBitmap?> = mutableStateOf(null)
+
+    private var width: Int = 0
+    private var height: Int = 0
+
+    // Reused across frames. Allocating per frame at twenty-four a second is how
+    // a player turns into a garbage collector with a picture on it.
+    private var pixels: ByteArray = ByteArray(0)
+    private var info: ImageInfo = ImageInfo(0, 0, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
+    private var rowBytes: Int = 0
+
+    // RV32 is BGRA in memory on a little-endian machine, which is exactly what
+    // Skia calls BGRA_8888 — so the frame lands with no conversion, only a copy.
+    override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
+        width = sourceWidth
+        height = sourceHeight
+        rowBytes = sourceWidth * BYTES_PER_PIXEL
+        pixels = ByteArray(rowBytes * sourceHeight)
+        info = ImageInfo(sourceWidth, sourceHeight, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
+        return RV32BufferFormat(sourceWidth, sourceHeight)
+    }
+
+    override fun newFormatSize(
+        bufferWidth: Int,
+        bufferHeight: Int,
+        displayWidth: Int,
+        displayHeight: Int,
+    ): Unit = Unit
+
+    override fun allocatedBuffers(buffers: Array<out ByteBuffer>): Unit = Unit
+
+    override fun lock(mediaPlayer: MediaPlayer): Unit = Unit
+
+    override fun unlock(mediaPlayer: MediaPlayer): Unit = Unit
+
+    // The buffer is libVLC's and it reuses it, so the frame has to be copied out
+    // before this returns. Holding the buffer instead would draw whatever the
+    // decoder happened to be writing.
+    override fun display(
+        mediaPlayer: MediaPlayer,
+        nativeBuffers: Array<out ByteBuffer>,
+        bufferFormat: BufferFormat,
+        displayWidth: Int,
+        displayHeight: Int,
+    ) {
+        if (width == 0 || height == 0) return
+
+        val source: ByteBuffer = nativeBuffers[0].duplicate()
+        source.rewind()
+        source.get(pixels, 0, minOf(pixels.size, source.remaining()))
+
+        frame.value = Image.makeRaster(info, pixels, rowBytes).toComposeImageBitmap()
+    }
+
+    private companion object {
+        const val BYTES_PER_PIXEL = 4
+    }
+}

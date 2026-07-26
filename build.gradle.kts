@@ -10,6 +10,10 @@ plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.binary.compatibility.validator)
     alias(libs.plugins.maven.publish)
+    // Applied for real in :ui-compose; declared here so the subproject can
+    // take them by alias without restating a version.
+    alias(libs.plugins.compose.multiplatform) apply false
+    alias(libs.plugins.compose.compiler) apply false
 }
 
 kotlin {
@@ -84,6 +88,15 @@ detekt {
         "src/androidMain/kotlin",
         "src/appleMain/kotlin",
         "src/jvmMain/kotlin",
+        // The Compose module is a separate Gradle project but the same codebase,
+        // and a rule that only applies to part of a repo is a rule people learn
+        // to route around.
+        "ui-compose/src/commonMain/kotlin",
+        "ui-compose/src/commonTest/kotlin",
+        "ui-compose/src/androidMain/kotlin",
+        "ui-compose/src/androidHostTest/kotlin",
+        "ui-compose/src/jvmMain/kotlin",
+        "ui-compose/src/jvmTest/kotlin",
     )
     config.setFrom("config/detekt/detekt.yml")
     buildUponDefaultConfig = true

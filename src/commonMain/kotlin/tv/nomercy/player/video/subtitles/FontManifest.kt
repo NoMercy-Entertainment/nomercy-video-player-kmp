@@ -52,7 +52,6 @@ public object FontManifest {
         is JsonPrimitive -> if (element.isString) listOf(element.content) else emptyList()
         is JsonArray -> element.flatMap(::pathsIn)
         is JsonObject -> pathsInObject(element)
-        else -> emptyList()
     }
 
     private fun pathsInObject(obj: JsonObject): List<String> {

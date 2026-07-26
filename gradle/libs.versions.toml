@@ -6,6 +6,18 @@ nomercyPlayerCore = "0.0.1-rc.1"
 kotlin = "2.2.21"
 agp = "9.0.1"
 androidxStartup = "1.2.0"
+# Not pinned to nomercy-app-kmp, which is on 1.9.0, because 1.9.0 cannot build
+# against AGP 9: its Android integration calls an onVariant overload the KMP
+# Android plugin no longer has, and the failure is a NoSuchMethodError at
+# configuration time. Compose is a runtime dependency rather than compiler
+# metadata, so the app resolving to the higher version is ordinary conflict
+# resolution — but the app should come up to meet it.
+composeMultiplatform = "1.11.1"
+# Pinned to core, not to the app: the UI layer and the engine it draws load
+# into one process, and two Media3 versions there is a linkage error.
+media3 = "1.9.0"
+vlcj = "4.11.0"
+robolectric = "4.14.1"
 
 coroutines = "1.10.2"
 serialization = "1.9.0"
@@ -27,6 +39,19 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
 detekt-api = { module = "io.gitlab.arturbosch.detekt:detekt-api", version.ref = "detekt" }
 detekt-test = { module = "io.gitlab.arturbosch.detekt:detekt-test", version.ref = "detekt" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "composeMultiplatform" }
+androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
+vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+# Declares the ComponentActivity the Compose Android test host launches into.
+# Without it Robolectric has no activity to resolve and every UI test dies
+# before it reaches an assertion. Version tracks what Compose Multiplatform
+# resolves androidx.compose.ui to.
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version = "1.11.2" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitLauncher" }
 
@@ -39,3 +64,5 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binaryCompatibilityValidator" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 skie = { id = "co.touchlab.skie", version.ref = "skie" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
