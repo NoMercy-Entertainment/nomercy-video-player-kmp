@@ -97,6 +97,7 @@ detekt {
         "ui-compose/src/androidHostTest/kotlin",
         "ui-compose/src/jvmMain/kotlin",
         "ui-compose/src/jvmTest/kotlin",
+        "ui-compose/src/androidDeviceTest/kotlin",
     )
     config.setFrom("config/detekt/detekt.yml")
     buildUponDefaultConfig = true

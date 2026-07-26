@@ -51,6 +51,8 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 # Without it Robolectric has no activity to resolve and every UI test dies
 # before it reaches an assertion. Version tracks what Compose Multiplatform
 # resolves androidx.compose.ui to.
+androidx-test-runner = { module = "androidx.test:runner", version = "1.7.0" }
+androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4-android", version = "1.11.2" }
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version = "1.11.2" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitLauncher" }

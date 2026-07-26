@@ -26,6 +26,15 @@ kotlin {
             isIncludeAndroidResources = true
         }
 
+        // The render gate runs on hardware because that is the only place a
+        // decoder writes to a real surface. Robolectric cannot answer "did the
+        // engine paint" — it has no compositor to paint into.
+        withDeviceTestBuilder {
+            sourceSetTreeName = "test"
+        }.configure {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
+
         compilations.configureEach {
             compileTaskProvider.configure {
                 compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
@@ -68,9 +77,24 @@ kotlin {
             // box and a Linux runner from the same line.
             implementation(compose.desktop.currentOs)
         }
+        getByName("androidDeviceTest").dependencies {
+            implementation(libs.androidx.test.runner)
+            implementation(libs.androidx.compose.ui.test.junit4)
+            implementation(libs.androidx.compose.ui.test.manifest)
+            implementation(libs.androidx.media3.exoplayer)
+        }
         getByName("androidHostTest").dependencies {
             implementation(libs.robolectric)
             implementation(libs.androidx.compose.ui.test.manifest)
         }
     }
+}
+
+// Compose Multiplatform's resource plugin registers this task for the device
+// test source set and never gives it an output directory, so configuring the
+// build fails before a single test runs. This module ships no Compose resources
+// — the control is drawn, not loaded — so there is nothing for it to copy and
+// nothing lost by switching it off.
+tasks.matching { it.name.startsWith("copyAndroidDeviceTestComposeResources") }.configureEach {
+    enabled = false
 }

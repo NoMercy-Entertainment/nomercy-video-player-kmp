@@ -1,0 +1,57 @@
+// -----------------------------------------------------------------------------
+//  Copyright (c) NoMercy Entertainment
+//
+//  Licensed under the Apache License, Version 2.0. See LICENSE for details.
+//
+//  SPDX-License-Identifier: Apache-2.0
+// -----------------------------------------------------------------------------
+
+package tv.nomercy.player.video.ui
+
+import android.util.Base64
+import java.io.File
+
+// Two kilobytes of H.264 in a string, and the reason it is not a file.
+//
+// The Android KMP library plugin does not wire an assets directory for the
+// device-test source set, so an asset placed the conventional way is simply not
+// packaged and the test fails at runtime on a file that exists in the repo. A
+// literal is packaged because the code is. It is a second of 64x64 test pattern
+// at crf 40 — small enough to read past, real enough for a decoder.
+internal fun writeTestClip(target: File): File {
+    target.writeBytes(Base64.decode(CLIP_BASE64, Base64.DEFAULT))
+    return target
+}
+
+private const val CLIP_BASE64: String =
+    "AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAN4bW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAA+gA" +
+    "AQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+    "AAAAAAAAAAAAAgAAAqN0cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAA+gAAAAAAAAAAAAAAAAAAAAAAAEA" +
+    "AAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAEAAAABAAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAPo" +
+    "AAAQAAABAAAAAAIbbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAAAoAAAAKABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUA" +
+    "AAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABxm1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYA" +
+    "AAAAAAAAAQAAAAx1cmwgAAAAAQAAAYZzdGJsAAAAwnN0c2QAAAAAAAAAAQAAALJhdmMxAAAAAAAAAAEAAAAAAAAAAAAA" +
+    "AAAAAAAAAEAAQABIAAAASAAAAAAAAAABFUxhdmM2MS4xOS4xMDAgbGlieDI2NAAAAAAAAAAAAAAAGP//AAAAOGF2Y0MB" +
+    "ZAAK/+EAGmdkAAqscgREJsBEAAADAAQAAAMAKDxIlhGAAQAHaOhDg5LIsP34+AAAAAAQcGFzcAAAAAEAAAABAAAAFGJ0" +
+    "cnQAAAAAAAAjiAAAI4gAAAAYc3R0cwAAAAAAAAABAAAABQAACAAAAAAUc3RzcwAAAAAAAAABAAAAAQAAADhjdHRzAAAA" +
+    "AAAAAAUAAAABAAAQAAAAAAEAACgAAAAAAQAAEAAAAAABAAAAAAAAAAEAAAgAAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAAF" +
+    "AAAAAQAAAChzdHN6AAAAAAAAAAAAAAAFAAAEFgAAADEAAAAOAAAADgAAAA4AAAAUc3RjbwAAAAAAAAABAAADqAAAAGF1" +
+    "ZHRhAAAAWW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALGlsc3QAAAAkqXRvbwAAABxk" +
+    "YXRhAAAAAQAAAABMYXZmNjEuNy4xMDAAAAAIZnJlZQAABHltZGF0AAACrwYF//+r3EXpvebZSLeWLNgg2SPu73gyNjQg" +
+    "LSBjb3JlIDE2NCByMzE5MiBjMjRlMDZjIC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAy" +
+    "NCAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTE2IGRlYmxv" +
+    "Y2s9MTowOjAgYW5hbHlzZT0weDM6MHgxMzMgbWU9dW1oIHN1Ym1lPTEwIHBzeT0xIHBzeV9yZD0xLjAwOjAuMDAgbWl4" +
+    "ZWRfcmVmPTEgbWVfcmFuZ2U9MjQgY2hyb21hX21lPTEgdHJlbGxpcz0yIDh4OGRjdD0xIGNxbT0wIGRlYWR6b25lPTIx" +
+    "LDExIGZhc3RfcHNraXA9MSBjaHJvbWFfcXBfb2Zmc2V0PS0yIHRocmVhZHM9MiBsb29rYWhlYWRfdGhyZWFkcz0xIHNs" +
+    "aWNlZF90aHJlYWRzPTAgbnI9MCBkZWNpbWF0ZT0xIGludGVybGFjZWQ9MCBibHVyYXlfY29tcGF0PTAgY29uc3RyYWlu" +
+    "ZWRfaW50cmE9MCBiZnJhbWVzPTggYl9weXJhbWlkPTIgYl9hZGFwdD0yIGJfYmlhcz0wIGRpcmVjdD0zIHdlaWdodGI9" +
+    "MSBvcGVuX2dvcD0wIHdlaWdodHA9MiBrZXlpbnQ9MjUwIGtleWludF9taW49NSBzY2VuZWN1dD00MCBpbnRyYV9yZWZy" +
+    "ZXNoPTAgcmNfbG9va2FoZWFkPTYwIHJjPWNyZiBtYnRyZWU9MSBjcmY9NDAuMCBxY29tcD0wLjYwIHFwbWluPTAgcXBt" +
+    "YXg9NjkgcXBzdGVwPTQgaXBfcmF0aW89MS40MCBhcT0xOjEuMDAAgAAAAV9liIEAE//SHaRhVou2HPyfg3DmPfXOemMP" +
+    "p30vAeAkFZa71SzYD3xq+THqZWiwSZfLv258QA2UIAiVTUAoLhWAZhS4UFponaHEYMO65pRlqBLb3ZmTOgIFjthVWnck" +
+    "RE08W6b0vBi7I1rNGsoxNAtJn0ac6QrVVBDbWTWgMMvbjfeYLmcuxA1Fgxz28ddv3okKT5e2MCFfayZMRynTB/MHbMTp" +
+    "gvHLguOdTpgur0ezP5yo6c8ndvDERLnbeV6RSU7TjYDpdwtSL9baei55dE7b4boWMt9I9pBRlSWAgEJi7RcFPevTALte" +
+    "2hU6UQhBLiYqRh+32VCNhnuv+LkIj4U5YkTuHFefvM+eP3mcjPnYNMURV2952EVpwyYb3bao8i11fDdppXXW3PzHfyjE" +
+    "Z9Opqf9UPqZ7K3Xb6MNSQjFsmWYM6QMdRUDXMtOIGy+OEgE782vLx5Zo33yjZGnHZjEAAAAtQZoIjYjPb0t8k/YxtU3r" +
+    "ahGPRsW+WusvDNgpPaYL0A+ZShH8Rq3/CfANyRV4AAAACkGeEEcRH7TwGrEAAAAKAZ4YJojPusiyZgAAAAoBnhhtSM+7" +
+    "mZJn"
