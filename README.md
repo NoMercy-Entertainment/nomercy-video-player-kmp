@@ -56,20 +56,24 @@ measures it, and where that command can run.
 | The select key toggles playback with nothing to aim at | `testAndroidHostTest` | `jvmTest` | n/a | `xcodebuild test` |
 | Video paints | `connectedAndroidDeviceTest` | `jvmTest` | device QA | device QA |
 | The control draws over the video | — | `jvmTest` | device QA | device QA |
-| One ASS cue rasterizes visible pixels | `connectedAndroidDeviceTest` | no libass yet | no libass yet | no libass yet |
+| One ASS cue rasterizes visible pixels | `connectedAndroidDeviceTest` | `jvmTest`, where libass is installed | not linked yet | not linked yet |
 | Fonts are attached before the track loads | `jvmTest` | `jvmTest` | `jvmTest` | `jvmTest` |
 
 CI runs everything except the device rows. Those need hardware attached, and
 they run from a developer machine — the matrix does not pretend to cover them.
 Video painting on Android is proven on a phone and on an Android TV box.
 
-## Two things that are not done
+## What libass needs from the machine
 
-libass has no JVM binding here. It is a system package on Linux and a Homebrew
-formula on macOS, but on Windows the only builds in circulation are the copies
-statically linked inside VLC and mpv, which cannot be loaded from outside them.
-Binding it means vendoring a build per platform or requiring an installed one,
-which is a distribution decision rather than a rendering one.
+On Linux and macOS it is a package away — `apt install libass9`,
+`brew install libass` — and the renderer loads whichever is installed, including
+from Homebrew's directories, which a JVM does not search by default.
+
+On Windows there is no renderer yet. The only builds in circulation are the
+copies statically linked inside VLC and mpv, which cannot be loaded from outside
+them, so shipping one means vendoring a build. That is a distribution decision
+rather than a rendering one, and until it is made a Windows caller gets a
+sentence from `AssRenderers.whyUnavailable()` and can fall back to plain text.
 
 libass for Apple is built and vendored in the NoMercy app but not linked here.
 Wiring it means a cinterop definition against an artifact no CI runner produces,
