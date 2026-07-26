@@ -54,6 +54,9 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ass.kt)
         }
+        jvmMain.dependencies {
+            implementation(libs.jna)
+        }
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
