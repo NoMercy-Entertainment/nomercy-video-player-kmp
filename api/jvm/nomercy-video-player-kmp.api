@@ -212,3 +212,13 @@ public final class tv/nomercy/player/video/ViewModeChange {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/subtitles/AssFontNames {
+	public static final field INSTANCE Ltv/nomercy/player/video/subtitles/AssFontNames;
+	public final fun parse (Ljava/lang/String;)Ljava/util/List;
+}
+
+public final class tv/nomercy/player/video/subtitles/FontManifest {
+	public static final field INSTANCE Ltv/nomercy/player/video/subtitles/FontManifest;
+	public final fun parse (Ljava/lang/String;Ljava/lang/String;)Ljava/util/Map;
+}
+

@@ -228,6 +228,14 @@ open class tv.nomercy.player.video/NMVideoPlayer : tv.nomercy.player.core.contro
     }
 }
 
+final object tv.nomercy.player.video.subtitles/AssFontNames { // tv.nomercy.player.video.subtitles/AssFontNames|null[0]
+    final fun parse(kotlin/String): kotlin.collections/List<kotlin/String> // tv.nomercy.player.video.subtitles/AssFontNames.parse|parse(kotlin.String){}[0]
+}
+
+final object tv.nomercy.player.video.subtitles/FontManifest { // tv.nomercy.player.video.subtitles/FontManifest|null[0]
+    final fun parse(kotlin/String, kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/String> // tv.nomercy.player.video.subtitles/FontManifest.parse|parse(kotlin.String;kotlin.String){}[0]
+}
+
 final object tv.nomercy.player.video/VideoEvents { // tv.nomercy.player.video/VideoEvents|null[0]
     final val AspectRatio // tv.nomercy.player.video/VideoEvents.AspectRatio|{}AspectRatio[0]
         final fun <get-AspectRatio>(): tv.nomercy.player.core.events/EventKey<tv.nomercy.player.video/AspectRatioChange> // tv.nomercy.player.video/VideoEvents.AspectRatio.<get-AspectRatio>|<get-AspectRatio>(){}[0]
