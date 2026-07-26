@@ -131,4 +131,41 @@ class SubtitlePluginTest {
 
         assertTrue(renderer.released, "the renderer outlived the plugin that owned it")
     }
+
+    private suspend fun loadedPlugin(renderer: RecordingRenderer): SubtitlePlugin {
+        val (player, _) = player(
+            mapOf(SUBTITLE_URL to FetchResponse(status = OK, body = skeletonAss("Skeleton Sans"))),
+        )
+        return install(player, renderer).also { it.load(SUBTITLE_URL, fontManifestUrl = null) }
+    }
+
+    @Test
+    fun aFontThatArrivesLateMakesLibassResolveTheFamiliesAgain() = runTest {
+        // libass resolves a family once. Adding a font afterwards without
+        // handing the track back leaves the film playing to the end in a
+        // fallback typeface with nothing reporting why.
+        val renderer = RecordingRenderer()
+        val plugin: SubtitlePlugin = loadedPlugin(renderer)
+        val loadsBefore: Int = renderer.calls.count { it.startsWith("loadTrack") }
+
+        plugin.addFontLate("LateArrival.ttf", byteArrayOf(1, 2, 3))
+
+        assertEquals(loadsBefore + 1, renderer.calls.count { it.startsWith("loadTrack") })
+        assertTrue(renderer.fonts.containsKey("LateArrival.ttf"))
+        assertTrue(plugin.loadedFonts.contains("LateArrival.ttf"))
+    }
+
+    @Test
+    fun aLateFontBeforeAnyTrackDoesNotReloadNothing() = runTest {
+        // Before a track exists this is just the ordinary path, and reloading
+        // would hand libass an empty string.
+        val renderer = RecordingRenderer()
+        val (player, _) = player(emptyMap())
+
+        install(player, renderer).addFontLate("Early.ttf", byteArrayOf(1))
+
+        assertEquals(0, renderer.calls.count { it.startsWith("loadTrack") })
+        assertTrue(renderer.fonts.containsKey("Early.ttf"))
+    }
+
 }

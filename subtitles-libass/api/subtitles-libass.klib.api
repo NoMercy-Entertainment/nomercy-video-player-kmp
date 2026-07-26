@@ -78,6 +78,7 @@ final class tv.nomercy.player.video.ass/SubtitlePlugin : tv.nomercy.player.core.
     final var loadedFonts // tv.nomercy.player.video.ass/SubtitlePlugin.loadedFonts|{}loadedFonts[0]
         final fun <get-loadedFonts>(): kotlin.collections/List<kotlin/String> // tv.nomercy.player.video.ass/SubtitlePlugin.loadedFonts.<get-loadedFonts>|<get-loadedFonts>(){}[0]
 
+    final fun addFontLate(kotlin/String, kotlin/ByteArray) // tv.nomercy.player.video.ass/SubtitlePlugin.addFontLate|addFontLate(kotlin.String;kotlin.ByteArray){}[0]
     final fun dispose() // tv.nomercy.player.video.ass/SubtitlePlugin.dispose|dispose(){}[0]
     final suspend fun load(kotlin/String, kotlin/String?): kotlin/Boolean // tv.nomercy.player.video.ass/SubtitlePlugin.load|load(kotlin.String;kotlin.String?){}[0]
 }

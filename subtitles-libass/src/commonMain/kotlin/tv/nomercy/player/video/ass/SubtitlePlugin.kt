@@ -52,6 +52,7 @@ public class SubtitlePlugin(
         }
 
         renderer.loadTrack(subtitle)
+        currentTrack = subtitle
         return true
     }
 
@@ -85,6 +86,27 @@ public class SubtitlePlugin(
         }
         loadedFonts = attached
     }
+
+    // A font that turned up after the track was already loaded.
+    //
+    // The ordinary path attaches everything first, because libass resolves a
+    // family once and a font arriving later is one it has already decided not to
+    // use. When one does arrive late anyway — a slow download, a server that
+    // found the file after the episode started — adding it is not enough: the
+    // track has to be handed back so libass resolves the families again.
+    //
+    // Reloading is cheap and visible. Not reloading is a film that plays to the
+    // end in a fallback typeface with nothing reporting why.
+    public fun addFontLate(fileName: String, data: ByteArray) {
+        renderer.addFont(fileName, data)
+        loadedFonts = loadedFonts + fileName
+
+        // Only when there is a track to reload. Before one exists this is just
+        // the ordinary path with a different name.
+        currentTrack?.let(renderer::loadTrack)
+    }
+
+    private var currentTrack: String? = null
 
     private suspend fun get(url: String): FetchResponse? {
         val response: FetchResponse = runCatching { fetch(url, FetchOptions()) }.getOrNull() ?: return null
