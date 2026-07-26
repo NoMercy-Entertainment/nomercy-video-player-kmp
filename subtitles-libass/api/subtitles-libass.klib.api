@@ -122,3 +122,80 @@ final object tv.nomercy.player.video.ass.render/RenderGeometry { // tv.nomercy.p
     final fun isSeek(kotlin/Long, kotlin/Long, kotlin/Long = ...): kotlin/Boolean // tv.nomercy.player.video.ass.render/RenderGeometry.isSeek|isSeek(kotlin.Long;kotlin.Long;kotlin.Long){}[0]
     final fun primeStorageFromScript(kotlin/Int, kotlin/Int): kotlin/Pair<kotlin/Int, kotlin/Int>? // tv.nomercy.player.video.ass.render/RenderGeometry.primeStorageFromScript|primeStorageFromScript(kotlin.Int;kotlin.Int){}[0]
 }
+
+final class tv.nomercy.player.video.ass.timing/AssCue { // tv.nomercy.player.video.ass.timing/AssCue|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int, kotlin/Long, kotlin/Long, kotlin/String, kotlin/Boolean) // tv.nomercy.player.video.ass.timing/AssCue.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Long;kotlin.Long;kotlin.String;kotlin.Boolean){}[0]
+
+    final val endMs // tv.nomercy.player.video.ass.timing/AssCue.endMs|{}endMs[0]
+        final fun <get-endMs>(): kotlin/Long // tv.nomercy.player.video.ass.timing/AssCue.endMs.<get-endMs>|<get-endMs>(){}[0]
+    final val index // tv.nomercy.player.video.ass.timing/AssCue.index|{}index[0]
+        final fun <get-index>(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssCue.index.<get-index>|<get-index>(){}[0]
+    final val isDynamic // tv.nomercy.player.video.ass.timing/AssCue.isDynamic|{}isDynamic[0]
+        final fun <get-isDynamic>(): kotlin/Boolean // tv.nomercy.player.video.ass.timing/AssCue.isDynamic.<get-isDynamic>|<get-isDynamic>(){}[0]
+    final val layer // tv.nomercy.player.video.ass.timing/AssCue.layer|{}layer[0]
+        final fun <get-layer>(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssCue.layer.<get-layer>|<get-layer>(){}[0]
+    final val startMs // tv.nomercy.player.video.ass.timing/AssCue.startMs|{}startMs[0]
+        final fun <get-startMs>(): kotlin/Long // tv.nomercy.player.video.ass.timing/AssCue.startMs.<get-startMs>|<get-startMs>(){}[0]
+    final val text // tv.nomercy.player.video.ass.timing/AssCue.text|{}text[0]
+        final fun <get-text>(): kotlin/String // tv.nomercy.player.video.ass.timing/AssCue.text.<get-text>|<get-text>(){}[0]
+
+    final fun component1(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssCue.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssCue.component2|component2(){}[0]
+    final fun component3(): kotlin/Long // tv.nomercy.player.video.ass.timing/AssCue.component3|component3(){}[0]
+    final fun component4(): kotlin/Long // tv.nomercy.player.video.ass.timing/AssCue.component4|component4(){}[0]
+    final fun component5(): kotlin/String // tv.nomercy.player.video.ass.timing/AssCue.component5|component5(){}[0]
+    final fun component6(): kotlin/Boolean // tv.nomercy.player.video.ass.timing/AssCue.component6|component6(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Long = ..., kotlin/Long = ..., kotlin/String = ..., kotlin/Boolean = ...): tv.nomercy.player.video.ass.timing/AssCue // tv.nomercy.player.video.ass.timing/AssCue.copy|copy(kotlin.Int;kotlin.Int;kotlin.Long;kotlin.Long;kotlin.String;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.ass.timing/AssCue.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssCue.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.ass.timing/AssCue.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.ass.timing/AssStyle { // tv.nomercy.player.video.ass.timing/AssStyle|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/Int) // tv.nomercy.player.video.ass.timing/AssStyle.<init>|<init>(kotlin.String;kotlin.String;kotlin.Int){}[0]
+
+    final val alignment // tv.nomercy.player.video.ass.timing/AssStyle.alignment|{}alignment[0]
+        final fun <get-alignment>(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssStyle.alignment.<get-alignment>|<get-alignment>(){}[0]
+    final val fontName // tv.nomercy.player.video.ass.timing/AssStyle.fontName|{}fontName[0]
+        final fun <get-fontName>(): kotlin/String // tv.nomercy.player.video.ass.timing/AssStyle.fontName.<get-fontName>|<get-fontName>(){}[0]
+    final val name // tv.nomercy.player.video.ass.timing/AssStyle.name|{}name[0]
+        final fun <get-name>(): kotlin/String // tv.nomercy.player.video.ass.timing/AssStyle.name.<get-name>|<get-name>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.ass.timing/AssStyle.component1|component1(){}[0]
+    final fun component2(): kotlin/String // tv.nomercy.player.video.ass.timing/AssStyle.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssStyle.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/Int = ...): tv.nomercy.player.video.ass.timing/AssStyle // tv.nomercy.player.video.ass.timing/AssStyle.copy|copy(kotlin.String;kotlin.String;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.ass.timing/AssStyle.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssStyle.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.ass.timing/AssStyle.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.ass.timing/AssTrackModel { // tv.nomercy.player.video.ass.timing/AssTrackModel|null[0]
+    final val cues // tv.nomercy.player.video.ass.timing/AssTrackModel.cues|{}cues[0]
+        final fun <get-cues>(): kotlin.collections/List<tv.nomercy.player.video.ass.timing/AssCue> // tv.nomercy.player.video.ass.timing/AssTrackModel.cues.<get-cues>|<get-cues>(){}[0]
+    final val playResX // tv.nomercy.player.video.ass.timing/AssTrackModel.playResX|{}playResX[0]
+        final fun <get-playResX>(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssTrackModel.playResX.<get-playResX>|<get-playResX>(){}[0]
+    final val playResY // tv.nomercy.player.video.ass.timing/AssTrackModel.playResY|{}playResY[0]
+        final fun <get-playResY>(): kotlin/Int // tv.nomercy.player.video.ass.timing/AssTrackModel.playResY.<get-playResY>|<get-playResY>(){}[0]
+    final val styles // tv.nomercy.player.video.ass.timing/AssTrackModel.styles|{}styles[0]
+        final fun <get-styles>(): kotlin.collections/List<tv.nomercy.player.video.ass.timing/AssStyle> // tv.nomercy.player.video.ass.timing/AssTrackModel.styles.<get-styles>|<get-styles>(){}[0]
+
+    final fun activeCuesAt(kotlin/Long): kotlin.collections/List<tv.nomercy.player.video.ass.timing/AssCue> // tv.nomercy.player.video.ass.timing/AssTrackModel.activeCuesAt|activeCuesAt(kotlin.Long){}[0]
+    final fun nextBoundaryAfter(kotlin/Long): kotlin/Long? // tv.nomercy.player.video.ass.timing/AssTrackModel.nextBoundaryAfter|nextBoundaryAfter(kotlin.Long){}[0]
+
+    final object Companion { // tv.nomercy.player.video.ass.timing/AssTrackModel.Companion|null[0]
+        final fun parse(kotlin/String): tv.nomercy.player.video.ass.timing/AssTrackModel // tv.nomercy.player.video.ass.timing/AssTrackModel.Companion.parse|parse(kotlin.String){}[0]
+    }
+}
+
+final object tv.nomercy.player.video.ass.timing/RenderScheduler { // tv.nomercy.player.video.ass.timing/RenderScheduler|null[0]
+    final const val DYNAMIC_INTERVAL_MS // tv.nomercy.player.video.ass.timing/RenderScheduler.DYNAMIC_INTERVAL_MS|{}DYNAMIC_INTERVAL_MS[0]
+        final fun <get-DYNAMIC_INTERVAL_MS>(): kotlin/Long // tv.nomercy.player.video.ass.timing/RenderScheduler.DYNAMIC_INTERVAL_MS.<get-DYNAMIC_INTERVAL_MS>|<get-DYNAMIC_INTERVAL_MS>(){}[0]
+    final const val FALLBACK_INTERVAL_MS // tv.nomercy.player.video.ass.timing/RenderScheduler.FALLBACK_INTERVAL_MS|{}FALLBACK_INTERVAL_MS[0]
+        final fun <get-FALLBACK_INTERVAL_MS>(): kotlin/Long // tv.nomercy.player.video.ass.timing/RenderScheduler.FALLBACK_INTERVAL_MS.<get-FALLBACK_INTERVAL_MS>|<get-FALLBACK_INTERVAL_MS>(){}[0]
+
+    final fun fingerprintAt(tv.nomercy.player.video.ass.timing/AssTrackModel, kotlin/Long): kotlin/String // tv.nomercy.player.video.ass.timing/RenderScheduler.fingerprintAt|fingerprintAt(tv.nomercy.player.video.ass.timing.AssTrackModel;kotlin.Long){}[0]
+    final fun isRenderNeeded(tv.nomercy.player.video.ass.timing/AssTrackModel, kotlin/Long, kotlin/Long, kotlin/String): kotlin/Boolean // tv.nomercy.player.video.ass.timing/RenderScheduler.isRenderNeeded|isRenderNeeded(tv.nomercy.player.video.ass.timing.AssTrackModel;kotlin.Long;kotlin.Long;kotlin.String){}[0]
+    final fun lookaheadBoundaries(tv.nomercy.player.video.ass.timing/AssTrackModel, kotlin/Long, kotlin/Long = ..., kotlin/Int = ...): kotlin.collections/List<kotlin/Long> // tv.nomercy.player.video.ass.timing/RenderScheduler.lookaheadBoundaries|lookaheadBoundaries(tv.nomercy.player.video.ass.timing.AssTrackModel;kotlin.Long;kotlin.Long;kotlin.Int){}[0]
+    final fun nextRenderTime(tv.nomercy.player.video.ass.timing/AssTrackModel, kotlin/Long): kotlin/Long // tv.nomercy.player.video.ass.timing/RenderScheduler.nextRenderTime|nextRenderTime(tv.nomercy.player.video.ass.timing.AssTrackModel;kotlin.Long){}[0]
+}

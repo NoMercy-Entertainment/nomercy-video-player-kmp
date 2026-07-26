@@ -98,3 +98,65 @@ public final class tv/nomercy/player/video/ass/render/VideoRect {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/ass/timing/AssCue {
+	public fun <init> (IIJJLjava/lang/String;Z)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()J
+	public final fun component4 ()J
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Z
+	public final fun copy (IIJJLjava/lang/String;Z)Ltv/nomercy/player/video/ass/timing/AssCue;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ass/timing/AssCue;IIJJLjava/lang/String;ZILjava/lang/Object;)Ltv/nomercy/player/video/ass/timing/AssCue;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEndMs ()J
+	public final fun getIndex ()I
+	public final fun getLayer ()I
+	public final fun getStartMs ()J
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isDynamic ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ass/timing/AssStyle {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;I)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()I
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;I)Ltv/nomercy/player/video/ass/timing/AssStyle;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ass/timing/AssStyle;Ljava/lang/String;Ljava/lang/String;IILjava/lang/Object;)Ltv/nomercy/player/video/ass/timing/AssStyle;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAlignment ()I
+	public final fun getFontName ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ass/timing/AssTrackModel {
+	public static final field Companion Ltv/nomercy/player/video/ass/timing/AssTrackModel$Companion;
+	public synthetic fun <init> (IILjava/util/List;Ljava/util/List;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun activeCuesAt (J)Ljava/util/List;
+	public final fun getCues ()Ljava/util/List;
+	public final fun getPlayResX ()I
+	public final fun getPlayResY ()I
+	public final fun getStyles ()Ljava/util/List;
+	public final fun nextBoundaryAfter (J)Ljava/lang/Long;
+}
+
+public final class tv/nomercy/player/video/ass/timing/AssTrackModel$Companion {
+	public final fun parse (Ljava/lang/String;)Ltv/nomercy/player/video/ass/timing/AssTrackModel;
+}
+
+public final class tv/nomercy/player/video/ass/timing/RenderScheduler {
+	public static final field DYNAMIC_INTERVAL_MS J
+	public static final field FALLBACK_INTERVAL_MS J
+	public static final field INSTANCE Ltv/nomercy/player/video/ass/timing/RenderScheduler;
+	public final fun fingerprintAt (Ltv/nomercy/player/video/ass/timing/AssTrackModel;J)Ljava/lang/String;
+	public final fun isRenderNeeded (Ltv/nomercy/player/video/ass/timing/AssTrackModel;JJLjava/lang/String;)Z
+	public final fun lookaheadBoundaries (Ltv/nomercy/player/video/ass/timing/AssTrackModel;JJI)Ljava/util/List;
+	public static synthetic fun lookaheadBoundaries$default (Ltv/nomercy/player/video/ass/timing/RenderScheduler;Ltv/nomercy/player/video/ass/timing/AssTrackModel;JJIILjava/lang/Object;)Ljava/util/List;
+	public final fun nextRenderTime (Ltv/nomercy/player/video/ass/timing/AssTrackModel;J)J
+}
+
