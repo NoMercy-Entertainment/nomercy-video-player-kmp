@@ -10,7 +10,9 @@ package tv.nomercy.player.video.ass
 
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.IntVar
 import kotlinx.cinterop.alloc
+import kotlinx.cinterop.cstr
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
@@ -32,7 +34,6 @@ import libass.ass_renderer_init
 import libass.ass_set_fonts
 import libass.ass_set_frame_size
 import libass.ass_set_storage_size
-import platform.posix.free
 
 // libass on Apple, over Kotlin/Native cinterop.
 //
@@ -54,8 +55,10 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
     private var released: Boolean = false
 
     override fun addFont(name: String, data: ByteArray) {
-        if (released) return
-        data.usePinnedBytes { pointer -> ass_add_font(library, name, pointer, data.size) }
+        if (released || data.isEmpty()) return
+        memScoped {
+            ass_add_font(library, name.cstr.ptr, data.refTo(0), data.size)
+        }
         disposeRenderer()
     }
 
@@ -78,7 +81,7 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
         val loaded: CPointer<ASS_Track> = activeTrack() ?: return null
 
         return memScoped {
-            val changed = alloc<kotlinx.cinterop.IntVar>()
+            val changed = alloc<IntVar>()
             val head: CPointer<ASS_Image>? = ass_render_frame(target, loaded, timeMillis, changed.ptr)
             AssFrame(
                 images = if (head == null) emptyList() else walk(head),
@@ -131,8 +134,10 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
         track?.let { return it }
 
         val content: ByteArray = trackContent?.encodeToByteArray() ?: return null
-        val loaded: CPointer<ASS_Track>? = content.usePinnedBytes { pointer ->
-            ass_read_memory(library, pointer, content.size.toULong(), null)
+        if (content.isEmpty()) return null
+
+        val loaded: CPointer<ASS_Track>? = memScoped {
+            ass_read_memory(library, content.refTo(0), content.size.toULong(), null)
         }
         track = loaded
         return loaded
@@ -157,11 +162,5 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
         ass_library_done(library)
     }
 }
-
-// libass takes a mutable char* it does not keep, so pinning for the length of
-// the call is enough and a copy would be waste.
-@OptIn(ExperimentalForeignApi::class)
-private inline fun <R> ByteArray.usePinnedBytes(body: (CPointer<kotlinx.cinterop.ByteVar>) -> R): R =
-    kotlinx.cinterop.usePinned { pinned -> body(pinned.addressOf(0)) }
 
 internal const val FONT_PROVIDER_AUTODETECT: Int = 1

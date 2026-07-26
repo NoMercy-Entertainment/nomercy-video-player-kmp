@@ -1,6 +1,11 @@
 headers = ass/ass.h
 package = libass
 
+# Font data is bytes, and cinterop maps a const char* to String by default —
+# which would round-trip a TTF through UTF-8 and hand libass a corrupted font.
+# These two take buffers rather than strings, so they opt out.
+noStringConversion = ass_add_font ass_read_memory
+
 # The paths are set per target from build.gradle.kts, because an XCFramework
 # holds one slice per architecture and a def file cannot know which one is being
 # compiled. Everything that is the same for every slice lives here.
