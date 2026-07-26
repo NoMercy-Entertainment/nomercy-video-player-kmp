@@ -25,6 +25,40 @@ final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.pla
     }
 }
 
+final class tv.nomercy.player.video.backend/BufferConfig { // tv.nomercy.player.video.backend/BufferConfig|null[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/Boolean = ...) // tv.nomercy.player.video.backend/BufferConfig.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Int;kotlin.Boolean){}[0]
+
+    final val backBufferMs // tv.nomercy.player.video.backend/BufferConfig.backBufferMs|{}backBufferMs[0]
+        final fun <get-backBufferMs>(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.backBufferMs.<get-backBufferMs>|<get-backBufferMs>(){}[0]
+    final val bufferForPlaybackAfterRebufferMs // tv.nomercy.player.video.backend/BufferConfig.bufferForPlaybackAfterRebufferMs|{}bufferForPlaybackAfterRebufferMs[0]
+        final fun <get-bufferForPlaybackAfterRebufferMs>(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.bufferForPlaybackAfterRebufferMs.<get-bufferForPlaybackAfterRebufferMs>|<get-bufferForPlaybackAfterRebufferMs>(){}[0]
+    final val bufferForPlaybackMs // tv.nomercy.player.video.backend/BufferConfig.bufferForPlaybackMs|{}bufferForPlaybackMs[0]
+        final fun <get-bufferForPlaybackMs>(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.bufferForPlaybackMs.<get-bufferForPlaybackMs>|<get-bufferForPlaybackMs>(){}[0]
+    final val isTvDevice // tv.nomercy.player.video.backend/BufferConfig.isTvDevice|{}isTvDevice[0]
+        final fun <get-isTvDevice>(): kotlin/Boolean // tv.nomercy.player.video.backend/BufferConfig.isTvDevice.<get-isTvDevice>|<get-isTvDevice>(){}[0]
+    final val maxBufferMs // tv.nomercy.player.video.backend/BufferConfig.maxBufferMs|{}maxBufferMs[0]
+        final fun <get-maxBufferMs>(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.maxBufferMs.<get-maxBufferMs>|<get-maxBufferMs>(){}[0]
+    final val minBufferMs // tv.nomercy.player.video.backend/BufferConfig.minBufferMs|{}minBufferMs[0]
+        final fun <get-minBufferMs>(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.minBufferMs.<get-minBufferMs>|<get-minBufferMs>(){}[0]
+    final val retainBackBufferFromKeyframe // tv.nomercy.player.video.backend/BufferConfig.retainBackBufferFromKeyframe|{}retainBackBufferFromKeyframe[0]
+        final fun <get-retainBackBufferFromKeyframe>(): kotlin/Boolean // tv.nomercy.player.video.backend/BufferConfig.retainBackBufferFromKeyframe.<get-retainBackBufferFromKeyframe>|<get-retainBackBufferFromKeyframe>(){}[0]
+    final val targetBufferBytes // tv.nomercy.player.video.backend/BufferConfig.targetBufferBytes|{}targetBufferBytes[0]
+        final fun <get-targetBufferBytes>(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.targetBufferBytes.<get-targetBufferBytes>|<get-targetBufferBytes>(){}[0]
+
+    final fun component1(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.component4|component4(){}[0]
+    final fun component5(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.component5|component5(){}[0]
+    final fun component6(): kotlin/Boolean // tv.nomercy.player.video.backend/BufferConfig.component6|component6(){}[0]
+    final fun component7(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.component7|component7(){}[0]
+    final fun component8(): kotlin/Boolean // tv.nomercy.player.video.backend/BufferConfig.component8|component8(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Boolean = ..., kotlin/Int = ..., kotlin/Boolean = ...): tv.nomercy.player.video.backend/BufferConfig // tv.nomercy.player.video.backend/BufferConfig.copy|copy(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Boolean;kotlin.Int;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.backend/BufferConfig.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.backend/BufferConfig.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.backend/BufferConfig.toString|toString(){}[0]
+}
+
 final class tv.nomercy.player.video/AspectRatioChange { // tv.nomercy.player.video/AspectRatioChange|null[0]
     constructor <init>(tv.nomercy.player.video/Stretching) // tv.nomercy.player.video/AspectRatioChange.<init>|<init>(tv.nomercy.player.video.Stretching){}[0]
 
@@ -239,6 +273,18 @@ open class tv.nomercy.player.video/NMVideoPlayer : tv.nomercy.player.core.contro
     }
 }
 
+final object tv.nomercy.player.video.backend/BufferBudget { // tv.nomercy.player.video.backend/BufferBudget|null[0]
+    final fun forMemory(kotlin/Int, kotlin/Boolean = ..., kotlin/Boolean = ...): tv.nomercy.player.video.backend/BufferConfig // tv.nomercy.player.video.backend/BufferBudget.forMemory|forMemory(kotlin.Int;kotlin.Boolean;kotlin.Boolean){}[0]
+}
+
+final object tv.nomercy.player.video.backend/TunnelingRule { // tv.nomercy.player.video.backend/TunnelingRule|null[0]
+    final const val AUDIO_TRACK_INIT_FAILED // tv.nomercy.player.video.backend/TunnelingRule.AUDIO_TRACK_INIT_FAILED|{}AUDIO_TRACK_INIT_FAILED[0]
+        final fun <get-AUDIO_TRACK_INIT_FAILED>(): kotlin/Int // tv.nomercy.player.video.backend/TunnelingRule.AUDIO_TRACK_INIT_FAILED.<get-AUDIO_TRACK_INIT_FAILED>|<get-AUDIO_TRACK_INIT_FAILED>(){}[0]
+
+    final fun isTunnelingRefusal(kotlin/Int, kotlin/Boolean): kotlin/Boolean // tv.nomercy.player.video.backend/TunnelingRule.isTunnelingRefusal|isTunnelingRefusal(kotlin.Int;kotlin.Boolean){}[0]
+    final fun shouldTunnel(kotlin/Boolean, kotlin/Boolean, kotlin/Boolean): kotlin/Boolean // tv.nomercy.player.video.backend/TunnelingRule.shouldTunnel|shouldTunnel(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean){}[0]
+}
+
 final object tv.nomercy.player.video.subtitles/AssFontNames { // tv.nomercy.player.video.subtitles/AssFontNames|null[0]
     final fun parse(kotlin/String): kotlin.collections/List<kotlin/String> // tv.nomercy.player.video.subtitles/AssFontNames.parse|parse(kotlin.String){}[0]
 }
@@ -289,3 +335,6 @@ final object tv.nomercy.player.video/VideoEvents { // tv.nomercy.player.video/Vi
     final val all // tv.nomercy.player.video/VideoEvents.all|{}all[0]
         final fun <get-all>(): kotlin.collections/List<tv.nomercy.player.core.events/EventKey<*>> // tv.nomercy.player.video/VideoEvents.all.<get-all>|<get-all>(){}[0]
 }
+
+final const val tv.nomercy.player.video.backend/BYTES_PER_MB // tv.nomercy.player.video.backend/BYTES_PER_MB|{}BYTES_PER_MB[0]
+    final fun <get-BYTES_PER_MB>(): kotlin/Int // tv.nomercy.player.video.backend/BYTES_PER_MB.<get-BYTES_PER_MB>|<get-BYTES_PER_MB>(){}[0]
