@@ -73,21 +73,29 @@ internal class ComposeFrameSink : RenderCallback, BufferFormatCallback {
 
     override fun unlock(mediaPlayer: MediaPlayer): Unit = Unit
 
-    // The buffer is libVLC's and it reuses it, so the frame has to be copied out
-    // before this returns. Holding the buffer instead would draw whatever the
-    // decoder happened to be writing.
     override fun display(
         mediaPlayer: MediaPlayer,
         nativeBuffers: Array<out ByteBuffer>,
         bufferFormat: BufferFormat,
         displayWidth: Int,
         displayHeight: Int,
-    ) {
+    ): Unit = accept(nativeBuffers[0])
+
+    // The buffer is libVLC's and it reuses it, so the frame has to be copied out
+    // before this returns. Holding the buffer instead would draw whatever the
+    // decoder happened to be writing.
+    //
+    // Separate from display() because everything that can go wrong here — the
+    // byte order, the row stride, whether the pixels survive the trip at all —
+    // goes wrong silently and shows up as a black player. A function taking a
+    // buffer can be handed a known one and checked; a callback taking a
+    // MediaPlayer cannot.
+    internal fun accept(source: ByteBuffer) {
         if (width == 0 || height == 0) return
 
-        val source: ByteBuffer = nativeBuffers[0].duplicate()
-        source.rewind()
-        source.get(pixels, 0, minOf(pixels.size, source.remaining()))
+        val reader: ByteBuffer = source.duplicate()
+        reader.rewind()
+        reader.get(pixels, 0, minOf(pixels.size, reader.remaining()))
 
         frame.value = Image.makeRaster(info, pixels, rowBytes).toComposeImageBitmap()
     }
