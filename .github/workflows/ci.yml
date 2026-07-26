@@ -70,6 +70,13 @@ jobs:
         working-directory: packages-native/nomercy-video-player-kmp
         run: ./gradlew assembleNoMercyVideoPlayerXCFramework
 
+      # The Apple public surface, on the only host that can compile it. The
+      # Linux job cannot build these targets at all now that they bind to a C
+      # library, so this is where the klib dump is actually verified.
+      - name: Apple API check
+        working-directory: packages-native/nomercy-video-player-kmp
+        run: ./gradlew :subtitles-libass:klibApiCheck
+
       # The libass gate, on the only host that can run it. The Linux job
       # cannot: Apple targets need the Xcode toolchain, so a subtitle renderer
       # that only ever compiled would be the whole coverage of this surface.

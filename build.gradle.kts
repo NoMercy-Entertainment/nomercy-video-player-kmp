@@ -107,7 +107,16 @@ detekt {
 apiValidation {
     klib {
         enabled = true
-        strictValidation = true
+        // Not strict, and the reason changed under us. Kotlin/Native compiles
+        // klibs on any host, which is why this was strict — but the subtitle
+        // module's Apple targets now bind to a C library through cinterop, and
+        // that needs the Xcode toolchain. On Linux those targets cannot be
+        // built, and strict validation reads "could not build" as "the whole
+        // public surface was deleted".
+        //
+        // The Apple surface is still checked, on the macOS job, where the answer
+        // means something.
+        strictValidation = false
     }
 }
 
