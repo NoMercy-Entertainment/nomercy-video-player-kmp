@@ -13,4 +13,4 @@ staticLibraries = libass.a libfreetype.a libfribidi.a libharfbuzz.a
 
 # CoreText resolves fonts on Apple platforms, which is why the build drops
 # fontconfig. These are what libass and freetype link against for it.
-linkerOpts = -framework CoreText -framework CoreGraphics -framework CoreFoundation -lz -lbz2
+linkerOpts = -framework CoreText -framework CoreGraphics -framework CoreFoundation -lz -lbz2 -liconv
