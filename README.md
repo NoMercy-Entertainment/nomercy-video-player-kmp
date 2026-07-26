@@ -24,10 +24,55 @@ The build depends on core by its published coordinate and substitutes a sibling
 picked up without publishing first. Without that, two libraries that ship
 together would drift apart between releases.
 
-## Status
+## What is here
 
-Early. The event registry and its payload types are here and tested; the
-concrete `NMVideoPlayer` and the ExoPlayer, AVPlayer and VLCJ backends are not
-yet.
+The library is three pieces, and a consumer takes only what it needs.
+
+`nomercy-video-player-kmp` is the player itself: the video event registry and
+its payload types, `NMVideoPlayer`, the backend bridge, and the subtitle
+parsers. It has no UI and no native subtitle library.
+
+`:ui-compose` is the drop-in view for Android and the desktop — a media surface
+with one play/pause control bound to the player's state. Compose is a
+dependency you should be able to decline, which is why it is a separate module.
+Apple gets SwiftUI instead: `apple/NoMercyPlayer` is an SPM package with the
+same view for iOS and tvOS. A Compose surface on iOS would fight the app it was
+embedded in.
+
+`:subtitles-libass` renders styled ASS subtitles through libass. Android works
+today over the same JNI binding the NoMercy app ships. The desktop and Apple
+report why they cannot rather than failing at the point of use — ask
+`AssRenderers.whyUnavailable()` and you get a sentence, not a stack trace.
+
+## What is proven, and where
+
+Nothing below says "it compiles". Each row is a behaviour, the command that
+measures it, and where that command can run.
+
+| Behaviour | Android | Desktop | iOS | tvOS |
+|---|---|---|---|---|
+| The control toggles playback | `testAndroidHostTest` | `jvmTest` | `xcodebuild test` | `xcodebuild test` |
+| The engine's own state redraws the control | `testAndroidHostTest` | `jvmTest` | `xcodebuild test` | `xcodebuild test` |
+| The select key toggles playback with nothing to aim at | `testAndroidHostTest` | `jvmTest` | n/a | `xcodebuild test` |
+| Video paints | `connectedAndroidDeviceTest` | `jvmTest` | device QA | device QA |
+| The control draws over the video | — | `jvmTest` | device QA | device QA |
+| One ASS cue rasterizes visible pixels | `connectedAndroidDeviceTest` | no libass yet | no libass yet | no libass yet |
+| Fonts are attached before the track loads | `jvmTest` | `jvmTest` | `jvmTest` | `jvmTest` |
+
+CI runs everything except the device rows. Those need hardware attached, and
+they run from a developer machine — the matrix does not pretend to cover them.
+Video painting on Android is proven on a phone and on an Android TV box.
+
+## Two things that are not done
+
+libass has no JVM binding here. It is a system package on Linux and a Homebrew
+formula on macOS, but on Windows the only builds in circulation are the copies
+statically linked inside VLC and mpv, which cannot be loaded from outside them.
+Binding it means vendoring a build per platform or requiring an installed one,
+which is a distribution decision rather than a rendering one.
+
+libass for Apple is built and vendored in the NoMercy app but not linked here.
+Wiring it means a cinterop definition against an artifact no CI runner produces,
+which is a build-graph decision with the same shape.
 
 [core]: https://github.com/NoMercy-Entertainment/nomercy-player-core-kmp
