@@ -34,3 +34,36 @@ jobs:
       - name: Build
         working-directory: packages-native/nomercy-video-player-kmp
         run: ./gradlew build --stacktrace
+
+  # The Apple half, which needs Xcode and therefore its own runner.
+  #
+  # It is not in the matrix above because it proves something different: that the
+  # SwiftUI views build for both Apple platforms and that their bindings hold
+  # when driven on a simulator. The Compose half is measured on Linux; this half
+  # cannot be.
+  apple:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: packages-native/nomercy-video-player-kmp
+
+      - uses: actions/checkout@v4
+        with:
+          repository: NoMercy-Entertainment/nomercy-player-core-kmp
+          path: packages-native/nomercy-player-core-kmp
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # The Swift package binds to the framework as a binary target, so the
+      # framework has to exist before the package will even resolve.
+      - name: Assemble the framework
+        working-directory: packages-native/nomercy-video-player-kmp
+        run: ./gradlew assembleNoMercyVideoPlayerXCFramework
+
+      - name: Apple views
+        working-directory: packages-native/nomercy-video-player-kmp
+        run: ./apple/NoMercyPlayer/check.sh
