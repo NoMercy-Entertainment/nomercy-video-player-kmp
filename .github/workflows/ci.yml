@@ -31,6 +31,12 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # The libass gate skips itself when the library is absent, which on a bare
+      # runner means the whole desktop subtitle surface is untested while the
+      # build stays green. Installing it is what turns that skip into a check.
+      - name: Install libass
+        run: sudo apt-get update && sudo apt-get install -y libass9
+
       - name: Build
         working-directory: packages-native/nomercy-video-player-kmp
         run: ./gradlew build --stacktrace
