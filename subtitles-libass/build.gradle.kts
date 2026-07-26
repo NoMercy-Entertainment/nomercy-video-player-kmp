@@ -142,3 +142,14 @@ val fetchAppleLibass by tasks.registering {
 tasks.matching { it.name.startsWith("cinteropLibass") }.configureEach {
     dependsOn(fetchAppleLibass)
 }
+
+// The klib surface check runs on macOS only, for this module alone.
+//
+// Its Apple targets bind to a C library through cinterop, which needs the Xcode
+// toolchain. Anywhere else they do not compile, so the extracted surface is
+// empty and the check reports the whole public API as deleted — a red build
+// caused by the host rather than by a change. The macOS CI job runs it, which is
+// where the answer means something.
+tasks.matching { it.name == "klibApiCheck" }.configureEach {
+    onlyIf { org.gradle.internal.os.OperatingSystem.current().isMacOsX }
+}
