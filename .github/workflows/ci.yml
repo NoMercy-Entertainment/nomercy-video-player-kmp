@@ -70,6 +70,13 @@ jobs:
         working-directory: packages-native/nomercy-video-player-kmp
         run: ./gradlew assembleNoMercyVideoPlayerXCFramework
 
+      # The libass gate, on the only host that can run it. The Linux job
+      # cannot: Apple targets need the Xcode toolchain, so a subtitle renderer
+      # that only ever compiled would be the whole coverage of this surface.
+      - name: Apple subtitle gate
+        working-directory: packages-native/nomercy-video-player-kmp
+        run: ./gradlew :subtitles-libass:iosSimulatorArm64Test
+
       - name: Apple views
         working-directory: packages-native/nomercy-video-player-kmp
         run: ./apple/NoMercyPlayer/check.sh

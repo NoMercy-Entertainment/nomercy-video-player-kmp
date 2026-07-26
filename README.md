@@ -39,10 +39,15 @@ Apple gets SwiftUI instead: `apple/NoMercyPlayer` is an SPM package with the
 same view for iOS and tvOS. A Compose surface on iOS would fight the app it was
 embedded in.
 
-`:subtitles-libass` renders styled ASS subtitles through libass. Android works
-today over the same JNI binding the NoMercy app ships. The desktop and Apple
-report why they cannot rather than failing at the point of use — ask
-`AssRenderers.whyUnavailable()` and you get a sentence, not a stack trace.
+`:subtitles-libass` renders styled ASS subtitles through libass, on all three
+platforms and through three different bindings: the published JNI binding on
+Android, JNA to a system library on the desktop, and Kotlin/Native cinterop to a
+prebuilt static framework on Apple. One contract, three implementations
+answering the same gates the same way.
+
+Where a platform has no libass it says so rather than failing at the point of
+use — ask `AssRenderers.whyUnavailable()` and you get a sentence, not a stack
+trace.
 
 ## What is proven, and where
 
@@ -56,7 +61,7 @@ measures it, and where that command can run.
 | The select key toggles playback with nothing to aim at | `testAndroidHostTest` | `jvmTest` | n/a | `xcodebuild test` |
 | Video paints | `connectedAndroidDeviceTest` | `jvmTest` | device QA | device QA |
 | The control draws over the video | — | `jvmTest` | device QA | device QA |
-| One ASS cue rasterizes visible pixels | `connectedAndroidDeviceTest` | `jvmTest`, where libass is installed | not linked yet | not linked yet |
+| One ASS cue rasterizes visible pixels | `connectedAndroidDeviceTest` | `jvmTest`, where libass is installed | `iosSimulatorArm64Test` | `iosSimulatorArm64Test` |
 | Fonts are attached before the track loads | `jvmTest` | `jvmTest` | `jvmTest` | `jvmTest` |
 
 CI runs everything except the device rows. Those need hardware attached, and
@@ -71,12 +76,13 @@ from Homebrew's directories, which a JVM does not search by default.
 
 On Windows there is no renderer yet. The only builds in circulation are the
 copies statically linked inside VLC and mpv, which cannot be loaded from outside
-them, so shipping one means vendoring a build. That is a distribution decision
-rather than a rendering one, and until it is made a Windows caller gets a
-sentence from `AssRenderers.whyUnavailable()` and can fall back to plain text.
+them, so shipping one means vendoring a build. Until then a Windows caller gets
+a sentence from `AssRenderers.whyUnavailable()` and can fall back to plain text.
 
-libass for Apple is built and vendored in the NoMercy app but not linked here.
-Wiring it means a cinterop definition against an artifact no CI runner produces,
-which is a build-graph decision with the same shape.
+On Apple nothing is needed. libass, freetype, fribidi and harfbuzz are built
+once from upstream and published as a release asset, and the build fetches them
+— cross-compiling them needs an autotools toolchain and half an hour, which is
+not something a Gradle build should ask of a fresh machine. The archive is
+pinned by tag and checked against a digest.
 
 [core]: https://github.com/NoMercy-Entertainment/nomercy-player-core-kmp
