@@ -18,6 +18,9 @@ composeMultiplatform = "1.11.1"
 media3 = "1.9.0"
 vlcj = "4.11.0"
 robolectric = "4.14.1"
+# The JNI libass binding nomercy-app-kmp already ships. One integration across
+# the ecosystem, because two would be two sets of font-resolution behaviour.
+assKt = "0.4.0"
 
 coroutines = "1.10.2"
 serialization = "1.9.0"
@@ -51,6 +54,7 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 # Without it Robolectric has no activity to resolve and every UI test dies
 # before it reaches an assertion. Version tracks what Compose Multiplatform
 # resolves androidx.compose.ui to.
+ass-kt = { module = "io.github.peerless2012:ass-kt", version.ref = "assKt" }
 androidx-test-runner = { module = "androidx.test:runner", version = "1.7.0" }
 androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4-android", version = "1.11.2" }
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version = "1.11.2" }

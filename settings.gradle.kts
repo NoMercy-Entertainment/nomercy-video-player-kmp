@@ -48,3 +48,7 @@ if (coreCheckout.resolve("settings.gradle.kts").exists()) {
 // should be able to decline. An app with its own chrome takes the library and
 // never sees Compose on its classpath; an app that wants the view asks for it.
 include(":ui-compose")
+
+// Same reasoning as :ui-compose — a native subtitle library is a dependency a
+// consumer should be able to decline.
+include(":subtitles-libass")
