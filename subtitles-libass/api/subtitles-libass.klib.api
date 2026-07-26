@@ -1,0 +1,90 @@
+// Klib ABI Dump
+// Targets: [iosArm64, iosSimulatorArm64, iosX64, tvosArm64, tvosSimulatorArm64]
+// Rendering settings:
+// - Signature version: 2
+// - Show manifest properties: true
+// - Show declarations: true
+
+// Library unique name: <nomercy-video-player-kmp:subtitles-libass>
+abstract interface tv.nomercy.player.video.ass/AssRenderer { // tv.nomercy.player.video.ass/AssRenderer|null[0]
+    abstract fun addFont(kotlin/String, kotlin/ByteArray) // tv.nomercy.player.video.ass/AssRenderer.addFont|addFont(kotlin.String;kotlin.ByteArray){}[0]
+    abstract fun frameSize(kotlin/Int, kotlin/Int) // tv.nomercy.player.video.ass/AssRenderer.frameSize|frameSize(kotlin.Int;kotlin.Int){}[0]
+    abstract fun loadTrack(kotlin/String) // tv.nomercy.player.video.ass/AssRenderer.loadTrack|loadTrack(kotlin.String){}[0]
+    abstract fun release() // tv.nomercy.player.video.ass/AssRenderer.release|release(){}[0]
+    abstract fun render(kotlin/Long): tv.nomercy.player.video.ass/AssFrame? // tv.nomercy.player.video.ass/AssRenderer.render|render(kotlin.Long){}[0]
+}
+
+final class tv.nomercy.player.video.ass/AssFrame { // tv.nomercy.player.video.ass/AssFrame|null[0]
+    constructor <init>(kotlin.collections/List<tv.nomercy.player.video.ass/AssImage>, kotlin/Boolean) // tv.nomercy.player.video.ass/AssFrame.<init>|<init>(kotlin.collections.List<tv.nomercy.player.video.ass.AssImage>;kotlin.Boolean){}[0]
+
+    final val changed // tv.nomercy.player.video.ass/AssFrame.changed|{}changed[0]
+        final fun <get-changed>(): kotlin/Boolean // tv.nomercy.player.video.ass/AssFrame.changed.<get-changed>|<get-changed>(){}[0]
+    final val images // tv.nomercy.player.video.ass/AssFrame.images|{}images[0]
+        final fun <get-images>(): kotlin.collections/List<tv.nomercy.player.video.ass/AssImage> // tv.nomercy.player.video.ass/AssFrame.images.<get-images>|<get-images>(){}[0]
+
+    final fun component1(): kotlin.collections/List<tv.nomercy.player.video.ass/AssImage> // tv.nomercy.player.video.ass/AssFrame.component1|component1(){}[0]
+    final fun component2(): kotlin/Boolean // tv.nomercy.player.video.ass/AssFrame.component2|component2(){}[0]
+    final fun copy(kotlin.collections/List<tv.nomercy.player.video.ass/AssImage> = ..., kotlin/Boolean = ...): tv.nomercy.player.video.ass/AssFrame // tv.nomercy.player.video.ass/AssFrame.copy|copy(kotlin.collections.List<tv.nomercy.player.video.ass.AssImage>;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.ass/AssFrame.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.ass/AssFrame.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.ass/AssFrame.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.ass/AssImage { // tv.nomercy.player.video.ass/AssImage|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/ByteArray) // tv.nomercy.player.video.ass/AssImage.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.ByteArray){}[0]
+
+    final val colour // tv.nomercy.player.video.ass/AssImage.colour|{}colour[0]
+        final fun <get-colour>(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.colour.<get-colour>|<get-colour>(){}[0]
+    final val height // tv.nomercy.player.video.ass/AssImage.height|{}height[0]
+        final fun <get-height>(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.height.<get-height>|<get-height>(){}[0]
+    final val pixels // tv.nomercy.player.video.ass/AssImage.pixels|{}pixels[0]
+        final fun <get-pixels>(): kotlin/ByteArray // tv.nomercy.player.video.ass/AssImage.pixels.<get-pixels>|<get-pixels>(){}[0]
+    final val stride // tv.nomercy.player.video.ass/AssImage.stride|{}stride[0]
+        final fun <get-stride>(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.stride.<get-stride>|<get-stride>(){}[0]
+    final val width // tv.nomercy.player.video.ass/AssImage.width|{}width[0]
+        final fun <get-width>(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.width.<get-width>|<get-width>(){}[0]
+    final val x // tv.nomercy.player.video.ass/AssImage.x|{}x[0]
+        final fun <get-x>(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.x.<get-x>|<get-x>(){}[0]
+    final val y // tv.nomercy.player.video.ass/AssImage.y|{}y[0]
+        final fun <get-y>(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.y.<get-y>|<get-y>(){}[0]
+
+    final fun component1(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.component4|component4(){}[0]
+    final fun component5(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.component5|component5(){}[0]
+    final fun component6(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.component6|component6(){}[0]
+    final fun component7(): kotlin/ByteArray // tv.nomercy.player.video.ass/AssImage.component7|component7(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/ByteArray = ...): tv.nomercy.player.video.ass/AssImage // tv.nomercy.player.video.ass/AssImage.copy|copy(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.ByteArray){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.ass/AssImage.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.ass/AssImage.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.ass/AssImage.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.ass/AssPlatformContext { // tv.nomercy.player.video.ass/AssPlatformContext|null[0]
+    constructor <init>() // tv.nomercy.player.video.ass/AssPlatformContext.<init>|<init>(){}[0]
+}
+
+final class tv.nomercy.player.video.ass/SubtitleOptions { // tv.nomercy.player.video.ass/SubtitleOptions|null[0]
+    constructor <init>() // tv.nomercy.player.video.ass/SubtitleOptions.<init>|<init>(){}[0]
+}
+
+final class tv.nomercy.player.video.ass/SubtitlePlugin : tv.nomercy.player.core.plugin/Plugin<tv.nomercy.player.video.ass/SubtitleOptions> { // tv.nomercy.player.video.ass/SubtitlePlugin|null[0]
+    constructor <init>(tv.nomercy.player.video.ass/AssRenderer) // tv.nomercy.player.video.ass/SubtitlePlugin.<init>|<init>(tv.nomercy.player.video.ass.AssRenderer){}[0]
+
+    final val manifest // tv.nomercy.player.video.ass/SubtitlePlugin.manifest|{}manifest[0]
+        final fun <get-manifest>(): tv.nomercy.player.core.plugin/PluginManifest // tv.nomercy.player.video.ass/SubtitlePlugin.manifest.<get-manifest>|<get-manifest>(){}[0]
+
+    final var loadedFonts // tv.nomercy.player.video.ass/SubtitlePlugin.loadedFonts|{}loadedFonts[0]
+        final fun <get-loadedFonts>(): kotlin.collections/List<kotlin/String> // tv.nomercy.player.video.ass/SubtitlePlugin.loadedFonts.<get-loadedFonts>|<get-loadedFonts>(){}[0]
+
+    final fun dispose() // tv.nomercy.player.video.ass/SubtitlePlugin.dispose|dispose(){}[0]
+    final suspend fun load(kotlin/String, kotlin/String?): kotlin/Boolean // tv.nomercy.player.video.ass/SubtitlePlugin.load|load(kotlin.String;kotlin.String?){}[0]
+}
+
+final object tv.nomercy.player.video.ass/AssRenderers { // tv.nomercy.player.video.ass/AssRenderers|null[0]
+    final fun create(tv.nomercy.player.video.ass/AssPlatformContext): tv.nomercy.player.video.ass/AssRenderer? // tv.nomercy.player.video.ass/AssRenderers.create|create(tv.nomercy.player.video.ass.AssPlatformContext){}[0]
+    final fun whyUnavailable(): kotlin/String? // tv.nomercy.player.video.ass/AssRenderers.whyUnavailable|whyUnavailable(){}[0]
+}
+
+final fun (tv.nomercy.player.video.ass/AssRenderers).tv.nomercy.player.video.ass/isAvailable(): kotlin/Boolean // tv.nomercy.player.video.ass/isAvailable|isAvailable@tv.nomercy.player.video.ass.AssRenderers(){}[0]
