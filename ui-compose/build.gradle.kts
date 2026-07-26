@@ -1,3 +1,4 @@
+import java.time.Duration
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -109,4 +110,15 @@ tasks.matching { it.name.startsWith("copyAndroidDeviceTestComposeResources") }.c
 tasks.withType<Test>().configureEach {
     systemProperty("skiko.renderApi", "SOFTWARE")
     systemProperty("java.awt.headless", "true")
+
+    // A bound and a running commentary, because the first two attempts at this
+    // were guesses. The task starting and the log going quiet says nothing
+    // about which test stopped; naming each one as it starts does, and the
+    // timeout turns a job that runs to its cap into a red task with that name
+    // still in the log.
+    timeout.set(Duration.ofMinutes(8))
+    testLogging {
+        events("started", "passed", "failed", "skipped")
+        showStandardStreams = false
+    }
 }
