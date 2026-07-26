@@ -1,0 +1,11 @@
+headers = ass/ass.h
+package = libass
+
+# The paths are set per target from build.gradle.kts, because an XCFramework
+# holds one slice per architecture and a def file cannot know which one is being
+# compiled. Everything that is the same for every slice lives here.
+staticLibraries = libass.a libfreetype.a libfribidi.a libharfbuzz.a
+
+# CoreText resolves fonts on Apple platforms, which is why the build drops
+# fontconfig. These are what libass and freetype link against for it.
+linkerOpts = -framework CoreText -framework CoreGraphics -framework CoreFoundation -lz -lbz2

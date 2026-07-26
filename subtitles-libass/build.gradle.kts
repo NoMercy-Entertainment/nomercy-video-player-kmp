@@ -1,3 +1,5 @@
+import java.net.URI
+import java.security.MessageDigest
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -40,7 +42,38 @@ kotlin {
         }
     }
 
-    listOf(iosArm64(), iosSimulatorArm64(), iosX64(), tvosArm64(), tvosSimulatorArm64())
+    val appleTargets = listOf(iosArm64(), iosSimulatorArm64(), iosX64(), tvosArm64(), tvosSimulatorArm64())
+
+    // libass for Apple is a prebuilt XCFramework, fetched rather than compiled.
+    //
+    // Cross-compiling libass, freetype, fribidi and harfbuzz needs an autotools
+    // toolchain, cmake and half an hour, and putting that in front of a Gradle
+    // build would mean nobody could build this library on a fresh machine. It is
+    // built once from upstream sources and published as a release asset;
+    // fetchAppleLibass downloads and unpacks it.
+    //
+    // The cinterop is registered whether or not the artifact is present. A
+    // missing one fails the Apple compilation with a message about a path, which
+    // is a better answer than a source set that silently swaps itself out and
+    // leaves a developer wondering why subtitles do nothing.
+    appleTargets.forEach { target ->
+        val slice: String = when (target.konanTarget.name) {
+            "ios_arm64" -> "ios-arm64"
+            "tvos_arm64" -> "ios-arm64"
+            else -> "ios-arm64_x86_64-simulator"
+        }
+        target.compilations.getByName("main").cinterops.create("libass") {
+            definitionFile.set(project.file("src/nativeInterop/cinterop/libass.def"))
+            val root: java.io.File = project.layout.buildDirectory.get().asFile.resolve("libass")
+            compilerOpts("-I${root.resolve("ass.xcframework/$slice/Headers")}")
+            extraOpts(
+                "-libraryPath", root.resolve("ass.xcframework/$slice").path,
+                "-libraryPath", root.resolve("freetype.xcframework/$slice").path,
+                "-libraryPath", root.resolve("fribidi.xcframework/$slice").path,
+                "-libraryPath", root.resolve("harfbuzz.xcframework/$slice").path,
+            )
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
@@ -65,4 +98,47 @@ kotlin {
             implementation(libs.androidx.test.runner)
         }
     }
+}
+
+// The prebuilt Apple libass, fetched once and cached in the build directory.
+//
+// Pinned by tag and checked against a digest, because a native library that
+// silently changed under a build is the kind of supply-chain problem that shows
+// up as a crash on someone else's phone.
+val libassArchive: String =
+    "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/" +
+        "libass-apple-0.17.5/libass-apple.tar.gz"
+val libassDigest = "13d01bbd0666752a77447347781a2f5ce96d06c2ff33d7207f9ef2450c0c806e"
+
+val fetchAppleLibass by tasks.registering {
+    description = "Downloads the prebuilt libass XCFrameworks for Apple targets."
+    group = "build setup"
+
+    val target: java.io.File = layout.buildDirectory.get().asFile.resolve("libass")
+    val archive: java.io.File = layout.buildDirectory.get().asFile.resolve("libass-apple.tar.gz")
+    outputs.dir(target)
+
+    doLast {
+        if (target.resolve("ass.xcframework").isDirectory) return@doLast
+
+        target.mkdirs()
+        URI(libassArchive).toURL().openStream().use { input ->
+            archive.outputStream().use { output -> input.copyTo(output) }
+        }
+
+        val digest: String = MessageDigest.getInstance("SHA-256")
+            .digest(archive.readBytes())
+            .joinToString("") { byte -> "%02x".format(byte) }
+        check(digest == libassDigest) {
+            "libass archive digest mismatch: expected $libassDigest but got $digest"
+        }
+
+        providers.exec {
+            commandLine("tar", "xzf", archive.path, "-C", target.path)
+        }.result.get()
+    }
+}
+
+tasks.matching { it.name.startsWith("cinteropLibass") }.configureEach {
+    dependsOn(fetchAppleLibass)
 }
