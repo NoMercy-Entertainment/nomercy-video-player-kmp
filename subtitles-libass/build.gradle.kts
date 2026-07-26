@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.konan.target.HostManager
 import java.net.URI
 import java.security.MessageDigest
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -42,7 +43,21 @@ kotlin {
         }
     }
 
-    val appleTargets = listOf(iosArm64(), iosSimulatorArm64(), iosX64(), tvosArm64(), tvosSimulatorArm64())
+    // Apple targets exist only on a Mac, for this module alone.
+    //
+    // They bind to a C library through cinterop, which needs the Xcode
+    // toolchain. Declaring them on a Linux runner does not fail fast — it sits
+    // in the Kotlin/Native compilation until the job times out, which reads as a
+    // hung build rather than a missing toolchain.
+    //
+    // The rest of the library still declares them everywhere; only the module
+    // that needs Xcode is gated. The macOS job is where the Apple surface is
+    // compiled, tested and API-checked.
+    val appleTargets = if (HostManager.hostIsMac) {
+        listOf(iosArm64(), iosSimulatorArm64(), iosX64(), tvosArm64(), tvosSimulatorArm64())
+    } else {
+        emptyList()
+    }
 
     // libass for Apple is a prebuilt XCFramework, fetched rather than compiled.
     //
