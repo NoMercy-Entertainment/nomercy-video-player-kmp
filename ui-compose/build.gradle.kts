@@ -98,3 +98,15 @@ kotlin {
 tasks.matching { it.name.startsWith("copyAndroidDeviceTestComposeResources") }.configureEach {
     enabled = false
 }
+
+// Compose Desktop's tests render through Skiko, which reaches for a GPU and a
+// display. A CI runner has neither, and the failure is not an error — it is a
+// test task that sits there until the job's timeout, with the last line of the
+// log being the task that started.
+//
+// Software rendering and headless AWT are what make an offscreen Compose test
+// actually offscreen.
+tasks.withType<Test>().configureEach {
+    systemProperty("skiko.renderApi", "SOFTWARE")
+    systemProperty("java.awt.headless", "true")
+}
