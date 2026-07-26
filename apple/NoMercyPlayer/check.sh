@@ -36,18 +36,26 @@ done
 # driving it — and on both simulators, because the tvOS view is the one with no
 # app to fall back on. A gate that only ran on iPhone would leave the greenfield
 # surface covered by nothing but a compiler.
-IPHONE="$(xcrun simctl list devices available | grep -m1 -oE 'iPhone [0-9]+[^(]*' | sed 's/ *$//')"
-APPLE_TV="$(xcrun simctl list devices available | grep -m1 -oE 'Apple TV [^(]*' | sed 's/ *$//')"
-
-run_tests() {
-  echo "testing on $2"
-  xcodebuild test \
-    -scheme NoMercyPlayer \
-    -destination "platform=$1 Simulator,name=$2" \
-    -quiet
+# By id, not by name. Simulator names carry their generation in brackets —
+# "Apple TV 4K (3rd generation)" — and matching the readable part of that gives
+# a name no device has, which xcodebuild reports by listing every destination it
+# does know about, visionOS included. The id is unambiguous.
+device_id() {
+  xcrun simctl list devices available | grep -m1 "$1" | grep -oE '[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}'
 }
 
-run_tests iOS "$IPHONE"
-run_tests tvOS "$APPLE_TV"
+run_tests() {
+  local udid
+  udid="$(device_id "$2")"
+  if [ -z "$udid" ]; then
+    echo "no $1 simulator installed — install one from Xcode > Settings > Components" >&2
+    exit 1
+  fi
+  echo "testing on $2 ($udid)"
+  xcodebuild test -scheme NoMercyPlayer -destination "id=$udid" -quiet
+}
+
+run_tests iOS "iPhone"
+run_tests tvOS "Apple TV"
 
 echo "Apple views: build on iOS and tvOS, behaviour gates green on both"
