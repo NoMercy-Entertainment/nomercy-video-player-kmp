@@ -45,12 +45,18 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":"))
+            // Core by coordinate as well as through the video library. The
+            // project dependency carries core to the platform compilations but
+            // not to the common metadata one, and without this the shared
+            // source set cannot see the Plugin it extends.
+            api(libs.nomercy.player.core)
         }
         androidMain.dependencies {
             implementation(libs.ass.kt)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
         }
         getByName("androidDeviceTest").dependencies {
             implementation(libs.androidx.test.runner)

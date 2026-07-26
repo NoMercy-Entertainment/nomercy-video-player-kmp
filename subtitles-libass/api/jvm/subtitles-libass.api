@@ -57,3 +57,15 @@ public final class tv/nomercy/player/video/ass/AssRenderersKt {
 	public static final fun isAvailable (Ltv/nomercy/player/video/ass/AssRenderers;)Z
 }
 
+public final class tv/nomercy/player/video/ass/SubtitleOptions {
+	public fun <init> ()V
+}
+
+public final class tv/nomercy/player/video/ass/SubtitlePlugin : tv/nomercy/player/core/plugin/Plugin {
+	public fun <init> (Ltv/nomercy/player/video/ass/AssRenderer;)V
+	public fun dispose ()V
+	public final fun getLoadedFonts ()Ljava/util/List;
+	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
+	public final fun load (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+

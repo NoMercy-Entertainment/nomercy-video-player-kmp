@@ -65,6 +65,23 @@ final class tv.nomercy.player.video.ass/AssPlatformContext { // tv.nomercy.playe
     constructor <init>() // tv.nomercy.player.video.ass/AssPlatformContext.<init>|<init>(){}[0]
 }
 
+final class tv.nomercy.player.video.ass/SubtitleOptions { // tv.nomercy.player.video.ass/SubtitleOptions|null[0]
+    constructor <init>() // tv.nomercy.player.video.ass/SubtitleOptions.<init>|<init>(){}[0]
+}
+
+final class tv.nomercy.player.video.ass/SubtitlePlugin : tv.nomercy.player.core.plugin/Plugin<tv.nomercy.player.video.ass/SubtitleOptions> { // tv.nomercy.player.video.ass/SubtitlePlugin|null[0]
+    constructor <init>(tv.nomercy.player.video.ass/AssRenderer) // tv.nomercy.player.video.ass/SubtitlePlugin.<init>|<init>(tv.nomercy.player.video.ass.AssRenderer){}[0]
+
+    final val manifest // tv.nomercy.player.video.ass/SubtitlePlugin.manifest|{}manifest[0]
+        final fun <get-manifest>(): tv.nomercy.player.core.plugin/PluginManifest // tv.nomercy.player.video.ass/SubtitlePlugin.manifest.<get-manifest>|<get-manifest>(){}[0]
+
+    final var loadedFonts // tv.nomercy.player.video.ass/SubtitlePlugin.loadedFonts|{}loadedFonts[0]
+        final fun <get-loadedFonts>(): kotlin.collections/List<kotlin/String> // tv.nomercy.player.video.ass/SubtitlePlugin.loadedFonts.<get-loadedFonts>|<get-loadedFonts>(){}[0]
+
+    final fun dispose() // tv.nomercy.player.video.ass/SubtitlePlugin.dispose|dispose(){}[0]
+    final suspend fun load(kotlin/String, kotlin/String?): kotlin/Boolean // tv.nomercy.player.video.ass/SubtitlePlugin.load|load(kotlin.String;kotlin.String?){}[0]
+}
+
 final object tv.nomercy.player.video.ass/AssRenderers { // tv.nomercy.player.video.ass/AssRenderers|null[0]
     final fun create(tv.nomercy.player.video.ass/AssPlatformContext): tv.nomercy.player.video.ass/AssRenderer? // tv.nomercy.player.video.ass/AssRenderers.create|create(tv.nomercy.player.video.ass.AssPlatformContext){}[0]
     final fun whyUnavailable(): kotlin/String? // tv.nomercy.player.video.ass/AssRenderers.whyUnavailable|whyUnavailable(){}[0]
