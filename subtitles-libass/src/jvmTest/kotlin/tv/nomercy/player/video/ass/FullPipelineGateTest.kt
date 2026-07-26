@@ -85,8 +85,8 @@ class FullPipelineGateTest {
 
             assertTrue(loaded, "the plugin could not load a subtitle it was handed")
             assertTrue(
-                plugin.loadedFonts.contains(SKELETON_FONT),
-                "the font the cue names never made it through: ${plugin.loadedFonts}",
+                plugin.loadedFonts.contains("skeleton.ttf"),
+                "the manifest's font never made it through: ${plugin.loadedFonts}",
             )
 
             val frame: AssFrame = assertNotNull(

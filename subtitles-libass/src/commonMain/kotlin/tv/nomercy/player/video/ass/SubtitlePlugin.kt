@@ -32,9 +32,10 @@ public class SubtitlePlugin(
 
     override val manifest: PluginManifest = SubtitleManifest
 
-    // The fonts a cue actually asked for, in the order they were found, after
-    // the manifest said where they live. Public because a host that pre-warms a
-    // cache wants the same list.
+    // The font files that were fetched and handed to the renderer, by file name.
+    // Public because a host that pre-warms a cache wants the same list, and
+    // because "which fonts arrived" is the first question when a subtitle looks
+    // wrong.
     public var loadedFonts: List<String> = emptyList()
         private set
 
@@ -54,35 +55,35 @@ public class SubtitlePlugin(
         return true
     }
 
+    // Every font in the manifest, not the ones whose filenames look like the
+    // families the cue asked for.
+    //
+    // Matching a family to a file name cannot be done from the outside: libass
+    // resolves against the family recorded inside the font data, and a file
+    // called Skeleton.ttf can hold a family called anything. Guessing gets it
+    // wrong quietly — the cue renders in a fallback face and nothing reports it.
+    //
+    // A manifest is produced for one subtitle, so its contents are the fonts
+    // that subtitle needs; attaching one it turns out not to use costs a
+    // download it already paid for, and attaching none because a name did not
+    // match costs the wrong typeface for the whole film. The cue's own font list
+    // is still read, but only to skip the step entirely when there is nothing to
+    // fetch.
     private suspend fun attachFonts(subtitle: String, manifestUrl: String) {
+        if (AssFontNames.parse(subtitle).isEmpty()) return
+
         val manifest: Map<String, String> = get(manifestUrl)?.body
             ?.let { FontManifest.parse(it, manifestUrl) }
             .orEmpty()
         if (manifest.isEmpty()) return
 
-        val wanted: List<String> = AssFontNames.parse(subtitle)
         val attached: MutableList<String> = mutableListOf()
-
-        for (name in wanted) {
-            val url: String = manifest[fileKeyFor(name, manifest)] ?: continue
+        for ((fileName, url) in manifest) {
             val bytes: ByteArray = get(url)?.bytes ?: continue
-            renderer.addFont(name, bytes)
-            attached += name
+            renderer.addFont(fileName, bytes)
+            attached += fileName
         }
         loadedFonts = attached
-    }
-
-    // The manifest is keyed by file name and a cue names a family, and the two
-    // agree often enough to be worth trying and not often enough to rely on. A
-    // miss is a font that is not fetched, which is a fallback typeface rather
-    // than a failure — so it is skipped quietly rather than reported as an
-    // error the viewer cannot act on.
-    private fun fileKeyFor(fontName: String, manifest: Map<String, String>): String {
-        val normalized: String = fontName.lowercase().replace(" ", "")
-        return manifest.keys.firstOrNull { key ->
-            key.substringBeforeLast('.').lowercase().replace(" ", "").replace("-", "") ==
-                normalized.replace("-", "")
-        } ?: ""
     }
 
     private suspend fun get(url: String): FetchResponse? {

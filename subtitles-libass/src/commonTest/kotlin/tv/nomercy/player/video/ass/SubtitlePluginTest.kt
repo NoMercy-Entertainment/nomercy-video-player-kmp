@@ -65,8 +65,12 @@ class SubtitlePluginTest {
 
         plugin.load(SUBTITLE_URL, MANIFEST_URL)
 
-        assertEquals(listOf("addFont:Skeleton Sans", "loadTrack"), renderer.calls)
-        assertTrue(FONT_BYTES.contentEquals(renderer.fonts.getValue("Skeleton Sans")))
+        // Lowercased, because the manifest parser keys by file name in a
+        // single case — the name a producer writes and the name a cue implies
+        // differ in capitalisation often enough that matching on it would fail
+        // for cosmetic reasons.
+        assertEquals(listOf("addFont:skeletonsans.ttf", "loadTrack"), renderer.calls)
+        assertTrue(FONT_BYTES.contentEquals(renderer.fonts.getValue("skeletonsans.ttf")))
     }
 
     @Test
