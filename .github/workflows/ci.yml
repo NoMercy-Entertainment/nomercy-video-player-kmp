@@ -13,6 +13,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # A cap, because the failure mode this job actually had was not a red test —
+    # it was Kotlin/Native sitting on a toolchain it did not have until the
+    # six-hour default ran out. A job that hangs reads as a job that is working.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,6 +34,10 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+
+      # Without this every run downloads the Kotlin/Native distribution, the
+      # Android SDK components and the whole dependency graph from cold.
+      - uses: gradle/actions/setup-gradle@v4
 
       # The libass gate skips itself when the library is absent, which on a bare
       # runner means the whole desktop subtitle surface is untested while the
@@ -49,6 +57,7 @@ jobs:
   # cannot be.
   apple:
     runs-on: macos-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,6 +72,8 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
 
       # The Swift package binds to the framework as a binary target, so the
       # framework has to exist before the package will even resolve.
