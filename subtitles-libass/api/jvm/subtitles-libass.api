@@ -70,3 +70,31 @@ public final class tv/nomercy/player/video/ass/SubtitlePlugin : tv/nomercy/playe
 	public final fun load (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class tv/nomercy/player/video/ass/render/RenderGeometry {
+	public static final field INSTANCE Ltv/nomercy/player/video/ass/render/RenderGeometry;
+	public static final field SEEK_THRESHOLD_MS J
+	public final fun computeRenderTarget (III)Lkotlin/Pair;
+	public final fun computeVideoRect (IIF)Ltv/nomercy/player/video/ass/render/VideoRect;
+	public final fun fitWithin (IIII)Lkotlin/Pair;
+	public final fun isSeek (JJJ)Z
+	public static synthetic fun isSeek$default (Ltv/nomercy/player/video/ass/render/RenderGeometry;JJJILjava/lang/Object;)Z
+	public final fun primeStorageFromScript (II)Lkotlin/Pair;
+}
+
+public final class tv/nomercy/player/video/ass/render/VideoRect {
+	public fun <init> (IIII)V
+	public final fun component1 ()I
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun copy (IIII)Ltv/nomercy/player/video/ass/render/VideoRect;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ass/render/VideoRect;IIIIILjava/lang/Object;)Ltv/nomercy/player/video/ass/render/VideoRect;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHeight ()I
+	public final fun getLeft ()I
+	public final fun getTop ()I
+	public final fun getWidth ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+

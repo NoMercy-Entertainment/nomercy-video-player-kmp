@@ -89,3 +89,36 @@ final object tv.nomercy.player.video.ass/AssRenderers { // tv.nomercy.player.vid
 }
 
 final fun (tv.nomercy.player.video.ass/AssRenderers).tv.nomercy.player.video.ass/isAvailable(): kotlin/Boolean // tv.nomercy.player.video.ass/isAvailable|isAvailable@tv.nomercy.player.video.ass.AssRenderers(){}[0]
+
+final class tv.nomercy.player.video.ass.render/VideoRect { // tv.nomercy.player.video.ass.render/VideoRect|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int) // tv.nomercy.player.video.ass.render/VideoRect.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+
+    final val height // tv.nomercy.player.video.ass.render/VideoRect.height|{}height[0]
+        final fun <get-height>(): kotlin/Int // tv.nomercy.player.video.ass.render/VideoRect.height.<get-height>|<get-height>(){}[0]
+    final val left // tv.nomercy.player.video.ass.render/VideoRect.left|{}left[0]
+        final fun <get-left>(): kotlin/Int // tv.nomercy.player.video.ass.render/VideoRect.left.<get-left>|<get-left>(){}[0]
+    final val top // tv.nomercy.player.video.ass.render/VideoRect.top|{}top[0]
+        final fun <get-top>(): kotlin/Int // tv.nomercy.player.video.ass.render/VideoRect.top.<get-top>|<get-top>(){}[0]
+    final val width // tv.nomercy.player.video.ass.render/VideoRect.width|{}width[0]
+        final fun <get-width>(): kotlin/Int // tv.nomercy.player.video.ass.render/VideoRect.width.<get-width>|<get-width>(){}[0]
+
+    final fun component1(): kotlin/Int // tv.nomercy.player.video.ass.render/VideoRect.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // tv.nomercy.player.video.ass.render/VideoRect.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // tv.nomercy.player.video.ass.render/VideoRect.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // tv.nomercy.player.video.ass.render/VideoRect.component4|component4(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...): tv.nomercy.player.video.ass.render/VideoRect // tv.nomercy.player.video.ass.render/VideoRect.copy|copy(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.ass.render/VideoRect.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.ass.render/VideoRect.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.ass.render/VideoRect.toString|toString(){}[0]
+}
+
+final object tv.nomercy.player.video.ass.render/RenderGeometry { // tv.nomercy.player.video.ass.render/RenderGeometry|null[0]
+    final const val SEEK_THRESHOLD_MS // tv.nomercy.player.video.ass.render/RenderGeometry.SEEK_THRESHOLD_MS|{}SEEK_THRESHOLD_MS[0]
+        final fun <get-SEEK_THRESHOLD_MS>(): kotlin/Long // tv.nomercy.player.video.ass.render/RenderGeometry.SEEK_THRESHOLD_MS.<get-SEEK_THRESHOLD_MS>|<get-SEEK_THRESHOLD_MS>(){}[0]
+
+    final fun computeRenderTarget(kotlin/Int, kotlin/Int, kotlin/Int): kotlin/Pair<kotlin/Int, kotlin/Int> // tv.nomercy.player.video.ass.render/RenderGeometry.computeRenderTarget|computeRenderTarget(kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+    final fun computeVideoRect(kotlin/Int, kotlin/Int, kotlin/Float): tv.nomercy.player.video.ass.render/VideoRect // tv.nomercy.player.video.ass.render/RenderGeometry.computeVideoRect|computeVideoRect(kotlin.Int;kotlin.Int;kotlin.Float){}[0]
+    final fun fitWithin(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int): kotlin/Pair<kotlin/Int, kotlin/Int> // tv.nomercy.player.video.ass.render/RenderGeometry.fitWithin|fitWithin(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+    final fun isSeek(kotlin/Long, kotlin/Long, kotlin/Long = ...): kotlin/Boolean // tv.nomercy.player.video.ass.render/RenderGeometry.isSeek|isSeek(kotlin.Long;kotlin.Long;kotlin.Long){}[0]
+    final fun primeStorageFromScript(kotlin/Int, kotlin/Int): kotlin/Pair<kotlin/Int, kotlin/Int>? // tv.nomercy.player.video.ass.render/RenderGeometry.primeStorageFromScript|primeStorageFromScript(kotlin.Int;kotlin.Int){}[0]
+}
