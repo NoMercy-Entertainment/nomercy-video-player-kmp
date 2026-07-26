@@ -9,7 +9,16 @@
 package tv.nomercy.player.video
 
 import tv.nomercy.player.core.controllers.ComposedPlayer
+import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.SubtitleStyle
+import tv.nomercy.player.core.events.SubtitlesPayload
+import tv.nomercy.player.core.events.Subscription
+import tv.nomercy.player.core.media.PlaylistItem
+import tv.nomercy.player.core.player.AudioTrackState
+import tv.nomercy.player.core.ports.AudioTrack
+import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.MediaBackend
+import tv.nomercy.player.core.ports.VideoBackend
 
 // A video player.
 //
@@ -30,7 +39,18 @@ import tv.nomercy.player.core.ports.MediaBackend
 @Suppress("TooManyFunctions")
 public open class NMVideoPlayer(
     private val backend: MediaBackend? = null,
-) : ComposedPlayer(backend) {
+    // The same engine again when it can report tracks and a quality ladder.
+    //
+    // Passed rather than cast. Core takes these as two parameters precisely so
+    // nothing has to ask a MediaBackend whether it is really a VideoBackend, and
+    // a video player that skipped this hands core an engine it cannot ask for a
+    // subtitle — which is exactly what happened here: the whole track surface
+    // answered empty and every menu built from it was blank.
+    video: VideoBackend? = null,
+) : ComposedPlayer(backend, video = video) {
+
+    // A video backend is both, so a caller with one says so once.
+    public constructor(video: VideoBackend) : this(video, video)
 
     private var fullscreenActive: Boolean = false
     private var pipActive: Boolean = false
@@ -108,12 +128,136 @@ public open class NMVideoPlayer(
         emit(VideoEvents.VideoRect, VideoRectChange(value))
     }
 
-    // Skips to the end of a named region — an intro, a recap, credits. Seeking
-    // rather than jumping the queue, so a refused seek refuses the skip and the
-    // viewer stays where they were.
+    // Plays a named region and says when the playhead leaves it.
+    //
+    // The window is the point. A "skip intro" button needs to appear while the
+    // intro is playing and disappear when it ends, and only something watching
+    // the playhead knows when that is. Seeking to the start rather than jumping
+    // the queue means a refused seek refuses the whole thing and the viewer
+    // stays where they were.
+    //
+    // Replaces any window already open. Two watchers on one playhead both fire,
+    // and the second one's boundary is about a region the viewer has left.
     public open suspend fun playSegment(segment: SegmentBoundary) {
-        time(segment.endTime)
+        clearSegment()
+        time(segment.startTime)
+
+        segmentWatch = on(CoreEvents.Time) { update ->
+            if (update.time >= segment.endTime) {
+                // Cleared before announcing, so a listener that starts another
+                // segment from inside the callback is not immediately undone by
+                // this one finishing.
+                clearSegment()
+                emit(VideoEvents.SegmentBoundary, segment)
+            }
+        }
     }
+
+    // Stops watching for the end of the current region.
+    //
+    // A chrome dismissing its own "skip intro" button calls this, and so does
+    // anything that changed the item underneath a window that is still open —
+    // a watcher left running across a track change fires on a timestamp that
+    // means something else now.
+    public open fun clearSegment() {
+        segmentWatch?.dispose()
+        segmentWatch = null
+    }
+
+    private var segmentWatch: Subscription? = null
+
+    // ── Subtitles ────────────────────────────────────────────────────────────
+
+    // Whether the subtitle showing was chosen or fell out of the engine's
+    // defaults, exactly as audioTrackMode answers for audio.
+    //
+    // A chrome needs it to decide whether to tick a language in a menu, and a
+    // per-library player needs it to know whether to carry a choice into the
+    // next episode or let the engine decide again.
+    public open fun subtitleState(): AudioTrackState = subtitleChoice
+
+    // How subtitles should be drawn.
+    //
+    // Held here and announced rather than applied, because core has no renderer:
+    // libass draws them on three platforms and a Compose overlay on none of
+    // them. The renderer listens and restyles; this is the one place the
+    // viewer's preference lives so every renderer reads the same answer.
+    public open fun subtitleStyle(): SubtitleStyle = cueStyle
+
+    public open fun subtitleStyle(style: SubtitleStyle) {
+        cueStyle = style
+        emit(CoreEvents.SubtitleStyle, style)
+    }
+
+    // The next subtitle track, wrapping through off.
+    //
+    // Off is part of the cycle rather than a separate control, because that is
+    // what a remote's subtitle button does: press it enough times and the
+    // subtitles go away. A cycle that never reached off would trap a viewer who
+    // turned them on by accident.
+    public open fun cycleSubtitles() {
+        val available: List<SubtitleTrack?> = subtitles() + listOf(null)
+        if (available.size <= 1) return
+
+        val here: Int = available.indexOfFirst { it?.id == subtitle()?.id }
+        subtitle(available[(here + 1) % available.size])
+        subtitleChoice = AudioTrackState.MANUAL
+    }
+
+    // The next audio track, wrapping. No off: an item with no audio is not a
+    // state a viewer can ask for, and a cycle that produced silence would look
+    // like a broken track rather than a choice.
+    public open fun cycleAudioTracks() {
+        val available: List<AudioTrack> = audioTracks()
+        if (available.size <= 1) return
+
+        val here: Int = available.indexOfFirst { it.id == audioTrack()?.id }
+        audioTrack(available[(here + 1) % available.size])
+    }
+
+    // A subtitle file the item did not come with.
+    //
+    // The everyday case is a sidecar the viewer downloaded, or one the server
+    // found after the item was already playing. Added to what the engine
+    // reported rather than replacing it, and kept here rather than pushed into
+    // the engine, because not every engine accepts a track after loading and
+    // the ones that refuse would silently drop it.
+    public open fun addSubtitleTrack(track: SubtitleTrack) {
+        externalSubtitles = externalSubtitles.filterNot { it.id == track.id } + track
+        emit(CoreEvents.Subtitles, SubtitlesPayload(subtitles()))
+    }
+
+    public open fun removeSubtitleTrack(id: String) {
+        val without: List<SubtitleTrack> = externalSubtitles.filterNot { it.id == id }
+        if (without.size == externalSubtitles.size) return
+
+        externalSubtitles = without
+        // Showing a track that has just been removed is the failure this
+        // prevents: the renderer keeps drawing cues from a file nobody can
+        // select any more.
+        if (subtitle()?.id == id) subtitle(null)
+        emit(CoreEvents.Subtitles, SubtitlesPayload(subtitles()))
+    }
+
+    // What the engine reported, plus what the host added.
+    override fun subtitles(): List<SubtitleTrack> = super.subtitles() + externalSubtitles
+
+    // The seam every item passes through on the way into the queue.
+    //
+    // Video items arrive from a server that sends what it has, and what it has
+    // differs by scan age: a title in one field or another, a duration in
+    // seconds or milliseconds. Normalising here rather than at each call site
+    // means a consumer building a queue by hand gets the same treatment as one
+    // loading a playlist.
+    //
+    // Identity by default. Core cannot know a wire format it was never told
+    // about, and a normaliser that guessed would corrupt the fields it guessed
+    // wrong.
+    public open fun normalizePlaylistItem(item: PlaylistItem): PlaylistItem = item
+
+    private var subtitleChoice: AudioTrackState = AudioTrackState.DEFAULT
+    private var cueStyle: SubtitleStyle = SubtitleStyle()
+    private var externalSubtitles: List<SubtitleTrack> = emptyList()
 
     public open fun message(text: String, ms: Double? = null) {
         emit(VideoEvents.DisplayMessage, DisplayMessage(text, ms))

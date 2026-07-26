@@ -68,20 +68,31 @@ public final class tv/nomercy/player/video/LevelsChange {
 public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/controllers/ComposedPlayer {
 	public static final field Companion Ltv/nomercy/player/video/NMVideoPlayer$Companion;
 	public fun <init> ()V
-	public fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;)V
-	public synthetic fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;)V
+	public synthetic fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ltv/nomercy/player/core/ports/VideoBackend;)V
+	public fun addSubtitleTrack (Ltv/nomercy/player/core/ports/SubtitleTrack;)V
 	public fun aspectRatio ()Ltv/nomercy/player/video/Stretching;
 	public fun aspectRatio (Ltv/nomercy/player/video/Stretching;)V
 	public fun clearMessage ()V
+	public fun clearSegment ()V
 	public fun cycleAspectRatio ()V
+	public fun cycleAudioTracks ()V
+	public fun cycleSubtitles ()V
 	public fun fullscreen ()Z
 	public fun fullscreen (Z)V
 	public final fun getVideoBridge ()Ltv/nomercy/player/video/VideoBackendBridge;
 	public fun message (Ljava/lang/String;Ljava/lang/Double;)V
 	public static synthetic fun message$default (Ltv/nomercy/player/video/NMVideoPlayer;Ljava/lang/String;Ljava/lang/Double;ILjava/lang/Object;)V
+	public fun normalizePlaylistItem (Ltv/nomercy/player/core/media/PlaylistItem;)Ltv/nomercy/player/core/media/PlaylistItem;
 	public fun pip ()Z
 	public fun pip (Z)V
 	public fun playSegment (Ltv/nomercy/player/video/SegmentBoundary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun removeSubtitleTrack (Ljava/lang/String;)V
+	public fun subtitleState ()Ltv/nomercy/player/core/player/AudioTrackState;
+	public fun subtitleStyle ()Ltv/nomercy/player/core/events/SubtitleStyle;
+	public fun subtitleStyle (Ltv/nomercy/player/core/events/SubtitleStyle;)V
+	public fun subtitles ()Ljava/util/List;
 	public fun theater ()Z
 	public fun theater (Z)V
 	public fun toggleFullscreen ()V

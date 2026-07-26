@@ -172,14 +172,17 @@ class NMVideoPlayerTest {
     }
 
     @Test
-    fun skippingASegmentSeeksToItsEnd() = runTest {
+    fun playingASegmentSeeksToItsStart() = runTest {
+        // It used to seek to the end, which is a skip rather than a segment. A
+        // segment is a window with a boundary to announce, and it starts where
+        // the region starts.
         val (subject, backend) = player()
         subject.queue(listOf(Clip("a")))
         subject.play()
 
-        subject.playSegment(SegmentBoundary(id = "intro", kind = "intro", startTime = 0.0, endTime = 92.0))
+        subject.playSegment(SegmentBoundary(id = "intro", kind = "intro", startTime = 12.0, endTime = 92.0))
 
-        assertEquals(listOf(92.0), backend.seekedTo)
+        assertEquals(listOf(12.0), backend.seekedTo)
     }
 
     @Test
