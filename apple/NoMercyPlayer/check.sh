@@ -33,12 +33,21 @@ for destination in "generic/platform=iOS" "generic/platform=tvOS"; do
 done
 
 # The behaviour gates run on a simulator, because a binding is only proven by
-# driving it.
-SIMULATOR="$(xcrun simctl list devices available | grep -m1 -oE 'iPhone [0-9]+[^(]*' | sed 's/ *$//')"
-echo "testing on $SIMULATOR"
-xcodebuild test \
-  -scheme NoMercyPlayer \
-  -destination "platform=iOS Simulator,name=$SIMULATOR" \
-  -quiet
+# driving it — and on both simulators, because the tvOS view is the one with no
+# app to fall back on. A gate that only ran on iPhone would leave the greenfield
+# surface covered by nothing but a compiler.
+IPHONE="$(xcrun simctl list devices available | grep -m1 -oE 'iPhone [0-9]+[^(]*' | sed 's/ *$//')"
+APPLE_TV="$(xcrun simctl list devices available | grep -m1 -oE 'Apple TV [^(]*' | sed 's/ *$//')"
 
-echo "Apple views: build on iOS and tvOS, behaviour gates green"
+run_tests() {
+  echo "testing on $2"
+  xcodebuild test \
+    -scheme NoMercyPlayer \
+    -destination "platform=$1 Simulator,name=$2" \
+    -quiet
+}
+
+run_tests iOS "$IPHONE"
+run_tests tvOS "$APPLE_TV"
+
+echo "Apple views: build on iOS and tvOS, behaviour gates green on both"
