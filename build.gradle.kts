@@ -25,7 +25,22 @@ kotlin {
         compileSdk = 36
         minSdk = 29
 
-        withHostTestBuilder {}.configure {}
+        // Robolectric reads the merged manifest and the resources with it, and
+        // the migrated engine asks the Context for its form factor and its heap
+        // before it builds anything.
+        withHostTestBuilder {}.configure {
+            isIncludeAndroidResources = true
+        }
+
+        // The engine gate runs on hardware, because an ExoPlayer that decodes
+        // on a JVM stub proves nothing about the one that ships. Passthrough
+        // and tunneling in particular are answered by an HDMI sink, which no
+        // emulator has.
+        withDeviceTestBuilder {
+            sourceSetTreeName = "test"
+        }.configure {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
 
         compilations.configureEach {
             compileTaskProvider.configure {
@@ -75,9 +90,32 @@ kotlin {
             // build time.
             implementation(kotlin("reflect"))
         }
+        androidMain.dependencies {
+            implementation(libs.androidx.startup)
+            // The Android engine. Media3 is what every Android client already
+            // uses, and reimplementing its buffering would be worse than
+            // anything gained by owning it.
+            implementation(libs.androidx.media3.exoplayer)
+            implementation(libs.androidx.media3.common)
+            implementation(libs.androidx.media3.exoplayer.hls)
+            implementation(libs.androidx.media3.datasource.okhttp)
+            implementation(libs.okhttp)
+            implementation(libs.kotlinx.coroutines.android)
+        }
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
+        }
+        getByName("androidHostTest").dependencies {
+            // The migrated pieces ask a Context for its form factor and its
+            // heap, which is a question only a real Android framework answers.
+            implementation(libs.robolectric)
+            implementation(libs.okhttp.mockwebserver)
+        }
+        getByName("androidDeviceTest").dependencies {
+            implementation(libs.androidx.test.runner)
+            implementation(libs.androidx.media3.exoplayer)
+            implementation(libs.androidx.media3.common)
         }
     }
 }
