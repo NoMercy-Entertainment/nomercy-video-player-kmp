@@ -645,6 +645,27 @@ final class tv.nomercy.player.video/ViewModeChange { // tv.nomercy.player.video/
     final fun toString(): kotlin/String // tv.nomercy.player.video/ViewModeChange.toString|toString(){}[0]
 }
 
+open class tv.nomercy.player.video.cast/KtorTvControlClient : tv.nomercy.player.video.cast/TvControlClient { // tv.nomercy.player.video.cast/KtorTvControlClient|null[0]
+    constructor <init>(kotlin/String, kotlin/Int, io.ktor.client/HttpClient, kotlin.coroutines/SuspendFunction0<kotlin/String?> = ..., kotlinx.serialization.json/Json = ...) // tv.nomercy.player.video.cast/KtorTvControlClient.<init>|<init>(kotlin.String;kotlin.Int;io.ktor.client.HttpClient;kotlin.coroutines.SuspendFunction0<kotlin.String?>;kotlinx.serialization.json.Json){}[0]
+
+    open fun events(): kotlinx.coroutines.flow/Flow<tv.nomercy.player.video.cast/RemoteEvent> // tv.nomercy.player.video.cast/KtorTvControlClient.events|events(){}[0]
+    open suspend fun getPlaylist(): tv.nomercy.player.video.cast/RemotePlaylist // tv.nomercy.player.video.cast/KtorTvControlClient.getPlaylist|getPlaylist(){}[0]
+    open suspend fun getServer(): tv.nomercy.player.video.cast/RemoteServer // tv.nomercy.player.video.cast/KtorTvControlClient.getServer|getServer(){}[0]
+    open suspend fun getSession(): tv.nomercy.player.video.cast/RemotePlayerState // tv.nomercy.player.video.cast/KtorTvControlClient.getSession|getSession(){}[0]
+    open suspend fun launch(kotlin/String, kotlin/Boolean, kotlin/String): kotlin/Boolean // tv.nomercy.player.video.cast/KtorTvControlClient.launch|launch(kotlin.String;kotlin.Boolean;kotlin.String){}[0]
+    open suspend fun next() // tv.nomercy.player.video.cast/KtorTvControlClient.next|next(){}[0]
+    open suspend fun pause() // tv.nomercy.player.video.cast/KtorTvControlClient.pause|pause(){}[0]
+    open suspend fun play() // tv.nomercy.player.video.cast/KtorTvControlClient.play|play(){}[0]
+    open suspend fun previous() // tv.nomercy.player.video.cast/KtorTvControlClient.previous|previous(){}[0]
+    open suspend fun seek(kotlin/Long) // tv.nomercy.player.video.cast/KtorTvControlClient.seek|seek(kotlin.Long){}[0]
+    open suspend fun setAudioTrack(kotlin/String) // tv.nomercy.player.video.cast/KtorTvControlClient.setAudioTrack|setAudioTrack(kotlin.String){}[0]
+    open suspend fun setPlaylistActive(kotlin/Int) // tv.nomercy.player.video.cast/KtorTvControlClient.setPlaylistActive|setPlaylistActive(kotlin.Int){}[0]
+    open suspend fun setQuality(tv.nomercy.player.video.cast/RemoteQualityLevel) // tv.nomercy.player.video.cast/KtorTvControlClient.setQuality|setQuality(tv.nomercy.player.video.cast.RemoteQualityLevel){}[0]
+    open suspend fun setSubtitleTrack(kotlin/String?) // tv.nomercy.player.video.cast/KtorTvControlClient.setSubtitleTrack|setSubtitleTrack(kotlin.String?){}[0]
+    open suspend fun setVolume(kotlin/Double?, kotlin/Double?, kotlin/Boolean?) // tv.nomercy.player.video.cast/KtorTvControlClient.setVolume|setVolume(kotlin.Double?;kotlin.Double?;kotlin.Boolean?){}[0]
+    open suspend fun stop() // tv.nomercy.player.video.cast/KtorTvControlClient.stop|stop(){}[0]
+}
+
 open class tv.nomercy.player.video.cast/RemotePresentation { // tv.nomercy.player.video.cast/RemotePresentation|null[0]
     constructor <init>(tv.nomercy.player.video.cast/TvPresentation) // tv.nomercy.player.video.cast/RemotePresentation.<init>|<init>(tv.nomercy.player.video.cast.TvPresentation){}[0]
 

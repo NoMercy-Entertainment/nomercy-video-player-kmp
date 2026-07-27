@@ -240,6 +240,27 @@ public final class tv/nomercy/player/video/cast/DeviceDiscovery$Companion {
 	public static final field SERVICE_TYPE Ljava/lang/String;
 }
 
+public class tv/nomercy/player/video/cast/KtorTvControlClient : tv/nomercy/player/video/cast/TvControlClient {
+	public fun <init> (Ljava/lang/String;ILio/ktor/client/HttpClient;Lkotlin/jvm/functions/Function1;Lkotlinx/serialization/json/Json;)V
+	public synthetic fun <init> (Ljava/lang/String;ILio/ktor/client/HttpClient;Lkotlin/jvm/functions/Function1;Lkotlinx/serialization/json/Json;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun events ()Lkotlinx/coroutines/flow/Flow;
+	public fun getPlaylist (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getServer (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getSession (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun launch (Ljava/lang/String;ZLjava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun next (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun pause (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun play (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun previous (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun seek (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setAudioTrack (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setPlaylistActive (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setQuality (Ltv/nomercy/player/video/cast/RemoteQualityLevel;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setSubtitleTrack (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setVolume (Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Boolean;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class tv/nomercy/player/video/cast/RemoteDevice {
 	public static final field UNAUTHENTICATED Ljava/lang/String;
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V

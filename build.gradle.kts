@@ -81,6 +81,13 @@ kotlin {
             api(libs.nomercy.player.core)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
+            // The television's control protocol is ordinary HTTP and an event
+            // stream, so the library owns the whole transport rather than
+            // asking a consumer for one. That is the difference from the music
+            // side, where the wire is SignalR and the application owns it.
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
         jvmTest.dependencies {
             // The surface gate asks the class what it exposes, which is the only
@@ -91,6 +98,7 @@ kotlin {
             implementation(kotlin("reflect"))
         }
         androidMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.startup)
             // The Android engine. Media3 is what every Android client already
             // uses, and reimplementing its buffering would be worse than
@@ -102,7 +110,17 @@ kotlin {
             implementation(libs.okhttp)
             implementation(libs.kotlinx.coroutines.android)
         }
+        appleMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.cio)
+        }
         commonTest.dependencies {
+            // A transport tested without a socket: the mock engine hands back a
+            // real byte channel, so the stream reader takes the same path it
+            // takes against a television.
+            implementation(libs.ktor.client.mock)
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
         }
