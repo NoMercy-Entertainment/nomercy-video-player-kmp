@@ -93,6 +93,10 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":"))
+            // The portable filesystem the font cache writes through, so its
+            // eviction and recovery rules are one implementation rather than
+            // three.
+            implementation(libs.okio)
             // Core by coordinate as well as through the video library. The
             // project dependency carries core to the platform compilations but
             // not to the common metadata one, and without this the shared
@@ -106,6 +110,9 @@ kotlin {
             implementation(libs.jna)
         }
         commonTest.dependencies {
+            // A filesystem the tests own. Thirty-day eviction cannot be waited
+            // for, and a real temp directory races whatever else is writing there.
+            implementation(libs.okio.fakefilesystem)
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)
         }

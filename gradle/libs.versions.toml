@@ -18,6 +18,11 @@ composeMultiplatform = "1.11.1"
 media3 = "1.9.0"
 vlcj = "4.11.0"
 robolectric = "4.14.1"
+# The portable filesystem. A font cache has to write files on Android, Apple and
+# the desktop, and okio is the one abstraction all three already trust — plus a
+# FakeFileSystem so the cache's eviction and recovery rules can be tested without
+# touching a real disk.
+okio = "3.9.1"
 # Pinned to core's, which pins it to the app's. The interceptors migrated here
 # and the ones core already runs sit on the same client in one process.
 okhttp = "4.12.0"
@@ -63,6 +68,8 @@ androidx-media3-datasource-okhttp = { module = "androidx.media3:media3-datasourc
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 # Declares the ComponentActivity the Compose Android test host launches into.
 # Without it Robolectric has no activity to resolve and every UI test dies

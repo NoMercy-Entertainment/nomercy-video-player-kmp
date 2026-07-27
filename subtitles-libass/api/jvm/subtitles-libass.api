@@ -70,6 +70,32 @@ public final class tv/nomercy/player/video/ass/SubtitlePlugin : tv/nomercy/playe
 	public final fun load (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public final class tv/nomercy/player/video/ass/fonts/CachedFont {
+	public fun <init> (Ljava/lang/String;[B)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()[B
+	public final fun copy (Ljava/lang/String;[B)Ltv/nomercy/player/video/ass/fonts/CachedFont;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ass/fonts/CachedFont;Ljava/lang/String;[BILjava/lang/Object;)Ltv/nomercy/player/video/ass/fonts/CachedFont;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBytes ()[B
+	public final fun getRegisterName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ass/fonts/TwoTierFontCache {
+	public fun <init> (Lokio/FileSystem;Lokio/Path;)V
+	public final fun adoptOrphans ()V
+	public final fun evictStale (JJ)V
+	public static synthetic fun evictStale$default (Ltv/nomercy/player/video/ass/fonts/TwoTierFontCache;JJILjava/lang/Object;)V
+	public final fun families ()Ljava/util/Set;
+	public final fun get (Ljava/lang/String;)Ltv/nomercy/player/video/ass/fonts/CachedFont;
+	public final fun put (Ljava/lang/String;[BLjava/lang/String;)V
+	public static synthetic fun put$default (Ltv/nomercy/player/video/ass/fonts/TwoTierFontCache;Ljava/lang/String;[BLjava/lang/String;ILjava/lang/Object;)V
+	public final fun registerInto (Ltv/nomercy/player/video/ass/AssRenderer;Ljava/util/Set;J)V
+	public final fun rendererChanged ()V
+}
+
 public final class tv/nomercy/player/video/ass/render/RenderGeometry {
 	public static final field INSTANCE Ltv/nomercy/player/video/ass/render/RenderGeometry;
 	public static final field SEEK_THRESHOLD_MS J
