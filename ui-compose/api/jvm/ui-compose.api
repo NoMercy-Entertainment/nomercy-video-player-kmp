@@ -90,6 +90,78 @@ public final class tv/nomercy/player/video/ui/thumbnails/SpriteTileSource_jvmKt 
 	public static final fun spriteTileSource ([BLjava/util/List;Lkotlinx/coroutines/CoroutineScope;)Ltv/nomercy/player/video/ui/thumbnails/SpriteTileSource;
 }
 
+public abstract interface class tv/nomercy/player/video/ui/tv/Cancellable {
+	public abstract fun cancel ()V
+}
+
+public abstract interface class tv/nomercy/player/video/ui/tv/Scheduler {
+	public abstract fun schedule (JLkotlin/jvm/functions/Function0;)Ltv/nomercy/player/video/ui/tv/Cancellable;
+}
+
+public abstract interface class tv/nomercy/player/video/ui/tv/TvChromeCallbacks {
+	public abstract fun exitPlayer ()V
+	public abstract fun next ()V
+	public abstract fun overrideTime (Ljava/lang/Float;)V
+	public abstract fun pause ()V
+	public abstract fun play ()V
+	public abstract fun restart ()V
+	public abstract fun seek (F)V
+	public abstract fun togglePlay ()V
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvChromeController {
+	public static final field $stable I
+	public fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/Scheduler;ZZ)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/Scheduler;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun cancelSeek ()Z
+	public final fun commitSeek (F)V
+	public final fun dismissPreScreen ()V
+	public final fun dispose ()V
+	public final fun getUi ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun onBack ()Z
+	public final fun onKey (Ltv/nomercy/player/core/input/PlayerKey;)Z
+	public final fun onPlaybackChanged (Z)V
+	public final fun openDialog (Ltv/nomercy/player/video/ui/tv/TvDialog;)V
+	public final fun setTopBarFocus (Z)V
+	public final fun showVolume ()V
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvChromeUi {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (ZZZLtv/nomercy/player/video/ui/tv/TvDialog;ZZ)V
+	public synthetic fun <init> (ZZZLtv/nomercy/player/video/ui/tv/TvDialog;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Ltv/nomercy/player/video/ui/tv/TvDialog;
+	public final fun component5 ()Z
+	public final fun component6 ()Z
+	public final fun copy (ZZZLtv/nomercy/player/video/ui/tv/TvDialog;ZZ)Ltv/nomercy/player/video/ui/tv/TvChromeUi;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvChromeUi;ZZZLtv/nomercy/player/video/ui/tv/TvDialog;ZZILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvChromeUi;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getControlsVisible ()Z
+	public final fun getDialog ()Ltv/nomercy/player/video/ui/tv/TvDialog;
+	public final fun getPreScreenVisible ()Z
+	public final fun getSeekMode ()Z
+	public final fun getTopBarHasFocus ()Z
+	public final fun getVolumeIndicatorVisible ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvDialog : java/lang/Enum {
+	public static final field Episodes Ltv/nomercy/player/video/ui/tv/TvDialog;
+	public static final field Language Ltv/nomercy/player/video/ui/tv/TvDialog;
+	public static final field None Ltv/nomercy/player/video/ui/tv/TvDialog;
+	public static final field PreScreen Ltv/nomercy/player/video/ui/tv/TvDialog;
+	public static final field Subtitle Ltv/nomercy/player/video/ui/tv/TvDialog;
+	public static final field SubtitleSearch Ltv/nomercy/player/video/ui/tv/TvDialog;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/TvDialog;
+	public static fun values ()[Ltv/nomercy/player/video/ui/tv/TvDialog;
+}
+
 public final class tv/nomercy/player/video/ui/tv/TvSafeAreaKt {
 	public static final fun asPadding (Ltv/nomercy/player/core/device/SafeAreaInsets;)Landroidx/compose/foundation/layout/PaddingValues;
 	public static final fun getLocalSafeAreaInsets ()Landroidx/compose/runtime/ProvidableCompositionLocal;
