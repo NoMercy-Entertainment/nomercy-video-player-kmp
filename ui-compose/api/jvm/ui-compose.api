@@ -62,6 +62,8 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeController {
 	public final fun getUi ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun maybeHide ()V
 	public final fun onPointerExit ()V
+	public final fun onSingleTap ()Z
+	public final fun onTapDown ()V
 	public final fun setControlsHovered (Z)V
 	public final fun setMenuOpen (Z)V
 	public final fun setPlaying (Z)V

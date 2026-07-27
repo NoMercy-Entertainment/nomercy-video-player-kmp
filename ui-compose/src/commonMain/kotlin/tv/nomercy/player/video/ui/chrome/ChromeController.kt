@@ -37,6 +37,11 @@ public data class ChromeUi(
 // The rules are stated as one reconcile rather than as four independent setters,
 // because independent setters is how a menu closing hides controls a scrub is
 // still using.
+// The count is the rule set. Five rules, the three things that hold the chrome
+// open, and the tap pair that needs a press and a release; collapsing them into
+// fewer entry points to satisfy a counter would put the whole machine behind one
+// method taking a verb, which is the shape it had in the client this replaces.
+@Suppress("TooManyFunctions")
 public class ChromeController(
     private val isPlaying: () -> Boolean,
     private val scheduler: Scheduler,
@@ -48,6 +53,15 @@ public class ChromeController(
     public val ui: StateFlow<ChromeUi> = state.asStateFlow()
 
     private var hideTimer: Cancellable? = null
+
+    // What was on screen when a finger landed, captured before anything woke.
+    //
+    // Rule five, and the only one that needs memory. On a touch screen a tap has
+    // to be decided against what the viewer was looking at when they touched,
+    // not when they lifted: the surface wakes the controls on the way down, so
+    // by the time the tap resolves they are always visible and a naive toggle
+    // hides them again. That is the show-then-hide flicker.
+    private var tapWasActive: Boolean? = null
 
     // Rule one: anything the viewer does brings them back.
     public fun bumpActivity() {
@@ -96,6 +110,27 @@ public class ChromeController(
     public fun setControlsHovered(hovered: Boolean) {
         state.value = state.value.copy(controlsHovered = hovered)
         reconcile()
+    }
+
+    // Called on pointer-down, before the wake.
+    public fun onTapDown() {
+        tapWasActive = state.value.active
+    }
+
+    // Answers whether the tap was ours. Read once and cleared: a second tap with
+    // no press before it falls back to what is actually on screen rather than to
+    // a snapshot from a gesture that has finished.
+    public fun onSingleTap(): Boolean {
+        val wasActive: Boolean = tapWasActive ?: state.value.active
+        tapWasActive = null
+
+        // Hidden when the finger landed means the wake has already shown them,
+        // and that was the whole point of the tap. Hiding now would undo it in
+        // the same gesture.
+        if (!wasActive) return false
+
+        maybeHide()
+        return !state.value.active
     }
 
     public fun dispose() {
