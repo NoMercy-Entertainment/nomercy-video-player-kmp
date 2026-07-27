@@ -226,6 +226,48 @@ public final class tv/nomercy/player/video/ui/chrome/TransportBarKt {
 	public static final fun TransportBar (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class tv/nomercy/player/video/ui/chrome/menus/MenuState : java/lang/Enum {
+	public static final field Audio Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
+	public static final field Hidden Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
+	public static final field Main Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
+	public static final field Quality Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
+	public static final field Speed Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
+	public static final field Subtitle Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
+	public static fun values ()[Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/menus/MenuStrings {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAudio ()Ljava/lang/String;
+	public final fun getAutomatic ()Ljava/lang/String;
+	public final fun getNormalSpeed ()Ljava/lang/String;
+	public final fun getQuality ()Ljava/lang/String;
+	public final fun getSpeed ()Ljava/lang/String;
+	public final fun getSubtitles ()Ljava/lang/String;
+	public final fun getSubtitlesOff ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/menus/SettingsMenuKt {
+	public static final fun SettingsMenu (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Ltv/nomercy/player/video/ui/chrome/menus/MenuState;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;Landroidx/compose/runtime/Composer;II)V
+}
+
 public class tv/nomercy/player/video/ui/thumbnails/PreviewSprite {
 	public static final field $stable I
 	public fun <init> (Ljava/util/List;Ltv/nomercy/player/video/ui/thumbnails/SpriteTileSource;)V
