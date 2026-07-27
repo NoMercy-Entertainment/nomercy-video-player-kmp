@@ -284,6 +284,14 @@ public final class tv/nomercy/player/video/ui/tv/TvSafeAreaKt {
 	public static final fun tvSafeArea (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;I)Landroidx/compose/ui/Modifier;
 }
 
+public final class tv/nomercy/player/video/ui/tv/TvSeekContainerKt {
+	public static final fun TvSeekContainer (Ltv/nomercy/player/video/ui/tv/TvTransportState;Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/focus/FocusRequester;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvTopBarKt {
+	public static final fun TvTopBar (Ltv/nomercy/player/video/ui/tv/TvChromeItem;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
 public final class tv/nomercy/player/video/ui/tv/TvTransportState {
 	public static final field $stable I
 	public fun <init> ()V
