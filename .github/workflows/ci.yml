@@ -47,6 +47,13 @@ jobs:
 
       - name: Build
         working-directory: packages-native/nomercy-video-player-kmp
+        env:
+          # Installing libass above only helps if a failure to use it is loud.
+          # Without this the gate goes back to skipping when the package name
+          # changes or the ABI moves, and the desktop rendering path is untested
+          # behind a green tick — which is the state this job existed in until
+          # someone checked.
+          NOMERCY_REQUIRE_LIBASS: "1"
         run: ./gradlew build --stacktrace
 
   # The Apple half, which needs Xcode and therefore its own runner.

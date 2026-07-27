@@ -28,18 +28,14 @@ private const val FRAME_HEIGHT = 1080
 // statically linked inside VLC and mpv, which cannot be loaded from outside
 // them. A skip that says which is better than a red test that says the code is
 // broken when the machine simply does not have the library.
+//
+// Not on a host that installed it on purpose, though — see LibassRequirement.
+// There a skip means the install stopped working and the whole desktop path went
+// untested behind a green tick.
 class JvmAssRenderGateTest {
 
-    private fun rendererOrSkip(): AssRenderer? {
-        val reason: String? = AssRenderers.whyUnavailable()
-        if (reason != null) {
-            println("skipped: $reason")
-            return null
-        }
-        return assertNotNull(
-            AssRenderers.create(AssPlatformContext()),
-            "no renderer on a platform that reports itself available",
-        )
+    private fun rendererOrSkip(): AssRenderer? = LibassRequirement.rendererOrSkip()?.let {
+        assertNotNull(it, "no renderer on a platform that reports itself available")
     }
 
     @Test

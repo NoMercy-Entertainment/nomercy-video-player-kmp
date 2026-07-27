@@ -15,6 +15,7 @@ import tv.nomercy.player.core.ports.FetchResponse
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertNotNull
+import kotlin.test.fail
 import kotlin.test.assertTrue
 
 private const val OK = 200
@@ -54,17 +55,18 @@ class FullPipelineGateTest {
 
     @Test
     fun aPlayerAPluginAndLibassDrawOneCueBetweenThem() = runTest {
-        val reason: String? = AssRenderers.whyUnavailable()
-        if (reason != null) {
-            println("skipped: $reason")
-            return@runTest
-        }
+        val renderer: AssRenderer = LibassRequirement.rendererOrSkip() ?: return@runTest
+
+        // A font is the other thing this needs and the other way it can go
+        // quietly. On a host that required libass, a machine with no fonts at
+        // all is a broken image rather than an acceptable environment.
         val font: File = systemFont() ?: run {
+            if (LibassRequirement.isRequired()) {
+                fail("libass was required here and the host has no usable system font")
+            }
             println("skipped: no system font to feed the pipeline")
             return@runTest
         }
-
-        val renderer: AssRenderer = assertNotNull(AssRenderers.create(AssPlatformContext()))
         val responses: Map<String, FetchResponse> = mapOf(
             SUBTITLE_URL to FetchResponse(status = OK, body = skeletonAss()),
             MANIFEST_URL to FetchResponse(status = OK, body = """["Skeleton.ttf"]"""),
