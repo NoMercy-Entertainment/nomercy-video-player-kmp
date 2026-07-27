@@ -38,6 +38,18 @@ public class tv/nomercy/player/video/ui/thumbnails/PreviewSprite {
 	public fun release ()V
 }
 
+public final class tv/nomercy/player/video/ui/thumbnails/PreviewSpriteLoaderKt {
+	public static final fun loadPreviewSprite (Ljava/lang/String;Ljava/lang/String;Ltv/nomercy/player/video/ui/thumbnails/SpriteFetchers;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function3;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun loadPreviewSprite$default (Ljava/lang/String;Ljava/lang/String;Ltv/nomercy/player/video/ui/thumbnails/SpriteFetchers;Lkotlinx/coroutines/CoroutineScope;Lkotlin/jvm/functions/Function3;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class tv/nomercy/player/video/ui/thumbnails/SpriteFetchers {
+	public static final field $stable I
+	public fun <init> (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)V
+	public final fun getBytes ()Lkotlin/jvm/functions/Function2;
+	public final fun getText ()Lkotlin/jvm/functions/Function2;
+}
+
 public abstract interface class tv/nomercy/player/video/ui/thumbnails/SpriteTileSource {
 	public abstract fun frame (I)Landroidx/compose/ui/graphics/ImageBitmap;
 	public abstract fun release ()V
