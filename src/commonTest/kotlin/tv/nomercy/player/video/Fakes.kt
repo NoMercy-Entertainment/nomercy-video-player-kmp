@@ -34,6 +34,15 @@ internal open class FakeVideoBackend : VideoBackend {
 
     val seekedTo: MutableList<Double> = mutableListOf()
 
+    // Counted, because "did this engine advance at all" is the question the cast
+    // acceptance asks. A command reaching a television proves the phone spoke;
+    // only this proves it did not also play the film into the room.
+    var playCount: Int = 0
+        private set
+
+    var pauseCount: Int = 0
+        private set
+
     private var position: Double = 0.0
     private var chosenSubtitle: SubtitleTrack? = null
     private var chosenAudio: AudioTrack? = null
@@ -61,11 +70,15 @@ internal open class FakeVideoBackend : VideoBackend {
     }
 
     override suspend fun play() {
+        playCount += 1
         fire(CanonicalBackendEvent.PLAY)
         fire(CanonicalBackendEvent.PLAYING)
     }
 
-    override fun pause(): Unit = fire(CanonicalBackendEvent.PAUSE)
+    override fun pause() {
+        pauseCount += 1
+        fire(CanonicalBackendEvent.PAUSE)
+    }
     override fun stop() = Unit
     override fun currentTime(): Double = position
 

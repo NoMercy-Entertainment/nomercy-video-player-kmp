@@ -648,6 +648,31 @@ public class tv/nomercy/player/video/cast/UnsupportedCastWaker : tv/nomercy/play
 	public fun warmUp (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public class tv/nomercy/player/video/cast/VideoCastPlugin : tv/nomercy/player/core/plugin/Plugin {
+	public static final field Manifest Ltv/nomercy/player/video/cast/VideoCastPlugin$Manifest;
+	public fun <init> (Ltv/nomercy/player/video/cast/RemoteVideoController;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/video/cast/CastWaker;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/cast/RemoteVideoController;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/video/cast/CastWaker;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun dispose ()V
+	public fun getCastState ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun getCasting ()Z
+	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
+	public fun getStatus ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun startCast (Ltv/nomercy/player/video/cast/RemoteDevice;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun stopCast (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun use ()V
+}
+
+public final class tv/nomercy/player/video/cast/VideoCastPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
+	public fun getContributions ()Ljava/util/List;
+	public fun getId ()Ljava/lang/String;
+	public fun getMinCoreVersion ()Ljava/lang/String;
+	public fun getPriority ()I
+	public fun getReplaces ()Ljava/util/List;
+	public fun getRequires ()Ljava/util/List;
+	public fun getTranslations ()Ljava/util/Map;
+	public fun getVersion ()Ljava/lang/String;
+}
+
 public final class tv/nomercy/player/video/cast/WakeOutcome : java/lang/Enum {
 	public static final field AWOKE Ltv/nomercy/player/video/cast/WakeOutcome;
 	public static final field CAST_FALLBACK Ltv/nomercy/player/video/cast/WakeOutcome;
