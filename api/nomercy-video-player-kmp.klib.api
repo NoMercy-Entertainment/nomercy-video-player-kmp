@@ -80,6 +80,33 @@ final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.pla
     }
 }
 
+abstract interface tv.nomercy.player.video.cast/TvControlClient : tv.nomercy.player.video.cast/TvPresentation, tv.nomercy.player.video.cast/TvSession, tv.nomercy.player.video.cast/TvTransport // tv.nomercy.player.video.cast/TvControlClient|null[0]
+
+abstract interface tv.nomercy.player.video.cast/TvPresentation { // tv.nomercy.player.video.cast/TvPresentation|null[0]
+    abstract suspend fun setAudioTrack(kotlin/String) // tv.nomercy.player.video.cast/TvPresentation.setAudioTrack|setAudioTrack(kotlin.String){}[0]
+    abstract suspend fun setQuality(tv.nomercy.player.video.cast/RemoteQualityLevel) // tv.nomercy.player.video.cast/TvPresentation.setQuality|setQuality(tv.nomercy.player.video.cast.RemoteQualityLevel){}[0]
+    abstract suspend fun setSubtitleTrack(kotlin/String?) // tv.nomercy.player.video.cast/TvPresentation.setSubtitleTrack|setSubtitleTrack(kotlin.String?){}[0]
+    abstract suspend fun setVolume(kotlin/Double? = ..., kotlin/Double? = ..., kotlin/Boolean? = ...) // tv.nomercy.player.video.cast/TvPresentation.setVolume|setVolume(kotlin.Double?;kotlin.Double?;kotlin.Boolean?){}[0]
+}
+
+abstract interface tv.nomercy.player.video.cast/TvSession { // tv.nomercy.player.video.cast/TvSession|null[0]
+    abstract fun events(): kotlinx.coroutines.flow/Flow<tv.nomercy.player.video.cast/RemoteEvent> // tv.nomercy.player.video.cast/TvSession.events|events(){}[0]
+    abstract suspend fun getPlaylist(): tv.nomercy.player.video.cast/RemotePlaylist // tv.nomercy.player.video.cast/TvSession.getPlaylist|getPlaylist(){}[0]
+    abstract suspend fun getServer(): tv.nomercy.player.video.cast/RemoteServer // tv.nomercy.player.video.cast/TvSession.getServer|getServer(){}[0]
+    abstract suspend fun getSession(): tv.nomercy.player.video.cast/RemotePlayerState // tv.nomercy.player.video.cast/TvSession.getSession|getSession(){}[0]
+    abstract suspend fun launch(kotlin/String, kotlin/Boolean = ..., kotlin/String = ...): kotlin/Boolean // tv.nomercy.player.video.cast/TvSession.launch|launch(kotlin.String;kotlin.Boolean;kotlin.String){}[0]
+    abstract suspend fun setPlaylistActive(kotlin/Int) // tv.nomercy.player.video.cast/TvSession.setPlaylistActive|setPlaylistActive(kotlin.Int){}[0]
+}
+
+abstract interface tv.nomercy.player.video.cast/TvTransport { // tv.nomercy.player.video.cast/TvTransport|null[0]
+    abstract suspend fun next() // tv.nomercy.player.video.cast/TvTransport.next|next(){}[0]
+    abstract suspend fun pause() // tv.nomercy.player.video.cast/TvTransport.pause|pause(){}[0]
+    abstract suspend fun play() // tv.nomercy.player.video.cast/TvTransport.play|play(){}[0]
+    abstract suspend fun previous() // tv.nomercy.player.video.cast/TvTransport.previous|previous(){}[0]
+    abstract suspend fun seek(kotlin/Long) // tv.nomercy.player.video.cast/TvTransport.seek|seek(kotlin.Long){}[0]
+    abstract suspend fun stop() // tv.nomercy.player.video.cast/TvTransport.stop|stop(){}[0]
+}
+
 sealed interface tv.nomercy.player.video.cast/RemoteEvent { // tv.nomercy.player.video.cast/RemoteEvent|null[0]
     final class Device : tv.nomercy.player.video.cast/RemoteEvent { // tv.nomercy.player.video.cast/RemoteEvent.Device|null[0]
         constructor <init>(kotlin/String) // tv.nomercy.player.video.cast/RemoteEvent.Device.<init>|<init>(kotlin.String){}[0]
@@ -312,6 +339,40 @@ final class tv.nomercy.player.video.cast/RemotePlaylistItem { // tv.nomercy.play
 
     final object Companion { // tv.nomercy.player.video.cast/RemotePlaylistItem.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<tv.nomercy.player.video.cast/RemotePlaylistItem> // tv.nomercy.player.video.cast/RemotePlaylistItem.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class tv.nomercy.player.video.cast/RemoteServer { // tv.nomercy.player.video.cast/RemoteServer|null[0]
+    constructor <init>(kotlin/String = ..., kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...) // tv.nomercy.player.video.cast/RemoteServer.<init>|<init>(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+
+    final val capabilities // tv.nomercy.player.video.cast/RemoteServer.capabilities|{}capabilities[0]
+        final fun <get-capabilities>(): kotlin.collections/List<kotlin/String> // tv.nomercy.player.video.cast/RemoteServer.capabilities.<get-capabilities>|<get-capabilities>(){}[0]
+    final val serverName // tv.nomercy.player.video.cast/RemoteServer.serverName|{}serverName[0]
+        final fun <get-serverName>(): kotlin/String // tv.nomercy.player.video.cast/RemoteServer.serverName.<get-serverName>|<get-serverName>(){}[0]
+    final val version // tv.nomercy.player.video.cast/RemoteServer.version|{}version[0]
+        final fun <get-version>(): kotlin/String // tv.nomercy.player.video.cast/RemoteServer.version.<get-version>|<get-version>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.cast/RemoteServer.component1|component1(){}[0]
+    final fun component2(): kotlin/String // tv.nomercy.player.video.cast/RemoteServer.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/List<kotlin/String> // tv.nomercy.player.video.cast/RemoteServer.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin.collections/List<kotlin/String> = ...): tv.nomercy.player.video.cast/RemoteServer // tv.nomercy.player.video.cast/RemoteServer.copy|copy(kotlin.String;kotlin.String;kotlin.collections.List<kotlin.String>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.cast/RemoteServer.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.cast/RemoteServer.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.cast/RemoteServer.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<tv.nomercy.player.video.cast/RemoteServer> { // tv.nomercy.player.video.cast/RemoteServer.$serializer|null[0]
+        final val descriptor // tv.nomercy.player.video.cast/RemoteServer.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // tv.nomercy.player.video.cast/RemoteServer.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // tv.nomercy.player.video.cast/RemoteServer.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): tv.nomercy.player.video.cast/RemoteServer // tv.nomercy.player.video.cast/RemoteServer.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, tv.nomercy.player.video.cast/RemoteServer) // tv.nomercy.player.video.cast/RemoteServer.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;tv.nomercy.player.video.cast.RemoteServer){}[0]
+    }
+
+    final object Companion { // tv.nomercy.player.video.cast/RemoteServer.Companion|null[0]
+        final val $childSerializers // tv.nomercy.player.video.cast/RemoteServer.Companion.$childSerializers|{}$childSerializers[0]
+
+        final fun serializer(): kotlinx.serialization/KSerializer<tv.nomercy.player.video.cast/RemoteServer> // tv.nomercy.player.video.cast/RemoteServer.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -609,6 +670,9 @@ final object tv.nomercy.player.video/VideoEvents { // tv.nomercy.player.video/Vi
     final val all // tv.nomercy.player.video/VideoEvents.all|{}all[0]
         final fun <get-all>(): kotlin.collections/List<tv.nomercy.player.core.events/EventKey<*>> // tv.nomercy.player.video/VideoEvents.all.<get-all>|<get-all>(){}[0]
 }
+
+final const val tv.nomercy.player.video.cast/CAST_SOURCE // tv.nomercy.player.video.cast/CAST_SOURCE|{}CAST_SOURCE[0]
+    final fun <get-CAST_SOURCE>(): kotlin/String // tv.nomercy.player.video.cast/CAST_SOURCE.<get-CAST_SOURCE>|<get-CAST_SOURCE>(){}[0]
 
 final fun tv.nomercy.player.video.cast/decodeRemoteEvent(kotlin/String, kotlin/String, kotlinx.serialization.json/Json): tv.nomercy.player.video.cast/RemoteEvent? // tv.nomercy.player.video.cast/decodeRemoteEvent|decodeRemoteEvent(kotlin.String;kotlin.String;kotlinx.serialization.json.Json){}[0]
 final fun tv.nomercy.player.video.chapters/chapterFill(tv.nomercy.player.video.chapters/ChapterMarker, kotlin/Double): kotlin/Double // tv.nomercy.player.video.chapters/chapterFill|chapterFill(tv.nomercy.player.video.chapters.ChapterMarker;kotlin.Double){}[0]
