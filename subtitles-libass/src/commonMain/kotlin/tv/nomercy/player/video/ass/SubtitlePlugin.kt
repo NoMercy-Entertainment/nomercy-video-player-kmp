@@ -68,7 +68,7 @@ public class SubtitlePlugin(
         // Fonts first, and every one of them, before the track exists. A font
         // that arrives after the renderer has drawn once is a font libass has
         // already decided not to use.
-        val fonts: List<Pair<String, ByteArray>> =
+        val fonts: List<ResolvedFont> =
             if (fontManifestUrl == null) emptyList() else fetchFonts(subtitle, fontManifestUrl)
 
         // One critical section for the whole sequence. Attaching and loading
@@ -78,11 +78,14 @@ public class SubtitlePlugin(
         nativeLock.withLock {
             val attached: MutableList<String> = mutableListOf()
             val seen: MutableSet<String> = mutableSetOf()
-            for ((family, bytes) in fonts) {
-                if (!seen.add(family.lowercase())) continue
+            for (font in fonts) {
+                if (!seen.add(font.family.lowercase())) continue
 
-                renderer.addFont(family, bytes)
-                attached += family
+                renderer.addFont(font.family, font.bytes)
+                // By file name, which is what loadedFonts has always meant and
+                // what a host pre-warming a cache matches against. The family is
+                // what libass is told; the file name is what the manifest said.
+                attached += font.fileName
             }
             loadedFonts = attached
 
@@ -119,7 +122,7 @@ public class SubtitlePlugin(
     // its contents are what that subtitle needs; attaching one it turns out not
     // to use costs a download already paid for, and attaching none because a
     // name did not match costs the wrong typeface for the whole film.
-    private suspend fun fetchFonts(subtitle: String, manifestUrl: String): List<Pair<String, ByteArray>> {
+    private suspend fun fetchFonts(subtitle: String, manifestUrl: String): List<ResolvedFont> {
         if (AssFontNames.parse(subtitle).isEmpty()) return emptyList()
 
         val manifest: Map<String, String> = get(manifestUrl)?.body
@@ -130,7 +133,7 @@ public class SubtitlePlugin(
             return emptyList()
         }
 
-        val resolved: MutableList<Pair<String, ByteArray>> = mutableListOf()
+        val resolved: MutableList<ResolvedFont> = mutableListOf()
         for ((fileName, url) in manifest) {
             // The cache first. A series attaches the same fonts to every
             // episode, so after the first one this is a disk read rather than a
@@ -145,7 +148,7 @@ public class SubtitlePlugin(
                 ?: TtfNameParser.extractFontName(bytes, TtfNameParser.fallbackNameFor(fileName))
 
             if (cached == null) fontCache?.put(fileName, bytes)
-            resolved += family to bytes
+            resolved += ResolvedFont(fileName = fileName, family = family, bytes = bytes)
         }
         return resolved
     }
@@ -209,6 +212,17 @@ public class SubtitlePlugin(
         const val FONTS_MANIFEST_FAILED = "plugin:subtitle/fonts-manifest-failed"
     }
 }
+
+// A font on its way to libass, carrying both names it is known by.
+//
+// The manifest names the file and libass wants the family, and the two are
+// different strings — losing the file name is how loadedFonts came to report
+// families and broke a host matching against what it asked for.
+private class ResolvedFont(
+    val fileName: String,
+    val family: String,
+    val bytes: ByteArray,
+)
 
 // Nothing yet, and named rather than Unit so adding one later is not a
 // signature change for every consumer.
