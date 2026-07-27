@@ -9,7 +9,7 @@
 package tv.nomercy.player.video.ui.tv
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -29,11 +29,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -69,14 +64,18 @@ public fun PlayerIconButton(
                 focused = it.isFocused
                 onFocused(it.isFocused)
             }
-            .focusable(interactionSource = interaction)
-            // Centre and enter both, because a remote sends one and a keyboard
-            // attached to the same box sends the other.
-            .onKeyEvent { event ->
-                val activated: Boolean = isActivation(event.key, event.type)
-                if (activated) onClick()
-                activated
-            }
+            // One activation path for a remote, a keyboard and a finger. It was
+            // key events only, which is correct on a television and means a
+            // pointer click does nothing — the same button is used by the touch
+            // chrome, and that is where it was found.
+            //
+            // clickable already answers the centre of a pad and enter, so adding
+            // a second handler for those would fire twice per press.
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                onClick = onClick,
+            )
             .semantics { contentDescription = description },
     ) {
         // Foundation rather than Material. A player library that pulled Material

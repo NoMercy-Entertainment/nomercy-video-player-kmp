@@ -53,16 +53,56 @@ public final class tv/nomercy/player/video/ui/chrome/ChapterProgressBarKt {
 	public static final fun ChapterProgressBar-FJfuzF0 (Ltv/nomercy/player/video/ui/chrome/ChapterBarState;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/ChapterBarColors;FLandroidx/compose/runtime/Composer;II)V
 }
 
-public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeCommands {
-	public abstract fun dismissMessage ()V
-	public abstract fun seekTo (D)V
-	public abstract fun selectAudioTrack (Ltv/nomercy/player/core/ports/AudioTrack;)V
-	public abstract fun selectQuality (Ltv/nomercy/player/core/ports/QualityLevel;)V
-	public abstract fun selectSubtitleTrack (Ltv/nomercy/player/core/ports/SubtitleTrack;)V
-	public abstract fun setFullscreen (Z)V
+public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeAudioCommands {
 	public abstract fun setMuted (Z)V
-	public abstract fun setRate (F)V
 	public abstract fun setVolume (I)V
+}
+
+public final class tv/nomercy/player/video/ui/chrome/ChromeButtons {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (ZZZZZZZZZZZZZZZZ)V
+	public synthetic fun <init> (ZZZZZZZZZZZZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component10 ()Z
+	public final fun component11 ()Z
+	public final fun component12 ()Z
+	public final fun component13 ()Z
+	public final fun component14 ()Z
+	public final fun component15 ()Z
+	public final fun component16 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun component5 ()Z
+	public final fun component6 ()Z
+	public final fun component7 ()Z
+	public final fun component8 ()Z
+	public final fun component9 ()Z
+	public final fun copy (ZZZZZZZZZZZZZZZZ)Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeButtons;ZZZZZZZZZZZZZZZZILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAspectRatio ()Z
+	public final fun getAudio ()Z
+	public final fun getChapters ()Z
+	public final fun getFullscreen ()Z
+	public final fun getPictureInPicture ()Z
+	public final fun getPlayPause ()Z
+	public final fun getPlaylist ()Z
+	public final fun getPreviousNext ()Z
+	public final fun getQuality ()Z
+	public final fun getSeekBack ()Z
+	public final fun getSeekForward ()Z
+	public final fun getSpeed ()Z
+	public final fun getSubtitles ()Z
+	public final fun getTheater ()Z
+	public final fun getTime ()Z
+	public final fun getVolume ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeCommands : tv/nomercy/player/video/ui/chrome/ChromeAudioCommands, tv/nomercy/player/video/ui/chrome/ChromePresentationCommands, tv/nomercy/player/video/ui/chrome/ChromeTrackCommands, tv/nomercy/player/video/ui/chrome/ChromeTransportCommands {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeController {
@@ -80,6 +120,12 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeController {
 	public final fun setMenuOpen (Z)V
 	public final fun setPlaying (Z)V
 	public final fun setScrubbing (Z)V
+}
+
+public abstract interface class tv/nomercy/player/video/ui/chrome/ChromePresentationCommands {
+	public abstract fun dismissMessage ()V
+	public abstract fun setFullscreen (Z)V
+	public abstract fun setRate (F)V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeState {
@@ -137,6 +183,21 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeState {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTrackCommands {
+	public abstract fun selectAudioTrack (Ltv/nomercy/player/core/ports/AudioTrack;)V
+	public abstract fun selectQuality (Ltv/nomercy/player/core/ports/QualityLevel;)V
+	public abstract fun selectSubtitleTrack (Ltv/nomercy/player/core/ports/SubtitleTrack;)V
+}
+
+public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTransportCommands {
+	public abstract fun next ()V
+	public abstract fun openAudioMenu ()V
+	public abstract fun openSubtitleMenu ()V
+	public abstract fun previous ()V
+	public abstract fun seekTo (D)V
+	public abstract fun setPlaying (Z)V
+}
+
 public final class tv/nomercy/player/video/ui/chrome/ChromeUi {
 	public static final field $stable I
 	public fun <init> ()V
@@ -155,6 +216,10 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeUi {
 	public final fun getScrubbing ()Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/TransportBarKt {
+	public static final fun TransportBar (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Landroidx/compose/runtime/Composer;II)V
 }
 
 public class tv/nomercy/player/video/ui/thumbnails/PreviewSprite {
