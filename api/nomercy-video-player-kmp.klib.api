@@ -151,6 +151,42 @@ abstract interface tv.nomercy.player.video.cast/TvTransport { // tv.nomercy.play
     abstract suspend fun stop() // tv.nomercy.player.video.cast/TvTransport.stop|stop(){}[0]
 }
 
+abstract interface tv.nomercy.player.video.input/VideoPresentation { // tv.nomercy.player.video.input/VideoPresentation|null[0]
+    abstract fun cycleAspectRatio() // tv.nomercy.player.video.input/VideoPresentation.cycleAspectRatio|cycleAspectRatio(){}[0]
+    abstract fun cycleAudioTracks() // tv.nomercy.player.video.input/VideoPresentation.cycleAudioTracks|cycleAudioTracks(){}[0]
+    abstract fun cycleSubtitles() // tv.nomercy.player.video.input/VideoPresentation.cycleSubtitles|cycleSubtitles(){}[0]
+    abstract fun emit(kotlin/String) // tv.nomercy.player.video.input/VideoPresentation.emit|emit(kotlin.String){}[0]
+    abstract fun message(kotlin/String) // tv.nomercy.player.video.input/VideoPresentation.message|message(kotlin.String){}[0]
+    abstract fun rate(): kotlin/Float // tv.nomercy.player.video.input/VideoPresentation.rate|rate(){}[0]
+    abstract fun rate(kotlin/Float) // tv.nomercy.player.video.input/VideoPresentation.rate|rate(kotlin.Float){}[0]
+    abstract fun rates(): kotlin.collections/List<kotlin/Float> // tv.nomercy.player.video.input/VideoPresentation.rates|rates(){}[0]
+    abstract fun toggleFullscreen() // tv.nomercy.player.video.input/VideoPresentation.toggleFullscreen|toggleFullscreen(){}[0]
+}
+
+abstract interface tv.nomercy.player.video.input/VideoState { // tv.nomercy.player.video.input/VideoState|null[0]
+    abstract fun duration(): kotlin/Double // tv.nomercy.player.video.input/VideoState.duration|duration(){}[0]
+    abstract fun isPlaying(): kotlin/Boolean // tv.nomercy.player.video.input/VideoState.isPlaying|isPlaying(){}[0]
+    abstract fun time(): kotlin/Double // tv.nomercy.player.video.input/VideoState.time|time(){}[0]
+}
+
+abstract interface tv.nomercy.player.video.input/VideoTransport { // tv.nomercy.player.video.input/VideoTransport|null[0]
+    abstract fun next() // tv.nomercy.player.video.input/VideoTransport.next|next(){}[0]
+    abstract fun nextChapter() // tv.nomercy.player.video.input/VideoTransport.nextChapter|nextChapter(){}[0]
+    abstract fun pause() // tv.nomercy.player.video.input/VideoTransport.pause|pause(){}[0]
+    abstract fun play() // tv.nomercy.player.video.input/VideoTransport.play|play(){}[0]
+    abstract fun previous() // tv.nomercy.player.video.input/VideoTransport.previous|previous(){}[0]
+    abstract fun previousChapter() // tv.nomercy.player.video.input/VideoTransport.previousChapter|previousChapter(){}[0]
+    abstract fun seekBy(kotlin/Float) // tv.nomercy.player.video.input/VideoTransport.seekBy|seekBy(kotlin.Float){}[0]
+    abstract fun stop() // tv.nomercy.player.video.input/VideoTransport.stop|stop(){}[0]
+    abstract fun togglePlay() // tv.nomercy.player.video.input/VideoTransport.togglePlay|togglePlay(){}[0]
+}
+
+abstract interface tv.nomercy.player.video.input/VideoVolume { // tv.nomercy.player.video.input/VideoVolume|null[0]
+    abstract fun toggleMute() // tv.nomercy.player.video.input/VideoVolume.toggleMute|toggleMute(){}[0]
+    abstract fun volumeDown() // tv.nomercy.player.video.input/VideoVolume.volumeDown|volumeDown(){}[0]
+    abstract fun volumeUp() // tv.nomercy.player.video.input/VideoVolume.volumeUp|volumeUp(){}[0]
+}
+
 sealed interface tv.nomercy.player.video.cast/RemoteEvent { // tv.nomercy.player.video.cast/RemoteEvent|null[0]
     final class Device : tv.nomercy.player.video.cast/RemoteEvent { // tv.nomercy.player.video.cast/RemoteEvent.Device|null[0]
         constructor <init>(kotlin/String) // tv.nomercy.player.video.cast/RemoteEvent.Device.<init>|<init>(kotlin.String){}[0]
@@ -471,6 +507,19 @@ final class tv.nomercy.player.video.chapters/ChapterMarker { // tv.nomercy.playe
     final fun toString(): kotlin/String // tv.nomercy.player.video.chapters/ChapterMarker.toString|toString(){}[0]
 }
 
+final class tv.nomercy.player.video.input/PlayerCommands { // tv.nomercy.player.video.input/PlayerCommands|null[0]
+    constructor <init>(tv.nomercy.player.video.input/VideoTransport, tv.nomercy.player.video.input/VideoPresentation, tv.nomercy.player.video.input/VideoVolume, tv.nomercy.player.video.input/VideoState) // tv.nomercy.player.video.input/PlayerCommands.<init>|<init>(tv.nomercy.player.video.input.VideoTransport;tv.nomercy.player.video.input.VideoPresentation;tv.nomercy.player.video.input.VideoVolume;tv.nomercy.player.video.input.VideoState){}[0]
+
+    final val presentation // tv.nomercy.player.video.input/PlayerCommands.presentation|{}presentation[0]
+        final fun <get-presentation>(): tv.nomercy.player.video.input/VideoPresentation // tv.nomercy.player.video.input/PlayerCommands.presentation.<get-presentation>|<get-presentation>(){}[0]
+    final val state // tv.nomercy.player.video.input/PlayerCommands.state|{}state[0]
+        final fun <get-state>(): tv.nomercy.player.video.input/VideoState // tv.nomercy.player.video.input/PlayerCommands.state.<get-state>|<get-state>(){}[0]
+    final val transport // tv.nomercy.player.video.input/PlayerCommands.transport|{}transport[0]
+        final fun <get-transport>(): tv.nomercy.player.video.input/VideoTransport // tv.nomercy.player.video.input/PlayerCommands.transport.<get-transport>|<get-transport>(){}[0]
+    final val volume // tv.nomercy.player.video.input/PlayerCommands.volume|{}volume[0]
+        final fun <get-volume>(): tv.nomercy.player.video.input/VideoVolume // tv.nomercy.player.video.input/PlayerCommands.volume.<get-volume>|<get-volume>(){}[0]
+}
+
 final class tv.nomercy.player.video/AspectRatioChange { // tv.nomercy.player.video/AspectRatioChange|null[0]
     constructor <init>(tv.nomercy.player.video/Stretching) // tv.nomercy.player.video/AspectRatioChange.<init>|<init>(tv.nomercy.player.video.Stretching){}[0]
 
@@ -743,6 +792,41 @@ open class tv.nomercy.player.video.cast/VideoCastPlugin : tv.nomercy.player.core
             final fun <get-id>(): kotlin/String // tv.nomercy.player.video.cast/VideoCastPlugin.Manifest.id.<get-id>|<get-id>(){}[0]
         final val version // tv.nomercy.player.video.cast/VideoCastPlugin.Manifest.version|{}version[0]
             final fun <get-version>(): kotlin/String // tv.nomercy.player.video.cast/VideoCastPlugin.Manifest.version.<get-version>|<get-version>(){}[0]
+    }
+}
+
+open class tv.nomercy.player.video.input/VideoKeyHandlerPlugin : tv.nomercy.player.core.input/KeyHandlerPlugin<kotlin/Unit> { // tv.nomercy.player.video.input/VideoKeyHandlerPlugin|null[0]
+    constructor <init>(tv.nomercy.player.video.input/PlayerCommands, tv.nomercy.player.core.device/DeviceCapabilities, kotlin/Function0<kotlin/Long>) // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.<init>|<init>(tv.nomercy.player.video.input.PlayerCommands;tv.nomercy.player.core.device.DeviceCapabilities;kotlin.Function0<kotlin.Long>){}[0]
+
+    final val capabilities // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.capabilities|{}capabilities[0]
+        final fun <get-capabilities>(): tv.nomercy.player.core.device/DeviceCapabilities // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.capabilities.<get-capabilities>|<get-capabilities>(){}[0]
+    final val commands // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.commands|{}commands[0]
+        final fun <get-commands>(): tv.nomercy.player.video.input/PlayerCommands // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.commands.<get-commands>|<get-commands>(){}[0]
+    open val manifest // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.manifest|{}manifest[0]
+        open fun <get-manifest>(): tv.nomercy.player.core.plugin/PluginManifest // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.manifest.<get-manifest>|<get-manifest>(){}[0]
+
+    open fun addAspectRatioKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addAspectRatioKeys|addAspectRatioKeys(){}[0]
+    open fun addChapterKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addChapterKeys|addChapterKeys(){}[0]
+    open fun addDefaults() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addDefaults|addDefaults(){}[0]
+    open fun addFrameAdvanceKey() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addFrameAdvanceKey|addFrameAdvanceKey(){}[0]
+    open fun addFullscreenKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addFullscreenKeys|addFullscreenKeys(){}[0]
+    open fun addMediaKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addMediaKeys|addMediaKeys(){}[0]
+    open fun addModifierSeekKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addModifierSeekKeys|addModifierSeekKeys(){}[0]
+    open fun addNavigationKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addNavigationKeys|addNavigationKeys(){}[0]
+    open fun addPlaybackKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addPlaybackKeys|addPlaybackKeys(){}[0]
+    open fun addQuickSkipKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addQuickSkipKeys|addQuickSkipKeys(){}[0]
+    open fun addShowTimeKey() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addShowTimeKey|addShowTimeKey(){}[0]
+    open fun addSpeedKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addSpeedKeys|addSpeedKeys(){}[0]
+    open fun addStopKey() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addStopKey|addStopKey(){}[0]
+    open fun addSubtitleSizeKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addSubtitleSizeKeys|addSubtitleSizeKeys(){}[0]
+    open fun addTrackKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addTrackKeys|addTrackKeys(){}[0]
+    open fun addVolumeKeys() // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.addVolumeKeys|addVolumeKeys(){}[0]
+
+    final object Manifest : tv.nomercy.player.core.plugin/PluginManifest { // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.Manifest|null[0]
+        final val id // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.Manifest.id|{}id[0]
+            final fun <get-id>(): kotlin/String // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.Manifest.id.<get-id>|<get-id>(){}[0]
+        final val version // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.Manifest.version|{}version[0]
+            final fun <get-version>(): kotlin/String // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.Manifest.version.<get-version>|<get-version>(){}[0]
     }
 }
 

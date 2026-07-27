@@ -744,6 +744,85 @@ public final class tv/nomercy/player/video/chapters/ChapterMarkerMathKt {
 	public static final fun chapterMarkers (Ljava/util/List;D)Ljava/util/List;
 }
 
+public final class tv/nomercy/player/video/input/PlayerCommands {
+	public fun <init> (Ltv/nomercy/player/video/input/VideoTransport;Ltv/nomercy/player/video/input/VideoPresentation;Ltv/nomercy/player/video/input/VideoVolume;Ltv/nomercy/player/video/input/VideoState;)V
+	public final fun getPresentation ()Ltv/nomercy/player/video/input/VideoPresentation;
+	public final fun getState ()Ltv/nomercy/player/video/input/VideoState;
+	public final fun getTransport ()Ltv/nomercy/player/video/input/VideoTransport;
+	public final fun getVolume ()Ltv/nomercy/player/video/input/VideoVolume;
+}
+
+public class tv/nomercy/player/video/input/VideoKeyHandlerPlugin : tv/nomercy/player/core/input/KeyHandlerPlugin {
+	public static final field Manifest Ltv/nomercy/player/video/input/VideoKeyHandlerPlugin$Manifest;
+	public fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Lkotlin/jvm/functions/Function0;)V
+	protected fun addAspectRatioKeys ()V
+	protected fun addChapterKeys ()V
+	protected fun addDefaults ()V
+	protected fun addFrameAdvanceKey ()V
+	protected fun addFullscreenKeys ()V
+	protected fun addMediaKeys ()V
+	protected fun addModifierSeekKeys ()V
+	protected fun addNavigationKeys ()V
+	protected fun addPlaybackKeys ()V
+	protected fun addQuickSkipKeys ()V
+	protected fun addShowTimeKey ()V
+	protected fun addSpeedKeys ()V
+	protected fun addStopKey ()V
+	protected fun addSubtitleSizeKeys ()V
+	protected fun addTrackKeys ()V
+	protected fun addVolumeKeys ()V
+	protected final fun getCapabilities ()Ltv/nomercy/player/core/device/DeviceCapabilities;
+	protected final fun getCommands ()Ltv/nomercy/player/video/input/PlayerCommands;
+	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
+}
+
+public final class tv/nomercy/player/video/input/VideoKeyHandlerPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
+	public fun getContributions ()Ljava/util/List;
+	public fun getId ()Ljava/lang/String;
+	public fun getMinCoreVersion ()Ljava/lang/String;
+	public fun getPriority ()I
+	public fun getReplaces ()Ljava/util/List;
+	public fun getRequires ()Ljava/util/List;
+	public fun getTranslations ()Ljava/util/Map;
+	public fun getVersion ()Ljava/lang/String;
+}
+
+public abstract interface class tv/nomercy/player/video/input/VideoPresentation {
+	public abstract fun cycleAspectRatio ()V
+	public abstract fun cycleAudioTracks ()V
+	public abstract fun cycleSubtitles ()V
+	public abstract fun emit (Ljava/lang/String;)V
+	public abstract fun message (Ljava/lang/String;)V
+	public abstract fun rate ()F
+	public abstract fun rate (F)V
+	public abstract fun rates ()Ljava/util/List;
+	public abstract fun toggleFullscreen ()V
+}
+
+public abstract interface class tv/nomercy/player/video/input/VideoState {
+	public abstract fun duration ()D
+	public abstract fun isPlaying ()Z
+	public abstract fun time ()D
+}
+
+public abstract interface class tv/nomercy/player/video/input/VideoTransport {
+	public abstract fun next ()V
+	public abstract fun nextChapter ()V
+	public abstract fun pause ()V
+	public abstract fun play ()V
+	public abstract fun previous ()V
+	public abstract fun previousChapter ()V
+	public abstract fun seekBy (F)V
+	public abstract fun stop ()V
+	public abstract fun togglePlay ()V
+}
+
+public abstract interface class tv/nomercy/player/video/input/VideoVolume {
+	public abstract fun toggleMute ()V
+	public abstract fun volumeDown ()V
+	public abstract fun volumeUp ()V
+}
+
 public final class tv/nomercy/player/video/subtitles/AssFontNames {
 	public static final field INSTANCE Ltv/nomercy/player/video/subtitles/AssFontNames;
 	public final fun parse (Ljava/lang/String;)Ljava/util/List;
