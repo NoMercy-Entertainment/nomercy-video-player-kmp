@@ -95,6 +95,9 @@ public data class TvChromeStrings(
     val subtitles: String = "Subtitles",
     val episodes: String = "Episodes",
     val loading: String = "Loading",
+    val resume: String = "Resume",
+    val language: String = "Language",
+    val searchSubtitles: String = "Search online",
 )
 
 internal const val BOTTOM_BAR_TAG = "tv-bottom-bar"

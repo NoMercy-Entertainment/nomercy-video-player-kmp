@@ -73,13 +73,9 @@ public fun PlayerIconButton(
             // Centre and enter both, because a remote sends one and a keyboard
             // attached to the same box sends the other.
             .onKeyEvent { event ->
-                val activation: Boolean = event.key == Key.DirectionCenter || event.key == Key.Enter
-                if (event.type == KeyEventType.KeyUp && activation) {
-                    onClick()
-                    true
-                } else {
-                    false
-                }
+                val activated: Boolean = isActivation(event.key, event.type)
+                if (activated) onClick()
+                activated
             }
             .semantics { contentDescription = description },
     ) {

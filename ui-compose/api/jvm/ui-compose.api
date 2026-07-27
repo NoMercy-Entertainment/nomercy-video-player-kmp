@@ -169,6 +169,26 @@ public abstract interface class tv/nomercy/player/video/ui/tv/TvChromeCallbacks 
 	public abstract fun togglePlay ()V
 }
 
+public final class tv/nomercy/player/video/ui/tv/TvChromeContent {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeItem;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeItem;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ltv/nomercy/player/video/ui/tv/TvChromeItem;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/List;
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (Ltv/nomercy/player/video/ui/tv/TvChromeItem;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Ltv/nomercy/player/video/ui/tv/TvChromeContent;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvChromeContent;Ltv/nomercy/player/video/ui/tv/TvChromeItem;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvChromeContent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAudioTracks ()Ljava/util/List;
+	public final fun getEpisodes ()Ljava/util/List;
+	public final fun getItem ()Ltv/nomercy/player/video/ui/tv/TvChromeItem;
+	public final fun getSubtitleTracks ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class tv/nomercy/player/video/ui/tv/TvChromeController {
 	public static final field $stable I
 	public fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/Scheduler;ZZ)V
@@ -219,24 +239,30 @@ public final class tv/nomercy/player/video/ui/tv/TvChromeItemKt {
 public final class tv/nomercy/player/video/ui/tv/TvChromeStrings {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6 ()Ljava/lang/String;
 	public final fun component7 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
+	public final fun component8 ()Ljava/lang/String;
+	public final fun component9 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEpisodes ()Ljava/lang/String;
+	public final fun getLanguage ()Ljava/lang/String;
 	public final fun getLoading ()Ljava/lang/String;
 	public final fun getNext ()Ljava/lang/String;
 	public final fun getPause ()Ljava/lang/String;
 	public final fun getPlay ()Ljava/lang/String;
 	public final fun getRestart ()Ljava/lang/String;
+	public final fun getResume ()Ljava/lang/String;
+	public final fun getSearchSubtitles ()Ljava/lang/String;
 	public final fun getSubtitles ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -266,6 +292,13 @@ public final class tv/nomercy/player/video/ui/tv/TvChromeUi {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class tv/nomercy/player/video/ui/tv/TvContentCallbacks {
+	public abstract fun searchSubtitlesOnline ()V
+	public abstract fun selectAudioTrack (Ljava/lang/String;)V
+	public abstract fun selectEpisode (Ljava/lang/String;)V
+	public abstract fun selectSubtitleTrack (Ljava/lang/String;)V
+}
+
 public final class tv/nomercy/player/video/ui/tv/TvDialog : java/lang/Enum {
 	public static final field Episodes Ltv/nomercy/player/video/ui/tv/TvDialog;
 	public static final field Language Ltv/nomercy/player/video/ui/tv/TvDialog;
@@ -276,6 +309,38 @@ public final class tv/nomercy/player/video/ui/tv/TvDialog : java/lang/Enum {
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/TvDialog;
 	public static fun values ()[Ltv/nomercy/player/video/ui/tv/TvDialog;
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvDialogsKt {
+	public static final fun TvEpisodesDialog (Ljava/util/List;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun TvTrackDialog (Ljava/util/List;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvEpisode {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ltv/nomercy/player/video/ui/tv/TvEpisode;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvEpisode;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvEpisode;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getSubtitle ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isCurrent ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvMenuItemKt {
+	public static final fun TvMenuItem (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;ZLandroidx/compose/ui/focus/FocusRequester;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvPreScreenKt {
+	public static final fun TvPreScreen (Ltv/nomercy/player/video/ui/tv/TvChromeContent;Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/tv/TvSafeAreaKt {
@@ -290,6 +355,25 @@ public final class tv/nomercy/player/video/ui/tv/TvSeekContainerKt {
 
 public final class tv/nomercy/player/video/ui/tv/TvTopBarKt {
 	public static final fun TvTopBar (Ltv/nomercy/player/video/ui/tv/TvChromeItem;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvTrack {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ltv/nomercy/player/video/ui/tv/TvTrack;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvTrack;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvTrack;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getLanguage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isCurrent ()Z
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class tv/nomercy/player/video/ui/tv/TvTransportState {
