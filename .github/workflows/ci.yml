@@ -110,3 +110,51 @@ jobs:
       - name: Apple views
         working-directory: packages-native/nomercy-video-player-kmp
         run: ./apple/NoMercyPlayer/check.sh
+
+  # The desktop renderer, on the desktops it claims to run on.
+  #
+  # The build job above covers Linux, and Linux was the whole of it — a library
+  # that says it supports three desktops and is measured on one is making two of
+  # those claims up. macOS resolves libass out of Homebrew and is the second
+  # binding this code has ever been run through; Windows cannot load it at all,
+  # because the only builds in circulation are statically linked inside VLC and
+  # mpv, so there the gate skips and says which.
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            install: brew install libass
+            require: "1"
+          - os: windows-latest
+            install: ""
+            require: "0"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: packages-native/nomercy-video-player-kmp
+
+      - uses: actions/checkout@v4
+        with:
+          repository: NoMercy-Entertainment/nomercy-player-core-kmp
+          path: packages-native/nomercy-player-core-kmp
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install libass
+        if: matrix.install != ''
+        run: ${{ matrix.install }}
+
+      - name: Desktop subtitle gate
+        working-directory: packages-native/nomercy-video-player-kmp
+        env:
+          NOMERCY_REQUIRE_LIBASS: ${{ matrix.require }}
+        run: ./gradlew :subtitles-libass:jvmTest --stacktrace

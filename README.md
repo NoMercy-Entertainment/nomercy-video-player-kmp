@@ -85,4 +85,48 @@ once from upstream and published as a release asset, and the build fetches them
 not something a Gradle build should ask of a fresh machine. The archive is
 pinned by tag and checked against a digest.
 
+## What the subtitle gate proves, and where
+
+The claim being made is not that libass initialises. It is that a real anime
+track renders correctly: the Rail Wars! opening, with the Negotiate Free face it
+attaches, fetched through the same authenticated path a player uses. The same
+assertions run on every surface from one shared source file, so a binding that
+drifts is a red test rather than a difference nobody looks for.
+
+| surface | binding | where it runs | in CI |
+| --- | --- | --- | --- |
+| Android phone | JNI, `io.github.peerless2012:ass` | hardware | no |
+| Android TV | JNI, same binding | hardware | no |
+| iOS | cinterop, `ios-arm64` slice | simulator | yes |
+| tvOS | cinterop, `tvos-arm64` slice | simulator | yes |
+| Linux desktop | JNA, system `libass9` | runner | yes |
+| macOS desktop | JNA, Homebrew libass | runner | yes |
+| Windows desktop | none | runner | skips, loudly |
+
+Two of those rows are worth reading twice.
+
+**Android is not in CI and is not pretending to be.** The runners have no
+device, and an emulator running a subtitle renderer under software rendering
+measures the emulator. It runs on a Galaxy A13, a Nokia Streaming Box 8010 and
+an 8000 before anything ships, and the memory tiers exist because of what the
+8000 does to a 128MB libass cache.
+
+**Windows skips, and a skip is not a pass.** A host that installs libass on
+purpose sets `NOMERCY_REQUIRE_LIBASS=1`, and the gate then fails with the reason
+libass gave rather than printing a line nobody reads — because the Linux job had
+installed the package for a while and nothing would have noticed if the install
+stopped working.
+
+### What is still open
+
+The font manifest is a single point of failure on the server side. A missing
+`fonts.json` degrades to the system face and reports
+`plugin:subtitle/fonts-manifest-failed`, which is the right behaviour and not a
+substitute for the file being there; there is no client-side fallback that could
+supply a face the track was authored against.
+
+The Apple libass archive is built by us rather than shipped by upstream, from
+pinned sources, by `subtitles-libass/apple/libass-build/build-apple.sh`. Nobody
+upstream publishes tvOS slices, which is why this exists.
+
 [core]: https://github.com/NoMercy-Entertainment/nomercy-player-core-kmp
