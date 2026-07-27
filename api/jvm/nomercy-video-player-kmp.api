@@ -752,6 +752,10 @@ public final class tv/nomercy/player/video/input/PlayerCommands {
 	public final fun getVolume ()Ltv/nomercy/player/video/input/VideoVolume;
 }
 
+public final class tv/nomercy/player/video/input/PlayerCommandsOfKt {
+	public static final fun playerCommandsOf (Ltv/nomercy/player/video/NMVideoPlayer;Lkotlinx/coroutines/CoroutineScope;)Ltv/nomercy/player/video/input/PlayerCommands;
+}
+
 public final class tv/nomercy/player/video/input/TvBookmark {
 	public fun <init> (D)V
 	public final fun component1 ()D

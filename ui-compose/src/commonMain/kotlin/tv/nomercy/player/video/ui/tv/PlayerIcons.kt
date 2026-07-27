@@ -61,6 +61,27 @@ public object PlayerIcons {
         }
     }
 
+    // The way out of the player, for the surfaces that have one. A television
+    // leaves by the back button on the remote and needs no glyph; a phone and a
+    // desktop have nothing else to press.
+    public val Close: ImageVector by lazy {
+        glyph("Close") {
+            moveTo(6f, 7.4f)
+            lineTo(7.4f, 6f)
+            lineTo(12f, 10.6f)
+            lineTo(16.6f, 6f)
+            lineTo(18f, 7.4f)
+            lineTo(13.4f, 12f)
+            lineTo(18f, 16.6f)
+            lineTo(16.6f, 18f)
+            lineTo(12f, 13.4f)
+            lineTo(7.4f, 18f)
+            lineTo(6f, 16.6f)
+            lineTo(10.6f, 12f)
+            close()
+        }
+    }
+
     public val Restart: ImageVector by lazy {
         glyph("Restart") {
             moveTo(18f, 5f)

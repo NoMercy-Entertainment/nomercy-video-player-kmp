@@ -1,0 +1,94 @@
+// -----------------------------------------------------------------------------
+//  Copyright (c) NoMercy Entertainment
+//
+//  Licensed under the Apache License, Version 2.0. See LICENSE for details.
+//
+//  SPDX-License-Identifier: Apache-2.0
+// -----------------------------------------------------------------------------
+
+package tv.nomercy.player.video.ui.chrome
+
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import tv.nomercy.player.core.ports.AudioTrack
+import tv.nomercy.player.core.ports.QualityLevel
+import tv.nomercy.player.core.ports.SubtitleTrack
+import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.ui.chrome.menus.MenuState
+import kotlin.math.abs
+
+// What the chrome's controls do, against an actual player.
+//
+// Two of these methods do not reach the player at all: opening a menu is the
+// chrome's own business, and the bar cannot draw one over itself because it does
+// not know how large the surface is. They go back to the assembly instead, which
+// is the thing that does.
+//
+// The width is the ChromeCommands contract, which is four interfaces a widget
+// picks from rather than one a host implements from a checklist. Collapsing them
+// here to satisfy a counter would put a scrubber, a volume slider and a track
+// menu behind one method taking a verb.
+@Suppress("TooManyFunctions")
+internal class VideoChromeCommands(
+    private val player: NMVideoPlayer,
+    private val scope: CoroutineScope,
+    private val onMenu: (MenuState) -> Unit,
+) : ChromeCommands {
+
+    override fun seekTo(seconds: Double) {
+        scope.launch { player.time(seconds) }
+    }
+
+    // Through the player's own forward and rewind, which clamp against a
+    // duration that may have arrived since the chrome last read one.
+    override fun seekBy(deltaSeconds: Float) {
+        val magnitude: Double = abs(deltaSeconds.toDouble())
+
+        scope.launch {
+            if (deltaSeconds >= 0f) player.forward(magnitude) else player.rewind(magnitude)
+        }
+    }
+
+    override fun setPlaying(playing: Boolean) {
+        scope.launch { if (playing) player.play() else player.pause() }
+    }
+
+    override fun next() {
+        scope.launch { player.next() }
+    }
+
+    override fun previous() {
+        scope.launch { player.previous() }
+    }
+
+    override fun openAudioMenu(): Unit = onMenu(MenuState.Audio)
+
+    override fun openSubtitleMenu(): Unit = onMenu(MenuState.Subtitle)
+
+    override fun setVolume(percent: Int) {
+        scope.launch { player.volume(percent) }
+    }
+
+    override fun setMuted(muted: Boolean) {
+        scope.launch { if (muted) player.mute() else player.unmute() }
+    }
+
+    // Null is automatic, which the player accepts as a selection rather than as
+    // a missing one.
+    override fun selectQuality(level: QualityLevel?): Unit = player.quality(level)
+
+    override fun selectAudioTrack(track: AudioTrack): Unit = player.audioTrack(track)
+
+    override fun selectSubtitleTrack(track: SubtitleTrack?): Unit = player.subtitle(track)
+
+    override fun setRate(rate: Float) {
+        scope.launch { player.playbackRate(rate.toDouble()) }
+    }
+
+    // Recorded and announced rather than done. A player cannot put itself
+    // fullscreen: that belongs to the Activity or the window, and whatever owns
+    // one listens for this and then the two agree.
+    override fun setFullscreen(fullscreen: Boolean): Unit = player.fullscreen(fullscreen)
+
+    override fun dismissMessage(): Unit = player.clearMessage()
+}

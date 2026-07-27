@@ -98,6 +98,10 @@ public data class TvChromeStrings(
     val resume: String = "Resume",
     val language: String = "Language",
     val searchSubtitles: String = "Search online",
+    // Appended rather than placed beside the other transport labels, because a
+    // data class is positional to anyone who constructed one that way and
+    // inserting a field in the middle would silently move their arguments along.
+    val close: String = "Close",
 )
 
 internal const val BOTTOM_BAR_TAG = "tv-bottom-bar"

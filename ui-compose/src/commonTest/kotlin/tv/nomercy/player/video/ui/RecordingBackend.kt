@@ -20,7 +20,7 @@ import tv.nomercy.player.core.ports.MediaBackend
 // stateFlow, and stateFlow is only written when an engine announces something,
 // so a fake that stayed silent would leave the button forever on Play and the
 // gate would pass by measuring nothing.
-class RecordingBackend : MediaBackend {
+open class RecordingBackend : MediaBackend {
 
     private val listeners: MutableMap<String, MutableList<(Any?) -> Unit>> = mutableMapOf()
     private var playing: Boolean = false
