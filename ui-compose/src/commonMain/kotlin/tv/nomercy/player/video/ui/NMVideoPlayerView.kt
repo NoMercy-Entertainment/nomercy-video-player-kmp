@@ -8,51 +8,82 @@
 
 package tv.nomercy.player.video.ui
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import tv.nomercy.player.core.controllers.ComposedPlayer
+import tv.nomercy.player.core.cues.SpriteCue
+import tv.nomercy.player.core.device.DeviceCapabilities
+import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerState
+import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.ui.chrome.ChromeButtons
+import tv.nomercy.player.video.ui.chrome.VideoChrome
+import tv.nomercy.player.video.ui.tv.NMTvPlayerView
+import tv.nomercy.player.video.ui.tv.TvChrome
+import tv.nomercy.player.video.ui.tv.TvChromeStrings
+import tv.nomercy.player.video.ui.tv.TvEpisode
+import tv.nomercy.player.video.ui.tv.rememberTvChrome
 
-// The drop-in player: a surface with one control over it.
+// The drop-in player: everything, routed by what the device is.
 //
-// It takes the concrete ComposedPlayer rather than the Player interface, and
-// that is a finding rather than a preference: nothing implements Player<E>. The
-// interface was authored ahead of the implementation and the two have since
-// disagreed — transport is suspending on one and not the other, addPlugin has
-// different generics, and getPlugin exists on only one of them. Reconciling
-// them is real work with its own gate, and a view quietly widening to an
-// interface the player does not implement would hide it.
+// This is the whole public surface an application needs. It mounts the picture,
+// the chrome that suits the screen, and the input that screen has, and an app
+// that writes this one line gets a player a viewer can use. Nothing below it is
+// hidden — every piece it assembles is public and can be taken on its own — but
+// nobody should have to.
 //
-// The whole point of it is that an app can mount a working player before it has
-// designed one. It is deliberately not the full chrome — no scrubber, no track
-// menus — because a skeleton that grew a feature would stop being the thing you
-// can drop in on day one and start being a thing you have to configure.
-//
-// The control reads stateFlow rather than remembering whether it called play.
-// A player that pauses itself — end of item, an interruption, another app
-// taking audio focus — leaves a remembered flag lying, and a play button that
-// lies about what the player is doing is worse than no button.
+// The routing is on the capability contract rather than on a build flavour,
+// because the two clients this replaces each decided what a device was for
+// themselves and disagreed: the same tablet was a phone in one and a television
+// in the other. One answer, asked of the platform, used everywhere.
 @Composable
 public fun NMVideoPlayerView(
-    player: ComposedPlayer,
-    surface: VideoSurface,
+    player: NMVideoPlayer,
     modifier: Modifier = Modifier,
+    capabilities: DeviceCapabilities = rememberDeviceCapabilities(),
+    strings: TvChromeStrings = TvChromeStrings(),
+    buttons: ChromeButtons = ChromeButtons(),
+    sprite: List<SpriteCue> = emptyList(),
+    episodes: List<TvEpisode> = emptyList(),
+    onClose: () -> Unit = {},
+    surface: VideoSurface? = null,
 ) {
-    val state: State<PlayerState> = player.stateFlow.collectAsState()
+    val picture: @Composable () -> Unit = { surface?.let { PlayerSurface(it, Modifier.fillMaxSize()) } }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        PlayerSurface(surface, Modifier.fillMaxSize())
-        PlayerControls(player, Modifier.align(Alignment.Center))
+    when (capabilities.formFactor) {
+        FormFactor.Tv -> {
+            val chrome: TvChrome = rememberTvChrome(player, episodes, onClose)
+
+            NMTvPlayerView(
+                controller = chrome.controller,
+                transport = chrome.transport,
+                content = chrome.content,
+                strings = strings,
+                modifier = modifier,
+                surface = picture,
+            )
+        }
+
+        // A tablet is a phone with more room, not a third chrome. The controls
+        // are the same size under a finger either way, and a layout that spread
+        // them out would put the transport further from the thumb holding it.
+        FormFactor.Phone, FormFactor.Tablet, FormFactor.Desktop -> VideoChrome(
+            player = player,
+            formFactor = capabilities.formFactor,
+            modifier = modifier,
+            strings = strings,
+            buttons = buttons,
+            sprite = sprite,
+            onClose = onClose,
+            surface = picture,
+        )
     }
 }
 
@@ -65,12 +96,12 @@ public fun NMVideoPlayerView(
 // takes exactly this seam.
 @Composable
 public fun PlayerControls(player: ComposedPlayer, modifier: Modifier = Modifier) {
-    val state: State<PlayerState> = player.stateFlow.collectAsState()
+    val state: PlayerState by player.stateFlow.collectAsState()
     val scope: CoroutineScope = rememberCoroutineScope()
 
     PlayPauseControl(
-        playing = state.value.playState == PlayState.PLAYING,
-        onToggle = { scope.launch { togglePlayback(player, state.value) } },
+        playing = state.playState == PlayState.PLAYING,
+        onToggle = { scope.launch { togglePlayback(player, state) } },
         modifier = modifier,
     )
 }

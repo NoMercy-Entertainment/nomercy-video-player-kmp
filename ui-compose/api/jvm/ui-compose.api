@@ -1,5 +1,5 @@
 public final class tv/nomercy/player/video/ui/NMVideoPlayerViewKt {
-	public static final fun NMVideoPlayerView (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/video/ui/VideoSurface;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun NMVideoPlayerView (Ltv/nomercy/player/video/NMVideoPlayer;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/core/device/DeviceCapabilities;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/VideoSurface;Landroidx/compose/runtime/Composer;II)V
 	public static final fun PlayerControls (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 	public static final fun rememberIsPlaying (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/runtime/Composer;I)Z
 	public static final fun togglePlayback (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/core/player/PlayerState;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -11,6 +11,10 @@ public final class tv/nomercy/player/video/ui/PlayPauseControlKt {
 
 public final class tv/nomercy/player/video/ui/PlayerSurface_jvmKt {
 	public static final fun PlayerSurface (Ltv/nomercy/player/video/ui/VideoSurface;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;I)V
+}
+
+public final class tv/nomercy/player/video/ui/RememberDeviceCapabilitiesKt {
+	public static final fun rememberDeviceCapabilities (Landroidx/compose/runtime/Composer;I)Ltv/nomercy/player/core/device/DeviceCapabilities;
 }
 
 public final class tv/nomercy/player/video/ui/RemoteControlKt {
@@ -505,6 +509,14 @@ public final class tv/nomercy/player/video/ui/tv/TvChapter {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/ui/tv/TvChrome {
+	public static final field $stable I
+	public fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeController;Ltv/nomercy/player/video/ui/tv/TvTransportState;Ltv/nomercy/player/video/ui/tv/TvChromeContent;)V
+	public final fun getContent ()Ltv/nomercy/player/video/ui/tv/TvChromeContent;
+	public final fun getController ()Ltv/nomercy/player/video/ui/tv/TvChromeController;
+	public final fun getTransport ()Ltv/nomercy/player/video/ui/tv/TvTransportState;
+}
+
 public abstract interface class tv/nomercy/player/video/ui/tv/TvChromeCallbacks {
 	public abstract fun exitPlayer ()V
 	public abstract fun next ()V
@@ -585,6 +597,10 @@ public final class tv/nomercy/player/video/ui/tv/TvChromeItemKt {
 	public static final fun episodeLabel (Ltv/nomercy/player/video/ui/tv/TvChromeItem;Ltv/nomercy/player/video/ui/tv/EpisodeLabels;)Ljava/lang/String;
 	public static synthetic fun episodeLabel$default (Ltv/nomercy/player/video/ui/tv/TvChromeItem;Ltv/nomercy/player/video/ui/tv/EpisodeLabels;ILjava/lang/Object;)Ljava/lang/String;
 	public static final fun showTitle (Ltv/nomercy/player/video/ui/tv/TvChromeItem;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/tv/TvChromeKt {
+	public static final fun rememberTvChrome (Ltv/nomercy/player/video/NMVideoPlayer;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)Ltv/nomercy/player/video/ui/tv/TvChrome;
 }
 
 public final class tv/nomercy/player/video/ui/tv/TvChromeStrings {
