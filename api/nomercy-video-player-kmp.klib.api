@@ -25,6 +25,25 @@ final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.pla
     }
 }
 
+final class tv.nomercy.player.video.chapters/ChapterMarker { // tv.nomercy.player.video.chapters/ChapterMarker|null[0]
+    constructor <init>(kotlin/Int, kotlin/Double, kotlin/Double) // tv.nomercy.player.video.chapters/ChapterMarker.<init>|<init>(kotlin.Int;kotlin.Double;kotlin.Double){}[0]
+
+    final val index // tv.nomercy.player.video.chapters/ChapterMarker.index|{}index[0]
+        final fun <get-index>(): kotlin/Int // tv.nomercy.player.video.chapters/ChapterMarker.index.<get-index>|<get-index>(){}[0]
+    final val leftPercent // tv.nomercy.player.video.chapters/ChapterMarker.leftPercent|{}leftPercent[0]
+        final fun <get-leftPercent>(): kotlin/Double // tv.nomercy.player.video.chapters/ChapterMarker.leftPercent.<get-leftPercent>|<get-leftPercent>(){}[0]
+    final val rightPercent // tv.nomercy.player.video.chapters/ChapterMarker.rightPercent|{}rightPercent[0]
+        final fun <get-rightPercent>(): kotlin/Double // tv.nomercy.player.video.chapters/ChapterMarker.rightPercent.<get-rightPercent>|<get-rightPercent>(){}[0]
+
+    final fun component1(): kotlin/Int // tv.nomercy.player.video.chapters/ChapterMarker.component1|component1(){}[0]
+    final fun component2(): kotlin/Double // tv.nomercy.player.video.chapters/ChapterMarker.component2|component2(){}[0]
+    final fun component3(): kotlin/Double // tv.nomercy.player.video.chapters/ChapterMarker.component3|component3(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Double = ..., kotlin/Double = ...): tv.nomercy.player.video.chapters/ChapterMarker // tv.nomercy.player.video.chapters/ChapterMarker.copy|copy(kotlin.Int;kotlin.Double;kotlin.Double){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.chapters/ChapterMarker.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.chapters/ChapterMarker.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.chapters/ChapterMarker.toString|toString(){}[0]
+}
+
 final class tv.nomercy.player.video/AspectRatioChange { // tv.nomercy.player.video/AspectRatioChange|null[0]
     constructor <init>(tv.nomercy.player.video/Stretching) // tv.nomercy.player.video/AspectRatioChange.<init>|<init>(tv.nomercy.player.video.Stretching){}[0]
 
@@ -295,6 +314,8 @@ final object tv.nomercy.player.video/VideoEvents { // tv.nomercy.player.video/Vi
         final fun <get-all>(): kotlin.collections/List<tv.nomercy.player.core.events/EventKey<*>> // tv.nomercy.player.video/VideoEvents.all.<get-all>|<get-all>(){}[0]
 }
 
+final fun tv.nomercy.player.video.chapters/chapterFill(tv.nomercy.player.video.chapters/ChapterMarker, kotlin/Double): kotlin/Double // tv.nomercy.player.video.chapters/chapterFill|chapterFill(tv.nomercy.player.video.chapters.ChapterMarker;kotlin.Double){}[0]
+final fun tv.nomercy.player.video.chapters/chapterMarkers(kotlin.collections/List<tv.nomercy.player.core.media/Chapter>, kotlin/Double): kotlin.collections/List<tv.nomercy.player.video.chapters/ChapterMarker> // tv.nomercy.player.video.chapters/chapterMarkers|chapterMarkers(kotlin.collections.List<tv.nomercy.player.core.media.Chapter>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): tv.nomercy.player.core.cues/SpriteCue? // tv.nomercy.player.video.thumbnails/frameAt|frameAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameIndexAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): kotlin/Int? // tv.nomercy.player.video.thumbnails/frameIndexAt|frameIndexAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/spriteFrameAspect(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Float // tv.nomercy.player.video.thumbnails/spriteFrameAspect|spriteFrameAspect(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]

@@ -27,6 +27,32 @@ public final class tv/nomercy/player/video/ui/VideoSurface_jvmKt {
 	public static final fun VideoSurface (Ltv/nomercy/player/core/ports/VlcjVideoBackend;)Ltv/nomercy/player/video/ui/VideoSurface;
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChapterBarColors {
+	public static final field $stable I
+	public synthetic fun <init> (JJJJJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (JJJJJLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBuffer-0d7_KjU ()J
+	public final fun getHover-0d7_KjU ()J
+	public final fun getProgress-0d7_KjU ()J
+	public final fun getSegment-0d7_KjU ()J
+	public final fun getTrack-0d7_KjU ()J
+}
+
+public final class tv/nomercy/player/video/ui/chrome/ChapterBarState {
+	public static final field $stable I
+	public fun <init> (DDDLjava/util/List;Ljava/lang/Double;)V
+	public synthetic fun <init> (DDDLjava/util/List;Ljava/lang/Double;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getBufferedFraction ()D
+	public final fun getChapters ()Ljava/util/List;
+	public final fun getCurrentSeconds ()D
+	public final fun getDuration ()D
+	public final fun getHoverSeconds ()Ljava/lang/Double;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/ChapterProgressBarKt {
+	public static final fun ChapterProgressBar-FJfuzF0 (Ltv/nomercy/player/video/ui/chrome/ChapterBarState;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/ChapterBarColors;FLandroidx/compose/runtime/Composer;II)V
+}
+
 public class tv/nomercy/player/video/ui/thumbnails/PreviewSprite {
 	public static final field $stable I
 	public fun <init> (Ljava/util/List;Ltv/nomercy/player/video/ui/thumbnails/SpriteTileSource;)V

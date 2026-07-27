@@ -223,6 +223,26 @@ public final class tv/nomercy/player/video/ViewModeChange {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/chapters/ChapterMarker {
+	public fun <init> (IDD)V
+	public final fun component1 ()I
+	public final fun component2 ()D
+	public final fun component3 ()D
+	public final fun copy (IDD)Ltv/nomercy/player/video/chapters/ChapterMarker;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/chapters/ChapterMarker;IDDILjava/lang/Object;)Ltv/nomercy/player/video/chapters/ChapterMarker;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIndex ()I
+	public final fun getLeftPercent ()D
+	public final fun getRightPercent ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/chapters/ChapterMarkerMathKt {
+	public static final fun chapterFill (Ltv/nomercy/player/video/chapters/ChapterMarker;D)D
+	public static final fun chapterMarkers (Ljava/util/List;D)Ljava/util/List;
+}
+
 public final class tv/nomercy/player/video/subtitles/AssFontNames {
 	public static final field INSTANCE Ltv/nomercy/player/video/subtitles/AssFontNames;
 	public final fun parse (Ljava/lang/String;)Ljava/util/List;
