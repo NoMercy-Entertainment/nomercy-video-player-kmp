@@ -15,6 +15,7 @@ import org.junit.Test
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.BackendEvents
 import tv.nomercy.player.core.ports.BackendState
+import tv.nomercy.player.core.ports.CanonicalBackendEvent
 import tv.nomercy.player.core.ports.ExoPlayerVideoBackend
 import tv.nomercy.player.core.ports.LoadOptions
 import tv.nomercy.player.core.ports.SubtitleTrack
@@ -42,7 +43,7 @@ class EndToEndPlaybackTest {
     private val context: Context
         get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    private fun playing(name: String, body: (NMVideoPlayer) -> Unit) {
+    private fun playing(name: String, body: (NMVideoPlayer, ExoPlayerVideoBackend) -> Unit) {
         val media: File = writeDualAudioClip(File(context.cacheDir, name))
         val backend = ExoPlayerVideoBackend(context)
         val player = NMVideoPlayer(backend, video = backend)
@@ -62,7 +63,7 @@ class EndToEndPlaybackTest {
                 ready.await(READY_TIMEOUT_S, TimeUnit.SECONDS),
                 "the engine never reported metadata for a file it was handed",
             )
-            body(player)
+            body(player, backend)
         } finally {
             backend.release()
             media.delete()
@@ -75,7 +76,7 @@ class EndToEndPlaybackTest {
         // engine to core's video slot answers empty here — and empty is what a
         // title with no alternate audio also looks like, which is why this went
         // unnoticed.
-        playing("e2e-tracks.mp4") { player ->
+        playing("e2e-tracks.mp4") { player, _ ->
             val audio: List<AudioTrack> = player.audioTracks()
 
             assertEquals(EXPECTED_DUBS, audio.size, "the library reports ${audio.size} dubs, the file has $EXPECTED_DUBS")
@@ -90,7 +91,7 @@ class EndToEndPlaybackTest {
         // are different orders and binding a control to the raw index is a
         // recurring defect here: the menu highlights one row and the sound
         // comes from another.
-        playing("e2e-cycle-audio.mp4") { player ->
+        playing("e2e-cycle-audio.mp4") { player, _ ->
             val before: AudioTrack = assertNotNull(player.audioTrack())
 
             player.cycleAudioTracks()
@@ -110,7 +111,7 @@ class EndToEndPlaybackTest {
         // Two tracks means the second cycle returns to the first. A cycle that
         // walked off the end would leave a viewer unable to get back to the
         // audio they started on without reopening the title.
-        playing("e2e-cycle-wrap.mp4") { player ->
+        playing("e2e-cycle-wrap.mp4") { player, _ ->
             val start: AudioTrack = assertNotNull(player.audioTrack())
 
             repeat(EXPECTED_DUBS) {
@@ -126,7 +127,7 @@ class EndToEndPlaybackTest {
     fun anExternalSubtitleJoinsTheEnginesOwnList() {
         // Sidecar subtitles are the common case for this library — the engine
         // knows nothing about them, and the merged list is what a menu draws.
-        playing("e2e-subs.mp4") { player ->
+        playing("e2e-subs.mp4") { player, _ ->
             val fromEngine: Int = player.subtitles().size
             val sidecar = SubtitleTrack(id = "sidecar-nl", language = "nl", label = "Nederlands", format = "ass")
 
@@ -141,11 +142,55 @@ class EndToEndPlaybackTest {
     }
 
     @Test
+    fun theEngineAnnouncesTheCanonicalSpineToTheLibrarysConsumers() {
+        // The event vocabulary is the contract every chrome in the ecosystem is
+        // written against, and this is the only place it is observed arriving
+        // through the video library rather than straight off a backend. A
+        // consumer subscribes here, not to Media3.
+        //
+        // The recorder is local because core's lives in its test source set,
+        // which is not published — a downstream consumer could not use it
+        // either, so a gate that borrowed it would be testing a path nobody has.
+        val seen: MutableList<String> = mutableListOf()
+
+        playing("e2e-spine.mp4") { player, backend ->
+            SPINE.forEach { name -> backend.on(name) { synchronized(seen) { seen += name } } }
+
+            runBlocking { player.play() }
+            Thread.sleep(PLAY_MS)
+            runBlocking { player.pause() }
+            Thread.sleep(SETTLE_MS)
+        }
+
+        assertCanonicalSubsequence(synchronized(seen) { seen.toList() }, SPINE)
+    }
+
+    // A subsequence, not an equality. The engine emits more than these — the
+    // timeupdate alone repeats several times a second — and pinning an exact
+    // list would make every future event a breaking change. What must hold is
+    // the order of the ones a consumer builds behaviour on.
+    //
+    // Verified by reversing the required order and watching it redden, because
+    // a subsequence check that always passes is indistinguishable from one that
+    // works until the day it matters.
+    private fun assertCanonicalSubsequence(recorded: List<String>, required: List<String>) {
+        var index = 0
+        for (name in recorded) {
+            if (index < required.size && name == required[index]) index++
+        }
+        assertEquals(
+            required.size,
+            index,
+            "canonical order not satisfied. required in this order: $required, recorded: $recorded",
+        )
+    }
+
+    @Test
     fun theTransportSurvivesTheWholeStack() {
         // Play and pause through the library rather than the backend, so the
         // controllers between them are in the path. State is read back off the
         // engine because that is the one that actually has to have moved.
-        playing("e2e-transport.mp4") { player ->
+        playing("e2e-transport.mp4") { player, _ ->
             runBlocking { player.play() }
             Thread.sleep(PLAY_MS)
             val advanced: Boolean = player.time() > 0.0
@@ -167,3 +212,12 @@ private const val READY_TIMEOUT_S = 20L
 private const val SETTLE_MS = 1_200L
 private const val PLAY_MS = 2_000L
 private const val EXPECTED_DUBS = 2
+
+// The order a consumer builds behaviour on. Loadstart is not in it because it
+// fires before this gate can subscribe — the load is what makes the engine
+// exist to subscribe to.
+private val SPINE: List<String> = listOf(
+    CanonicalBackendEvent.PLAY,
+    CanonicalBackendEvent.TIME_UPDATE,
+    CanonicalBackendEvent.PAUSE,
+)
