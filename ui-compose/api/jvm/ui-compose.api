@@ -98,6 +98,12 @@ public final class tv/nomercy/player/video/ui/tv/ChapterProgressBarKt {
 	public static final fun ChapterProgressBar (DDLjava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class tv/nomercy/player/video/ui/tv/ComposableSingletons$NMTvPlayerViewKt {
+	public static final field INSTANCE Ltv/nomercy/player/video/ui/tv/ComposableSingletons$NMTvPlayerViewKt;
+	public fun <init> ()V
+	public final fun getLambda$-253622588$ui_compose ()Lkotlin/jvm/functions/Function2;
+}
+
 public final class tv/nomercy/player/video/ui/tv/EpisodeLabels {
 	public static final field $stable I
 	public fun <init> ()V
@@ -118,6 +124,10 @@ public final class tv/nomercy/player/video/ui/tv/EpisodeLabels {
 
 public final class tv/nomercy/player/video/ui/tv/FormatTimeKt {
 	public static final fun formatTime (D)Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/tv/NMTvPlayerViewKt {
+	public static final fun NMTvPlayerView (Ltv/nomercy/player/video/ui/tv/TvChromeController;Ltv/nomercy/player/video/ui/tv/TvTransportState;Ltv/nomercy/player/video/ui/tv/TvChromeContent;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/tv/PlayerIconButtonKt {
@@ -191,12 +201,16 @@ public final class tv/nomercy/player/video/ui/tv/TvChromeContent {
 
 public final class tv/nomercy/player/video/ui/tv/TvChromeController {
 	public static final field $stable I
-	public fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/Scheduler;ZZ)V
-	public synthetic fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/Scheduler;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/Scheduler;ZZLtv/nomercy/player/video/ui/tv/TvContentCallbacks;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/Scheduler;ZZLtv/nomercy/player/video/ui/tv/TvContentCallbacks;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun cancelSeek ()Z
+	public final fun chooseAudioTrack (Ljava/lang/String;)V
+	public final fun chooseEpisode (Ljava/lang/String;)V
+	public final fun chooseSubtitleTrack (Ljava/lang/String;)V
 	public final fun commitSeek (F)V
 	public final fun dismissPreScreen ()V
 	public final fun dispose ()V
+	public final fun getCallbacks ()Ltv/nomercy/player/video/ui/tv/TvChromeCallbacks;
 	public final fun getUi ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun onBack ()Z
 	public final fun onKey (Ltv/nomercy/player/core/input/PlayerKey;)Z

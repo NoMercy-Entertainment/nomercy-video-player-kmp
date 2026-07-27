@@ -31,10 +31,11 @@ import tv.nomercy.player.core.input.PlayerKey
 // be read.
 @Suppress("TooManyFunctions")
 public class TvChromeController(
-    private val callbacks: TvChromeCallbacks,
+    public val callbacks: TvChromeCallbacks,
     private val scheduler: Scheduler,
     private var playing: Boolean = false,
     startOnPreScreen: Boolean = true,
+    private val content: TvContentCallbacks? = null,
 ) {
 
     private val state = MutableStateFlow(TvChromeUi(preScreenVisible = startOnPreScreen))
@@ -153,6 +154,24 @@ public class TvChromeController(
     private fun leave(): Boolean {
         callbacks.exitPlayer()
         return true
+    }
+
+    // Choosing closes the list. A viewer who picked a track is done with it, and
+    // leaving it open means a second press to get back to the film they changed
+    // it for.
+    public fun chooseEpisode(id: String) {
+        content?.selectEpisode(id)
+        returnToPreScreen()
+    }
+
+    public fun chooseAudioTrack(id: String) {
+        content?.selectAudioTrack(id)
+        returnToPreScreen()
+    }
+
+    public fun chooseSubtitleTrack(id: String) {
+        content?.selectSubtitleTrack(id)
+        returnToPreScreen()
     }
 
     public fun openDialog(dialog: TvDialog) {
