@@ -752,6 +752,79 @@ public final class tv/nomercy/player/video/input/PlayerCommands {
 	public final fun getVolume ()Ltv/nomercy/player/video/input/VideoVolume;
 }
 
+public final class tv/nomercy/player/video/input/TvBookmark {
+	public fun <init> (D)V
+	public final fun component1 ()D
+	public final fun copy (D)Ltv/nomercy/player/video/input/TvBookmark;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/TvBookmark;DILjava/lang/Object;)Ltv/nomercy/player/video/input/TvBookmark;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getTimeSeconds ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/input/TvKeyEvents {
+	public static final field INSTANCE Ltv/nomercy/player/video/input/TvKeyEvents;
+	public final fun getBookmark ()Ltv/nomercy/player/core/events/EventKey;
+	public final fun getBookmarkOnPlayer ()Ltv/nomercy/player/core/events/EventKey;
+	public final fun getInfo ()Ltv/nomercy/player/core/events/EventKey;
+	public final fun getInfoOnPlayer ()Ltv/nomercy/player/core/events/EventKey;
+}
+
+public final class tv/nomercy/player/video/input/TvKeyHandlerOptions {
+	public fun <init> ()V
+	public fun <init> (IJ)V
+	public synthetic fun <init> (IJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()J
+	public final fun copy (IJ)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/TvKeyHandlerOptions;IJILjava/lang/Object;)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getArrowSeekSeconds ()I
+	public final fun getInfoDisplayMs ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public class tv/nomercy/player/video/input/TvKeyHandlerPlugin : tv/nomercy/player/video/input/VideoKeyHandlerPlugin {
+	public static final field Manifest Ltv/nomercy/player/video/input/TvKeyHandlerPlugin$Manifest;
+	public fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/input/TvKeyHandlerOptions;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/input/TvKeyHandlerOptions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun addAspectRatioKeys ()V
+	protected fun addBookmarkKey ()V
+	protected fun addDefaults ()V
+	protected fun addInfoKey ()V
+	protected fun addNavigationKeys ()V
+	protected fun addVolumeKeys ()V
+	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
+}
+
+public final class tv/nomercy/player/video/input/TvKeyHandlerPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
+	public fun getContributions ()Ljava/util/List;
+	public fun getId ()Ljava/lang/String;
+	public fun getMinCoreVersion ()Ljava/lang/String;
+	public fun getPriority ()I
+	public fun getReplaces ()Ljava/util/List;
+	public fun getRequires ()Ljava/util/List;
+	public fun getTranslations ()Ljava/util/Map;
+	public fun getVersion ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/input/TvPlaybackSummary {
+	public fun <init> (DDJ)V
+	public final fun component1 ()D
+	public final fun component2 ()D
+	public final fun component3 ()J
+	public final fun copy (DDJ)Ltv/nomercy/player/video/input/TvPlaybackSummary;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/TvPlaybackSummary;DDJILjava/lang/Object;)Ltv/nomercy/player/video/input/TvPlaybackSummary;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDisplayForMs ()J
+	public final fun getDurationSeconds ()D
+	public final fun getTimeSeconds ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public class tv/nomercy/player/video/input/VideoKeyHandlerPlugin : tv/nomercy/player/core/input/KeyHandlerPlugin {
 	public static final field Manifest Ltv/nomercy/player/video/input/VideoKeyHandlerPlugin$Manifest;
 	public fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Lkotlin/jvm/functions/Function0;)V

@@ -520,6 +520,54 @@ final class tv.nomercy.player.video.input/PlayerCommands { // tv.nomercy.player.
         final fun <get-volume>(): tv.nomercy.player.video.input/VideoVolume // tv.nomercy.player.video.input/PlayerCommands.volume.<get-volume>|<get-volume>(){}[0]
 }
 
+final class tv.nomercy.player.video.input/TvBookmark { // tv.nomercy.player.video.input/TvBookmark|null[0]
+    constructor <init>(kotlin/Double) // tv.nomercy.player.video.input/TvBookmark.<init>|<init>(kotlin.Double){}[0]
+
+    final val timeSeconds // tv.nomercy.player.video.input/TvBookmark.timeSeconds|{}timeSeconds[0]
+        final fun <get-timeSeconds>(): kotlin/Double // tv.nomercy.player.video.input/TvBookmark.timeSeconds.<get-timeSeconds>|<get-timeSeconds>(){}[0]
+
+    final fun component1(): kotlin/Double // tv.nomercy.player.video.input/TvBookmark.component1|component1(){}[0]
+    final fun copy(kotlin/Double = ...): tv.nomercy.player.video.input/TvBookmark // tv.nomercy.player.video.input/TvBookmark.copy|copy(kotlin.Double){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.input/TvBookmark.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.input/TvBookmark.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.input/TvBookmark.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.input/TvKeyHandlerOptions { // tv.nomercy.player.video.input/TvKeyHandlerOptions|null[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Long = ...) // tv.nomercy.player.video.input/TvKeyHandlerOptions.<init>|<init>(kotlin.Int;kotlin.Long){}[0]
+
+    final val arrowSeekSeconds // tv.nomercy.player.video.input/TvKeyHandlerOptions.arrowSeekSeconds|{}arrowSeekSeconds[0]
+        final fun <get-arrowSeekSeconds>(): kotlin/Int // tv.nomercy.player.video.input/TvKeyHandlerOptions.arrowSeekSeconds.<get-arrowSeekSeconds>|<get-arrowSeekSeconds>(){}[0]
+    final val infoDisplayMs // tv.nomercy.player.video.input/TvKeyHandlerOptions.infoDisplayMs|{}infoDisplayMs[0]
+        final fun <get-infoDisplayMs>(): kotlin/Long // tv.nomercy.player.video.input/TvKeyHandlerOptions.infoDisplayMs.<get-infoDisplayMs>|<get-infoDisplayMs>(){}[0]
+
+    final fun component1(): kotlin/Int // tv.nomercy.player.video.input/TvKeyHandlerOptions.component1|component1(){}[0]
+    final fun component2(): kotlin/Long // tv.nomercy.player.video.input/TvKeyHandlerOptions.component2|component2(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Long = ...): tv.nomercy.player.video.input/TvKeyHandlerOptions // tv.nomercy.player.video.input/TvKeyHandlerOptions.copy|copy(kotlin.Int;kotlin.Long){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.input/TvKeyHandlerOptions.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.input/TvKeyHandlerOptions.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.input/TvPlaybackSummary { // tv.nomercy.player.video.input/TvPlaybackSummary|null[0]
+    constructor <init>(kotlin/Double, kotlin/Double, kotlin/Long) // tv.nomercy.player.video.input/TvPlaybackSummary.<init>|<init>(kotlin.Double;kotlin.Double;kotlin.Long){}[0]
+
+    final val displayForMs // tv.nomercy.player.video.input/TvPlaybackSummary.displayForMs|{}displayForMs[0]
+        final fun <get-displayForMs>(): kotlin/Long // tv.nomercy.player.video.input/TvPlaybackSummary.displayForMs.<get-displayForMs>|<get-displayForMs>(){}[0]
+    final val durationSeconds // tv.nomercy.player.video.input/TvPlaybackSummary.durationSeconds|{}durationSeconds[0]
+        final fun <get-durationSeconds>(): kotlin/Double // tv.nomercy.player.video.input/TvPlaybackSummary.durationSeconds.<get-durationSeconds>|<get-durationSeconds>(){}[0]
+    final val timeSeconds // tv.nomercy.player.video.input/TvPlaybackSummary.timeSeconds|{}timeSeconds[0]
+        final fun <get-timeSeconds>(): kotlin/Double // tv.nomercy.player.video.input/TvPlaybackSummary.timeSeconds.<get-timeSeconds>|<get-timeSeconds>(){}[0]
+
+    final fun component1(): kotlin/Double // tv.nomercy.player.video.input/TvPlaybackSummary.component1|component1(){}[0]
+    final fun component2(): kotlin/Double // tv.nomercy.player.video.input/TvPlaybackSummary.component2|component2(){}[0]
+    final fun component3(): kotlin/Long // tv.nomercy.player.video.input/TvPlaybackSummary.component3|component3(){}[0]
+    final fun copy(kotlin/Double = ..., kotlin/Double = ..., kotlin/Long = ...): tv.nomercy.player.video.input/TvPlaybackSummary // tv.nomercy.player.video.input/TvPlaybackSummary.copy|copy(kotlin.Double;kotlin.Double;kotlin.Long){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.input/TvPlaybackSummary.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.input/TvPlaybackSummary.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.input/TvPlaybackSummary.toString|toString(){}[0]
+}
+
 final class tv.nomercy.player.video/AspectRatioChange { // tv.nomercy.player.video/AspectRatioChange|null[0]
     constructor <init>(tv.nomercy.player.video/Stretching) // tv.nomercy.player.video/AspectRatioChange.<init>|<init>(tv.nomercy.player.video.Stretching){}[0]
 
@@ -795,6 +843,27 @@ open class tv.nomercy.player.video.cast/VideoCastPlugin : tv.nomercy.player.core
     }
 }
 
+open class tv.nomercy.player.video.input/TvKeyHandlerPlugin : tv.nomercy.player.video.input/VideoKeyHandlerPlugin { // tv.nomercy.player.video.input/TvKeyHandlerPlugin|null[0]
+    constructor <init>(tv.nomercy.player.video.input/PlayerCommands, tv.nomercy.player.core.device/DeviceCapabilities, kotlin/Function0<kotlin/Long>, tv.nomercy.player.video.input/TvKeyHandlerOptions = ...) // tv.nomercy.player.video.input/TvKeyHandlerPlugin.<init>|<init>(tv.nomercy.player.video.input.PlayerCommands;tv.nomercy.player.core.device.DeviceCapabilities;kotlin.Function0<kotlin.Long>;tv.nomercy.player.video.input.TvKeyHandlerOptions){}[0]
+
+    open val manifest // tv.nomercy.player.video.input/TvKeyHandlerPlugin.manifest|{}manifest[0]
+        open fun <get-manifest>(): tv.nomercy.player.core.plugin/PluginManifest // tv.nomercy.player.video.input/TvKeyHandlerPlugin.manifest.<get-manifest>|<get-manifest>(){}[0]
+
+    open fun addAspectRatioKeys() // tv.nomercy.player.video.input/TvKeyHandlerPlugin.addAspectRatioKeys|addAspectRatioKeys(){}[0]
+    open fun addBookmarkKey() // tv.nomercy.player.video.input/TvKeyHandlerPlugin.addBookmarkKey|addBookmarkKey(){}[0]
+    open fun addDefaults() // tv.nomercy.player.video.input/TvKeyHandlerPlugin.addDefaults|addDefaults(){}[0]
+    open fun addInfoKey() // tv.nomercy.player.video.input/TvKeyHandlerPlugin.addInfoKey|addInfoKey(){}[0]
+    open fun addNavigationKeys() // tv.nomercy.player.video.input/TvKeyHandlerPlugin.addNavigationKeys|addNavigationKeys(){}[0]
+    open fun addVolumeKeys() // tv.nomercy.player.video.input/TvKeyHandlerPlugin.addVolumeKeys|addVolumeKeys(){}[0]
+
+    final object Manifest : tv.nomercy.player.core.plugin/PluginManifest { // tv.nomercy.player.video.input/TvKeyHandlerPlugin.Manifest|null[0]
+        final val id // tv.nomercy.player.video.input/TvKeyHandlerPlugin.Manifest.id|{}id[0]
+            final fun <get-id>(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerPlugin.Manifest.id.<get-id>|<get-id>(){}[0]
+        final val version // tv.nomercy.player.video.input/TvKeyHandlerPlugin.Manifest.version|{}version[0]
+            final fun <get-version>(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerPlugin.Manifest.version.<get-version>|<get-version>(){}[0]
+    }
+}
+
 open class tv.nomercy.player.video.input/VideoKeyHandlerPlugin : tv.nomercy.player.core.input/KeyHandlerPlugin<kotlin/Unit> { // tv.nomercy.player.video.input/VideoKeyHandlerPlugin|null[0]
     constructor <init>(tv.nomercy.player.video.input/PlayerCommands, tv.nomercy.player.core.device/DeviceCapabilities, kotlin/Function0<kotlin/Long>) // tv.nomercy.player.video.input/VideoKeyHandlerPlugin.<init>|<init>(tv.nomercy.player.video.input.PlayerCommands;tv.nomercy.player.core.device.DeviceCapabilities;kotlin.Function0<kotlin.Long>){}[0]
 
@@ -868,6 +937,17 @@ open class tv.nomercy.player.video/NMVideoPlayer : tv.nomercy.player.core.contro
     final object Companion { // tv.nomercy.player.video/NMVideoPlayer.Companion|null[0]
         final fun instances(): kotlin.collections/List<tv.nomercy.player.video/NMVideoPlayer> // tv.nomercy.player.video/NMVideoPlayer.Companion.instances|instances(){}[0]
     }
+}
+
+final object tv.nomercy.player.video.input/TvKeyEvents { // tv.nomercy.player.video.input/TvKeyEvents|null[0]
+    final val Bookmark // tv.nomercy.player.video.input/TvKeyEvents.Bookmark|{}Bookmark[0]
+        final fun <get-Bookmark>(): tv.nomercy.player.core.events/EventKey<tv.nomercy.player.video.input/TvBookmark> // tv.nomercy.player.video.input/TvKeyEvents.Bookmark.<get-Bookmark>|<get-Bookmark>(){}[0]
+    final val BookmarkOnPlayer // tv.nomercy.player.video.input/TvKeyEvents.BookmarkOnPlayer|{}BookmarkOnPlayer[0]
+        final fun <get-BookmarkOnPlayer>(): tv.nomercy.player.core.events/EventKey<tv.nomercy.player.video.input/TvBookmark> // tv.nomercy.player.video.input/TvKeyEvents.BookmarkOnPlayer.<get-BookmarkOnPlayer>|<get-BookmarkOnPlayer>(){}[0]
+    final val Info // tv.nomercy.player.video.input/TvKeyEvents.Info|{}Info[0]
+        final fun <get-Info>(): tv.nomercy.player.core.events/EventKey<tv.nomercy.player.video.input/TvPlaybackSummary> // tv.nomercy.player.video.input/TvKeyEvents.Info.<get-Info>|<get-Info>(){}[0]
+    final val InfoOnPlayer // tv.nomercy.player.video.input/TvKeyEvents.InfoOnPlayer|{}InfoOnPlayer[0]
+        final fun <get-InfoOnPlayer>(): tv.nomercy.player.core.events/EventKey<tv.nomercy.player.video.input/TvPlaybackSummary> // tv.nomercy.player.video.input/TvKeyEvents.InfoOnPlayer.<get-InfoOnPlayer>|<get-InfoOnPlayer>(){}[0]
 }
 
 final object tv.nomercy.player.video.subtitles/AssFontNames { // tv.nomercy.player.video.subtitles/AssFontNames|null[0]
