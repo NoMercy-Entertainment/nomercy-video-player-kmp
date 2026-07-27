@@ -844,10 +844,14 @@ final object tv.nomercy.player.video/VideoEvents { // tv.nomercy.player.video/Vi
 
 final const val tv.nomercy.player.video.cast/CAST_SOURCE // tv.nomercy.player.video.cast/CAST_SOURCE|{}CAST_SOURCE[0]
     final fun <get-CAST_SOURCE>(): kotlin/String // tv.nomercy.player.video.cast/CAST_SOURCE.<get-CAST_SOURCE>|<get-CAST_SOURCE>(){}[0]
+final const val tv.nomercy.player.video.cast/DEFAULT_TV_PORT // tv.nomercy.player.video.cast/DEFAULT_TV_PORT|{}DEFAULT_TV_PORT[0]
+    final fun <get-DEFAULT_TV_PORT>(): kotlin/Int // tv.nomercy.player.video.cast/DEFAULT_TV_PORT.<get-DEFAULT_TV_PORT>|<get-DEFAULT_TV_PORT>(){}[0]
 
 final fun tv.nomercy.player.video.cast/decodeRemoteEvent(kotlin/String, kotlin/String, kotlinx.serialization.json/Json): tv.nomercy.player.video.cast/RemoteEvent? // tv.nomercy.player.video.cast/decodeRemoteEvent|decodeRemoteEvent(kotlin.String;kotlin.String;kotlinx.serialization.json.Json){}[0]
+final fun tv.nomercy.player.video.cast/defaultCastHttpClient(): io.ktor.client/HttpClient // tv.nomercy.player.video.cast/defaultCastHttpClient|defaultCastHttpClient(){}[0]
 final fun tv.nomercy.player.video.cast/defaultCastWaker(): tv.nomercy.player.video.cast/CastWaker // tv.nomercy.player.video.cast/defaultCastWaker|defaultCastWaker(){}[0]
 final fun tv.nomercy.player.video.cast/defaultDeviceDiscovery(): tv.nomercy.player.video.cast/DeviceDiscovery // tv.nomercy.player.video.cast/defaultDeviceDiscovery|defaultDeviceDiscovery(){}[0]
+final fun tv.nomercy.player.video.cast/videoCastPlugin(kotlin/String, kotlinx.coroutines/CoroutineScope, kotlin/Int = ..., kotlin.coroutines/SuspendFunction0<kotlin/String?> = ..., io.ktor.client/HttpClient = ..., tv.nomercy.player.video.cast/CastWaker = ...): tv.nomercy.player.video.cast/VideoCastPlugin // tv.nomercy.player.video.cast/videoCastPlugin|videoCastPlugin(kotlin.String;kotlinx.coroutines.CoroutineScope;kotlin.Int;kotlin.coroutines.SuspendFunction0<kotlin.String?>;io.ktor.client.HttpClient;tv.nomercy.player.video.cast.CastWaker){}[0]
 final fun tv.nomercy.player.video.chapters/chapterFill(tv.nomercy.player.video.chapters/ChapterMarker, kotlin/Double): kotlin/Double // tv.nomercy.player.video.chapters/chapterFill|chapterFill(tv.nomercy.player.video.chapters.ChapterMarker;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.chapters/chapterMarkers(kotlin.collections/List<tv.nomercy.player.core.media/Chapter>, kotlin/Double): kotlin.collections/List<tv.nomercy.player.video.chapters/ChapterMarker> // tv.nomercy.player.video.chapters/chapterMarkers|chapterMarkers(kotlin.collections.List<tv.nomercy.player.core.media.Chapter>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): tv.nomercy.player.core.cues/SpriteCue? // tv.nomercy.player.video.thumbnails/frameAt|frameAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]

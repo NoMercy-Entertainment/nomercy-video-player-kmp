@@ -228,6 +228,13 @@ public final class tv/nomercy/player/video/cast/CastPlatform_jvmKt {
 	public static final fun defaultDeviceDiscovery ()Ltv/nomercy/player/video/cast/DeviceDiscovery;
 }
 
+public final class tv/nomercy/player/video/cast/CastVideoKt {
+	public static final field DEFAULT_TV_PORT I
+	public static final fun defaultCastHttpClient ()Lio/ktor/client/HttpClient;
+	public static final fun videoCastPlugin (Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;ILkotlin/jvm/functions/Function1;Lio/ktor/client/HttpClient;Ltv/nomercy/player/video/cast/CastWaker;)Ltv/nomercy/player/video/cast/VideoCastPlugin;
+	public static synthetic fun videoCastPlugin$default (Ljava/lang/String;Lkotlinx/coroutines/CoroutineScope;ILkotlin/jvm/functions/Function1;Lio/ktor/client/HttpClient;Ltv/nomercy/player/video/cast/CastWaker;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/VideoCastPlugin;
+}
+
 public abstract interface class tv/nomercy/player/video/cast/CastWaker {
 	public abstract fun wake (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun warmUp (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
