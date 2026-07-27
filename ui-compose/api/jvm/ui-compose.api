@@ -90,3 +90,9 @@ public final class tv/nomercy/player/video/ui/thumbnails/SpriteTileSource_jvmKt 
 	public static final fun spriteTileSource ([BLjava/util/List;Lkotlinx/coroutines/CoroutineScope;)Ltv/nomercy/player/video/ui/thumbnails/SpriteTileSource;
 }
 
+public final class tv/nomercy/player/video/ui/tv/TvSafeAreaKt {
+	public static final fun asPadding (Ltv/nomercy/player/core/device/SafeAreaInsets;)Landroidx/compose/foundation/layout/PaddingValues;
+	public static final fun getLocalSafeAreaInsets ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+	public static final fun tvSafeArea (Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;I)Landroidx/compose/ui/Modifier;
+}
+
