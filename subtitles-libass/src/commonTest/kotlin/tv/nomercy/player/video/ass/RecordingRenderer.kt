@@ -26,6 +26,11 @@ class RecordingRenderer : AssRenderer {
         fonts[name] = data
     }
 
+    override fun clearFonts() {
+        calls += "clearFonts"
+        fonts.clear()
+    }
+
     override fun loadTrack(assContent: String) {
         calls += "loadTrack"
     }

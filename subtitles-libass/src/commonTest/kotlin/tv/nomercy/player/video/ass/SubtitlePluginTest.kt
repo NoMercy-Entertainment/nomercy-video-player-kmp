@@ -113,7 +113,7 @@ class SubtitlePluginTest {
         // are not a real font, so the parser falls back to the filename with
         // its extension stripped, which is what a real font's name would
         // replace.
-        assertEquals(listOf("addFont:skeletonsans", "loadTrack"), renderer.calls)
+        assertEquals(listOf("clearFonts", "addFont:skeletonsans", "loadTrack"), renderer.calls)
         assertTrue(FONT_BYTES.contentEquals(renderer.fonts.getValue("skeletonsans")))
     }
 
@@ -142,7 +142,7 @@ class SubtitlePluginTest {
         val loaded: Boolean = plugin.load(SUBTITLE_URL, MANIFEST_URL)
 
         assertEquals(true, loaded)
-        assertEquals(listOf("loadTrack"), renderer.calls)
+        assertEquals(listOf("clearFonts", "loadTrack"), renderer.calls)
     }
 
     @Test
@@ -161,8 +161,37 @@ class SubtitlePluginTest {
 
         plugin.load(SUBTITLE_URL, MANIFEST_URL)
 
-        assertEquals(listOf("loadTrack"), renderer.calls)
+        assertEquals(listOf("clearFonts", "loadTrack"), renderer.calls)
         assertTrue(requested.none { it.endsWith(".ttf") }, "a font was fetched for a cue that named none")
+    }
+
+    @Test
+    fun theNextItemsFontsReplaceTheLastOnesRatherThanJoiningThem() = runTest {
+        // A queue advancing. Attached fonts belong to the item they came with,
+        // and libass resolves against whatever it holds — so an episode whose
+        // manifest is missing a face would quietly draw in the previous
+        // episode's, which looks right to everyone except someone who knows the
+        // show.
+        val renderer = RecordingRenderer()
+        val (player, _) = player(
+            mapOf(
+                SUBTITLE_URL to FetchResponse(status = OK, body = skeletonAss("Skeleton Sans")),
+                MANIFEST_URL to FetchResponse(status = OK, body = """["SkeletonSans.ttf"]"""),
+                "https://media.example.test/show/1/fonts/SkeletonSans.ttf" to
+                    FetchResponse(status = OK, bytes = FONT_BYTES),
+            ),
+        )
+        val plugin = install(player, renderer)
+        plugin.load(SUBTITLE_URL, MANIFEST_URL)
+        renderer.calls.clear()
+
+        plugin.load(SUBTITLE_URL, MANIFEST_URL)
+
+        assertEquals(
+            "clearFonts",
+            renderer.calls.first(),
+            "the second item was loaded on top of the first item's fonts",
+        )
     }
 
     @Test

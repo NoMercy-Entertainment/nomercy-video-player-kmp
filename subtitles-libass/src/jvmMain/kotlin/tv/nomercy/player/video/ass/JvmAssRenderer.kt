@@ -41,7 +41,7 @@ internal class JvmAssRenderer(private val lib: LibAss, private val library: Poin
     // own attached fonts otherwise resolves against the previous one's, and that
     // failure is silent — the cue renders in a face that exists rather than the
     // one the disc carried.
-    fun clearFonts(): Unit = synchronized(lock) {
+    override fun clearFonts(): Unit = synchronized(lock) {
         if (released) return
         lib.ass_clear_fonts(library)
         disposeRenderer()

@@ -76,6 +76,13 @@ public class SubtitlePlugin(
         // landing between them is a track loaded against a font set that was
         // still changing.
         nativeLock.withLock {
+            // The previous item's fonts go first. They belong to the item they
+            // came with, and libass resolves against whatever it holds — so an
+            // episode whose manifest is missing a face would quietly draw in the
+            // last episode's, which is a subtitle that looks fine to everyone
+            // except someone who knows the show.
+            renderer.clearFonts()
+
             val attached: MutableList<String> = mutableListOf()
             val seen: MutableSet<String> = mutableSetOf()
             for (font in fonts) {

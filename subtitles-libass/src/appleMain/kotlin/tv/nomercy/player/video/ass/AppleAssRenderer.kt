@@ -24,6 +24,7 @@ import libass.ASS_Library
 import libass.ASS_Renderer
 import libass.ASS_Track
 import libass.ass_add_font
+import libass.ass_clear_fonts
 import libass.ass_free_track
 import libass.ass_library_done
 import libass.ass_library_init
@@ -31,6 +32,7 @@ import libass.ass_read_memory
 import libass.ass_render_frame
 import libass.ass_renderer_done
 import libass.ass_renderer_init
+import libass.ass_set_cache_limits
 import libass.ass_set_fonts
 import libass.ass_set_frame_size
 import libass.ass_set_storage_size
@@ -59,6 +61,16 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
         memScoped {
             ass_add_font(library, name.cstr.ptr, data.refTo(0), data.size)
         }
+        disposeRenderer()
+    }
+
+    // Drops every font the library holds. A queue advancing to a title with
+    // its own attached fonts otherwise resolves against the previous one's,
+    // and that failure is silent: the cue renders in a face that exists
+    // rather than the one the disc carried.
+    override fun clearFonts() {
+        if (released) return
+        ass_clear_fonts(library)
         disposeRenderer()
     }
 
@@ -124,6 +136,13 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
         // Not optional. Without a font provider libass renders nothing, and
         // every other call still succeeds.
         ass_set_fonts(created, null, "sans-serif", FONT_PROVIDER_AUTODETECT, null, 1)
+
+        // Before anything is drawn. libass defaults to 128MB of bitmap cache,
+        // and the Apple target that matters most here is a television box with
+        // a memory ceiling far below a phone's. The pair matches the other two
+        // bindings: the glyph count has to track the megabytes, or the count
+        // evicts first and every eviction re-rasterizes a glyph already held.
+        ass_set_cache_limits(created, APPLE_GLYPH_MAX, APPLE_BITMAP_CACHE_MEGABYTES)
         applySize(created)
         renderer = created
         disposeTrack()
@@ -164,3 +183,8 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
 }
 
 internal const val FONT_PROVIDER_AUTODETECT: Int = 1
+
+// A television box, not a desktop. tvOS gives an application far less than
+// macOS would and the same build serves both it and the phone.
+private const val APPLE_GLYPH_MAX: Int = 4_000
+private const val APPLE_BITMAP_CACHE_MEGABYTES: Int = 16

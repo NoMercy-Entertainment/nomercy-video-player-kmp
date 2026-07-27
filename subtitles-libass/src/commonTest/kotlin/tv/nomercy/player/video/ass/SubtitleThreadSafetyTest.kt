@@ -39,6 +39,8 @@ private class OrderingRenderer : AssRenderer {
         calls += "addFont:$name"
     }
 
+    override fun clearFonts(): Unit = Unit
+
     override fun loadTrack(assContent: String) {
         calls += "loadTrack"
     }

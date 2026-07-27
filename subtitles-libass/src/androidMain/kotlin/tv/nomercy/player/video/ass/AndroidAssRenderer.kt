@@ -60,7 +60,7 @@ internal class AndroidAssRenderer(
     // rebuilds the renderer: libass resolves against what it was given, and an
     // episode carrying a different set would otherwise draw in the previous
     // one's typeface without reporting anything.
-    fun clearFonts(): Unit = synchronized(lock) {
+    override fun clearFonts(): Unit = synchronized(lock) {
         if (released) return
         ass.clearFont()
         renderer = null

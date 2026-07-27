@@ -41,6 +41,7 @@ public final class tv/nomercy/player/video/ass/AssPlatformContext {
 
 public abstract interface class tv/nomercy/player/video/ass/AssRenderer {
 	public abstract fun addFont (Ljava/lang/String;[B)V
+	public abstract fun clearFonts ()V
 	public abstract fun frameSize (II)V
 	public abstract fun loadTrack (Ljava/lang/String;)V
 	public abstract fun release ()V

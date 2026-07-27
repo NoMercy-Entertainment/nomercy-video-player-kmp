@@ -32,6 +32,15 @@ public interface AssRenderer {
     // than trust the manifest's filename.
     public fun addFont(name: String, data: ByteArray)
 
+    // Drops every font this renderer was given.
+    //
+    // A queue advancing to the next title is the case. Attached fonts belong to
+    // the item they came with, and a renderer that kept the previous one's would
+    // resolve against a face the new item never shipped — which libass does
+    // silently, because a font that exists is a font it can draw with. The cue
+    // appears in the wrong typeface and nothing anywhere reports a problem.
+    public fun clearFonts()
+
     public fun loadTrack(assContent: String)
 
     // The size of the surface the cues will be drawn onto. Positions come back

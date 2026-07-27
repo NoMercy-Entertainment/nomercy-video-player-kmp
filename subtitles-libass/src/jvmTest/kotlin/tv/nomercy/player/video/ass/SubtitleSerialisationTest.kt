@@ -54,6 +54,8 @@ private class ConcurrencyGuardRenderer : AssRenderer {
 
     override fun addFont(name: String, data: ByteArray): Unit = guarded { }
 
+    override fun clearFonts(): Unit = Unit
+
     override fun loadTrack(assContent: String): Unit = guarded { }
 
     override fun frameSize(width: Int, height: Int): Unit = guarded { }

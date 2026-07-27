@@ -31,6 +31,8 @@ private class RecordingRenderer : AssRenderer {
         added += name
     }
 
+    override fun clearFonts(): Unit = Unit
+
     override fun loadTrack(assContent: String) = Unit
     override fun frameSize(width: Int, height: Int) = Unit
     override fun render(timeMillis: Long): AssFrame? = null

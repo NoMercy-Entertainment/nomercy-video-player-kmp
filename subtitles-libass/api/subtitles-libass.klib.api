@@ -8,6 +8,7 @@
 // Library unique name: <nomercy-video-player-kmp:subtitles-libass>
 abstract interface tv.nomercy.player.video.ass/AssRenderer { // tv.nomercy.player.video.ass/AssRenderer|null[0]
     abstract fun addFont(kotlin/String, kotlin/ByteArray) // tv.nomercy.player.video.ass/AssRenderer.addFont|addFont(kotlin.String;kotlin.ByteArray){}[0]
+    abstract fun clearFonts() // tv.nomercy.player.video.ass/AssRenderer.clearFonts|clearFonts(){}[0]
     abstract fun frameSize(kotlin/Int, kotlin/Int) // tv.nomercy.player.video.ass/AssRenderer.frameSize|frameSize(kotlin.Int;kotlin.Int){}[0]
     abstract fun loadTrack(kotlin/String) // tv.nomercy.player.video.ass/AssRenderer.loadTrack|loadTrack(kotlin.String){}[0]
     abstract fun release() // tv.nomercy.player.video.ass/AssRenderer.release|release(){}[0]
