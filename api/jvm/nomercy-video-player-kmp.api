@@ -223,6 +223,271 @@ public final class tv/nomercy/player/video/ViewModeChange {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class tv/nomercy/player/video/cast/RemoteEvent {
+}
+
+public final class tv/nomercy/player/video/cast/RemoteEvent$Device : tv/nomercy/player/video/cast/RemoteEvent {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemoteEvent$Device;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemoteEvent$Device;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemoteEvent$Device;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAction ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteEvent$Failure : tv/nomercy/player/video/cast/RemoteEvent {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemoteEvent$Failure;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemoteEvent$Failure;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemoteEvent$Failure;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReason ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteEvent$Playlist : tv/nomercy/player/video/cast/RemoteEvent {
+	public fun <init> (Ltv/nomercy/player/video/cast/RemotePlaylist;)V
+	public final fun component1 ()Ltv/nomercy/player/video/cast/RemotePlaylist;
+	public final fun copy (Ltv/nomercy/player/video/cast/RemotePlaylist;)Ltv/nomercy/player/video/cast/RemoteEvent$Playlist;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemoteEvent$Playlist;Ltv/nomercy/player/video/cast/RemotePlaylist;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemoteEvent$Playlist;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPlaylist ()Ltv/nomercy/player/video/cast/RemotePlaylist;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteEvent$State : tv/nomercy/player/video/cast/RemoteEvent {
+	public fun <init> (Ltv/nomercy/player/video/cast/RemotePlayerState;)V
+	public final fun component1 ()Ltv/nomercy/player/video/cast/RemotePlayerState;
+	public final fun copy (Ltv/nomercy/player/video/cast/RemotePlayerState;)Ltv/nomercy/player/video/cast/RemoteEvent$State;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemoteEvent$State;Ltv/nomercy/player/video/cast/RemotePlayerState;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemoteEvent$State;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getState ()Ltv/nomercy/player/video/cast/RemotePlayerState;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteEvent$Track : tv/nomercy/player/video/cast/RemoteEvent {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemoteEvent$Track;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemoteEvent$Track;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemoteEvent$Track;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAudioTrackId ()Ljava/lang/String;
+	public final fun getSubtitleTrackId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteEvent$Transport : tv/nomercy/player/video/cast/RemoteEvent {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemoteEvent$Transport;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemoteEvent$Transport;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemoteEvent$Transport;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getTransport ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteEvent$Unknown : tv/nomercy/player/video/cast/RemoteEvent {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemoteEvent$Unknown;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemoteEvent$Unknown;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemoteEvent$Unknown;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteEventKt {
+	public static final fun decodeRemoteEvent (Ljava/lang/String;Ljava/lang/String;Lkotlinx/serialization/json/Json;)Ltv/nomercy/player/video/cast/RemoteEvent;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteItemKind : java/lang/Enum {
+	public static final field Companion Ltv/nomercy/player/video/cast/RemoteItemKind$Companion;
+	public static final field EPISODE Ltv/nomercy/player/video/cast/RemoteItemKind;
+	public static final field MOVIE Ltv/nomercy/player/video/cast/RemoteItemKind;
+	public static final field NONE Ltv/nomercy/player/video/cast/RemoteItemKind;
+	public static final field TRACK Ltv/nomercy/player/video/cast/RemoteItemKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemoteItemKind;
+	public static fun values ()[Ltv/nomercy/player/video/cast/RemoteItemKind;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteItemKind$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/cast/RemotePlaybackState : java/lang/Enum {
+	public static final field BUFFERING Ltv/nomercy/player/video/cast/RemotePlaybackState;
+	public static final field Companion Ltv/nomercy/player/video/cast/RemotePlaybackState$Companion;
+	public static final field ENDED Ltv/nomercy/player/video/cast/RemotePlaybackState;
+	public static final field IDLE Ltv/nomercy/player/video/cast/RemotePlaybackState;
+	public static final field PAUSED Ltv/nomercy/player/video/cast/RemotePlaybackState;
+	public static final field PLAYING Ltv/nomercy/player/video/cast/RemotePlaybackState;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemotePlaybackState;
+	public static fun values ()[Ltv/nomercy/player/video/cast/RemotePlaybackState;
+}
+
+public final class tv/nomercy/player/video/cast/RemotePlaybackState$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/cast/RemotePlayerState {
+	public static final field Companion Ltv/nomercy/player/video/cast/RemotePlayerState$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ltv/nomercy/player/video/cast/RemotePlaybackState;JJLjava/lang/String;Ltv/nomercy/player/video/cast/RemoteItemKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLtv/nomercy/player/video/cast/RemoteQualityLevel;DZII)V
+	public synthetic fun <init> (Ljava/lang/String;Ltv/nomercy/player/video/cast/RemotePlaybackState;JJLjava/lang/String;Ltv/nomercy/player/video/cast/RemoteItemKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLtv/nomercy/player/video/cast/RemoteQualityLevel;DZIIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Z
+	public final fun component11 ()Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+	public final fun component12 ()D
+	public final fun component13 ()Z
+	public final fun component14 ()I
+	public final fun component15 ()I
+	public final fun component2 ()Ltv/nomercy/player/video/cast/RemotePlaybackState;
+	public final fun component3 ()J
+	public final fun component4 ()J
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ltv/nomercy/player/video/cast/RemoteItemKind;
+	public final fun component7 ()Ljava/lang/String;
+	public final fun component8 ()Ljava/lang/String;
+	public final fun component9 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ltv/nomercy/player/video/cast/RemotePlaybackState;JJLjava/lang/String;Ltv/nomercy/player/video/cast/RemoteItemKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLtv/nomercy/player/video/cast/RemoteQualityLevel;DZII)Ltv/nomercy/player/video/cast/RemotePlayerState;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemotePlayerState;Ljava/lang/String;Ltv/nomercy/player/video/cast/RemotePlaybackState;JJLjava/lang/String;Ltv/nomercy/player/video/cast/RemoteItemKind;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLtv/nomercy/player/video/cast/RemoteQualityLevel;DZIIILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemotePlayerState;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAudioTrackId ()Ljava/lang/String;
+	public final fun getDurationMs ()J
+	public final fun getItemId ()Ljava/lang/String;
+	public final fun getItemKind ()Ltv/nomercy/player/video/cast/RemoteItemKind;
+	public final fun getItemTitle ()Ljava/lang/String;
+	public final fun getMuted ()Z
+	public final fun getPlaybackState ()Ltv/nomercy/player/video/cast/RemotePlaybackState;
+	public final fun getPlaylistActiveIndex ()I
+	public final fun getPlaylistLength ()I
+	public final fun getPositionMs ()J
+	public final fun getQualityLevel ()Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+	public final fun getSessionId ()Ljava/lang/String;
+	public final fun getSubtitleEnabled ()Z
+	public final fun getSubtitleTrackId ()Ljava/lang/String;
+	public final fun getVolume ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class tv/nomercy/player/video/cast/RemotePlayerState$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/RemotePlayerState$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ltv/nomercy/player/video/cast/RemotePlayerState;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ltv/nomercy/player/video/cast/RemotePlayerState;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/cast/RemotePlayerState$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/cast/RemotePlaylist {
+	public static final field Companion Ltv/nomercy/player/video/cast/RemotePlaylist$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/util/List;I)V
+	public synthetic fun <init> (Ljava/util/List;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()I
+	public final fun copy (Ljava/util/List;I)Ltv/nomercy/player/video/cast/RemotePlaylist;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemotePlaylist;Ljava/util/List;IILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemotePlaylist;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getActiveIndex ()I
+	public final fun getItems ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class tv/nomercy/player/video/cast/RemotePlaylist$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/RemotePlaylist$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ltv/nomercy/player/video/cast/RemotePlaylist;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ltv/nomercy/player/video/cast/RemotePlaylist;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/cast/RemotePlaylist$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/cast/RemotePlaylistItem {
+	public static final field Companion Ltv/nomercy/player/video/cast/RemotePlaylistItem$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()J
+	public final fun component5 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;)Ltv/nomercy/player/video/cast/RemotePlaylistItem;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemotePlaylistItem;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemotePlaylistItem;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDurationMs ()J
+	public final fun getId ()Ljava/lang/String;
+	public final fun getKind ()Ljava/lang/String;
+	public final fun getPosterUrl ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class tv/nomercy/player/video/cast/RemotePlaylistItem$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/RemotePlaylistItem$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ltv/nomercy/player/video/cast/RemotePlaylistItem;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ltv/nomercy/player/video/cast/RemotePlaylistItem;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/cast/RemotePlaylistItem$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteQualityLevel : java/lang/Enum {
+	public static final field AUTO Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+	public static final field Companion Ltv/nomercy/player/video/cast/RemoteQualityLevel$Companion;
+	public static final field HIGH Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+	public static final field LOW Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+	public static final field MEDIUM Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+	public static fun values ()[Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteQualityLevel$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public class tv/nomercy/player/video/cast/SseAccumulator {
+	public static final field DATA_PREFIX Ljava/lang/String;
+	public static final field DEFAULT_EVENT Ljava/lang/String;
+	public static final field EVENT_PREFIX Ljava/lang/String;
+	public fun <init> ()V
+	public fun feed (Ljava/lang/String;)Lkotlin/Pair;
+}
+
 public final class tv/nomercy/player/video/chapters/ChapterMarker {
 	public fun <init> (IDD)V
 	public final fun component1 ()I
