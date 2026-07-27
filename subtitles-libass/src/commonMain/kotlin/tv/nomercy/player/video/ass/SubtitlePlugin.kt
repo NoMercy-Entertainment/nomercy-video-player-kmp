@@ -14,6 +14,8 @@ import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.FetchResponse
 import tv.nomercy.player.video.subtitles.AssFontNames
 import tv.nomercy.player.video.subtitles.FontManifest
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import tv.nomercy.player.video.ass.fonts.CachedFont
 import tv.nomercy.player.video.ass.fonts.TwoTierFontCache
 import tv.nomercy.player.video.subtitles.TtfNameParser
@@ -40,6 +42,17 @@ public class SubtitlePlugin(
 
     override val manifest: PluginManifest = SubtitleManifest
 
+    // libass is not reentrant. Two threads inside it at once is not a wrong
+    // pixel, it is a crash in native code — on Android a process death with a
+    // stack that names none of this.
+    //
+    // The lock covers the native sequences and deliberately not the fetches. A
+    // font download and a subtitle download should overlap; what must not
+    // overlap is one operation's addFont-then-loadTrack landing inside
+    // another's. Holding it across the network would serialise the downloads
+    // too, which turns a slow font into a slow episode.
+    private val nativeLock = Mutex()
+
     // The font files that were fetched and handed to the renderer, by file name.
     // Public because a host that pre-warms a cache wants the same list, and
     // because "which fonts arrived" is the first question when a subtitle looks
@@ -55,12 +68,27 @@ public class SubtitlePlugin(
         // Fonts first, and every one of them, before the track exists. A font
         // that arrives after the renderer has drawn once is a font libass has
         // already decided not to use.
-        if (fontManifestUrl != null) {
-            attachFonts(subtitle, fontManifestUrl)
-        }
+        val fonts: List<Pair<String, ByteArray>> =
+            if (fontManifestUrl == null) emptyList() else fetchFonts(subtitle, fontManifestUrl)
 
-        renderer.loadTrack(subtitle)
-        currentTrack = subtitle
+        // One critical section for the whole sequence. Attaching and loading
+        // are one operation from libass's point of view, and a late font
+        // landing between them is a track loaded against a font set that was
+        // still changing.
+        nativeLock.withLock {
+            val attached: MutableList<String> = mutableListOf()
+            val seen: MutableSet<String> = mutableSetOf()
+            for ((family, bytes) in fonts) {
+                if (!seen.add(family.lowercase())) continue
+
+                renderer.addFont(family, bytes)
+                attached += family
+            }
+            loadedFonts = attached
+
+            renderer.loadTrack(subtitle)
+            currentTrack = subtitle
+        }
         return true
     }
 
@@ -80,22 +108,29 @@ public class SubtitlePlugin(
     // none because a name did not match costs the wrong typeface for the whole
     // film. The cue's own font list is read only to skip the step entirely when
     // there is nothing to fetch.
-    private suspend fun attachFonts(subtitle: String, manifestUrl: String) {
-        if (AssFontNames.parse(subtitle).isEmpty()) return
+    // Downloads every font the manifest names and resolves what to call it.
+    //
+    // No native calls here at all, which is the point of splitting it out: the
+    // network is slow and libass is exclusive, and holding the lock across a
+    // download would make one slow font into a stalled episode.
+    //
+    // Every font in the manifest rather than the ones whose names look like the
+    // families the cue asked for. A manifest is produced for one subtitle, so
+    // its contents are what that subtitle needs; attaching one it turns out not
+    // to use costs a download already paid for, and attaching none because a
+    // name did not match costs the wrong typeface for the whole film.
+    private suspend fun fetchFonts(subtitle: String, manifestUrl: String): List<Pair<String, ByteArray>> {
+        if (AssFontNames.parse(subtitle).isEmpty()) return emptyList()
 
         val manifest: Map<String, String> = get(manifestUrl)?.body
             ?.let { FontManifest.parse(it, manifestUrl) }
             .orEmpty()
         if (manifest.isEmpty()) {
-            // A degrade, not a failure. libass falls back to system fonts and
-            // the film plays; saying nothing is what makes "the subtitles look
-            // wrong" unanswerable later.
             reportFontsUnavailable(manifestUrl)
-            return
+            return emptyList()
         }
 
-        val attached: MutableList<String> = mutableListOf()
-        val seen: MutableSet<String> = mutableSetOf()
+        val resolved: MutableList<Pair<String, ByteArray>> = mutableListOf()
         for ((fileName, url) in manifest) {
             // The cache first. A series attaches the same fonts to every
             // episode, so after the first one this is a disk read rather than a
@@ -103,20 +138,16 @@ public class SubtitlePlugin(
             val cached: CachedFont? = fontCache?.get(fileName)
             val bytes: ByteArray = cached?.bytes ?: get(url)?.bytes ?: continue
 
+            // Under the family, not the filename. libass matches the family an
+            // ASS script asks for against the name the font reports, and a file
+            // called Skeleton.ttf can hold a family called anything.
             val family: String = cached?.registerName
                 ?: TtfNameParser.extractFontName(bytes, TtfNameParser.fallbackNameFor(fileName))
 
             if (cached == null) fontCache?.put(fileName, bytes)
-
-            // One registration per family. Two files can carry the same family
-            // and libass takes the first, so registering both wastes the work
-            // and makes which one wins depend on manifest ordering.
-            if (!seen.add(family.lowercase())) continue
-
-            renderer.addFont(family, bytes)
-            attached += fileName
+            resolved += family to bytes
         }
-        loadedFonts = attached
+        return resolved
     }
 
     // A font that turned up after the track was already loaded.
@@ -129,14 +160,20 @@ public class SubtitlePlugin(
     //
     // Reloading is cheap and visible. Not reloading is a film that plays to the
     // end in a fallback typeface with nothing reporting why.
-    public fun addFontLate(fileName: String, data: ByteArray) {
+    public suspend fun addFontLate(fileName: String, data: ByteArray) {
         val family: String = TtfNameParser.extractFontName(data, TtfNameParser.fallbackNameFor(fileName))
-        renderer.addFont(family, data)
-        loadedFonts = loadedFonts + fileName
 
-        // Only when there is a track to reload. Before one exists this is just
-        // the ordinary path with a different name.
-        currentTrack?.let(renderer::loadTrack)
+        // The same critical section load() uses. Registering a font and handing
+        // the track back is one operation to libass; split across another's,
+        // the track is resolved against a font set still being written.
+        nativeLock.withLock {
+            renderer.addFont(family, data)
+            loadedFonts = loadedFonts + fileName
+
+            // Only when there is a track to reload. Before one exists this is
+            // the ordinary path with a different name.
+            currentTrack?.let(renderer::loadTrack)
+        }
     }
 
     // Reported rather than thrown, and reported rather than swallowed.

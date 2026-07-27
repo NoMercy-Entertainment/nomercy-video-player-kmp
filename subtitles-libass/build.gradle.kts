@@ -97,6 +97,9 @@ kotlin {
             // eviction and recovery rules are one implementation rather than
             // three.
             implementation(libs.okio)
+            // Mutex. libass is not reentrant and the plugin is what orders the
+            // calls into it.
+            implementation(libs.kotlinx.coroutines.core)
             // Core by coordinate as well as through the video library. The
             // project dependency carries core to the platform compilations but
             // not to the common metadata one, and without this the shared
