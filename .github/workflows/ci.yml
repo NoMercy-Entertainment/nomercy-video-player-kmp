@@ -98,9 +98,14 @@ jobs:
       # The libass gate, on the only host that can run it. The Linux job
       # cannot: Apple targets need the Xcode toolchain, so a subtitle renderer
       # that only ever compiled would be the whole coverage of this surface.
+      #
+      # Both simulators, because tvOS is the one that cannot fall back on
+      # anything. It ran on the iOS slice of the XCFramework until a tvOS link
+      # was attempted for the first time and the linker refused the mix outright
+      # — nothing had ever built for tvOS, so nothing had ever said so.
       - name: Apple subtitle gate
         working-directory: packages-native/nomercy-video-player-kmp
-        run: ./gradlew :subtitles-libass:iosSimulatorArm64Test
+        run: ./gradlew :subtitles-libass:iosSimulatorArm64Test :subtitles-libass:tvosSimulatorArm64Test
 
       - name: Apple views
         working-directory: packages-native/nomercy-video-player-kmp

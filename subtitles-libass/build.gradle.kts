@@ -71,10 +71,16 @@ kotlin {
     // missing one fails the Apple compilation with a message about a path, which
     // is a better answer than a source set that silently swaps itself out and
     // leaves a developer wondering why subtitles do nothing.
+    // A slice per platform, not per architecture. tvOS pointed at the iOS slice
+    // here for a while and it reads as though it should work — same instruction
+    // set, same toolchain — but a Mach-O object carries the platform it was built
+    // for, and the linker refuses the mix outright: "building for
+    // 'tvOS-simulator', but linking in object file built for 'iOS-simulator'".
     appleTargets.forEach { target ->
         val slice: String = when (target.konanTarget.name) {
             "ios_arm64" -> "ios-arm64"
-            "tvos_arm64" -> "ios-arm64"
+            "tvos_arm64" -> "tvos-arm64"
+            "tvos_simulator_arm64" -> "tvos-arm64-simulator"
             else -> "ios-arm64_x86_64-simulator"
         }
         target.compilations.getByName("main").cinterops.create("libass") {
@@ -132,8 +138,8 @@ kotlin {
 // up as a crash on someone else's phone.
 val libassArchive: String =
     "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/" +
-        "libass-apple-0.17.5/libass-apple.tar.gz"
-val libassDigest = "13d01bbd0666752a77447347781a2f5ce96d06c2ff33d7207f9ef2450c0c806e"
+        "libass-apple-0.17.5-tvos/libass-apple.tar.gz"
+val libassDigest = "dfd19c5bdbdefd36efb6e63c7dd8cd69436a2c6c3c427c1edecaf0c75fa31f67"
 
 val fetchAppleLibass by tasks.registering {
     description = "Downloads the prebuilt libass XCFrameworks for Apple targets."
@@ -144,8 +150,15 @@ val fetchAppleLibass by tasks.registering {
     outputs.dir(target)
 
     doLast {
-        if (target.resolve("ass.xcframework").isDirectory) return@doLast
+        // Keyed on the digest, not on "something is already unpacked here".
+        // Bumping the archive to one carrying tvOS slices left every machine
+        // that had ever built this module on the old iOS-only copy, and the
+        // failure was a header not found rather than anything mentioning a
+        // stale download.
+        val stamp: java.io.File = target.resolve(".digest")
+        if (stamp.isFile && stamp.readText() == libassDigest) return@doLast
 
+        target.deleteRecursively()
         target.mkdirs()
         URI(libassArchive).toURL().openStream().use { input ->
             archive.outputStream().use { output -> input.copyTo(output) }
@@ -161,6 +174,8 @@ val fetchAppleLibass by tasks.registering {
         providers.exec {
             commandLine("tar", "xzf", archive.path, "-C", target.path)
         }.result.get()
+
+        stamp.writeText(libassDigest)
     }
 }
 

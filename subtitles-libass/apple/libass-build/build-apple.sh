@@ -19,8 +19,22 @@
 # Requires a full Xcode (not just Command Line Tools) and:
 #   brew install autoconf automake libtool nasm pkgconf cmake
 #
-# Expect an hour or more. It builds four libraries across four slices.
+# Expect an hour or more. It builds four libraries across five slices.
+#
+# Naming libraries builds only those and re-bundles everything, which is what a
+# version bump on one dependency wants:
+#
+#   ./build-apple.sh libass
 set -euo pipefail
+
+WANTED="${*:-freetype fribidi harfbuzz libass}"
+
+wanted() {
+    case " $WANTED " in
+        *" $1 "*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 SRC="$ROOT/src"
@@ -37,7 +51,7 @@ FRIBIDI_TAG="v1.0.16"
 HARFBUZZ_REPO="https://github.com/harfbuzz/harfbuzz.git"
 HARFBUZZ_TAG="8.5.0"
 LIBASS_REPO="https://github.com/libass/libass.git"
-LIBASS_TAG="0.17.3"
+LIBASS_TAG="0.17.5"
 
 export PATH="/opt/homebrew/bin:$PATH"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
@@ -57,7 +71,19 @@ export PATH="$TOOLS:$PATH"
 fetch() {
     local dir="$1" repo="$2" tag="$3"
     if [ -d "$SRC/$dir/.git" ]; then
-        echo "== $dir already at $(git -C "$SRC/$dir" describe --tags --always)"
+        local have
+        have="$(git -C "$SRC/$dir" describe --tags --always)"
+        if [ "$have" = "$tag" ]; then
+            echo "== $dir already at $tag"
+            return
+        fi
+        # The pin moved. Fetching the new tag into the existing clone rather
+        # than re-cloning keeps the other libraries' builds intact, which is the
+        # difference between a ten-minute bump and an hour.
+        echo "== $dir moving from $have to $tag"
+        git -C "$SRC/$dir" fetch --depth 1 origin "refs/tags/$tag:refs/tags/$tag"
+        git -C "$SRC/$dir" checkout -q --force "$tag"
+        git -C "$SRC/$dir" clean -qfdx
         return
     fi
     echo "== cloning $dir at $tag"
@@ -317,10 +343,10 @@ fetch fribidi  "$FRIBIDI_REPO"  "$FRIBIDI_TAG"
 fetch harfbuzz "$HARFBUZZ_REPO" "$HARFBUZZ_TAG"
 fetch libass   "$LIBASS_REPO"   "$LIBASS_TAG"
 
-build_lib freetype
-build_lib fribidi
-build_harfbuzz
-build_lib libass
+wanted freetype && build_lib freetype
+wanted fribidi  && build_lib fribidi
+wanted harfbuzz && build_harfbuzz
+wanted libass   && build_lib libass
 
 make_xcframework freetype
 make_xcframework fribidi
