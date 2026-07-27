@@ -73,6 +73,20 @@ final enum class tv.nomercy.player.video.cast/RemoteStatus : kotlin/Enum<tv.nome
     final fun values(): kotlin/Array<tv.nomercy.player.video.cast/RemoteStatus> // tv.nomercy.player.video.cast/RemoteStatus.values|values#static(){}[0]
 }
 
+final enum class tv.nomercy.player.video.cast/WakeOutcome : kotlin/Enum<tv.nomercy.player.video.cast/WakeOutcome> { // tv.nomercy.player.video.cast/WakeOutcome|null[0]
+    enum entry AWOKE // tv.nomercy.player.video.cast/WakeOutcome.AWOKE|null[0]
+    enum entry CAST_FALLBACK // tv.nomercy.player.video.cast/WakeOutcome.CAST_FALLBACK|null[0]
+    enum entry NO_ROUTE // tv.nomercy.player.video.cast/WakeOutcome.NO_ROUTE|null[0]
+    enum entry UNSUPPORTED // tv.nomercy.player.video.cast/WakeOutcome.UNSUPPORTED|null[0]
+    enum entry WAKE_SENT // tv.nomercy.player.video.cast/WakeOutcome.WAKE_SENT|null[0]
+
+    final val entries // tv.nomercy.player.video.cast/WakeOutcome.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.cast/WakeOutcome> // tv.nomercy.player.video.cast/WakeOutcome.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video.cast/WakeOutcome // tv.nomercy.player.video.cast/WakeOutcome.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video.cast/WakeOutcome> // tv.nomercy.player.video.cast/WakeOutcome.values|values#static(){}[0]
+}
+
 final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.player.video/Stretching> { // tv.nomercy.player.video/Stretching|null[0]
     enum entry Fill // tv.nomercy.player.video/Stretching.Fill|null[0]
     enum entry None // tv.nomercy.player.video/Stretching.None|null[0]
@@ -89,6 +103,24 @@ final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.pla
 
     final object Companion { // tv.nomercy.player.video/Stretching.Companion|null[0]
         final fun fromToken(kotlin/String): tv.nomercy.player.video/Stretching // tv.nomercy.player.video/Stretching.Companion.fromToken|fromToken(kotlin.String){}[0]
+    }
+}
+
+abstract interface tv.nomercy.player.video.cast/CastWaker { // tv.nomercy.player.video.cast/CastWaker|null[0]
+    abstract suspend fun wake(kotlin/String): tv.nomercy.player.video.cast/WakeOutcome // tv.nomercy.player.video.cast/CastWaker.wake|wake(kotlin.String){}[0]
+    abstract suspend fun warmUp() // tv.nomercy.player.video.cast/CastWaker.warmUp|warmUp(){}[0]
+}
+
+abstract interface tv.nomercy.player.video.cast/DeviceDiscovery { // tv.nomercy.player.video.cast/DeviceDiscovery|null[0]
+    abstract val devices // tv.nomercy.player.video.cast/DeviceDiscovery.devices|{}devices[0]
+        abstract fun <get-devices>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<tv.nomercy.player.video.cast/RemoteDevice>> // tv.nomercy.player.video.cast/DeviceDiscovery.devices.<get-devices>|<get-devices>(){}[0]
+
+    abstract fun start() // tv.nomercy.player.video.cast/DeviceDiscovery.start|start(){}[0]
+    abstract fun stop() // tv.nomercy.player.video.cast/DeviceDiscovery.stop|stop(){}[0]
+
+    final object Companion { // tv.nomercy.player.video.cast/DeviceDiscovery.Companion|null[0]
+        final const val SERVICE_TYPE // tv.nomercy.player.video.cast/DeviceDiscovery.Companion.SERVICE_TYPE|{}SERVICE_TYPE[0]
+            final fun <get-SERVICE_TYPE>(): kotlin/String // tv.nomercy.player.video.cast/DeviceDiscovery.Companion.SERVICE_TYPE.<get-SERVICE_TYPE>|<get-SERVICE_TYPE>(){}[0]
     }
 }
 
@@ -213,6 +245,38 @@ sealed interface tv.nomercy.player.video.cast/RemoteEvent { // tv.nomercy.player
         final fun hashCode(): kotlin/Int // tv.nomercy.player.video.cast/RemoteEvent.Unknown.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // tv.nomercy.player.video.cast/RemoteEvent.Unknown.toString|toString(){}[0]
     }
+}
+
+final class tv.nomercy.player.video.cast/RemoteDevice { // tv.nomercy.player.video.cast/RemoteDevice|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String, kotlin/Int, kotlin/String = ..., kotlin/String = ...) // tv.nomercy.player.video.cast/RemoteDevice.<init>|<init>(kotlin.String;kotlin.String;kotlin.String;kotlin.Int;kotlin.String;kotlin.String){}[0]
+
+    final val displayName // tv.nomercy.player.video.cast/RemoteDevice.displayName|{}displayName[0]
+        final fun <get-displayName>(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.displayName.<get-displayName>|<get-displayName>(){}[0]
+    final val fingerprint // tv.nomercy.player.video.cast/RemoteDevice.fingerprint|{}fingerprint[0]
+        final fun <get-fingerprint>(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.fingerprint.<get-fingerprint>|<get-fingerprint>(){}[0]
+    final val host // tv.nomercy.player.video.cast/RemoteDevice.host|{}host[0]
+        final fun <get-host>(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.host.<get-host>|<get-host>(){}[0]
+    final val id // tv.nomercy.player.video.cast/RemoteDevice.id|{}id[0]
+        final fun <get-id>(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.id.<get-id>|<get-id>(){}[0]
+    final val loginState // tv.nomercy.player.video.cast/RemoteDevice.loginState|{}loginState[0]
+        final fun <get-loginState>(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.loginState.<get-loginState>|<get-loginState>(){}[0]
+    final val needsSignIn // tv.nomercy.player.video.cast/RemoteDevice.needsSignIn|{}needsSignIn[0]
+        final fun <get-needsSignIn>(): kotlin/Boolean // tv.nomercy.player.video.cast/RemoteDevice.needsSignIn.<get-needsSignIn>|<get-needsSignIn>(){}[0]
+    final val port // tv.nomercy.player.video.cast/RemoteDevice.port|{}port[0]
+        final fun <get-port>(): kotlin/Int // tv.nomercy.player.video.cast/RemoteDevice.port.<get-port>|<get-port>(){}[0]
+    final val serviceName // tv.nomercy.player.video.cast/RemoteDevice.serviceName|{}serviceName[0]
+        final fun <get-serviceName>(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.serviceName.<get-serviceName>|<get-serviceName>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.component1|component1(){}[0]
+    final fun component2(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.component2|component2(){}[0]
+    final fun component3(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // tv.nomercy.player.video.cast/RemoteDevice.component4|component4(){}[0]
+    final fun component5(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.component5|component5(){}[0]
+    final fun component6(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/Int = ..., kotlin/String = ..., kotlin/String = ...): tv.nomercy.player.video.cast/RemoteDevice // tv.nomercy.player.video.cast/RemoteDevice.copy|copy(kotlin.String;kotlin.String;kotlin.String;kotlin.Int;kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.cast/RemoteDevice.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.cast/RemoteDevice.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.cast/RemoteDevice.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video.cast/RemotePlayerState { // tv.nomercy.player.video.cast/RemotePlayerState|null[0]
@@ -617,6 +681,13 @@ open class tv.nomercy.player.video.cast/SseAccumulator { // tv.nomercy.player.vi
     constructor <init>() // tv.nomercy.player.video.cast/SseAccumulator.<init>|<init>(){}[0]
 
     open fun feed(kotlin/String): kotlin/Pair<kotlin/String, kotlin/String>? // tv.nomercy.player.video.cast/SseAccumulator.feed|feed(kotlin.String){}[0]
+}
+
+open class tv.nomercy.player.video.cast/UnsupportedCastWaker : tv.nomercy.player.video.cast/CastWaker { // tv.nomercy.player.video.cast/UnsupportedCastWaker|null[0]
+    constructor <init>() // tv.nomercy.player.video.cast/UnsupportedCastWaker.<init>|<init>(){}[0]
+
+    open suspend fun wake(kotlin/String): tv.nomercy.player.video.cast/WakeOutcome // tv.nomercy.player.video.cast/UnsupportedCastWaker.wake|wake(kotlin.String){}[0]
+    open suspend fun warmUp() // tv.nomercy.player.video.cast/UnsupportedCastWaker.warmUp|warmUp(){}[0]
 }
 
 open class tv.nomercy.player.video/NMVideoPlayer : tv.nomercy.player.core.controllers/ComposedPlayer { // tv.nomercy.player.video/NMVideoPlayer|null[0]

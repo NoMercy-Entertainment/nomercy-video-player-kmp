@@ -223,6 +223,48 @@ public final class tv/nomercy/player/video/ViewModeChange {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class tv/nomercy/player/video/cast/CastWaker {
+	public abstract fun wake (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun warmUp (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class tv/nomercy/player/video/cast/DeviceDiscovery {
+	public static final field Companion Ltv/nomercy/player/video/cast/DeviceDiscovery$Companion;
+	public static final field SERVICE_TYPE Ljava/lang/String;
+	public abstract fun getDevices ()Lkotlinx/coroutines/flow/StateFlow;
+	public abstract fun start ()V
+	public abstract fun stop ()V
+}
+
+public final class tv/nomercy/player/video/cast/DeviceDiscovery$Companion {
+	public static final field SERVICE_TYPE Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteDevice {
+	public static final field UNAUTHENTICATED Ljava/lang/String;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()I
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemoteDevice;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/RemoteDevice;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/RemoteDevice;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDisplayName ()Ljava/lang/String;
+	public final fun getFingerprint ()Ljava/lang/String;
+	public final fun getHost ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getLoginState ()Ljava/lang/String;
+	public final fun getNeedsSignIn ()Z
+	public final fun getPort ()I
+	public final fun getServiceName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public abstract interface class tv/nomercy/player/video/cast/RemoteEvent {
 }
 
@@ -598,6 +640,23 @@ public abstract interface class tv/nomercy/player/video/cast/TvTransport {
 	public abstract fun previous (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun seek (JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public class tv/nomercy/player/video/cast/UnsupportedCastWaker : tv/nomercy/player/video/cast/CastWaker {
+	public fun <init> ()V
+	public fun wake (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun warmUp (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class tv/nomercy/player/video/cast/WakeOutcome : java/lang/Enum {
+	public static final field AWOKE Ltv/nomercy/player/video/cast/WakeOutcome;
+	public static final field CAST_FALLBACK Ltv/nomercy/player/video/cast/WakeOutcome;
+	public static final field NO_ROUTE Ltv/nomercy/player/video/cast/WakeOutcome;
+	public static final field UNSUPPORTED Ltv/nomercy/player/video/cast/WakeOutcome;
+	public static final field WAKE_SENT Ltv/nomercy/player/video/cast/WakeOutcome;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/cast/WakeOutcome;
+	public static fun values ()[Ltv/nomercy/player/video/cast/WakeOutcome;
 }
 
 public final class tv/nomercy/player/video/chapters/ChapterMarker {
