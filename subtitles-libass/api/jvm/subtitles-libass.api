@@ -98,6 +98,11 @@ public final class tv/nomercy/player/video/ass/fonts/TwoTierFontCache {
 	public final fun rendererChanged ()V
 }
 
+public final class tv/nomercy/player/video/ass/render/JvmFrameCompositor {
+	public fun <init> ()V
+	public final fun composite (Ljava/util/List;II)Ljava/awt/image/BufferedImage;
+}
+
 public final class tv/nomercy/player/video/ass/render/RenderGeometry {
 	public static final field INSTANCE Ltv/nomercy/player/video/ass/render/RenderGeometry;
 	public static final field SEEK_THRESHOLD_MS J

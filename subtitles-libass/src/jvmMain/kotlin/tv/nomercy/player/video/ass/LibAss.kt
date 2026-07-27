@@ -48,6 +48,21 @@ internal interface LibAss : Library {
         update: Int,
     )
 
+    // The same two limits Android's tiers set. libass defaults to 128MB of
+    // bitmap cache, which is a number chosen for a desktop with headroom and
+    // ruinous anywhere else — and the desktop drop-in ends up inside consumer
+    // applications with budgets of their own.
+    //
+    // bitmapMaxMegabytes is megabytes, not bytes. Passing bytes asks for a cache
+    // a million times the intended size, which libass accepts.
+    fun ass_set_cache_limits(renderer: Pointer, glyphMax: Int, bitmapMaxMegabytes: Int)
+
+    // Drops every font added to the library. A queue advancing to a title with
+    // its own attached fonts otherwise resolves against the previous one's, and
+    // that failure is silent: the cue renders in a face that exists rather than
+    // the one the disc carried.
+    fun ass_clear_fonts(library: Pointer)
+
     fun ass_read_memory(library: Pointer, buf: ByteArray, bufSize: Int, codepage: String?): Pointer?
     fun ass_free_track(track: Pointer)
 

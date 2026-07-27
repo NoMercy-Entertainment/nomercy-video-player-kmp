@@ -37,6 +37,16 @@ internal class JvmAssRenderer(private val lib: LibAss, private val library: Poin
         disposeRenderer()
     }
 
+    // Drops every font the library holds. A queue advancing to a title with its
+    // own attached fonts otherwise resolves against the previous one's, and that
+    // failure is silent — the cue renders in a face that exists rather than the
+    // one the disc carried.
+    fun clearFonts(): Unit = synchronized(lock) {
+        if (released) return
+        lib.ass_clear_fonts(library)
+        disposeRenderer()
+    }
+
     override fun loadTrack(assContent: String): Unit = synchronized(lock) {
         if (released) return
         trackContent = assContent
@@ -102,6 +112,14 @@ internal class JvmAssRenderer(private val lib: LibAss, private val library: Poin
         // Not optional. Without a font provider libass renders nothing, and
         // every other call still succeeds.
         lib.ass_set_fonts(created, null, "sans-serif", FONT_PROVIDER_AUTODETECT, null, 1)
+
+        // Before anything is drawn. libass defaults to 128MB of bitmap cache,
+        // which is a number chosen for a desktop with headroom to spare — and
+        // this renderer ends up inside consumer applications with budgets of
+        // their own. The pair matches Android's largest tier: the glyph count
+        // has to track the megabytes or the count evicts first and every
+        // eviction sends FreeType back over a glyph it already had.
+        lib.ass_set_cache_limits(created, DESKTOP_GLYPH_MAX, DESKTOP_BITMAP_CACHE_MEGABYTES)
         applySize(created)
         renderer = created
         disposeTrack()
@@ -139,3 +157,6 @@ internal class JvmAssRenderer(private val lib: LibAss, private val library: Poin
         lib.ass_library_done(library)
     }
 }
+
+private const val DESKTOP_GLYPH_MAX = 6_000
+private const val DESKTOP_BITMAP_CACHE_MEGABYTES = 32
