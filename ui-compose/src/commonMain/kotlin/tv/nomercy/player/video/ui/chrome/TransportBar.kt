@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -86,9 +87,20 @@ private fun TransportButtons(
     }
 
     if (buttons.playPause) {
+        // The glyph and the label are one decision rather than two conditions
+        // that happen to read the same state. Written apart, an edit to one is
+        // an edit to half of it — a pause glyph announcing itself as Play, which
+        // is invisible to anyone looking at the screen and wrong for everyone
+        // who is not.
+        val control: TransportControl = if (state.playing) {
+            TransportControl(PlayerIcons.Pause, strings.pause)
+        } else {
+            TransportControl(PlayerIcons.Play, strings.play)
+        }
+
         PlayerIconButton(
-            icon = if (state.playing) PlayerIcons.Pause else PlayerIcons.Play,
-            description = if (state.playing) strings.pause else strings.play,
+            icon = control.icon,
+            description = control.description,
             onClick = { commands.setPlaying(!state.playing) },
             modifier = Modifier.testTag(PLAY_PAUSE_TAG),
         )
@@ -128,6 +140,9 @@ private fun MenuButtons(
         )
     }
 }
+
+// A glyph and what it announces itself as, which are the same choice.
+private data class TransportControl(val icon: ImageVector, val description: String)
 
 internal const val TRANSPORT_BAR_TAG = "nm-transport-bar"
 internal const val PLAY_PAUSE_TAG = "nm-play-pause"
