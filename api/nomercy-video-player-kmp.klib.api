@@ -666,6 +666,16 @@ open class tv.nomercy.player.video.cast/KtorTvControlClient : tv.nomercy.player.
     open suspend fun stop() // tv.nomercy.player.video.cast/KtorTvControlClient.stop|stop(){}[0]
 }
 
+open class tv.nomercy.player.video.cast/NoDeviceDiscovery : tv.nomercy.player.video.cast/DeviceDiscovery { // tv.nomercy.player.video.cast/NoDeviceDiscovery|null[0]
+    constructor <init>() // tv.nomercy.player.video.cast/NoDeviceDiscovery.<init>|<init>(){}[0]
+
+    open val devices // tv.nomercy.player.video.cast/NoDeviceDiscovery.devices|{}devices[0]
+        open fun <get-devices>(): kotlinx.coroutines.flow/StateFlow<kotlin.collections/List<tv.nomercy.player.video.cast/RemoteDevice>> // tv.nomercy.player.video.cast/NoDeviceDiscovery.devices.<get-devices>|<get-devices>(){}[0]
+
+    open fun start() // tv.nomercy.player.video.cast/NoDeviceDiscovery.start|start(){}[0]
+    open fun stop() // tv.nomercy.player.video.cast/NoDeviceDiscovery.stop|stop(){}[0]
+}
+
 open class tv.nomercy.player.video.cast/RemotePresentation { // tv.nomercy.player.video.cast/RemotePresentation|null[0]
     constructor <init>(tv.nomercy.player.video.cast/TvPresentation) // tv.nomercy.player.video.cast/RemotePresentation.<init>|<init>(tv.nomercy.player.video.cast.TvPresentation){}[0]
 
@@ -836,6 +846,8 @@ final const val tv.nomercy.player.video.cast/CAST_SOURCE // tv.nomercy.player.vi
     final fun <get-CAST_SOURCE>(): kotlin/String // tv.nomercy.player.video.cast/CAST_SOURCE.<get-CAST_SOURCE>|<get-CAST_SOURCE>(){}[0]
 
 final fun tv.nomercy.player.video.cast/decodeRemoteEvent(kotlin/String, kotlin/String, kotlinx.serialization.json/Json): tv.nomercy.player.video.cast/RemoteEvent? // tv.nomercy.player.video.cast/decodeRemoteEvent|decodeRemoteEvent(kotlin.String;kotlin.String;kotlinx.serialization.json.Json){}[0]
+final fun tv.nomercy.player.video.cast/defaultCastWaker(): tv.nomercy.player.video.cast/CastWaker // tv.nomercy.player.video.cast/defaultCastWaker|defaultCastWaker(){}[0]
+final fun tv.nomercy.player.video.cast/defaultDeviceDiscovery(): tv.nomercy.player.video.cast/DeviceDiscovery // tv.nomercy.player.video.cast/defaultDeviceDiscovery|defaultDeviceDiscovery(){}[0]
 final fun tv.nomercy.player.video.chapters/chapterFill(tv.nomercy.player.video.chapters/ChapterMarker, kotlin/Double): kotlin/Double // tv.nomercy.player.video.chapters/chapterFill|chapterFill(tv.nomercy.player.video.chapters.ChapterMarker;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.chapters/chapterMarkers(kotlin.collections/List<tv.nomercy.player.core.media/Chapter>, kotlin/Double): kotlin.collections/List<tv.nomercy.player.video.chapters/ChapterMarker> // tv.nomercy.player.video.chapters/chapterMarkers|chapterMarkers(kotlin.collections.List<tv.nomercy.player.core.media.Chapter>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): tv.nomercy.player.core.cues/SpriteCue? // tv.nomercy.player.video.thumbnails/frameAt|frameAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
