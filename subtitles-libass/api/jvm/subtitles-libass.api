@@ -63,7 +63,8 @@ public final class tv/nomercy/player/video/ass/SubtitleOptions {
 
 public final class tv/nomercy/player/video/ass/SubtitlePlugin : tv/nomercy/player/core/plugin/Plugin {
 	public static final field FONTS_MANIFEST_FAILED Ljava/lang/String;
-	public fun <init> (Ltv/nomercy/player/video/ass/AssRenderer;)V
+	public fun <init> (Ltv/nomercy/player/video/ass/AssRenderer;Ltv/nomercy/player/video/ass/fonts/TwoTierFontCache;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/ass/AssRenderer;Ltv/nomercy/player/video/ass/fonts/TwoTierFontCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun addFontLate (Ljava/lang/String;[B)V
 	public fun dispose ()V
 	public final fun getLoadedFonts ()Ljava/util/List;

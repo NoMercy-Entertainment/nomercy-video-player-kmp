@@ -14,6 +14,8 @@ import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.FetchResponse
 import tv.nomercy.player.video.subtitles.AssFontNames
 import tv.nomercy.player.video.subtitles.FontManifest
+import tv.nomercy.player.video.ass.fonts.CachedFont
+import tv.nomercy.player.video.ass.fonts.TwoTierFontCache
 import tv.nomercy.player.video.subtitles.TtfNameParser
 
 // Where a styled subtitle comes from and what has to happen before it is drawn.
@@ -29,6 +31,11 @@ import tv.nomercy.player.video.subtitles.TtfNameParser
 // still parse a subtitle and know which fonts it would have needed.
 public class SubtitlePlugin(
     private val renderer: AssRenderer,
+    // Optional, because the cache needs a filesystem and only a host knows
+    // where its cache directory is. Without one every episode re-downloads the
+    // same three fonts, which works and is wasteful; with one the second
+    // episode of a series registers from disk.
+    private val fontCache: TwoTierFontCache? = null,
 ) : Plugin<SubtitleOptions>() {
 
     override val manifest: PluginManifest = SubtitleManifest
@@ -90,8 +97,16 @@ public class SubtitlePlugin(
         val attached: MutableList<String> = mutableListOf()
         val seen: MutableSet<String> = mutableSetOf()
         for ((fileName, url) in manifest) {
-            val bytes: ByteArray = get(url)?.bytes ?: continue
-            val family: String = TtfNameParser.extractFontName(bytes, TtfNameParser.fallbackNameFor(fileName))
+            // The cache first. A series attaches the same fonts to every
+            // episode, so after the first one this is a disk read rather than a
+            // download — and after the first play in a session, nothing at all.
+            val cached: CachedFont? = fontCache?.get(fileName)
+            val bytes: ByteArray = cached?.bytes ?: get(url)?.bytes ?: continue
+
+            val family: String = cached?.registerName
+                ?: TtfNameParser.extractFontName(bytes, TtfNameParser.fallbackNameFor(fileName))
+
+            if (cached == null) fontCache?.put(fileName, bytes)
 
             // One registration per family. Two files can carry the same family
             // and libass takes the first, so registering both wastes the work

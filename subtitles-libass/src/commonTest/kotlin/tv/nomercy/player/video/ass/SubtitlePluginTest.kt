@@ -12,8 +12,12 @@ import kotlinx.coroutines.test.runTest
 import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.core.ports.FetchResponse
+import okio.Path.Companion.toPath
+import okio.fakefilesystem.FakeFileSystem
+import tv.nomercy.player.video.ass.fonts.TwoTierFontCache
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 private const val OK = 200
@@ -21,6 +25,7 @@ private const val NOT_FOUND = 404
 private const val SUBTITLE_URL = "https://media.example.test/show/1/subs/en.ass"
 private const val MANIFEST_URL = "https://media.example.test/show/1/fonts/fonts.json"
 private val FONT_BYTES = byteArrayOf(0, 1, 2, 3)
+private const val FONT_URL = "https://media.example.test/show/1/fonts/SkeletonSans.ttf"
 
 // The plugin against a real player, with only the network and libass stood in
 // for — which are the two things a test cannot have and the two things this
@@ -39,11 +44,43 @@ class SubtitlePluginTest {
         return player to requested
     }
 
-    private suspend fun install(player: ComposedPlayer, renderer: AssRenderer): SubtitlePlugin {
-        val plugin = SubtitlePlugin(renderer)
+    private suspend fun install(
+        player: ComposedPlayer,
+        renderer: AssRenderer,
+        cache: TwoTierFontCache? = null,
+    ): SubtitlePlugin {
+        val plugin = SubtitlePlugin(renderer, cache)
         player.setup(PlayerConfig())
         player.addPlugin(plugin)
         return plugin
+    }
+
+    @Test
+    fun theSecondEpisodeRegistersFromCacheRatherThanDownloadingAgain() {
+        // A series attaches the same three fonts to every episode. Without a
+        // cache that is the same download twelve times over a season, on a
+        // connection the viewer is also streaming video across.
+        runTest {
+            val cache = TwoTierFontCache(FakeFileSystem(), "/cache".toPath())
+            val responses = mapOf(
+                SUBTITLE_URL to FetchResponse(status = OK, body = skeletonAss("Skeleton Sans")),
+                MANIFEST_URL to FetchResponse(status = OK, body = """["SkeletonSans.ttf"]"""),
+                FONT_URL to FetchResponse(status = OK, bytes = FONT_BYTES),
+            )
+
+            val (first, firstRequests) = player(responses)
+            install(first, RecordingRenderer(), cache).load(SUBTITLE_URL, MANIFEST_URL)
+            assertTrue(firstRequests.contains(FONT_URL), "the first episode never fetched the font")
+
+            val (second, secondRequests) = player(responses)
+            val renderer = RecordingRenderer()
+            install(second, renderer, cache).load(SUBTITLE_URL, MANIFEST_URL)
+
+            assertFalse(secondRequests.contains(FONT_URL), "the font was downloaded a second time")
+            // And it still reached libass — a cache that serves nothing is
+            // indistinguishable from one that works, by request count alone.
+            assertTrue(renderer.fonts.isNotEmpty(), "the cached font never reached the renderer")
+        }
     }
 
     @Test
