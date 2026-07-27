@@ -126,8 +126,36 @@ public final class tv/nomercy/player/video/ui/tv/FormatTimeKt {
 	public static final fun formatTime (D)Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/ui/tv/GamepadButton : java/lang/Enum {
+	public static final field A Ltv/nomercy/player/video/ui/tv/GamepadButton;
+	public static final field B Ltv/nomercy/player/video/ui/tv/GamepadButton;
+	public static final field Down Ltv/nomercy/player/video/ui/tv/GamepadButton;
+	public static final field Left Ltv/nomercy/player/video/ui/tv/GamepadButton;
+	public static final field Right Ltv/nomercy/player/video/ui/tv/GamepadButton;
+	public static final field Up Ltv/nomercy/player/video/ui/tv/GamepadButton;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/GamepadButton;
+	public static fun values ()[Ltv/nomercy/player/video/ui/tv/GamepadButton;
+}
+
+public abstract interface class tv/nomercy/player/video/ui/tv/GamepadInput {
+	public abstract fun isSupported ()Z
+	public abstract fun poll ()Ljava/util/List;
+}
+
+public final class tv/nomercy/player/video/ui/tv/GamepadInputKt {
+	public static final fun playerKeyOf (Ltv/nomercy/player/video/ui/tv/GamepadButton;)Ltv/nomercy/player/core/input/PlayerKey;
+}
+
 public final class tv/nomercy/player/video/ui/tv/NMTvPlayerViewKt {
 	public static final fun NMTvPlayerView (Ltv/nomercy/player/video/ui/tv/TvChromeController;Ltv/nomercy/player/video/ui/tv/TvTransportState;Ltv/nomercy/player/video/ui/tv/TvChromeContent;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class tv/nomercy/player/video/ui/tv/NoGamepad : tv/nomercy/player/video/ui/tv/GamepadInput {
+	public static final field $stable I
+	public static final field INSTANCE Ltv/nomercy/player/video/ui/tv/NoGamepad;
+	public fun isSupported ()Z
+	public fun poll ()Ljava/util/List;
 }
 
 public final class tv/nomercy/player/video/ui/tv/PlayerIconButtonKt {
