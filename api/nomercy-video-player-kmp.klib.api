@@ -247,6 +247,11 @@ final object tv.nomercy.player.video.subtitles/FontManifest { // tv.nomercy.play
     final fun parse(kotlin/String, kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/String> // tv.nomercy.player.video.subtitles/FontManifest.parse|parse(kotlin.String;kotlin.String){}[0]
 }
 
+final object tv.nomercy.player.video.subtitles/TtfNameParser { // tv.nomercy.player.video.subtitles/TtfNameParser|null[0]
+    final fun extractFontName(kotlin/ByteArray, kotlin/String): kotlin/String // tv.nomercy.player.video.subtitles/TtfNameParser.extractFontName|extractFontName(kotlin.ByteArray;kotlin.String){}[0]
+    final fun fallbackNameFor(kotlin/String): kotlin/String // tv.nomercy.player.video.subtitles/TtfNameParser.fallbackNameFor|fallbackNameFor(kotlin.String){}[0]
+}
+
 final object tv.nomercy.player.video/VideoEvents { // tv.nomercy.player.video/VideoEvents|null[0]
     final val AspectRatio // tv.nomercy.player.video/VideoEvents.AspectRatio|{}AspectRatio[0]
         final fun <get-AspectRatio>(): tv.nomercy.player.core.events/EventKey<tv.nomercy.player.video/AspectRatioChange> // tv.nomercy.player.video/VideoEvents.AspectRatio.<get-AspectRatio>|<get-AspectRatio>(){}[0]
