@@ -68,6 +68,7 @@ public fun VideoChrome(
     buttons: ChromeButtons = ChromeButtons(),
     sprite: List<SpriteCue> = emptyList(),
     onClose: (() -> Unit)? = null,
+    slots: ChromeSlots = LocalChromeSlots.current,
     surface: @Composable () -> Unit = {},
 ) {
     val scope: CoroutineScope = rememberCoroutineScope()
@@ -93,7 +94,7 @@ public fun VideoChrome(
     ) {
         ChromeLayers(
             scene = ChromeScene(state, commands, controller, strings, buttons),
-            host = ChromeHost(sprite, onClose),
+            host = ChromeHost(sprite, onClose, slots),
             menu = menu,
             onMenuChange = { menu = it },
         )
@@ -190,6 +191,7 @@ private data class ChromeScene(
 private data class ChromeHost(
     val sprite: List<SpriteCue>,
     val onClose: (() -> Unit)?,
+    val slots: ChromeSlots,
 )
 
 @Composable
@@ -202,6 +204,8 @@ private fun ChromeLayers(
     val ui: ChromeUi by scene.controller.ui.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
+        host.slots.backdrop?.invoke(scene.state, scene.commands)
+
         // Outside the visibility gate. A film that is still buffering has to say
         // so whether or not the controls are up, and a viewer looking at a
         // frozen picture with nothing on it cannot tell it from a crash.
@@ -223,34 +227,40 @@ private fun ChromeLayers(
 
         AnimatedVisibility(visible = ui.active, enter = fadeIn(), exit = fadeOut()) {
             Box(modifier = Modifier.fillMaxSize()) {
-                ChromeTopBar(
-                    item = scene.state.item,
-                    strings = scene.strings,
-                    onClose = host.onClose,
-                    modifier = Modifier.align(Alignment.TopCenter),
-                )
+                Box(modifier = Modifier.align(Alignment.TopCenter)) {
+                    host.slots.topBar?.invoke(scene.state, scene.commands) ?: ChromeTopBar(
+                        item = scene.state.item,
+                        strings = scene.strings,
+                        onClose = host.onClose,
+                    )
+                }
 
-                ChromeBottom(scene, host.sprite, Modifier.align(Alignment.BottomCenter))
+                ChromeBottom(scene, host, Modifier.align(Alignment.BottomCenter))
             }
         }
 
         SettingsMenu(scene.state, scene.commands, menu, onMenuChange, Modifier.align(Alignment.BottomCenter))
+
+        // Additive rather than replacing. A skip-intro button and a cast banner
+        // are the host's features, and a slot that swallowed the chrome to draw
+        // one would be a host choosing between its feature and the controls.
+        host.slots.overlays?.invoke(scene.state, scene.commands)
     }
 }
 
 // The scrubber sits above the buttons rather than inside the row, because a drag
 // target the width of the picture is the one a finger actually hits.
 @Composable
-private fun ChromeBottom(scene: ChromeScene, sprite: List<SpriteCue>, modifier: Modifier) {
+private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifier) {
     Column(modifier = modifier.fillMaxWidth()) {
-        ChapterScrubber(
+        host.slots.scrubber?.invoke(scene.state, scene.commands) ?: ChapterScrubber(
             state = scene.state,
             commands = scene.commands,
-            sprite = sprite,
+            sprite = host.sprite,
             onScrubbing = scene.controller::setScrubbing,
         )
 
-        TransportBar(
+        host.slots.transport?.invoke(scene.state, scene.commands) ?: TransportBar(
             state = scene.state,
             commands = scene.commands,
             strings = scene.strings,

@@ -24,6 +24,8 @@ import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerState
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
+import tv.nomercy.player.video.ui.chrome.ChromeSlots
+import tv.nomercy.player.video.ui.chrome.LocalChromeSlots
 import tv.nomercy.player.video.ui.chrome.VideoChrome
 import tv.nomercy.player.video.ui.tv.NMTvPlayerView
 import tv.nomercy.player.video.ui.tv.TvChrome
@@ -53,6 +55,7 @@ public fun NMVideoPlayerView(
     sprite: List<SpriteCue> = emptyList(),
     episodes: List<TvEpisode> = emptyList(),
     onClose: () -> Unit = {},
+    slots: ChromeSlots = LocalChromeSlots.current,
     surface: VideoSurface? = null,
 ) {
     val picture: @Composable () -> Unit = { surface?.let { PlayerSurface(it, Modifier.fillMaxSize()) } }
@@ -82,6 +85,7 @@ public fun NMVideoPlayerView(
             buttons = buttons,
             sprite = sprite,
             onClose = onClose,
+            slots = slots,
             surface = picture,
         )
     }
