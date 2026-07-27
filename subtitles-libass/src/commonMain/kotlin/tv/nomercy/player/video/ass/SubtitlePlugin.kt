@@ -14,6 +14,7 @@ import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.FetchResponse
 import tv.nomercy.player.video.subtitles.AssFontNames
 import tv.nomercy.player.video.subtitles.FontManifest
+import tv.nomercy.player.video.subtitles.TtfNameParser
 
 // Where a styled subtitle comes from and what has to happen before it is drawn.
 //
@@ -56,32 +57,48 @@ public class SubtitlePlugin(
         return true
     }
 
-    // Every font in the manifest, not the ones whose filenames look like the
-    // families the cue asked for.
+    // Every font in the manifest, registered under the name it calls itself.
     //
-    // Matching a family to a file name cannot be done from the outside: libass
-    // resolves against the family recorded inside the font data, and a file
-    // called Skeleton.ttf can hold a family called anything. Guessing gets it
-    // wrong quietly — the cue renders in a fallback face and nothing reports it.
+    // Not under its filename, which is what this did first and what the comment
+    // here used to defend. libass matches the family an ASS script asks for
+    // against the name the font reports, and a file called Skeleton.ttf can
+    // hold a family called anything — so a filename registration resolves to
+    // nothing and the cue renders in a fallback face with nothing reporting it.
+    // TtfNameParser reads the real name out of the font's own name table.
     //
-    // A manifest is produced for one subtitle, so its contents are the fonts
-    // that subtitle needs; attaching one it turns out not to use costs a
-    // download it already paid for, and attaching none because a name did not
-    // match costs the wrong typeface for the whole film. The cue's own font list
-    // is still read, but only to skip the step entirely when there is nothing to
-    // fetch.
+    // Still every font in the manifest rather than the ones whose names look
+    // like the families the cue asked for. A manifest is produced for one
+    // subtitle, so its contents are what that subtitle needs; attaching one it
+    // turns out not to use costs a download already paid for, and attaching
+    // none because a name did not match costs the wrong typeface for the whole
+    // film. The cue's own font list is read only to skip the step entirely when
+    // there is nothing to fetch.
     private suspend fun attachFonts(subtitle: String, manifestUrl: String) {
         if (AssFontNames.parse(subtitle).isEmpty()) return
 
         val manifest: Map<String, String> = get(manifestUrl)?.body
             ?.let { FontManifest.parse(it, manifestUrl) }
             .orEmpty()
-        if (manifest.isEmpty()) return
+        if (manifest.isEmpty()) {
+            // A degrade, not a failure. libass falls back to system fonts and
+            // the film plays; saying nothing is what makes "the subtitles look
+            // wrong" unanswerable later.
+            reportFontsUnavailable(manifestUrl)
+            return
+        }
 
         val attached: MutableList<String> = mutableListOf()
+        val seen: MutableSet<String> = mutableSetOf()
         for ((fileName, url) in manifest) {
             val bytes: ByteArray = get(url)?.bytes ?: continue
-            renderer.addFont(fileName, bytes)
+            val family: String = TtfNameParser.extractFontName(bytes, TtfNameParser.fallbackNameFor(fileName))
+
+            // One registration per family. Two files can carry the same family
+            // and libass takes the first, so registering both wastes the work
+            // and makes which one wins depend on manifest ordering.
+            if (!seen.add(family.lowercase())) continue
+
+            renderer.addFont(family, bytes)
             attached += fileName
         }
         loadedFonts = attached
@@ -98,12 +115,27 @@ public class SubtitlePlugin(
     // Reloading is cheap and visible. Not reloading is a film that plays to the
     // end in a fallback typeface with nothing reporting why.
     public fun addFontLate(fileName: String, data: ByteArray) {
-        renderer.addFont(fileName, data)
+        val family: String = TtfNameParser.extractFontName(data, TtfNameParser.fallbackNameFor(fileName))
+        renderer.addFont(family, data)
         loadedFonts = loadedFonts + fileName
 
         // Only when there is a track to reload. Before one exists this is just
         // the ordinary path with a different name.
         currentTrack?.let(renderer::loadTrack)
+    }
+
+    // Reported rather than thrown, and reported rather than swallowed.
+    //
+    // libass falls back to system fonts when it has none of its own, so the
+    // film plays and the subtitles are legible — just in the wrong typeface.
+    // Throwing would take a watchable episode away over a cosmetic problem;
+    // saying nothing is what makes "the subtitles look wrong" unanswerable a
+    // week later.
+    private fun reportFontsUnavailable(manifestUrl: String) {
+        report(
+            code = FONTS_MANIFEST_FAILED,
+            message = "no font manifest at $manifestUrl; libass will use system fonts",
+        )
     }
 
     private var currentTrack: String? = null
@@ -119,6 +151,10 @@ public class SubtitlePlugin(
 
     private companion object {
         val OK_RANGE = 200..299
+
+        // Namespaced the way every other player error is, so a host filtering
+        // by scope catches it without knowing this plugin exists.
+        const val FONTS_MANIFEST_FAILED = "plugin:subtitle/fonts-manifest-failed"
     }
 }
 

@@ -69,8 +69,15 @@ class SubtitlePluginTest {
         // single case — the name a producer writes and the name a cue implies
         // differ in capitalisation often enough that matching on it would fail
         // for cosmetic reasons.
-        assertEquals(listOf("addFont:skeletonsans.ttf", "loadTrack"), renderer.calls)
-        assertTrue(FONT_BYTES.contentEquals(renderer.fonts.getValue("skeletonsans.ttf")))
+        // Under the family, not the filename. libass matches the family an ASS
+        // script asks for against the name the font reports, and a file called
+        // Skeleton.ttf can hold a family called anything — the shipped Android
+        // app registers via TtfNameParser for exactly this reason. These bytes
+        // are not a real font, so the parser falls back to the filename with
+        // its extension stripped, which is what a real font's name would
+        // replace.
+        assertEquals(listOf("addFont:skeletonsans", "loadTrack"), renderer.calls)
+        assertTrue(FONT_BYTES.contentEquals(renderer.fonts.getValue("skeletonsans")))
     }
 
     @Test
@@ -151,7 +158,7 @@ class SubtitlePluginTest {
         plugin.addFontLate("LateArrival.ttf", byteArrayOf(1, 2, 3))
 
         assertEquals(loadsBefore + 1, renderer.calls.count { it.startsWith("loadTrack") })
-        assertTrue(renderer.fonts.containsKey("LateArrival.ttf"))
+        assertTrue(renderer.fonts.containsKey("LateArrival"))
         assertTrue(plugin.loadedFonts.contains("LateArrival.ttf"))
     }
 
@@ -165,7 +172,7 @@ class SubtitlePluginTest {
         install(player, renderer).addFontLate("Early.ttf", byteArrayOf(1))
 
         assertEquals(0, renderer.calls.count { it.startsWith("loadTrack") })
-        assertTrue(renderer.fonts.containsKey("Early.ttf"))
+        assertTrue(renderer.fonts.containsKey("Early"))
     }
 
 }
