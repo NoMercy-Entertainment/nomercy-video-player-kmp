@@ -61,6 +61,18 @@ final enum class tv.nomercy.player.video.cast/RemoteQualityLevel : kotlin/Enum<t
     }
 }
 
+final enum class tv.nomercy.player.video.cast/RemoteStatus : kotlin/Enum<tv.nomercy.player.video.cast/RemoteStatus> { // tv.nomercy.player.video.cast/RemoteStatus|null[0]
+    enum entry CONNECTED // tv.nomercy.player.video.cast/RemoteStatus.CONNECTED|null[0]
+    enum entry CONNECTING // tv.nomercy.player.video.cast/RemoteStatus.CONNECTING|null[0]
+    enum entry DISCONNECTED // tv.nomercy.player.video.cast/RemoteStatus.DISCONNECTED|null[0]
+
+    final val entries // tv.nomercy.player.video.cast/RemoteStatus.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.cast/RemoteStatus> // tv.nomercy.player.video.cast/RemoteStatus.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video.cast/RemoteStatus // tv.nomercy.player.video.cast/RemoteStatus.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video.cast/RemoteStatus> // tv.nomercy.player.video.cast/RemoteStatus.values|values#static(){}[0]
+}
+
 final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.player.video/Stretching> { // tv.nomercy.player.video/Stretching|null[0]
     enum entry Fill // tv.nomercy.player.video/Stretching.Fill|null[0]
     enum entry None // tv.nomercy.player.video/Stretching.None|null[0]
@@ -567,6 +579,38 @@ final class tv.nomercy.player.video/ViewModeChange { // tv.nomercy.player.video/
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video/ViewModeChange.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video/ViewModeChange.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video/ViewModeChange.toString|toString(){}[0]
+}
+
+open class tv.nomercy.player.video.cast/RemotePresentation { // tv.nomercy.player.video.cast/RemotePresentation|null[0]
+    constructor <init>(tv.nomercy.player.video.cast/TvPresentation) // tv.nomercy.player.video.cast/RemotePresentation.<init>|<init>(tv.nomercy.player.video.cast.TvPresentation){}[0]
+
+    open suspend fun setAudioTrack(kotlin/String) // tv.nomercy.player.video.cast/RemotePresentation.setAudioTrack|setAudioTrack(kotlin.String){}[0]
+    open suspend fun setMuted(kotlin/Boolean) // tv.nomercy.player.video.cast/RemotePresentation.setMuted|setMuted(kotlin.Boolean){}[0]
+    open suspend fun setQuality(tv.nomercy.player.video.cast/RemoteQualityLevel) // tv.nomercy.player.video.cast/RemotePresentation.setQuality|setQuality(tv.nomercy.player.video.cast.RemoteQualityLevel){}[0]
+    open suspend fun setSubtitleTrack(kotlin/String?) // tv.nomercy.player.video.cast/RemotePresentation.setSubtitleTrack|setSubtitleTrack(kotlin.String?){}[0]
+    open suspend fun setVolumePercent(kotlin/Int) // tv.nomercy.player.video.cast/RemotePresentation.setVolumePercent|setVolumePercent(kotlin.Int){}[0]
+}
+
+open class tv.nomercy.player.video.cast/RemoteVideoController { // tv.nomercy.player.video.cast/RemoteVideoController|null[0]
+    constructor <init>(tv.nomercy.player.video.cast/TvControlClient, kotlinx.coroutines/CoroutineScope) // tv.nomercy.player.video.cast/RemoteVideoController.<init>|<init>(tv.nomercy.player.video.cast.TvControlClient;kotlinx.coroutines.CoroutineScope){}[0]
+
+    final val state // tv.nomercy.player.video.cast/RemoteVideoController.state|{}state[0]
+        final fun <get-state>(): kotlinx.coroutines.flow/StateFlow<tv.nomercy.player.video.cast/RemotePlayerState?> // tv.nomercy.player.video.cast/RemoteVideoController.state.<get-state>|<get-state>(){}[0]
+    final val status // tv.nomercy.player.video.cast/RemoteVideoController.status|{}status[0]
+        final fun <get-status>(): kotlinx.coroutines.flow/StateFlow<tv.nomercy.player.video.cast/RemoteStatus> // tv.nomercy.player.video.cast/RemoteVideoController.status.<get-status>|<get-status>(){}[0]
+    open val presentation // tv.nomercy.player.video.cast/RemoteVideoController.presentation|{}presentation[0]
+        open fun <get-presentation>(): tv.nomercy.player.video.cast/RemotePresentation // tv.nomercy.player.video.cast/RemoteVideoController.presentation.<get-presentation>|<get-presentation>(){}[0]
+
+    open fun apply(tv.nomercy.player.video.cast/RemoteEvent) // tv.nomercy.player.video.cast/RemoteVideoController.apply|apply(tv.nomercy.player.video.cast.RemoteEvent){}[0]
+    open fun disconnect() // tv.nomercy.player.video.cast/RemoteVideoController.disconnect|disconnect(){}[0]
+    open suspend fun connect() // tv.nomercy.player.video.cast/RemoteVideoController.connect|connect(){}[0]
+    open suspend fun next() // tv.nomercy.player.video.cast/RemoteVideoController.next|next(){}[0]
+    open suspend fun pause() // tv.nomercy.player.video.cast/RemoteVideoController.pause|pause(){}[0]
+    open suspend fun play() // tv.nomercy.player.video.cast/RemoteVideoController.play|play(){}[0]
+    open suspend fun previous() // tv.nomercy.player.video.cast/RemoteVideoController.previous|previous(){}[0]
+    open suspend fun seek(kotlin/Double) // tv.nomercy.player.video.cast/RemoteVideoController.seek|seek(kotlin.Double){}[0]
+    open suspend fun setPlaylistActive(kotlin/Int) // tv.nomercy.player.video.cast/RemoteVideoController.setPlaylistActive|setPlaylistActive(kotlin.Int){}[0]
+    open suspend fun stop() // tv.nomercy.player.video.cast/RemoteVideoController.stop|stop(){}[0]
 }
 
 open class tv.nomercy.player.video.cast/SseAccumulator { // tv.nomercy.player.video.cast/SseAccumulator|null[0]

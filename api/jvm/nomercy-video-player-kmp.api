@@ -465,6 +465,15 @@ public final class tv/nomercy/player/video/cast/RemotePlaylistItem$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public class tv/nomercy/player/video/cast/RemotePresentation {
+	public fun <init> (Ltv/nomercy/player/video/cast/TvPresentation;)V
+	public fun setAudioTrack (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setMuted (ZLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setQuality (Ltv/nomercy/player/video/cast/RemoteQualityLevel;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setSubtitleTrack (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setVolumePercent (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
 public final class tv/nomercy/player/video/cast/RemoteQualityLevel : java/lang/Enum {
 	public static final field AUTO Ltv/nomercy/player/video/cast/RemoteQualityLevel;
 	public static final field Companion Ltv/nomercy/player/video/cast/RemoteQualityLevel$Companion;
@@ -511,6 +520,34 @@ public final synthetic class tv/nomercy/player/video/cast/RemoteServer$$serializ
 
 public final class tv/nomercy/player/video/cast/RemoteServer$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/cast/RemoteStatus : java/lang/Enum {
+	public static final field CONNECTED Ltv/nomercy/player/video/cast/RemoteStatus;
+	public static final field CONNECTING Ltv/nomercy/player/video/cast/RemoteStatus;
+	public static final field DISCONNECTED Ltv/nomercy/player/video/cast/RemoteStatus;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/cast/RemoteStatus;
+	public static fun values ()[Ltv/nomercy/player/video/cast/RemoteStatus;
+}
+
+public class tv/nomercy/player/video/cast/RemoteVideoController {
+	public static final field DISCONNECTED Ljava/lang/String;
+	public static final field MILLIS_PER_SECOND D
+	public fun <init> (Ltv/nomercy/player/video/cast/TvControlClient;Lkotlinx/coroutines/CoroutineScope;)V
+	protected fun apply (Ltv/nomercy/player/video/cast/RemoteEvent;)V
+	public fun connect (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun disconnect ()V
+	public fun getPresentation ()Ltv/nomercy/player/video/cast/RemotePresentation;
+	public final fun getState ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun getStatus ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun next (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun pause (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun play (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun previous (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun seek (DLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun setPlaylistActive (ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun stop (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public class tv/nomercy/player/video/cast/SseAccumulator {
