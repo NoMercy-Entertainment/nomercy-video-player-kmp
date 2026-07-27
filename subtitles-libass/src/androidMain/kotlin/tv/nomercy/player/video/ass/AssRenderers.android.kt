@@ -8,14 +8,26 @@
 
 package tv.nomercy.player.video.ass
 
+import android.app.ActivityManager
 import android.content.Context
+import tv.nomercy.player.video.ass.render.MemoryTier
 
 public actual class AssPlatformContext(public val android: Context)
 
 public actual object AssRenderers {
 
     public actual fun create(context: AssPlatformContext): AssRenderer? =
-        if (whyUnavailable() == null) AndroidAssRenderer() else null
+        if (whyUnavailable() == null) AndroidAssRenderer(tierFor(context.android)) else null
+
+    // The heap the system granted this process, which is the only honest input
+    // to the budget. A television box and a flagship phone run the same build
+    // and cannot afford the same subtitle cache.
+    private fun tierFor(context: Context): MemoryTier {
+        val manager: ActivityManager? =
+            context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+
+        return MemoryTier.forHeapMegabytes(manager?.memoryClass ?: 0)
+    }
 
     // The binding ships its own libass for every Android ABI, so the only way it
     // is missing is a build that stripped it. Asking the classloader is the only

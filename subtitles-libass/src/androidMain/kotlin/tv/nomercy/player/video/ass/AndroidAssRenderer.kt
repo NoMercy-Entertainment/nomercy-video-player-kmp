@@ -13,6 +13,8 @@ import io.github.peerless2012.ass.Ass
 import io.github.peerless2012.ass.AssRender
 import io.github.peerless2012.ass.AssTexType
 import io.github.peerless2012.ass.AssTrack
+import tv.nomercy.player.video.ass.render.MemoryTier
+import tv.nomercy.player.video.ass.render.renderScaleFor
 import java.nio.ByteBuffer
 
 // libass on Android, over the published JNI binding the app already ships.
@@ -25,7 +27,9 @@ import java.nio.ByteBuffer
 // Every native call is serialized. libass contexts are not thread-safe, and a
 // render racing an addFont is a native crash with a Kotlin stack that names
 // neither.
-internal class AndroidAssRenderer : AssRenderer {
+internal class AndroidAssRenderer(
+    private val tier: MemoryTier = MemoryTier.MEDIUM,
+) : AssRenderer {
 
     private val lock = Any()
 
@@ -52,6 +56,16 @@ internal class AndroidAssRenderer : AssRenderer {
         renderer = null
     }
 
+    // Dropping every font the library holds, for the same reason addFont
+    // rebuilds the renderer: libass resolves against what it was given, and an
+    // episode carrying a different set would otherwise draw in the previous
+    // one's typeface without reporting anything.
+    fun clearFonts(): Unit = synchronized(lock) {
+        if (released) return
+        ass.clearFont()
+        renderer = null
+    }
+
     override fun loadTrack(assContent: String): Unit = synchronized(lock) {
         if (released) return
         trackContent = assContent
@@ -68,10 +82,21 @@ internal class AndroidAssRenderer : AssRenderer {
     // Storage size is the resolution the subtitle was authored against and frame
     // size is what it is drawn onto. Setting only one scales the text wrong on
     // any screen that is not the author's.
+    //
+    // Both are clamped to what the device can afford. A 256MB television asked
+    // to rasterize a 1080p overlay spends more on the subtitle than on the video
+    // frame beneath it, and libass draws the same glyphs at 720p — the surface
+    // scales the result back up, which for anti-aliased text nobody can pick out
+    // at viewing distance.
     private fun applySize(target: AssRender) {
         if (width == 0 || height == 0) return
-        target.setStorageSize(width, height)
-        target.setFrameSize(width, height)
+
+        val scale: Double = renderScaleFor(width, height, tier)
+        val renderWidth: Int = (width * scale).toInt().coerceAtLeast(1)
+        val renderHeight: Int = (height * scale).toInt().coerceAtLeast(1)
+
+        target.setStorageSize(renderWidth, renderHeight)
+        target.setFrameSize(renderWidth, renderHeight)
     }
 
     private fun activeRenderer(): AssRender {
@@ -79,6 +104,11 @@ internal class AndroidAssRenderer : AssRenderer {
         if (existing != null) return existing
 
         val created: AssRender = ass.createRender()
+
+        // Before anything is drawn, because the default is 128MB. On a 248MB
+        // heap that left so little room that collection ran for eight and nine
+        // seconds at a time and the player was reported stuck.
+        created.setCacheLimit(tier.glyphCacheMax, tier.libassCacheMegabytes)
         applySize(created)
         renderer = created
         track = null
