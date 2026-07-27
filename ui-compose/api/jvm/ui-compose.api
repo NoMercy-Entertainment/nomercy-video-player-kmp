@@ -53,6 +53,10 @@ public final class tv/nomercy/player/video/ui/chrome/ChapterProgressBarKt {
 	public static final fun ChapterProgressBar-FJfuzF0 (Ltv/nomercy/player/video/ui/chrome/ChapterBarState;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/ChapterBarColors;FLandroidx/compose/runtime/Composer;II)V
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChapterScrubberKt {
+	public static final fun ChapterScrubber (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Landroidx/compose/ui/Modifier;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeAudioCommands {
 	public abstract fun setMuted (Z)V
 	public abstract fun setVolume (I)V
