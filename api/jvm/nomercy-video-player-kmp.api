@@ -239,3 +239,10 @@ public final class tv/nomercy/player/video/subtitles/TtfNameParser {
 	public final fun fallbackNameFor (Ljava/lang/String;)Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/thumbnails/SpriteFramesKt {
+	public static final fun frameAt (Ljava/util/List;D)Ltv/nomercy/player/core/cues/SpriteCue;
+	public static final fun frameIndexAt (Ljava/util/List;D)Ljava/lang/Integer;
+	public static final fun spriteFrameHeight (Ljava/util/List;)I
+	public static final fun spriteFrameWidth (Ljava/util/List;)I
+}
+

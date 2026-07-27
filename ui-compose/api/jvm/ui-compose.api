@@ -27,3 +27,23 @@ public final class tv/nomercy/player/video/ui/VideoSurface_jvmKt {
 	public static final fun VideoSurface (Ltv/nomercy/player/core/ports/VlcjVideoBackend;)Ltv/nomercy/player/video/ui/VideoSurface;
 }
 
+public class tv/nomercy/player/video/ui/thumbnails/PreviewSprite {
+	public static final field $stable I
+	public fun <init> (Ljava/util/List;Ltv/nomercy/player/video/ui/thumbnails/SpriteTileSource;)V
+	public fun cueAt (D)Ltv/nomercy/player/core/cues/SpriteCue;
+	public fun frameAt (D)Landroidx/compose/ui/graphics/ImageBitmap;
+	public final fun getFrameHeightPx ()I
+	public final fun getFrameWidthPx ()I
+	public final fun getFrames ()Ljava/util/List;
+	public fun release ()V
+}
+
+public abstract interface class tv/nomercy/player/video/ui/thumbnails/SpriteTileSource {
+	public abstract fun frame (I)Landroidx/compose/ui/graphics/ImageBitmap;
+	public abstract fun release ()V
+}
+
+public final class tv/nomercy/player/video/ui/thumbnails/SpriteTileSource_jvmKt {
+	public static final fun spriteTileSource ([BLjava/util/List;Lkotlinx/coroutines/CoroutineScope;)Ltv/nomercy/player/video/ui/thumbnails/SpriteTileSource;
+}
+

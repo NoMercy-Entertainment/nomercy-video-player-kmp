@@ -294,3 +294,8 @@ final object tv.nomercy.player.video/VideoEvents { // tv.nomercy.player.video/Vi
     final val all // tv.nomercy.player.video/VideoEvents.all|{}all[0]
         final fun <get-all>(): kotlin.collections/List<tv.nomercy.player.core.events/EventKey<*>> // tv.nomercy.player.video/VideoEvents.all.<get-all>|<get-all>(){}[0]
 }
+
+final fun tv.nomercy.player.video.thumbnails/frameAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): tv.nomercy.player.core.cues/SpriteCue? // tv.nomercy.player.video.thumbnails/frameAt|frameAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
+final fun tv.nomercy.player.video.thumbnails/frameIndexAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): kotlin/Int? // tv.nomercy.player.video.thumbnails/frameIndexAt|frameIndexAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
+final fun tv.nomercy.player.video.thumbnails/spriteFrameHeight(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Int // tv.nomercy.player.video.thumbnails/spriteFrameHeight|spriteFrameHeight(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
+final fun tv.nomercy.player.video.thumbnails/spriteFrameWidth(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Int // tv.nomercy.player.video.thumbnails/spriteFrameWidth|spriteFrameWidth(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
