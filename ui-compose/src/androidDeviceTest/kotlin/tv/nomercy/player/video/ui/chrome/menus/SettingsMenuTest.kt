@@ -45,6 +45,7 @@ class SettingsMenuTest {
         var lastRate: Float? = null
 
         override fun seekTo(seconds: Double) = Unit
+        override fun seekBy(deltaSeconds: Float) = Unit
         override fun setPlaying(playing: Boolean) = Unit
         override fun next() = Unit
         override fun previous() = Unit

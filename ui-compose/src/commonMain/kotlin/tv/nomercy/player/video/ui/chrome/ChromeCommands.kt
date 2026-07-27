@@ -32,6 +32,12 @@ public interface ChromeTransportCommands {
     // moved since it read it.
     public fun seekTo(seconds: Double)
 
+    // Relative, and it earns its place beside the absolute one rather than
+    // replacing it. A scrubber knows exactly where it was dropped; a double-tap
+    // knows only how far to jump, and making it compute a target from a position
+    // that has moved since it read it is how a skip lands somewhere else.
+    public fun seekBy(deltaSeconds: Float)
+
     // Explicit rather than a toggle. A bar drawn from state that has since
     // changed would toggle to the wrong thing, and the viewer pressed the button
     // they could see.

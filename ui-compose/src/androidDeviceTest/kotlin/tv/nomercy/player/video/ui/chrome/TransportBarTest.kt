@@ -37,6 +37,8 @@ class TransportBarTest {
 
         override fun seekTo(seconds: Double) { calls += "seekTo" }
 
+        override fun seekBy(deltaSeconds: Float) { calls += "seekBy" }
+
         override fun setPlaying(playing: Boolean) {
             calls += "setPlaying"
             lastPlaying = playing

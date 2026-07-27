@@ -198,6 +198,7 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTranspor
 	public abstract fun openAudioMenu ()V
 	public abstract fun openSubtitleMenu ()V
 	public abstract fun previous ()V
+	public abstract fun seekBy (F)V
 	public abstract fun seekTo (D)V
 	public abstract fun setPlaying (Z)V
 }
@@ -220,6 +221,61 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeUi {
 	public final fun getScrubbing ()Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/SeekAccumulatorKt {
+	public static final fun isVisible (Ltv/nomercy/player/video/ui/chrome/SeekRun;JJ)Z
+	public static final fun plus (Ltv/nomercy/player/video/ui/chrome/SeekRun;Ltv/nomercy/player/video/ui/chrome/SeekSide;FJJ)Ltv/nomercy/player/video/ui/chrome/SeekRun;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/SeekRun {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Ltv/nomercy/player/video/ui/chrome/SeekSide;FJ)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/ui/chrome/SeekSide;FJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ltv/nomercy/player/video/ui/chrome/SeekSide;
+	public final fun component2 ()F
+	public final fun component3 ()J
+	public final fun copy (Ltv/nomercy/player/video/ui/chrome/SeekSide;FJ)Ltv/nomercy/player/video/ui/chrome/SeekRun;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/SeekRun;Ltv/nomercy/player/video/ui/chrome/SeekSide;FJILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/SeekRun;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getLastTapMs ()J
+	public final fun getSeconds ()F
+	public final fun getSide ()Ltv/nomercy/player/video/ui/chrome/SeekSide;
+	public fun hashCode ()I
+	public final fun isEmpty ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/SeekSide : java/lang/Enum {
+	public static final field Back Ltv/nomercy/player/video/ui/chrome/SeekSide;
+	public static final field Forward Ltv/nomercy/player/video/ui/chrome/SeekSide;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/SeekSide;
+	public static fun values ()[Ltv/nomercy/player/video/ui/chrome/SeekSide;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/TouchZonesOptions {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (FJZ)V
+	public synthetic fun <init> (FJZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()F
+	public final fun component2 ()J
+	public final fun component3 ()Z
+	public final fun copy (FJZ)Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;FJZILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDisableClickToPause ()Z
+	public final fun getRunWindowMs ()J
+	public final fun getSeekSeconds ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/TouchZonesOverlayKt {
+	public static final fun TouchZonesOverlay (Ltv/nomercy/player/video/ui/chrome/ChromeController;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/TransportBarKt {
