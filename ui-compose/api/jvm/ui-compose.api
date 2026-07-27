@@ -50,6 +50,11 @@ public final class tv/nomercy/player/video/ui/thumbnails/SpriteFetchers {
 	public final fun getText ()Lkotlin/jvm/functions/Function2;
 }
 
+public final class tv/nomercy/player/video/ui/thumbnails/SpriteFramePreviewKt {
+	public static final fun SpriteFramePreview--jt2gSs (Ltv/nomercy/player/video/ui/thumbnails/PreviewSprite;DLandroidx/compose/ui/Modifier;FLandroidx/compose/runtime/Composer;II)V
+	public static final fun getPREVIEW_WIDTH ()F
+}
+
 public abstract interface class tv/nomercy/player/video/ui/thumbnails/SpriteTileSource {
 	public abstract fun frame (I)Landroidx/compose/ui/graphics/ImageBitmap;
 	public abstract fun release ()V

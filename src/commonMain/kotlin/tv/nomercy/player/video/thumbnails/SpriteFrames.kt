@@ -50,7 +50,23 @@ public fun spriteFrameWidth(frames: List<SpriteCue>): Int =
 public fun spriteFrameHeight(frames: List<SpriteCue>): Int =
     frames.firstOrNull()?.height ?: FALLBACK_FRAME_HEIGHT_PX
 
+// The shape of the preview box, which a chrome needs before any frame arrives.
+//
+// Falls back to sixteen by nine on a frame declaring no height. That is a VTT
+// written by something that got the rect wrong, and dividing by it gives an
+// infinite aspect — a box with no height on Compose, and a crash on the divide
+// in some layout passes. Sixteen by nine is wrong in a way nobody notices;
+// infinity is wrong in a way that takes the scrubber down.
+public fun spriteFrameAspect(frames: List<SpriteCue>): Float {
+    val height: Int = spriteFrameHeight(frames)
+    if (height <= 0) return FALLBACK_ASPECT
+
+    return spriteFrameWidth(frames).toFloat() / height.toFloat()
+}
+
 // What both existing chromes assume when a sheet arrives with no cues. A
 // preview box sized zero is worse than one sized for a frame that never comes.
 private const val FALLBACK_FRAME_WIDTH_PX = 320
 private const val FALLBACK_FRAME_HEIGHT_PX = 178
+
+private const val FALLBACK_ASPECT = 16f / 9f

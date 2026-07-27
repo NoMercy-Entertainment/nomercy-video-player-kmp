@@ -67,6 +67,24 @@ class SpriteFramesTest {
     }
 
     @Test
+    fun thePreviewBoxIsShapedLikeTheFramesInTheSheet() {
+        assertEquals(320f / 178f, spriteFrameAspect(frames))
+    }
+
+    @Test
+    fun aFrameDeclaringNoHeightGetsAShapeRatherThanAnInfinity() {
+        // A VTT whose rect was written wrong. Dividing by zero gives an infinite
+        // aspect, which lays out as a box with no height and, in some passes,
+        // takes the scrubber down on the divide. Sixteen by nine is wrong in a
+        // way nobody notices.
+        val broken: List<SpriteCue> = listOf(
+            SpriteCue(start = 0.0, end = 10.0, url = "s.webp", x = 0, y = 0, width = 320, height = 0),
+        )
+
+        assertEquals(16f / 9f, spriteFrameAspect(broken))
+    }
+
+    @Test
     fun anEmptySheetFallsBackToTheSizeTheChromesAssume() {
         // Both existing chromes hard-code 320x178 when a sheet has no cues, and
         // a preview box that collapses to zero is worse than one sized for a
