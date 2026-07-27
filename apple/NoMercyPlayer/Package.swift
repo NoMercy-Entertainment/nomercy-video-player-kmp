@@ -1,27 +1,50 @@
 // swift-tools-version:5.9
+import Foundation
 import PackageDescription
 
-// The SwiftUI half of the drop-in view.
+// Two Apple tiers, one package.
 //
-// Compose covers Android and the desktop; Apple gets SwiftUI, because an iOS or
-// tvOS app that already draws its chrome in SwiftUI does not want a second
-// toolkit in the process, and a Compose surface on iOS fights the app it would
-// be embedded in.
+// NoMercyVideoPlayer is the headless engine — an application that already draws
+// its own chrome takes that and nothing else. NoMercyPlayer is the drop-in: the
+// SwiftUI player, controls and all, over the same engine. Compose covers Android
+// and the desktop; Apple gets SwiftUI, because an app already drawing its chrome
+// in SwiftUI does not want a second toolkit in the process.
 //
-// The framework is a build artifact rather than a checked-in binary, so this
-// package only resolves after ./gradlew assembleNoMercyVideoPlayerXCFramework.
-// check.sh does that first.
+// The engine framework statically links core, so an application importing this
+// gets the core symbols with it. There is deliberately no second binaryTarget
+// for core here: two copies of the same symbols in one process is a linker error
+// nobody can read.
+//
+// Two shapes of the engine target, chosen by an environment variable. A released
+// consumer resolves a checksummed zip from the tag; somebody working in this
+// repo has no tag and needs the framework they just built. The default is the
+// local path because that is who runs this manifest most — check.sh assembles
+// the framework first, and a release is a job that sets the variable.
+let releasing = ProcessInfo.processInfo.environment["NOMERCY_SPM_RELEASE"] == "1"
+
+let engine: Target = releasing
+    ? .binaryTarget(
+        name: "NoMercyVideoPlayer",
+        url: "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/v2.0.0-rc.1/NoMercyVideoPlayer.xcframework.zip",
+        // Filled by the release job from tools/package-xcframework.sh. Without a
+        // real one a binaryTarget resolves whatever the URL serves, which is a
+        // build that changes under a consumer who changed nothing.
+        checksum: "REPLACED_BY_RELEASE_JOB"
+    )
+    : .binaryTarget(
+        name: "NoMercyVideoPlayer",
+        path: "../../build/XCFrameworks/release/NoMercyVideoPlayer.xcframework"
+    )
+
 let package = Package(
-    name: "NoMercyPlayer",
+    name: "NoMercyVideoPlayer",
     platforms: [.iOS(.v15), .tvOS(.v15)],
     products: [
+        .library(name: "NoMercyVideoPlayer", targets: ["NoMercyVideoPlayer"]),
         .library(name: "NoMercyPlayer", targets: ["NoMercyPlayer"]),
     ],
     targets: [
-        .binaryTarget(
-            name: "NoMercyVideoPlayer",
-            path: "../../build/XCFrameworks/release/NoMercyVideoPlayer.xcframework"
-        ),
+        engine,
         .target(name: "NoMercyPlayer", dependencies: ["NoMercyVideoPlayer"]),
         .testTarget(name: "NoMercyPlayerTests", dependencies: ["NoMercyPlayer"]),
     ]

@@ -27,7 +27,7 @@ cd apple/NoMercyPlayer
 for destination in "generic/platform=iOS" "generic/platform=tvOS"; do
   echo "building for $destination"
   xcodebuild build \
-    -scheme NoMercyPlayer \
+    -scheme NoMercyVideoPlayer-Package \
     -destination "$destination" \
     -quiet
 done
@@ -44,6 +44,10 @@ device_id() {
   xcrun simctl list devices available | grep -m1 "$1" | grep -oE '[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}'
 }
 
+# The -Package scheme, not the product one. SPM generates a scheme per product
+# plus one for the package, and only the package scheme carries the test target:
+# a product scheme reports "not currently configured for the test action", which
+# reads like a broken checkout rather than the wrong scheme name.
 run_tests() {
   local udid
   udid="$(device_id "$2")"
@@ -52,7 +56,7 @@ run_tests() {
     exit 1
   fi
   echo "testing on $2 ($udid)"
-  xcodebuild test -scheme NoMercyPlayer -destination "id=$udid" -quiet
+  xcodebuild test -scheme NoMercyVideoPlayer-Package -destination "id=$udid" -quiet
 }
 
 run_tests iOS "iPhone"
