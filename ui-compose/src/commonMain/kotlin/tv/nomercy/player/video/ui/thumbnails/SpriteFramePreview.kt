@@ -9,11 +9,11 @@
 package tv.nomercy.player.video.ui.thumbnails
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -46,13 +46,15 @@ public fun SpriteFramePreview(
         // The height comes from the declared aspect rather than from the tile,
         // so the box is the same size before and after the pixels land. Sizing
         // it from the image makes it grow under the viewer's thumb.
+        //
+        // aspectRatio rather than a layout modifier computing the same number.
+        // A layout modifier reports the height to the parent but measures the
+        // node it wraps against the constraints it was given, and a Canvas has
+        // no intrinsic height — so the box came out the right size and drew into
+        // nothing. The device gate is what caught that; every unit test passed.
         modifier = modifier
             .width(width)
-            .layout { measurable, constraints ->
-                val placeable = measurable.measure(constraints)
-                val height: Int = (placeable.width / aspect).roundToInt()
-                layout(placeable.width, height) { placeable.place(0, 0) }
-            },
+            .aspectRatio(aspect),
     ) {
         if (tile != null) {
             drawImage(
