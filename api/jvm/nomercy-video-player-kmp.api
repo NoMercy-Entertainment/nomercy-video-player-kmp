@@ -1070,6 +1070,126 @@ public final class tv/nomercy/player/video/tv/EpisodeLabels {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class tv/nomercy/player/video/tv/FeedbackEvent {
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackEvent$Display : tv/nomercy/player/video/tv/FeedbackEvent {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Long;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/Long;
+	public final fun copy (Ljava/lang/String;Ljava/lang/Long;)Ltv/nomercy/player/video/tv/FeedbackEvent$Display;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/FeedbackEvent$Display;Ljava/lang/String;Ljava/lang/Long;ILjava/lang/Object;)Ltv/nomercy/player/video/tv/FeedbackEvent$Display;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getMs ()Ljava/lang/Long;
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackEvent$Failed : tv/nomercy/player/video/tv/FeedbackEvent {
+	public static final field INSTANCE Ltv/nomercy/player/video/tv/FeedbackEvent$Failed;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackEvent$ItemChanged : tv/nomercy/player/video/tv/FeedbackEvent {
+	public static final field INSTANCE Ltv/nomercy/player/video/tv/FeedbackEvent$ItemChanged;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackEvent$Mounted : tv/nomercy/player/video/tv/FeedbackEvent {
+	public static final field INSTANCE Ltv/nomercy/player/video/tv/FeedbackEvent$Mounted;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackEvent$Playing : tv/nomercy/player/video/tv/FeedbackEvent {
+	public static final field INSTANCE Ltv/nomercy/player/video/tv/FeedbackEvent$Playing;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackEvent$Progressed : tv/nomercy/player/video/tv/FeedbackEvent {
+	public static final field INSTANCE Ltv/nomercy/player/video/tv/FeedbackEvent$Progressed;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackEvent$Remove : tv/nomercy/player/video/tv/FeedbackEvent {
+	public static final field INSTANCE Ltv/nomercy/player/video/tv/FeedbackEvent$Remove;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackEvent$Stalled : tv/nomercy/player/video/tv/FeedbackEvent {
+	public static final field INSTANCE Ltv/nomercy/player/video/tv/FeedbackEvent$Stalled;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackEvent$Waiting : tv/nomercy/player/video/tv/FeedbackEvent {
+	public static final field INSTANCE Ltv/nomercy/player/video/tv/FeedbackEvent$Waiting;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackKind : java/lang/Enum {
+	public static final field Feedback Ltv/nomercy/player/video/tv/FeedbackKind;
+	public static final field Message Ltv/nomercy/player/video/tv/FeedbackKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/tv/FeedbackKind;
+	public static fun values ()[Ltv/nomercy/player/video/tv/FeedbackKind;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackOverlayKt {
+	public static final fun nextFeedbackState (Ltv/nomercy/player/video/tv/FeedbackState;Ltv/nomercy/player/video/tv/FeedbackEvent;Ltv/nomercy/player/video/tv/FeedbackStrings;)Ltv/nomercy/player/video/tv/FeedbackState;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackState {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ltv/nomercy/player/video/tv/FeedbackKind;ZLjava/lang/Long;)V
+	public synthetic fun <init> (Ljava/lang/String;Ltv/nomercy/player/video/tv/FeedbackKind;ZLjava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ltv/nomercy/player/video/tv/FeedbackKind;
+	public final fun component3 ()Z
+	public final fun component4 ()Ljava/lang/Long;
+	public final fun copy (Ljava/lang/String;Ltv/nomercy/player/video/tv/FeedbackKind;ZLjava/lang/Long;)Ltv/nomercy/player/video/tv/FeedbackState;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/FeedbackState;Ljava/lang/String;Ltv/nomercy/player/video/tv/FeedbackKind;ZLjava/lang/Long;ILjava/lang/Object;)Ltv/nomercy/player/video/tv/FeedbackState;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBuffering ()Z
+	public final fun getHideAfterMs ()Ljava/lang/Long;
+	public final fun getKind ()Ltv/nomercy/player/video/tv/FeedbackKind;
+	public final fun getText ()Ljava/lang/String;
+	public final fun getVisible ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FeedbackStrings {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/tv/FeedbackStrings;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/FeedbackStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/tv/FeedbackStrings;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBuffering ()Ljava/lang/String;
+	public final fun getError ()Ljava/lang/String;
+	public final fun getLoading ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class tv/nomercy/player/video/tv/FormatTimeKt {
 	public static final fun formatTime (D)Ljava/lang/String;
 }
