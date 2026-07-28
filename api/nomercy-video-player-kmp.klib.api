@@ -699,6 +699,28 @@ final class tv.nomercy.player.video.input/WebKeyBinding { // tv.nomercy.player.v
     final fun toString(): kotlin/String // tv.nomercy.player.video.input/WebKeyBinding.toString|toString(){}[0]
 }
 
+final class tv.nomercy.player.video.menu/MenuOpenState { // tv.nomercy.player.video.menu/MenuOpenState|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/String? = ..., kotlin/String? = ...) // tv.nomercy.player.video.menu/MenuOpenState.<init>|<init>(kotlin.Boolean;kotlin.String?;kotlin.String?){}[0]
+
+    final val expandedTrigger // tv.nomercy.player.video.menu/MenuOpenState.expandedTrigger|{}expandedTrigger[0]
+        final fun <get-expandedTrigger>(): kotlin/String? // tv.nomercy.player.video.menu/MenuOpenState.expandedTrigger.<get-expandedTrigger>|<get-expandedTrigger>(){}[0]
+    final val open // tv.nomercy.player.video.menu/MenuOpenState.open|{}open[0]
+        final fun <get-open>(): kotlin/Boolean // tv.nomercy.player.video.menu/MenuOpenState.open.<get-open>|<get-open>(){}[0]
+    final val subMenu // tv.nomercy.player.video.menu/MenuOpenState.subMenu|{}subMenu[0]
+        final fun <get-subMenu>(): kotlin/String? // tv.nomercy.player.video.menu/MenuOpenState.subMenu.<get-subMenu>|<get-subMenu>(){}[0]
+
+    final fun closed(): tv.nomercy.player.video.menu/MenuOpenState // tv.nomercy.player.video.menu/MenuOpenState.closed|closed(){}[0]
+    final fun component1(): kotlin/Boolean // tv.nomercy.player.video.menu/MenuOpenState.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // tv.nomercy.player.video.menu/MenuOpenState.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // tv.nomercy.player.video.menu/MenuOpenState.component3|component3(){}[0]
+    final fun copy(kotlin/Boolean = ..., kotlin/String? = ..., kotlin/String? = ...): tv.nomercy.player.video.menu/MenuOpenState // tv.nomercy.player.video.menu/MenuOpenState.copy|copy(kotlin.Boolean;kotlin.String?;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.menu/MenuOpenState.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.menu/MenuOpenState.hashCode|hashCode(){}[0]
+    final fun openedMain(kotlin/String? = ...): tv.nomercy.player.video.menu/MenuOpenState // tv.nomercy.player.video.menu/MenuOpenState.openedMain|openedMain(kotlin.String?){}[0]
+    final fun openedSub(kotlin/String, kotlin/String? = ...): tv.nomercy.player.video.menu/MenuOpenState // tv.nomercy.player.video.menu/MenuOpenState.openedSub|openedSub(kotlin.String;kotlin.String?){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.menu/MenuOpenState.toString|toString(){}[0]
+}
+
 final class tv.nomercy.player.video.tv/EpisodeLabels { // tv.nomercy.player.video.tv/EpisodeLabels|null[0]
     constructor <init>(kotlin/String = ..., kotlin/String = ..., kotlin/String = ...) // tv.nomercy.player.video.tv/EpisodeLabels.<init>|<init>(kotlin.String;kotlin.String;kotlin.String){}[0]
 
@@ -1355,6 +1377,7 @@ final val tv.nomercy.player.video.input/WEB_KEY_BINDINGS // tv.nomercy.player.vi
 final val tv.nomercy.player.video.input/WEB_KEY_COMBOS // tv.nomercy.player.video.input/WEB_KEY_COMBOS|{}WEB_KEY_COMBOS[0]
     final fun <get-WEB_KEY_COMBOS>(): kotlin.collections/Set<kotlin/String> // tv.nomercy.player.video.input/WEB_KEY_COMBOS.<get-WEB_KEY_COMBOS>|<get-WEB_KEY_COMBOS>(){}[0]
 
+final fun <#A: kotlin/Any?> tv.nomercy.player.video.menu/navigableRows(kotlin.collections/List<#A>, kotlin/Function1<#A, kotlin/Boolean>): kotlin.collections/List<#A> // tv.nomercy.player.video.menu/navigableRows|navigableRows(kotlin.collections.List<0:0>;kotlin.Function1<0:0,kotlin.Boolean>){0§<kotlin.Any?>}[0]
 final fun tv.nomercy.player.video.cast/decodeRemoteEvent(kotlin/String, kotlin/String, kotlinx.serialization.json/Json): tv.nomercy.player.video.cast/RemoteEvent? // tv.nomercy.player.video.cast/decodeRemoteEvent|decodeRemoteEvent(kotlin.String;kotlin.String;kotlinx.serialization.json.Json){}[0]
 final fun tv.nomercy.player.video.cast/defaultCastHttpClient(): io.ktor.client/HttpClient // tv.nomercy.player.video.cast/defaultCastHttpClient|defaultCastHttpClient(){}[0]
 final fun tv.nomercy.player.video.cast/defaultCastWaker(): tv.nomercy.player.video.cast/CastWaker // tv.nomercy.player.video.cast/defaultCastWaker|defaultCastWaker(){}[0]
@@ -1363,6 +1386,8 @@ final fun tv.nomercy.player.video.cast/videoCastPlugin(kotlin/String, kotlinx.co
 final fun tv.nomercy.player.video.chapters/chapterFill(tv.nomercy.player.video.chapters/ChapterMarker, kotlin/Double): kotlin/Double // tv.nomercy.player.video.chapters/chapterFill|chapterFill(tv.nomercy.player.video.chapters.ChapterMarker;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.chapters/chapterMarkers(kotlin.collections/List<tv.nomercy.player.core.media/Chapter>, kotlin/Double): kotlin.collections/List<tv.nomercy.player.video.chapters/ChapterMarker> // tv.nomercy.player.video.chapters/chapterMarkers|chapterMarkers(kotlin.collections.List<tv.nomercy.player.core.media.Chapter>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.input/playerCommandsOf(tv.nomercy.player.video/NMVideoPlayer, kotlinx.coroutines/CoroutineScope): tv.nomercy.player.video.input/PlayerCommands // tv.nomercy.player.video.input/playerCommandsOf|playerCommandsOf(tv.nomercy.player.video.NMVideoPlayer;kotlinx.coroutines.CoroutineScope){}[0]
+final fun tv.nomercy.player.video.menu/menuSwallowsKeys(kotlin/Boolean): kotlin/Boolean // tv.nomercy.player.video.menu/menuSwallowsKeys|menuSwallowsKeys(kotlin.Boolean){}[0]
+final fun tv.nomercy.player.video.menu/nextMenuRow(kotlin/Int, kotlin/Int, kotlin/Boolean): kotlin/Int? // tv.nomercy.player.video.menu/nextMenuRow|nextMenuRow(kotlin.Int;kotlin.Int;kotlin.Boolean){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): tv.nomercy.player.core.cues/SpriteCue? // tv.nomercy.player.video.thumbnails/frameAt|frameAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameIndexAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): kotlin/Int? // tv.nomercy.player.video.thumbnails/frameIndexAt|frameIndexAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/spriteFrameAspect(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Float // tv.nomercy.player.video.thumbnails/spriteFrameAspect|spriteFrameAspect(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
