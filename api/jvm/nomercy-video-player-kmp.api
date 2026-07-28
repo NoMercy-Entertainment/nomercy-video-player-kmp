@@ -983,6 +983,38 @@ public final class tv/nomercy/player/video/thumbnails/SpriteFramesKt {
 	public static final fun spriteFrameWidth (Ljava/util/List;)I
 }
 
+public final class tv/nomercy/player/video/touch/TouchAction : java/lang/Enum {
+	public static final field SEEK_BACK Ltv/nomercy/player/video/touch/TouchAction;
+	public static final field SEEK_FORWARD Ltv/nomercy/player/video/touch/TouchAction;
+	public static final field TOGGLE_CONTROLS Ltv/nomercy/player/video/touch/TouchAction;
+	public static final field TOGGLE_FULLSCREEN Ltv/nomercy/player/video/touch/TouchAction;
+	public static final field TOGGLE_PLAYBACK Ltv/nomercy/player/video/touch/TouchAction;
+	public static final field VOLUME_DOWN Ltv/nomercy/player/video/touch/TouchAction;
+	public static final field VOLUME_UP Ltv/nomercy/player/video/touch/TouchAction;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/touch/TouchAction;
+	public static fun values ()[Ltv/nomercy/player/video/touch/TouchAction;
+}
+
+public final class tv/nomercy/player/video/touch/TouchZone : java/lang/Enum {
+	public static final field PLAY_PAUSE Ltv/nomercy/player/video/touch/TouchZone;
+	public static final field SEEK_BACK Ltv/nomercy/player/video/touch/TouchZone;
+	public static final field SEEK_FORWARD Ltv/nomercy/player/video/touch/TouchZone;
+	public static final field VOLUME_DOWN Ltv/nomercy/player/video/touch/TouchZone;
+	public static final field VOLUME_UP Ltv/nomercy/player/video/touch/TouchZone;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/touch/TouchZone;
+	public static fun values ()[Ltv/nomercy/player/video/touch/TouchZone;
+}
+
+public final class tv/nomercy/player/video/touch/TouchZoneGridKt {
+	public static final field DOUBLE_TAP_THRESHOLD_MS J
+	public static final field TOUCH_SEEK_SECONDS D
+	public static final fun doubleTapAction (Ltv/nomercy/player/video/touch/TouchZone;)Ltv/nomercy/player/video/touch/TouchAction;
+	public static final fun singleTapAction (Ltv/nomercy/player/video/touch/TouchZone;)Ltv/nomercy/player/video/touch/TouchAction;
+	public static final fun zoneAt (FFZ)Ltv/nomercy/player/video/touch/TouchZone;
+}
+
 public abstract interface class tv/nomercy/player/video/tv/Cancellable {
 	public abstract fun cancel ()V
 }

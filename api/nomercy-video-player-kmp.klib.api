@@ -131,6 +131,36 @@ final enum class tv.nomercy.player.video.input/KeyAction : kotlin/Enum<tv.nomerc
     final fun values(): kotlin/Array<tv.nomercy.player.video.input/KeyAction> // tv.nomercy.player.video.input/KeyAction.values|values#static(){}[0]
 }
 
+final enum class tv.nomercy.player.video.touch/TouchAction : kotlin/Enum<tv.nomercy.player.video.touch/TouchAction> { // tv.nomercy.player.video.touch/TouchAction|null[0]
+    enum entry SEEK_BACK // tv.nomercy.player.video.touch/TouchAction.SEEK_BACK|null[0]
+    enum entry SEEK_FORWARD // tv.nomercy.player.video.touch/TouchAction.SEEK_FORWARD|null[0]
+    enum entry TOGGLE_CONTROLS // tv.nomercy.player.video.touch/TouchAction.TOGGLE_CONTROLS|null[0]
+    enum entry TOGGLE_FULLSCREEN // tv.nomercy.player.video.touch/TouchAction.TOGGLE_FULLSCREEN|null[0]
+    enum entry TOGGLE_PLAYBACK // tv.nomercy.player.video.touch/TouchAction.TOGGLE_PLAYBACK|null[0]
+    enum entry VOLUME_DOWN // tv.nomercy.player.video.touch/TouchAction.VOLUME_DOWN|null[0]
+    enum entry VOLUME_UP // tv.nomercy.player.video.touch/TouchAction.VOLUME_UP|null[0]
+
+    final val entries // tv.nomercy.player.video.touch/TouchAction.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.touch/TouchAction> // tv.nomercy.player.video.touch/TouchAction.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video.touch/TouchAction // tv.nomercy.player.video.touch/TouchAction.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video.touch/TouchAction> // tv.nomercy.player.video.touch/TouchAction.values|values#static(){}[0]
+}
+
+final enum class tv.nomercy.player.video.touch/TouchZone : kotlin/Enum<tv.nomercy.player.video.touch/TouchZone> { // tv.nomercy.player.video.touch/TouchZone|null[0]
+    enum entry PLAY_PAUSE // tv.nomercy.player.video.touch/TouchZone.PLAY_PAUSE|null[0]
+    enum entry SEEK_BACK // tv.nomercy.player.video.touch/TouchZone.SEEK_BACK|null[0]
+    enum entry SEEK_FORWARD // tv.nomercy.player.video.touch/TouchZone.SEEK_FORWARD|null[0]
+    enum entry VOLUME_DOWN // tv.nomercy.player.video.touch/TouchZone.VOLUME_DOWN|null[0]
+    enum entry VOLUME_UP // tv.nomercy.player.video.touch/TouchZone.VOLUME_UP|null[0]
+
+    final val entries // tv.nomercy.player.video.touch/TouchZone.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.touch/TouchZone> // tv.nomercy.player.video.touch/TouchZone.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video.touch/TouchZone // tv.nomercy.player.video.touch/TouchZone.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video.touch/TouchZone> // tv.nomercy.player.video.touch/TouchZone.values|values#static(){}[0]
+}
+
 final enum class tv.nomercy.player.video.tv/TvDialog : kotlin/Enum<tv.nomercy.player.video.tv/TvDialog> { // tv.nomercy.player.video.tv/TvDialog|null[0]
     enum entry Episodes // tv.nomercy.player.video.tv/TvDialog.Episodes|null[0]
     enum entry Language // tv.nomercy.player.video.tv/TvDialog.Language|null[0]
@@ -1313,6 +1343,10 @@ final const val tv.nomercy.player.video.cast/CAST_SOURCE // tv.nomercy.player.vi
     final fun <get-CAST_SOURCE>(): kotlin/String // tv.nomercy.player.video.cast/CAST_SOURCE.<get-CAST_SOURCE>|<get-CAST_SOURCE>(){}[0]
 final const val tv.nomercy.player.video.cast/DEFAULT_TV_PORT // tv.nomercy.player.video.cast/DEFAULT_TV_PORT|{}DEFAULT_TV_PORT[0]
     final fun <get-DEFAULT_TV_PORT>(): kotlin/Int // tv.nomercy.player.video.cast/DEFAULT_TV_PORT.<get-DEFAULT_TV_PORT>|<get-DEFAULT_TV_PORT>(){}[0]
+final const val tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS // tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS|{}DOUBLE_TAP_THRESHOLD_MS[0]
+    final fun <get-DOUBLE_TAP_THRESHOLD_MS>(): kotlin/Long // tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS.<get-DOUBLE_TAP_THRESHOLD_MS>|<get-DOUBLE_TAP_THRESHOLD_MS>(){}[0]
+final const val tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS // tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS|{}TOUCH_SEEK_SECONDS[0]
+    final fun <get-TOUCH_SEEK_SECONDS>(): kotlin/Double // tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS.<get-TOUCH_SEEK_SECONDS>|<get-TOUCH_SEEK_SECONDS>(){}[0]
 
 final val tv.nomercy.player.video.input/WEB_KEY_BINDINGS // tv.nomercy.player.video.input/WEB_KEY_BINDINGS|{}WEB_KEY_BINDINGS[0]
     final fun <get-WEB_KEY_BINDINGS>(): kotlin.collections/List<tv.nomercy.player.video.input/WebKeyBinding> // tv.nomercy.player.video.input/WEB_KEY_BINDINGS.<get-WEB_KEY_BINDINGS>|<get-WEB_KEY_BINDINGS>(){}[0]
@@ -1332,6 +1366,9 @@ final fun tv.nomercy.player.video.thumbnails/frameIndexAt(kotlin.collections/Lis
 final fun tv.nomercy.player.video.thumbnails/spriteFrameAspect(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Float // tv.nomercy.player.video.thumbnails/spriteFrameAspect|spriteFrameAspect(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
 final fun tv.nomercy.player.video.thumbnails/spriteFrameHeight(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Int // tv.nomercy.player.video.thumbnails/spriteFrameHeight|spriteFrameHeight(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
 final fun tv.nomercy.player.video.thumbnails/spriteFrameWidth(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Int // tv.nomercy.player.video.thumbnails/spriteFrameWidth|spriteFrameWidth(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
+final fun tv.nomercy.player.video.touch/doubleTapAction(tv.nomercy.player.video.touch/TouchZone): tv.nomercy.player.video.touch/TouchAction // tv.nomercy.player.video.touch/doubleTapAction|doubleTapAction(tv.nomercy.player.video.touch.TouchZone){}[0]
+final fun tv.nomercy.player.video.touch/singleTapAction(tv.nomercy.player.video.touch/TouchZone): tv.nomercy.player.video.touch/TouchAction // tv.nomercy.player.video.touch/singleTapAction|singleTapAction(tv.nomercy.player.video.touch.TouchZone){}[0]
+final fun tv.nomercy.player.video.touch/zoneAt(kotlin/Float, kotlin/Float, kotlin/Boolean): tv.nomercy.player.video.touch/TouchZone // tv.nomercy.player.video.touch/zoneAt|zoneAt(kotlin.Float;kotlin.Float;kotlin.Boolean){}[0]
 final fun tv.nomercy.player.video.tv/episodeLabel(tv.nomercy.player.video.tv/TvChromeItem?, tv.nomercy.player.video.tv/EpisodeLabels = ...): kotlin/String // tv.nomercy.player.video.tv/episodeLabel|episodeLabel(tv.nomercy.player.video.tv.TvChromeItem?;tv.nomercy.player.video.tv.EpisodeLabels){}[0]
 final fun tv.nomercy.player.video.tv/formatTime(kotlin/Double): kotlin/String // tv.nomercy.player.video.tv/formatTime|formatTime(kotlin.Double){}[0]
 final fun tv.nomercy.player.video.tv/shouldShowSeasonSidebar(kotlin.collections/List<tv.nomercy.player.video.tv/TvChromeItem>): kotlin/Boolean // tv.nomercy.player.video.tv/shouldShowSeasonSidebar|shouldShowSeasonSidebar(kotlin.collections.List<tv.nomercy.player.video.tv.TvChromeItem>){}[0]
