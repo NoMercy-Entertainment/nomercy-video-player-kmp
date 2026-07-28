@@ -953,6 +953,11 @@ public abstract interface class tv/nomercy/player/video/tv/Scheduler {
 	public abstract fun schedule (JLkotlin/jvm/functions/Function0;)Ltv/nomercy/player/video/tv/Cancellable;
 }
 
+public final class tv/nomercy/player/video/tv/SeasonSidebarKt {
+	public static final fun shouldShowSeasonSidebar (Ljava/util/List;)Z
+	public static final fun sidebarSeasons (Ljava/util/List;)Ljava/util/List;
+}
+
 public final class tv/nomercy/player/video/tv/TvChapter {
 	public fun <init> (DLjava/lang/String;)V
 	public synthetic fun <init> (DLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

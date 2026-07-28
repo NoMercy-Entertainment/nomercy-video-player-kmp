@@ -65,6 +65,24 @@ internal class VideoChromeCommands(
 
     override fun openSubtitleMenu(): Unit = onMenu(MenuState.Subtitle)
 
+    override fun openQualityMenu(): Unit = onMenu(MenuState.Quality)
+
+    override fun openSpeedMenu(): Unit = onMenu(MenuState.Speed)
+
+    override fun openPlaylistMenu(): Unit = onMenu(MenuState.Playlist)
+
+    override fun openSettingsMenu(): Unit = onMenu(MenuState.Main)
+
+    // Theater and picture-in-picture are the player's own view modes, so they
+    // go straight through. The chrome does not remember them; it reads them
+    // back off the state, which is what keeps the exit glyph honest when
+    // something other than the button changed the mode.
+    override fun setTheater(theater: Boolean): Unit = player.theater(theater)
+
+    override fun setPip(pip: Boolean): Unit = player.pip(pip)
+
+    override fun cycleAspectRatio(): Unit = player.cycleAspectRatio()
+
     override fun setVolume(percent: Int) {
         scope.launch { player.volume(percent) }
     }

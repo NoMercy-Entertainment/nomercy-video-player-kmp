@@ -25,6 +25,11 @@ public interface ChromeCommands :
     ChromePresentationCommands
 
 // What plays, and where in it.
+// The width is the web bar's, not a decision made here: every method below is a
+// button on it. Splitting this into "transport" and "menus" would let a chrome
+// implement half the bar and typecheck, which is the thing the fidelity grade
+// caught happening once already.
+@Suppress("ComplexInterface")
 public interface ChromeTransportCommands {
 
     // Absolute, in seconds. A scrubber knows where it was dropped, and giving it
@@ -53,6 +58,17 @@ public interface ChromeTransportCommands {
     public fun openAudioMenu()
 
     public fun openSubtitleMenu()
+
+    // The rest of the web bar's menus, on the same seam and for the same
+    // reason: the bar knows a viewer pressed the button and not how much room
+    // there is to draw the menu in.
+    public fun openQualityMenu()
+
+    public fun openSpeedMenu()
+
+    public fun openPlaylistMenu()
+
+    public fun openSettingsMenu()
 
 }
 
@@ -85,6 +101,18 @@ public interface ChromePresentationCommands {
     public fun setRate(rate: Float)
 
     public fun setFullscreen(fullscreen: Boolean)
+
+    // Theater and picture-in-picture are explicit like setPlaying, not
+    // toggles: a bar drawn from state that has since changed would toggle to
+    // the wrong thing, and the viewer pressed the button they could see.
+    public fun setTheater(theater: Boolean)
+
+    public fun setPip(pip: Boolean)
+
+    // Cycles rather than sets, because that is what the web button does: one
+    // press moves to the next ratio and the player owns the order. A chrome
+    // that picked the next one itself would be a second list to keep in step.
+    public fun cycleAspectRatio()
 
     // Cleared by whoever showed it. A message that lingers is one a viewer reads
     // as describing what is happening now.

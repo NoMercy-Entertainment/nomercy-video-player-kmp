@@ -10,6 +10,7 @@ package tv.nomercy.player.video.ui.chrome.menus
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import tv.nomercy.player.video.tv.TvChromeItem
+import tv.nomercy.player.video.tv.sidebarSeasons
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
@@ -30,7 +33,10 @@ import tv.nomercy.player.video.ui.chrome.ChromeState
 // One value rather than a boolean per menu. Two open at once is not a state
 // anybody designed; it is what happens when five flags are set independently,
 // and it is how a viewer ends up choosing a quality from behind a subtitle list.
-public enum class MenuState { Hidden, Main, Quality, Audio, Subtitle, Speed }
+// Playlist joins the web bar's set. Its own state rather than a row inside
+// Main, because the web opens it from its own button straight to the episode
+// rail — a viewer picking the next episode should not pass through settings.
+public enum class MenuState { Hidden, Main, Quality, Audio, Subtitle, Speed, Playlist }
 
 // The settings surface: a main list that opens the others.
 //
@@ -62,7 +68,38 @@ public fun SettingsMenu(
             MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
             MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
             MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
+            MenuState.Playlist -> PlaylistMenu(state, onMenuChange)
             MenuState.Hidden -> Unit
+        }
+    }
+}
+
+// The episode list, flat or with a seasons rail.
+//
+// Which one is shouldShowSeasonSidebar's decision, not this composable's: the
+// rule excludes specials and movie collections as well as single seasons, and
+// re-deriving it here is how the two come to disagree. It reads the answer.
+@Composable
+private fun PlaylistMenu(state: ChromeState, onMenuChange: (MenuState) -> Unit) {
+    val seasons: List<Int> = sidebarSeasons(state.queue)
+
+    Row {
+        if (seasons.isNotEmpty()) {
+            Column(modifier = Modifier.testTag(SEASONS_RAIL_TAG)) {
+                seasons.forEach { season ->
+                    MenuRow("$SEASON_LABEL $season", tag = "$ROW_SEASON$season") {
+                        onMenuChange(MenuState.Playlist)
+                    }
+                }
+            }
+        }
+
+        Column(modifier = Modifier.testTag(EPISODES_RAIL_TAG)) {
+            state.queue.forEachIndexed { index, item ->
+                MenuRow(item.title.orEmpty(), tag = "$ROW_EPISODE$index") {
+                    onMenuChange(MenuState.Hidden)
+                }
+            }
         }
     }
 }
@@ -211,3 +248,13 @@ internal const val ROW_AUTO = "nm-row-auto"
 
 private val SCRIM = Color(red = 0f, green = 0f, blue = 0f, alpha = 0.9f)
 private val MENU_PADDING = 16.dp
+
+// The playlist rails and their rows, tagged so a test can assert which layout
+// was drawn rather than counting children.
+internal const val SEASONS_RAIL_TAG = "nm-seasons-rail"
+internal const val EPISODES_RAIL_TAG = "nm-episodes-rail"
+internal const val ROW_SEASON = "nm-season-"
+internal const val ROW_EPISODE = "nm-episode-"
+
+// Translated by the host like every other label; the default is the web's.
+private const val SEASON_LABEL = "Season"

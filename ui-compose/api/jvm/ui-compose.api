@@ -69,8 +69,8 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeAudioCom
 public final class tv/nomercy/player/video/ui/chrome/ChromeButtons {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (ZZZZZZZZZZZZZZZZ)V
-	public synthetic fun <init> (ZZZZZZZZZZZZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZZZZZZZZZZZZZZZZZ)V
+	public synthetic fun <init> (ZZZZZZZZZZZZZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component10 ()Z
 	public final fun component11 ()Z
@@ -79,6 +79,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeButtons {
 	public final fun component14 ()Z
 	public final fun component15 ()Z
 	public final fun component16 ()Z
+	public final fun component17 ()Z
 	public final fun component2 ()Z
 	public final fun component3 ()Z
 	public final fun component4 ()Z
@@ -87,8 +88,8 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeButtons {
 	public final fun component7 ()Z
 	public final fun component8 ()Z
 	public final fun component9 ()Z
-	public final fun copy (ZZZZZZZZZZZZZZZZ)Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeButtons;ZZZZZZZZZZZZZZZZILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
+	public final fun copy (ZZZZZZZZZZZZZZZZZ)Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeButtons;ZZZZZZZZZZZZZZZZZILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAspectRatio ()Z
 	public final fun getAudio ()Z
@@ -101,6 +102,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeButtons {
 	public final fun getQuality ()Z
 	public final fun getSeekBack ()Z
 	public final fun getSeekForward ()Z
+	public final fun getSettings ()Z
 	public final fun getSpeed ()Z
 	public final fun getSubtitles ()Z
 	public final fun getTheater ()Z
@@ -131,9 +133,12 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeController {
 }
 
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromePresentationCommands {
+	public abstract fun cycleAspectRatio ()V
 	public abstract fun dismissMessage ()V
 	public abstract fun setFullscreen (Z)V
+	public abstract fun setPip (Z)V
 	public abstract fun setRate (F)V
+	public abstract fun setTheater (Z)V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeScheduler : tv/nomercy/player/video/tv/Scheduler {
@@ -175,8 +180,8 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeSlotsKt {
 public final class tv/nomercy/player/video/ui/chrome/ChromeState {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;IIZLjava/lang/String;)V
-	public synthetic fun <init> (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;IIZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLjava/lang/String;)V
+	public synthetic fun <init> (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component10 ()Ltv/nomercy/player/core/ports/QualityLevel;
 	public final fun component11 ()Ljava/util/List;
@@ -185,11 +190,14 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeState {
 	public final fun component14 ()Ltv/nomercy/player/core/ports/SubtitleTrack;
 	public final fun component15 ()F
 	public final fun component16 ()Ltv/nomercy/player/video/tv/TvChromeItem;
-	public final fun component17 ()I
+	public final fun component17 ()Ljava/util/List;
 	public final fun component18 ()I
-	public final fun component19 ()Z
+	public final fun component19 ()I
 	public final fun component2 ()Z
-	public final fun component20 ()Ljava/lang/String;
+	public final fun component20 ()Z
+	public final fun component21 ()Z
+	public final fun component22 ()Z
+	public final fun component23 ()Ljava/lang/String;
 	public final fun component3 ()D
 	public final fun component4 ()D
 	public final fun component5 ()F
@@ -197,8 +205,8 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeState {
 	public final fun component7 ()Z
 	public final fun component8 ()Ljava/util/List;
 	public final fun component9 ()Ljava/util/List;
-	public final fun copy (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;IIZLjava/lang/String;)Ltv/nomercy/player/video/ui/chrome/ChromeState;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeState;ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;IIZLjava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeState;
+	public final fun copy (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLjava/lang/String;)Ltv/nomercy/player/video/ui/chrome/ChromeState;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeState;ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLjava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeState;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActiveAudio ()Ltv/nomercy/player/core/ports/AudioTrack;
 	public final fun getActiveQuality ()Ltv/nomercy/player/core/ports/QualityLevel;
@@ -214,13 +222,16 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeState {
 	public final fun getItem ()Ltv/nomercy/player/video/tv/TvChromeItem;
 	public final fun getMessage ()Ljava/lang/String;
 	public final fun getMuted ()Z
+	public final fun getPip ()Z
 	public final fun getPlaying ()Z
 	public final fun getProgress ()F
 	public final fun getQualityLevels ()Ljava/util/List;
+	public final fun getQueue ()Ljava/util/List;
 	public final fun getQueueIndex ()I
 	public final fun getQueueSize ()I
 	public final fun getRate ()F
 	public final fun getSubtitleTracks ()Ljava/util/List;
+	public final fun getTheater ()Z
 	public final fun getTimeSeconds ()D
 	public final fun getVolume ()I
 	public fun hashCode ()I
@@ -247,6 +258,10 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTrackCom
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTransportCommands {
 	public abstract fun next ()V
 	public abstract fun openAudioMenu ()V
+	public abstract fun openPlaylistMenu ()V
+	public abstract fun openQualityMenu ()V
+	public abstract fun openSettingsMenu ()V
+	public abstract fun openSpeedMenu ()V
 	public abstract fun openSubtitleMenu ()V
 	public abstract fun previous ()V
 	public abstract fun seekBy (F)V
@@ -353,6 +368,7 @@ public final class tv/nomercy/player/video/ui/chrome/menus/MenuState : java/lang
 	public static final field Audio Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
 	public static final field Hidden Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
 	public static final field Main Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
+	public static final field Playlist Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
 	public static final field Quality Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
 	public static final field Speed Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
 	public static final field Subtitle Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
@@ -438,6 +454,91 @@ public final class tv/nomercy/player/video/ui/tv/ComposableSingletons$NMTvPlayer
 	public final fun getLambda$-253622588$ui_compose ()Lkotlin/jvm/functions/Function2;
 }
 
+public final class tv/nomercy/player/video/ui/tv/FluentIcons {
+	public static final field $stable I
+	public static final field INSTANCE Ltv/nomercy/player/video/ui/tv/FluentIcons;
+	public final fun getAspectFill ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getAspectFillHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getAspectFit ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getAspectFitHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getAspectOriginal ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getAspectOriginalHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getBack ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getBackHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getBigPlay ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getCast ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getCastHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getChapterBack ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getChapterForward ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getCheckmark ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getChevronL ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getChevronLHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getChevronR ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getChevronRHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getClose ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getCloseHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getExitFullscreen ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFullscreen ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getFullscreenHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getHome ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getHomeHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLanguage ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLanguageHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLanguageOff ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getLanguageOffHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getMenu ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getMenuHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getNext ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getNextHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPause ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPauseHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPipEnter ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPipEnterHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPipExit ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPipExitHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPlay ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPlayHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPlaylist ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPlaylistHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPrevious ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getPreviousHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getQuality ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getQualityHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getRestart ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getRestartHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSeekBack ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSeekBackHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSeekForward ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSeekForwardHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSettings ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSettingsHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getShare ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getShareHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSpeed ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSpeedHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getStyled ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getStyledHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSubtitleSettings ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSubtitleSettingsHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSubtitles ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSubtitlesHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSubtitlesOff ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSubtitlesOffHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getTemplate ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getTheater ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getTheaterExit ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getTheaterExitHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getTheaterHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getVolumeHigh ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getVolumeHighHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getVolumeLow ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getVolumeLowHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getVolumeMedium ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getVolumeMediumHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getVolumeMuted ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getVolumeMutedHover ()Landroidx/compose/ui/graphics/vector/ImageVector;
+}
+
 public final class tv/nomercy/player/video/ui/tv/GamepadButton : java/lang/Enum {
 	public static final field A Ltv/nomercy/player/video/ui/tv/GamepadButton;
 	public static final field B Ltv/nomercy/player/video/ui/tv/GamepadButton;
@@ -505,12 +606,26 @@ public final class tv/nomercy/player/video/ui/tv/TvChromeKt {
 public final class tv/nomercy/player/video/ui/tv/TvChromeStrings {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Ljava/lang/String;
 	public final fun component11 ()Ljava/lang/String;
+	public final fun component12 ()Ljava/lang/String;
+	public final fun component13 ()Ljava/lang/String;
+	public final fun component14 ()Ljava/lang/String;
+	public final fun component15 ()Ljava/lang/String;
+	public final fun component16 ()Ljava/lang/String;
+	public final fun component17 ()Ljava/lang/String;
+	public final fun component18 ()Ljava/lang/String;
+	public final fun component19 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
+	public final fun component20 ()Ljava/lang/String;
+	public final fun component21 ()Ljava/lang/String;
+	public final fun component22 ()Ljava/lang/String;
+	public final fun component23 ()Ljava/lang/String;
+	public final fun component24 ()Ljava/lang/String;
+	public final fun component25 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
@@ -518,20 +633,34 @@ public final class tv/nomercy/player/video/ui/tv/TvChromeStrings {
 	public final fun component7 ()Ljava/lang/String;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAspectRatio ()Ljava/lang/String;
+	public final fun getChapterBack ()Ljava/lang/String;
+	public final fun getChapterForward ()Ljava/lang/String;
 	public final fun getClose ()Ljava/lang/String;
 	public final fun getEpisodes ()Ljava/lang/String;
 	public final fun getLanguage ()Ljava/lang/String;
 	public final fun getLoading ()Ljava/lang/String;
+	public final fun getMute ()Ljava/lang/String;
 	public final fun getNext ()Ljava/lang/String;
 	public final fun getPause ()Ljava/lang/String;
+	public final fun getPictureInPicture ()Ljava/lang/String;
 	public final fun getPlay ()Ljava/lang/String;
+	public final fun getPlaylist ()Ljava/lang/String;
+	public final fun getPrevious ()Ljava/lang/String;
+	public final fun getQuality ()Ljava/lang/String;
 	public final fun getRestart ()Ljava/lang/String;
 	public final fun getResume ()Ljava/lang/String;
 	public final fun getSearchSubtitles ()Ljava/lang/String;
+	public final fun getSeekBack ()Ljava/lang/String;
+	public final fun getSeekForward ()Ljava/lang/String;
+	public final fun getSettings ()Ljava/lang/String;
+	public final fun getSpeed ()Ljava/lang/String;
 	public final fun getSubtitles ()Ljava/lang/String;
+	public final fun getTheater ()Ljava/lang/String;
+	public final fun getUnmute ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }

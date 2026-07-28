@@ -105,6 +105,28 @@ public data class TvChromeStrings(
     // data class is positional to anyone who constructed one that way and
     // inserting a field in the middle would silently move their arguments along.
     val close: String = "Close",
+
+    // The web bar's labels, wording included, from
+    // desktop-ui/i18n/en.ts. "Seek back 10 s" rather than "Rewind" because
+    // that is what a viewer who has used the web player has read, and the
+    // number in it is the step the button actually takes.
+    //
+    // Appended for the same reason close was: a data class is positional to
+    // anyone who constructed one that way.
+    val previous: String = "Previous",
+    val seekBack: String = "Seek back 10 s",
+    val seekForward: String = "Seek forward 10 s",
+    val chapterBack: String = "Previous chapter",
+    val chapterForward: String = "Next chapter",
+    val mute: String = "Mute / Unmute",
+    val unmute: String = "Mute / Unmute",
+    val aspectRatio: String = "Aspect ratio",
+    val theater: String = "Theater mode",
+    val pictureInPicture: String = "Picture-in-picture",
+    val speed: String = "Playback speed",
+    val quality: String = "Quality",
+    val playlist: String = "Playlist",
+    val settings: String = "Settings",
 )
 
 internal const val BOTTOM_BAR_TAG = "tv-bottom-bar"

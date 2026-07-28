@@ -53,10 +53,18 @@ public data class ChromeState(
     val rate: Float = 1f,
 
     val item: TvChromeItem? = null,
+    // The queue itself, not only its length. The playlist menu draws a row
+    // per item and decides between a flat list and a seasons rail from the
+    // items' own season and type fields, so a count cannot answer it.
+    val queue: List<TvChromeItem> = emptyList(),
     val queueSize: Int = 0,
     val queueIndex: Int = 0,
 
     val fullscreen: Boolean = false,
+    // Theater and picture-in-picture, so their buttons can draw the exit glyph
+    // the web draws when each is active rather than the same one both ways.
+    val theater: Boolean = false,
+    val pip: Boolean = false,
 
     // What the viewer was last told. Cleared by whoever showed it, because a
     // message that lingers is one somebody reads as current.
