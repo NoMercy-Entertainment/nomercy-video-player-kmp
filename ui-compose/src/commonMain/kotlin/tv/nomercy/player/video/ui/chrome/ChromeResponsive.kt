@@ -176,7 +176,8 @@ public fun isControlVisible(
     portrait: Boolean = false,
     noHover: Boolean = false,
     contentHidden: (ChromeControl) -> Boolean = { false },
-): Boolean = control in visibleControls(widthDp, portrait, noHover, contentHidden)
+    enabled: (ChromeControl) -> Boolean = { it in CHROME_DEFAULT_ON },
+): Boolean = control in visibleControls(widthDp, portrait, noHover, contentHidden, enabled)
 
 /**
  * Everything drawn at this width, in priority order.
@@ -191,6 +192,7 @@ public fun visibleControls(
     portrait: Boolean = false,
     noHover: Boolean = false,
     contentHidden: (ChromeControl) -> Boolean = { false },
+    enabled: (ChromeControl) -> Boolean = { it in CHROME_DEFAULT_ON },
 ): List<ChromeControl> {
     // The time labels, the divider and the bar's padding are not buttons and
     // are not in the priority list, but they take room on the same row.
@@ -203,7 +205,7 @@ public fun visibleControls(
         // Both reasons are "this control is not on the bar at all", and
         // neither charges any width — which is the part that matters: a
         // control that is not drawn must not push a later one off the end.
-        if (isAbsent(control, portrait, contentHidden)) continue
+        if (isAbsent(control, portrait, contentHidden, enabled)) continue
 
         val footprint: Int = controlFootprint(control, noHover)
 
@@ -225,10 +227,31 @@ private fun isAbsent(
     control: ChromeControl,
     portrait: Boolean,
     contentHidden: (ChromeControl) -> Boolean,
+    enabled: (ChromeControl) -> Boolean,
 ): Boolean {
+    if (!enabled(control)) return true
     if (contentHidden(control)) return true
     return portrait && control in CHROME_PORTRAIT_HIDDEN
 }
+
+/**
+ * DEFAULT_ON from responsive.ts: the controls a consumer gets without asking.
+ *
+ * Rule 1 of the composition, and the one the first port left out entirely. Ten
+ * of the nineteen ranked controls are off here, so a bar that drew every ranked
+ * control would show ten the web does not.
+ */
+public val CHROME_DEFAULT_ON: Set<ChromeControl> = setOf(
+    ChromeControl.PLAY,
+    ChromeControl.MUTE,
+    ChromeControl.VOLUME,
+    ChromeControl.FULLSCREEN,
+    ChromeControl.SETTINGS,
+    ChromeControl.NEXT,
+    ChromeControl.PREVIOUS,
+    ChromeControl.CHAPTER_PREV,
+    ChromeControl.CHAPTER_NEXT,
+)
 
 /** BUTTON_WIDTH from responsive.ts. */
 public const val CHROME_BUTTON_WIDTH: Int = 40

@@ -189,12 +189,13 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeResponsiveKt {
 	public static final fun breakpointFor (I)Ltv/nomercy/player/video/ui/chrome/ChromeBreakpoint;
 	public static final fun controlFootprint (Ltv/nomercy/player/video/ui/chrome/ChromeControl;Z)I
 	public static final fun getCHROME_BREAKPOINTS ()Ljava/util/List;
+	public static final fun getCHROME_DEFAULT_ON ()Ljava/util/Set;
 	public static final fun getCHROME_PORTRAIT_HIDDEN ()Ljava/util/Set;
 	public static final fun getCHROME_PRIORITY ()Ljava/util/List;
-	public static final fun isControlVisible (Ltv/nomercy/player/video/ui/chrome/ChromeControl;IZZLkotlin/jvm/functions/Function1;)Z
-	public static synthetic fun isControlVisible$default (Ltv/nomercy/player/video/ui/chrome/ChromeControl;IZZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Z
-	public static final fun visibleControls (IZZLkotlin/jvm/functions/Function1;)Ljava/util/List;
-	public static synthetic fun visibleControls$default (IZZLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/util/List;
+	public static final fun isControlVisible (Ltv/nomercy/player/video/ui/chrome/ChromeControl;IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Z
+	public static synthetic fun isControlVisible$default (Ltv/nomercy/player/video/ui/chrome/ChromeControl;IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Z
+	public static final fun visibleControls (IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Ljava/util/List;
+	public static synthetic fun visibleControls$default (IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/util/List;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeScheduler : tv/nomercy/player/video/tv/Scheduler {
