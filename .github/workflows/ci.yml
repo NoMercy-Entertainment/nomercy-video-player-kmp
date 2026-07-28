@@ -88,6 +88,14 @@ jobs:
         working-directory: packages-native/nomercy-video-player-kmp
         run: ./gradlew assembleNoMercyVideoPlayerXCFramework
 
+      # The stand-ins, which the test target binds to as a second binary target
+      # and the shipped framework deliberately does not carry. Without this the
+      # package will not resolve here at all: the path exists in a developer's
+      # tree because they built it once, and CI starts from nothing every time.
+      - name: Assemble the testing framework
+        working-directory: packages-native/nomercy-player-core-kmp
+        run: ./gradlew assembleNoMercyPlayerTestingXCFramework
+
       # The Apple public surface, on the only host that can compile it. The
       # Linux job cannot build these targets at all now that they bind to a C
       # library, so this is where the klib dump is actually verified.
