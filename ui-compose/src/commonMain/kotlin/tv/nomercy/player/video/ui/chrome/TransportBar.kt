@@ -24,6 +24,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.video.tv.formatTime
+import tv.nomercy.player.video.tv.nextChapterStart
+import tv.nomercy.player.video.tv.previousChapterStart
 import tv.nomercy.player.video.ui.tv.FluentIcons
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
@@ -172,17 +174,19 @@ private fun ChapterButtons(
     buttons: ChromeButtons,
 ) {
     if (buttons.chapters && state.chapters.isNotEmpty()) {
+        val starts: List<Double> = state.chapters.map { it.startSeconds }
+
         PlayerIconButton(
             icon = FluentIcons.ChapterBack,
             description = strings.chapterBack,
-            onClick = { commands.seekTo(previousChapterStart(state)) },
+            onClick = { commands.seekTo(previousChapterStart(starts, state.timeSeconds)) },
             modifier = Modifier.testTag(CHAPTER_BACK_TAG),
         )
 
         PlayerIconButton(
             icon = FluentIcons.ChapterForward,
             description = strings.chapterForward,
-            onClick = { commands.seekTo(nextChapterStart(state)) },
+            onClick = { nextChapterStart(starts, state.timeSeconds)?.let(commands::seekTo) },
             modifier = Modifier.testTag(CHAPTER_FORWARD_TAG),
         )
     }
@@ -347,20 +351,6 @@ private fun ListMenuButtons(
     }
 }
 
-// The chapter this position is inside, or the one before it when the position
-// has only just entered one — which is what makes pressing back twice go back
-// two chapters rather than bouncing off the boundary just crossed.
-private fun previousChapterStart(state: ChromeState): Double {
-    val starts: List<Double> = state.chapters.map { it.startSeconds }.sorted()
-    val threshold: Double = state.timeSeconds - CHAPTER_BACK_GRACE
-    return starts.lastOrNull { it < threshold } ?: 0.0
-}
-
-private fun nextChapterStart(state: ChromeState): Double {
-    val starts: List<Double> = state.chapters.map { it.startSeconds }.sorted()
-    return starts.firstOrNull { it > state.timeSeconds } ?: state.durationSeconds
-}
-
 // A glyph and what it announces itself as, which are the same choice.
 private data class TransportControl(val icon: ImageVector, val description: String)
 
@@ -388,10 +378,6 @@ private val DIVIDER_HEIGHT = 12.dp
 
 // The web's own step, and the number its tooltip says out loud.
 private const val SEEK_STEP_SECONDS = 10f
-
-// Pressing chapter-back just after a boundary should reach the previous
-// chapter, not restart the one just entered.
-private const val CHAPTER_BACK_GRACE = 3.0
 
 private const val VOLUME_LOW = 33
 private const val VOLUME_HIGH = 66
