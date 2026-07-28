@@ -1083,6 +1083,24 @@ public final class tv/nomercy/player/video/tv/SeasonSidebarKt {
 	public static final fun sidebarSeasons (Ljava/util/List;)Ljava/util/List;
 }
 
+public final class tv/nomercy/player/video/tv/TitleBarText {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/tv/TitleBarText;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/TitleBarText;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/tv/TitleBarText;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPrimary ()Ljava/lang/String;
+	public final fun getSecondary ()Ljava/lang/String;
+	public final fun getShowsSecondary ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/TitleBarTextKt {
+	public static final fun titleBarText (Ltv/nomercy/player/video/tv/TvChromeItem;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;)Ltv/nomercy/player/video/tv/TitleBarText;
+}
+
 public final class tv/nomercy/player/video/tv/TvChapter {
 	public fun <init> (DLjava/lang/String;)V
 	public synthetic fun <init> (DLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

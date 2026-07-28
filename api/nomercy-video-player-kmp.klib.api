@@ -740,6 +740,24 @@ final class tv.nomercy.player.video.tv/EpisodeLabels { // tv.nomercy.player.vide
     final fun toString(): kotlin/String // tv.nomercy.player.video.tv/EpisodeLabels.toString|toString(){}[0]
 }
 
+final class tv.nomercy.player.video.tv/TitleBarText { // tv.nomercy.player.video.tv/TitleBarText|null[0]
+    constructor <init>(kotlin/String, kotlin/String) // tv.nomercy.player.video.tv/TitleBarText.<init>|<init>(kotlin.String;kotlin.String){}[0]
+
+    final val primary // tv.nomercy.player.video.tv/TitleBarText.primary|{}primary[0]
+        final fun <get-primary>(): kotlin/String // tv.nomercy.player.video.tv/TitleBarText.primary.<get-primary>|<get-primary>(){}[0]
+    final val secondary // tv.nomercy.player.video.tv/TitleBarText.secondary|{}secondary[0]
+        final fun <get-secondary>(): kotlin/String // tv.nomercy.player.video.tv/TitleBarText.secondary.<get-secondary>|<get-secondary>(){}[0]
+    final val showsSecondary // tv.nomercy.player.video.tv/TitleBarText.showsSecondary|{}showsSecondary[0]
+        final fun <get-showsSecondary>(): kotlin/Boolean // tv.nomercy.player.video.tv/TitleBarText.showsSecondary.<get-showsSecondary>|<get-showsSecondary>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.tv/TitleBarText.component1|component1(){}[0]
+    final fun component2(): kotlin/String // tv.nomercy.player.video.tv/TitleBarText.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ...): tv.nomercy.player.video.tv/TitleBarText // tv.nomercy.player.video.tv/TitleBarText.copy|copy(kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/TitleBarText.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/TitleBarText.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.tv/TitleBarText.toString|toString(){}[0]
+}
+
 final class tv.nomercy.player.video.tv/TvChapter { // tv.nomercy.player.video.tv/TvChapter|null[0]
     constructor <init>(kotlin/Double, kotlin/String? = ...) // tv.nomercy.player.video.tv/TvChapter.<init>|<init>(kotlin.Double;kotlin.String?){}[0]
 
@@ -1403,3 +1421,4 @@ final fun tv.nomercy.player.video.tv/previousChapterStart(kotlin.collections/Lis
 final fun tv.nomercy.player.video.tv/shouldShowSeasonSidebar(kotlin.collections/List<tv.nomercy.player.video.tv/TvChromeItem>): kotlin/Boolean // tv.nomercy.player.video.tv/shouldShowSeasonSidebar|shouldShowSeasonSidebar(kotlin.collections.List<tv.nomercy.player.video.tv.TvChromeItem>){}[0]
 final fun tv.nomercy.player.video.tv/showTitle(tv.nomercy.player.video.tv/TvChromeItem?, kotlin/String): kotlin/String // tv.nomercy.player.video.tv/showTitle|showTitle(tv.nomercy.player.video.tv.TvChromeItem?;kotlin.String){}[0]
 final fun tv.nomercy.player.video.tv/sidebarSeasons(kotlin.collections/List<tv.nomercy.player.video.tv/TvChromeItem>): kotlin.collections/List<kotlin/Int> // tv.nomercy.player.video.tv/sidebarSeasons|sidebarSeasons(kotlin.collections.List<tv.nomercy.player.video.tv.TvChromeItem>){}[0]
+final fun tv.nomercy.player.video.tv/titleBarText(tv.nomercy.player.video.tv/TvChromeItem?, kotlin/Function1<kotlin/Int, kotlin/String>, kotlin/Function1<kotlin/Int, kotlin/String>, kotlin/Function0<kotlin/String>): tv.nomercy.player.video.tv/TitleBarText // tv.nomercy.player.video.tv/titleBarText|titleBarText(tv.nomercy.player.video.tv.TvChromeItem?;kotlin.Function1<kotlin.Int,kotlin.String>;kotlin.Function1<kotlin.Int,kotlin.String>;kotlin.Function0<kotlin.String>){}[0]
