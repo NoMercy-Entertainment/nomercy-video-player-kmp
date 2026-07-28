@@ -88,6 +88,11 @@ public struct GestureGrid: Sendable {
 /// Transparent and over the whole picture, because on a phone the picture is the
 /// control surface and somebody aiming at a target they cannot see still hits it
 /// every time.
+///
+/// iOS only. tvOS has no DragGesture at all and there is nothing there to drag:
+/// a remote moves focus. The rule above stays on both platforms because it is
+/// arithmetic, and its tests run on both — only the touch surface is absent.
+#if os(iOS)
 @available(iOS 15.0, *)
 public struct PlayerGestureGrid: View {
 
@@ -140,3 +145,4 @@ public struct PlayerGestureGrid: View {
         }
     }
 }
+#endif
