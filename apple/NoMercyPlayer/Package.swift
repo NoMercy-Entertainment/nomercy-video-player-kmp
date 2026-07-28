@@ -46,14 +46,27 @@ let package = Package(
     targets: [
         engine,
         .target(name: "NoMercyPlayer", dependencies: ["NoMercyVideoPlayer"]),
+        // The stand-ins, for the test target only.
+        //
+        // Its own binary rather than exported into the engine's framework: a
+        // consumer shipping a player must not carry test doubles into their
+        // production binary, which is the whole reason the fakes are a separate
+        // artifact on the Maven side too.
+        .binaryTarget(
+            name: "NoMercyPlayerTesting",
+            path: "../../../nomercy-player-core-kmp/testing/build/XCFrameworks/release/NoMercyPlayerTesting.xcframework"
+        ),
         .testTarget(
             name: "NoMercyPlayerTests",
-            dependencies: ["NoMercyPlayer"],
+            dependencies: ["NoMercyPlayer", "NoMercyPlayerTesting"],
             // The contract, carried into the test bundle rather than read from
             // a path. A Swift test has no working directory it can rely on —
             // xcodebuild runs it from wherever it likes — and the Kotlin gates
             // read the same bytes from the repository root.
-            resources: [.copy("conformance/Resources/contract.json")]
+            resources: [
+                .copy("conformance/Resources/contract.json"),
+                .copy("conformance/Resources/scenarios.json"),
+            ]
         ),
     ]
 )

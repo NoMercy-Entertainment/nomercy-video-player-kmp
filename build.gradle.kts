@@ -127,6 +127,10 @@ kotlin {
             implementation(libs.ktor.client.cio)
         }
         commonTest.dependencies {
+            // The shipped stand-ins rather than a private copy. The Apple
+            // conformance runner needs a backend too, and a second fake written
+            // in Swift would be two answers to what the engine does.
+            implementation(libs.nomercy.player.core.testing)
             // A transport tested without a socket: the mock engine hands back a
             // real byte channel, so the stream reader takes the same path it
             // takes against a television.
