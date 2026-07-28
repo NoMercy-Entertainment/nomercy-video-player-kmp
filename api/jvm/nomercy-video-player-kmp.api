@@ -924,3 +924,222 @@ public final class tv/nomercy/player/video/thumbnails/SpriteFramesKt {
 	public static final fun spriteFrameWidth (Ljava/util/List;)I
 }
 
+public abstract interface class tv/nomercy/player/video/tv/Cancellable {
+	public abstract fun cancel ()V
+}
+
+public final class tv/nomercy/player/video/tv/EpisodeLabels {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/tv/EpisodeLabels;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/EpisodeLabels;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/tv/EpisodeLabels;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEpisode ()Ljava/lang/String;
+	public final fun getExtras ()Ljava/lang/String;
+	public final fun getSeason ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/FormatTimeKt {
+	public static final fun formatTime (D)Ljava/lang/String;
+}
+
+public abstract interface class tv/nomercy/player/video/tv/Scheduler {
+	public abstract fun schedule (JLkotlin/jvm/functions/Function0;)Ltv/nomercy/player/video/tv/Cancellable;
+}
+
+public final class tv/nomercy/player/video/tv/TvChapter {
+	public fun <init> (DLjava/lang/String;)V
+	public synthetic fun <init> (DLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()D
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (DLjava/lang/String;)Ltv/nomercy/player/video/tv/TvChapter;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/TvChapter;DLjava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/tv/TvChapter;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getStartSeconds ()D
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class tv/nomercy/player/video/tv/TvChromeCallbacks {
+	public abstract fun exitPlayer ()V
+	public abstract fun next ()V
+	public abstract fun overrideTime (Ljava/lang/Float;)V
+	public abstract fun pause ()V
+	public abstract fun play ()V
+	public abstract fun restart ()V
+	public abstract fun seek (F)V
+	public abstract fun togglePlay ()V
+}
+
+public final class tv/nomercy/player/video/tv/TvChromeContent {
+	public fun <init> ()V
+	public fun <init> (Ltv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ltv/nomercy/player/video/tv/TvChromeItem;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/List;
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (Ltv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Ltv/nomercy/player/video/tv/TvChromeContent;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/TvChromeContent;Ltv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Ltv/nomercy/player/video/tv/TvChromeContent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAudioTracks ()Ljava/util/List;
+	public final fun getEpisodes ()Ljava/util/List;
+	public final fun getItem ()Ltv/nomercy/player/video/tv/TvChromeItem;
+	public final fun getSubtitleTracks ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/TvChromeController {
+	public fun <init> (Ltv/nomercy/player/video/tv/TvChromeCallbacks;Ltv/nomercy/player/video/tv/Scheduler;ZZLtv/nomercy/player/video/tv/TvContentCallbacks;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/tv/TvChromeCallbacks;Ltv/nomercy/player/video/tv/Scheduler;ZZLtv/nomercy/player/video/tv/TvContentCallbacks;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun cancelSeek ()Z
+	public final fun chooseAudioTrack (Ljava/lang/String;)V
+	public final fun chooseEpisode (Ljava/lang/String;)V
+	public final fun chooseSubtitleTrack (Ljava/lang/String;)V
+	public final fun commitSeek (F)V
+	public final fun dismissPreScreen ()V
+	public final fun dispose ()V
+	public final fun getCallbacks ()Ltv/nomercy/player/video/tv/TvChromeCallbacks;
+	public final fun getUi ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun onBack ()Z
+	public final fun onKey (Ltv/nomercy/player/core/input/PlayerKey;)Z
+	public final fun onPlaybackChanged (Z)V
+	public final fun openDialog (Ltv/nomercy/player/video/tv/TvDialog;)V
+	public final fun setTopBarFocus (Z)V
+	public final fun showVolume ()V
+}
+
+public final class tv/nomercy/player/video/tv/TvChromeItem {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/Integer;
+	public final fun component4 ()Ljava/lang/Integer;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/tv/TvChromeItem;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/TvChromeItem;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;Ljava/lang/Integer;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/tv/TvChromeItem;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEpisode ()Ljava/lang/Integer;
+	public final fun getPlaylistType ()Ljava/lang/String;
+	public final fun getSeason ()Ljava/lang/Integer;
+	public final fun getShow ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getVideoType ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/TvChromeItemKt {
+	public static final fun episodeLabel (Ltv/nomercy/player/video/tv/TvChromeItem;Ltv/nomercy/player/video/tv/EpisodeLabels;)Ljava/lang/String;
+	public static synthetic fun episodeLabel$default (Ltv/nomercy/player/video/tv/TvChromeItem;Ltv/nomercy/player/video/tv/EpisodeLabels;ILjava/lang/Object;)Ljava/lang/String;
+	public static final fun showTitle (Ltv/nomercy/player/video/tv/TvChromeItem;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/TvChromeUi {
+	public fun <init> ()V
+	public fun <init> (ZZZLtv/nomercy/player/video/tv/TvDialog;ZZ)V
+	public synthetic fun <init> (ZZZLtv/nomercy/player/video/tv/TvDialog;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Ltv/nomercy/player/video/tv/TvDialog;
+	public final fun component5 ()Z
+	public final fun component6 ()Z
+	public final fun copy (ZZZLtv/nomercy/player/video/tv/TvDialog;ZZ)Ltv/nomercy/player/video/tv/TvChromeUi;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/TvChromeUi;ZZZLtv/nomercy/player/video/tv/TvDialog;ZZILjava/lang/Object;)Ltv/nomercy/player/video/tv/TvChromeUi;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getControlsVisible ()Z
+	public final fun getDialog ()Ltv/nomercy/player/video/tv/TvDialog;
+	public final fun getPreScreenVisible ()Z
+	public final fun getSeekMode ()Z
+	public final fun getTopBarHasFocus ()Z
+	public final fun getVolumeIndicatorVisible ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class tv/nomercy/player/video/tv/TvContentCallbacks {
+	public abstract fun searchSubtitlesOnline ()V
+	public abstract fun selectAudioTrack (Ljava/lang/String;)V
+	public abstract fun selectEpisode (Ljava/lang/String;)V
+	public abstract fun selectSubtitleTrack (Ljava/lang/String;)V
+}
+
+public final class tv/nomercy/player/video/tv/TvDialog : java/lang/Enum {
+	public static final field Episodes Ltv/nomercy/player/video/tv/TvDialog;
+	public static final field Language Ltv/nomercy/player/video/tv/TvDialog;
+	public static final field None Ltv/nomercy/player/video/tv/TvDialog;
+	public static final field PreScreen Ltv/nomercy/player/video/tv/TvDialog;
+	public static final field Subtitle Ltv/nomercy/player/video/tv/TvDialog;
+	public static final field SubtitleSearch Ltv/nomercy/player/video/tv/TvDialog;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/tv/TvDialog;
+	public static fun values ()[Ltv/nomercy/player/video/tv/TvDialog;
+}
+
+public final class tv/nomercy/player/video/tv/TvEpisode {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ltv/nomercy/player/video/tv/TvEpisode;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/TvEpisode;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ltv/nomercy/player/video/tv/TvEpisode;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getSubtitle ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isCurrent ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/TvTrack {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Z)Ltv/nomercy/player/video/tv/TvTrack;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/TvTrack;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZILjava/lang/Object;)Ltv/nomercy/player/video/tv/TvTrack;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getId ()Ljava/lang/String;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getLanguage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isCurrent ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/tv/TvTransportState {
+	public fun <init> ()V
+	public fun <init> (ZDDLjava/util/List;)V
+	public synthetic fun <init> (ZDDLjava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()D
+	public final fun component3 ()D
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (ZDDLjava/util/List;)Ltv/nomercy/player/video/tv/TvTransportState;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/tv/TvTransportState;ZDDLjava/util/List;ILjava/lang/Object;)Ltv/nomercy/player/video/tv/TvTransportState;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChapters ()Ljava/util/List;
+	public final fun getDurationSeconds ()D
+	public final fun getTimeSeconds ()D
+	public fun hashCode ()I
+	public final fun isPlaying ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
