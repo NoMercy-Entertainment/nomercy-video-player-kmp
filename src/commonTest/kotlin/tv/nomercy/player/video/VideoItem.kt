@@ -9,14 +9,14 @@
 package tv.nomercy.player.video
 
 import tv.nomercy.player.core.media.PlaylistItem
-import tv.nomercy.player.core.ports.AudioTrack
-import tv.nomercy.player.core.ports.BackendState
-import tv.nomercy.player.core.ports.CanonicalBackendEvent
-import tv.nomercy.player.core.ports.LoadOptions
-import tv.nomercy.player.core.ports.QualityLevel
-import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.VideoBackend
 
+// Named for what it is, now that it is the only thing here.
+//
+// The file was Fakes.kt and held the local FakeVideoBackend beside this. That
+// copy went when the shipped one landed, leaving one declaration in a file
+// named after two, which detekt says out loud and only on a full run — the
+// commit that deleted the class ran the suite and not the lint.
 internal data class VideoItem(
     override val id: String,
     override val url: String = "https://example.test/$id.m3u8",

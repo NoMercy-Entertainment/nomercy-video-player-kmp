@@ -135,7 +135,11 @@ class VideoSurfaceConformanceTest {
         val NATIVE_ONLY = setOf(
             "context", "transport", "volume", "time", "state", "lifecycle", "bridge", "activity",
             "cueParsers", "streamFactories", "metrics", "bandwidth", "plugins", "queue",
-            "stateFlow", "rootLogger", "rootStorage", "emit", "on", "once", "off",
+            // The emitter methods. The web player extends EventEmitter, so these are
+            // inherited and the generator, which reads the player class's own
+            // declarations, never sees them. Same methods on both sides; only the
+            // contract cannot say so.
+            "stateFlow", "rootLogger", "rootStorage", "emit", "on", "onAll", "once", "off",
             "dispatchBefore", "fetch", "websocket", "report", "formatTitle",
             "pluginList", "contributions", "coreVersion", "playerId",
             // Video-shaped and native-only: the web reads these off the DOM.
