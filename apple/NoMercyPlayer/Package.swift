@@ -46,6 +46,14 @@ let package = Package(
     targets: [
         engine,
         .target(name: "NoMercyPlayer", dependencies: ["NoMercyVideoPlayer"]),
-        .testTarget(name: "NoMercyPlayerTests", dependencies: ["NoMercyPlayer"]),
+        .testTarget(
+            name: "NoMercyPlayerTests",
+            dependencies: ["NoMercyPlayer"],
+            // The contract, carried into the test bundle rather than read from
+            // a path. A Swift test has no working directory it can rely on —
+            // xcodebuild runs it from wherever it likes — and the Kotlin gates
+            // read the same bytes from the repository root.
+            resources: [.copy("conformance/Resources/contract.json")]
+        ),
     ]
 )
