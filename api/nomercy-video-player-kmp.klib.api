@@ -131,6 +131,29 @@ final enum class tv.nomercy.player.video.input/KeyAction : kotlin/Enum<tv.nomerc
     final fun values(): kotlin/Array<tv.nomercy.player.video.input/KeyAction> // tv.nomercy.player.video.input/KeyAction.values|values#static(){}[0]
 }
 
+final enum class tv.nomercy.player.video.subtitles/CueAlign : kotlin/Enum<tv.nomercy.player.video.subtitles/CueAlign> { // tv.nomercy.player.video.subtitles/CueAlign|null[0]
+    enum entry Center // tv.nomercy.player.video.subtitles/CueAlign.Center|null[0]
+    enum entry End // tv.nomercy.player.video.subtitles/CueAlign.End|null[0]
+    enum entry Start // tv.nomercy.player.video.subtitles/CueAlign.Start|null[0]
+
+    final val entries // tv.nomercy.player.video.subtitles/CueAlign.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.subtitles/CueAlign> // tv.nomercy.player.video.subtitles/CueAlign.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video.subtitles/CueAlign // tv.nomercy.player.video.subtitles/CueAlign.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video.subtitles/CueAlign> // tv.nomercy.player.video.subtitles/CueAlign.values|values#static(){}[0]
+}
+
+final enum class tv.nomercy.player.video.subtitles/CueAnchor : kotlin/Enum<tv.nomercy.player.video.subtitles/CueAnchor> { // tv.nomercy.player.video.subtitles/CueAnchor|null[0]
+    enum entry Bottom // tv.nomercy.player.video.subtitles/CueAnchor.Bottom|null[0]
+    enum entry Top // tv.nomercy.player.video.subtitles/CueAnchor.Top|null[0]
+
+    final val entries // tv.nomercy.player.video.subtitles/CueAnchor.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.subtitles/CueAnchor> // tv.nomercy.player.video.subtitles/CueAnchor.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video.subtitles/CueAnchor // tv.nomercy.player.video.subtitles/CueAnchor.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video.subtitles/CueAnchor> // tv.nomercy.player.video.subtitles/CueAnchor.values|values#static(){}[0]
+}
+
 final enum class tv.nomercy.player.video.touch/TouchAction : kotlin/Enum<tv.nomercy.player.video.touch/TouchAction> { // tv.nomercy.player.video.touch/TouchAction|null[0]
     enum entry SEEK_BACK // tv.nomercy.player.video.touch/TouchAction.SEEK_BACK|null[0]
     enum entry SEEK_FORWARD // tv.nomercy.player.video.touch/TouchAction.SEEK_FORWARD|null[0]
@@ -796,6 +819,59 @@ final class tv.nomercy.player.video.menu/MenuOpenState { // tv.nomercy.player.vi
     final fun openedMain(kotlin/String? = ...): tv.nomercy.player.video.menu/MenuOpenState // tv.nomercy.player.video.menu/MenuOpenState.openedMain|openedMain(kotlin.String?){}[0]
     final fun openedSub(kotlin/String, kotlin/String? = ...): tv.nomercy.player.video.menu/MenuOpenState // tv.nomercy.player.video.menu/MenuOpenState.openedSub|openedSub(kotlin.String;kotlin.String?){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video.menu/MenuOpenState.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.subtitles/CueBox { // tv.nomercy.player.video.subtitles/CueBox|null[0]
+    constructor <init>(kotlin/String, kotlin/Double, kotlin/Double, kotlin/Double, tv.nomercy.player.video.subtitles/CueAnchor, tv.nomercy.player.video.subtitles/CueAlign) // tv.nomercy.player.video.subtitles/CueBox.<init>|<init>(kotlin.String;kotlin.Double;kotlin.Double;kotlin.Double;tv.nomercy.player.video.subtitles.CueAnchor;tv.nomercy.player.video.subtitles.CueAlign){}[0]
+
+    final val align // tv.nomercy.player.video.subtitles/CueBox.align|{}align[0]
+        final fun <get-align>(): tv.nomercy.player.video.subtitles/CueAlign // tv.nomercy.player.video.subtitles/CueBox.align.<get-align>|<get-align>(){}[0]
+    final val anchor // tv.nomercy.player.video.subtitles/CueBox.anchor|{}anchor[0]
+        final fun <get-anchor>(): tv.nomercy.player.video.subtitles/CueAnchor // tv.nomercy.player.video.subtitles/CueBox.anchor.<get-anchor>|<get-anchor>(){}[0]
+    final val leftPercent // tv.nomercy.player.video.subtitles/CueBox.leftPercent|{}leftPercent[0]
+        final fun <get-leftPercent>(): kotlin/Double // tv.nomercy.player.video.subtitles/CueBox.leftPercent.<get-leftPercent>|<get-leftPercent>(){}[0]
+    final val linePercent // tv.nomercy.player.video.subtitles/CueBox.linePercent|{}linePercent[0]
+        final fun <get-linePercent>(): kotlin/Double // tv.nomercy.player.video.subtitles/CueBox.linePercent.<get-linePercent>|<get-linePercent>(){}[0]
+    final val text // tv.nomercy.player.video.subtitles/CueBox.text|{}text[0]
+        final fun <get-text>(): kotlin/String // tv.nomercy.player.video.subtitles/CueBox.text.<get-text>|<get-text>(){}[0]
+    final val widthPercent // tv.nomercy.player.video.subtitles/CueBox.widthPercent|{}widthPercent[0]
+        final fun <get-widthPercent>(): kotlin/Double // tv.nomercy.player.video.subtitles/CueBox.widthPercent.<get-widthPercent>|<get-widthPercent>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.subtitles/CueBox.component1|component1(){}[0]
+    final fun component2(): kotlin/Double // tv.nomercy.player.video.subtitles/CueBox.component2|component2(){}[0]
+    final fun component3(): kotlin/Double // tv.nomercy.player.video.subtitles/CueBox.component3|component3(){}[0]
+    final fun component4(): kotlin/Double // tv.nomercy.player.video.subtitles/CueBox.component4|component4(){}[0]
+    final fun component5(): tv.nomercy.player.video.subtitles/CueAnchor // tv.nomercy.player.video.subtitles/CueBox.component5|component5(){}[0]
+    final fun component6(): tv.nomercy.player.video.subtitles/CueAlign // tv.nomercy.player.video.subtitles/CueBox.component6|component6(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Double = ..., kotlin/Double = ..., kotlin/Double = ..., tv.nomercy.player.video.subtitles/CueAnchor = ..., tv.nomercy.player.video.subtitles/CueAlign = ...): tv.nomercy.player.video.subtitles/CueBox // tv.nomercy.player.video.subtitles/CueBox.copy|copy(kotlin.String;kotlin.Double;kotlin.Double;kotlin.Double;tv.nomercy.player.video.subtitles.CueAnchor;tv.nomercy.player.video.subtitles.CueAlign){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.subtitles/CueBox.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.subtitles/CueBox.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/CueBox.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.subtitles/SubtitleCue { // tv.nomercy.player.video.subtitles/SubtitleCue|null[0]
+    constructor <init>(kotlin/String, kotlin/Double? = ..., tv.nomercy.player.video.subtitles/CueAlign = ..., kotlin/Double? = ..., kotlin/Double = ...) // tv.nomercy.player.video.subtitles/SubtitleCue.<init>|<init>(kotlin.String;kotlin.Double?;tv.nomercy.player.video.subtitles.CueAlign;kotlin.Double?;kotlin.Double){}[0]
+
+    final val align // tv.nomercy.player.video.subtitles/SubtitleCue.align|{}align[0]
+        final fun <get-align>(): tv.nomercy.player.video.subtitles/CueAlign // tv.nomercy.player.video.subtitles/SubtitleCue.align.<get-align>|<get-align>(){}[0]
+    final val linePercent // tv.nomercy.player.video.subtitles/SubtitleCue.linePercent|{}linePercent[0]
+        final fun <get-linePercent>(): kotlin/Double? // tv.nomercy.player.video.subtitles/SubtitleCue.linePercent.<get-linePercent>|<get-linePercent>(){}[0]
+    final val positionPercent // tv.nomercy.player.video.subtitles/SubtitleCue.positionPercent|{}positionPercent[0]
+        final fun <get-positionPercent>(): kotlin/Double? // tv.nomercy.player.video.subtitles/SubtitleCue.positionPercent.<get-positionPercent>|<get-positionPercent>(){}[0]
+    final val sizePercent // tv.nomercy.player.video.subtitles/SubtitleCue.sizePercent|{}sizePercent[0]
+        final fun <get-sizePercent>(): kotlin/Double // tv.nomercy.player.video.subtitles/SubtitleCue.sizePercent.<get-sizePercent>|<get-sizePercent>(){}[0]
+    final val text // tv.nomercy.player.video.subtitles/SubtitleCue.text|{}text[0]
+        final fun <get-text>(): kotlin/String // tv.nomercy.player.video.subtitles/SubtitleCue.text.<get-text>|<get-text>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.subtitles/SubtitleCue.component1|component1(){}[0]
+    final fun component2(): kotlin/Double? // tv.nomercy.player.video.subtitles/SubtitleCue.component2|component2(){}[0]
+    final fun component3(): tv.nomercy.player.video.subtitles/CueAlign // tv.nomercy.player.video.subtitles/SubtitleCue.component3|component3(){}[0]
+    final fun component4(): kotlin/Double? // tv.nomercy.player.video.subtitles/SubtitleCue.component4|component4(){}[0]
+    final fun component5(): kotlin/Double // tv.nomercy.player.video.subtitles/SubtitleCue.component5|component5(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Double? = ..., tv.nomercy.player.video.subtitles/CueAlign = ..., kotlin/Double? = ..., kotlin/Double = ...): tv.nomercy.player.video.subtitles/SubtitleCue // tv.nomercy.player.video.subtitles/SubtitleCue.copy|copy(kotlin.String;kotlin.Double?;tv.nomercy.player.video.subtitles.CueAlign;kotlin.Double?;kotlin.Double){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.subtitles/SubtitleCue.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.subtitles/SubtitleCue.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/SubtitleCue.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video.tv/EpisodeLabels { // tv.nomercy.player.video.tv/EpisodeLabels|null[0]
@@ -1503,6 +1579,12 @@ final const val tv.nomercy.player.video.cast/CAST_SOURCE // tv.nomercy.player.vi
     final fun <get-CAST_SOURCE>(): kotlin/String // tv.nomercy.player.video.cast/CAST_SOURCE.<get-CAST_SOURCE>|<get-CAST_SOURCE>(){}[0]
 final const val tv.nomercy.player.video.cast/DEFAULT_TV_PORT // tv.nomercy.player.video.cast/DEFAULT_TV_PORT|{}DEFAULT_TV_PORT[0]
     final fun <get-DEFAULT_TV_PORT>(): kotlin/Int // tv.nomercy.player.video.cast/DEFAULT_TV_PORT.<get-DEFAULT_TV_PORT>|<get-DEFAULT_TV_PORT>(){}[0]
+final const val tv.nomercy.player.video.subtitles/DEFAULT_LINE_PERCENT // tv.nomercy.player.video.subtitles/DEFAULT_LINE_PERCENT|{}DEFAULT_LINE_PERCENT[0]
+    final fun <get-DEFAULT_LINE_PERCENT>(): kotlin/Double // tv.nomercy.player.video.subtitles/DEFAULT_LINE_PERCENT.<get-DEFAULT_LINE_PERCENT>|<get-DEFAULT_LINE_PERCENT>(){}[0]
+final const val tv.nomercy.player.video.subtitles/FULL_WIDTH // tv.nomercy.player.video.subtitles/FULL_WIDTH|{}FULL_WIDTH[0]
+    final fun <get-FULL_WIDTH>(): kotlin/Double // tv.nomercy.player.video.subtitles/FULL_WIDTH.<get-FULL_WIDTH>|<get-FULL_WIDTH>(){}[0]
+final const val tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_PERCENT // tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_PERCENT|{}SAFE_AREA_INSET_PERCENT[0]
+    final fun <get-SAFE_AREA_INSET_PERCENT>(): kotlin/Double // tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_PERCENT.<get-SAFE_AREA_INSET_PERCENT>|<get-SAFE_AREA_INSET_PERCENT>(){}[0]
 final const val tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS // tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS|{}DOUBLE_TAP_THRESHOLD_MS[0]
     final fun <get-DOUBLE_TAP_THRESHOLD_MS>(): kotlin/Long // tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS.<get-DOUBLE_TAP_THRESHOLD_MS>|<get-DOUBLE_TAP_THRESHOLD_MS>(){}[0]
 final const val tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS // tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS|{}TOUCH_SEEK_SECONDS[0]
@@ -1526,6 +1608,9 @@ final fun tv.nomercy.player.video.chapters/chapterMarkers(kotlin.collections/Lis
 final fun tv.nomercy.player.video.input/playerCommandsOf(tv.nomercy.player.video/NMVideoPlayer, kotlinx.coroutines/CoroutineScope): tv.nomercy.player.video.input/PlayerCommands // tv.nomercy.player.video.input/playerCommandsOf|playerCommandsOf(tv.nomercy.player.video.NMVideoPlayer;kotlinx.coroutines.CoroutineScope){}[0]
 final fun tv.nomercy.player.video.menu/menuSwallowsKeys(kotlin/Boolean): kotlin/Boolean // tv.nomercy.player.video.menu/menuSwallowsKeys|menuSwallowsKeys(kotlin.Boolean){}[0]
 final fun tv.nomercy.player.video.menu/nextMenuRow(kotlin/Int, kotlin/Int, kotlin/Boolean): kotlin/Int? // tv.nomercy.player.video.menu/nextMenuRow|nextMenuRow(kotlin.Int;kotlin.Int;kotlin.Boolean){}[0]
+final fun tv.nomercy.player.video.subtitles/anchorFor(kotlin/Double): tv.nomercy.player.video.subtitles/CueAnchor // tv.nomercy.player.video.subtitles/anchorFor|anchorFor(kotlin.Double){}[0]
+final fun tv.nomercy.player.video.subtitles/layOutCues(kotlin.collections/List<tv.nomercy.player.video.subtitles/SubtitleCue>, kotlin/Double, kotlin/Double = ...): kotlin.collections/List<tv.nomercy.player.video.subtitles/CueBox> // tv.nomercy.player.video.subtitles/layOutCues|layOutCues(kotlin.collections.List<tv.nomercy.player.video.subtitles.SubtitleCue>;kotlin.Double;kotlin.Double){}[0]
+final fun tv.nomercy.player.video.subtitles/layOutHorizontally(tv.nomercy.player.video.subtitles/SubtitleCue): kotlin/Pair<kotlin/Double, kotlin/Double> // tv.nomercy.player.video.subtitles/layOutHorizontally|layOutHorizontally(tv.nomercy.player.video.subtitles.SubtitleCue){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): tv.nomercy.player.core.cues/SpriteCue? // tv.nomercy.player.video.thumbnails/frameAt|frameAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameIndexAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): kotlin/Int? // tv.nomercy.player.video.thumbnails/frameIndexAt|frameIndexAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/spriteFrameAspect(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Float // tv.nomercy.player.video.thumbnails/spriteFrameAspect|spriteFrameAspect(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
