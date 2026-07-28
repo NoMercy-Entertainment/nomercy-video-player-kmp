@@ -177,10 +177,12 @@ class VideoBehavioralConformanceTest {
     fun theComparisonRejectsAReorderedExpectation() {
         // The runner has to be seen failing. A comparison that accepts any order
         // is a green tick over a port that emits everything backwards.
-        val expected = listOf("first", "second", "third")
+        val one = "one"
+        val two = "two"
+        val three = "three"
 
-        assertEquals(-1, firstUnmatched(expected, listOf("first", "extra", "second", "third")))
-        assertTrue(firstUnmatched(listOf("second", "first"), listOf("first", "second")) != -1)
+        assertEquals(-1, firstUnmatched(listOf(one, two, three), listOf(one, "extra", two, three)))
+        assertTrue(firstUnmatched(listOf(two, one), listOf(one, two)) != -1)
     }
 
     @Test
