@@ -9,6 +9,7 @@
 import XCTest
 import SwiftUI
 @testable import NoMercyPlayer
+import NoMercyVideoPlayer
 
 #if os(tvOS)
 

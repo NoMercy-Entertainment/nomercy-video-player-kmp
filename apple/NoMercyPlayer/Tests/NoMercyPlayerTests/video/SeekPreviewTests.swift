@@ -8,6 +8,7 @@
 
 import XCTest
 @testable import NoMercyPlayer
+import NoMercyVideoPlayer
 
 /// What the bubble says about a moment.
 ///

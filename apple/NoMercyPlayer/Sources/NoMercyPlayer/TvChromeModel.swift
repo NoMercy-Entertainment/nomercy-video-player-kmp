@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------------
 
 import SwiftUI
+import NoMercyVideoPlayer
 
 #if os(tvOS)
 

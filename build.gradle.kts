@@ -69,6 +69,16 @@ kotlin {
             baseName = "NoMercyVideoPlayer"
             isStatic = true
             binaryOption("bundleId", "tv.nomercy.player.video")
+
+            // Core's declarations are named all over this library's public API —
+            // PlayerKey, PlayState, the event registry — so without this the
+            // framework ships signatures a Swift file cannot write down. It is
+            // linked either way; exporting is what puts it in the headers.
+            //
+            // Found by a tvOS view that could see TvChromeUi and not the key
+            // type its own method takes.
+            export(libs.nomercy.player.core)
+
             videoXcf.add(this)
         }
     }

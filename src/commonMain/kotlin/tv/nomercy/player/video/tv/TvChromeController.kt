@@ -65,6 +65,38 @@ public class TvChromeController(
         PlayerKey.Up, PlayerKey.Down -> revealControls()
         PlayerKey.Center -> toggleWhenNothingElseWants()
         PlayerKey.Back -> onBack()
+        else -> onTransportKey(key)
+    }
+
+    // The dedicated transport keys, which every television remote has and this
+    // machine ignored: a Siri Remote's play/pause, an Android remote's transport
+    // row, and the media keys a headset sends. Only Centre was handled, so the
+    // button with the triangle printed on it did nothing.
+    //
+    // Unconditional rather than a toggle read from the chrome: Play means play
+    // even when the film already is, which is what a headset sending MediaPlay
+    // on reconnect means by it.
+    private fun onTransportKey(key: PlayerKey): Boolean = when (key) {
+        PlayerKey.Play, PlayerKey.MediaPlay -> {
+            callbacks.play()
+            revealControls()
+        }
+
+        PlayerKey.Pause, PlayerKey.MediaPause -> {
+            callbacks.pause()
+            revealControls()
+        }
+
+        PlayerKey.PlayPause, PlayerKey.MediaPlayPause -> {
+            callbacks.togglePlay()
+            revealControls()
+        }
+
+        PlayerKey.Stop, PlayerKey.MediaStop -> {
+            callbacks.exitPlayer()
+            true
+        }
+
         else -> false
     }
 

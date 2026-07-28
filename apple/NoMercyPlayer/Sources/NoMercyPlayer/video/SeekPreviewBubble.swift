@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------------
 
 import SwiftUI
+import NoMercyVideoPlayer
 
 /// Which chapter a moment falls in.
 ///

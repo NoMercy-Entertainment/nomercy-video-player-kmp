@@ -333,4 +333,27 @@ class TvChromeControllerTest {
         assertFalse(controller.onKey(PlayerKey.Up))
         assertFalse(controller.ui.value.seekMode)
     }
+
+    @Test
+    fun theTransportKeysEveryRemoteHasActuallyDoSomething() {
+        // Only the D-pad was handled, so the button with the triangle printed on
+        // it did nothing on every television this has ever run on.
+        val controller: TvChromeController = watching()
+
+        assertTrue(controller.onKey(PlayerKey.PlayPause))
+
+        assertEquals(listOf("togglePlay"), callbacks.calls)
+        assertTrue(controller.ui.value.controlsVisible, "and the bar comes back, as pressing pause implies")
+    }
+
+    @Test
+    fun playMeansPlayEvenWhenTheFilmAlreadyIs() {
+        // A headset sending MediaPlay on reconnect means play, not toggle. Read
+        // as a toggle it pauses the film the moment the headphones come back.
+        val controller: TvChromeController = watching(playing = true)
+
+        assertTrue(controller.onKey(PlayerKey.MediaPlay))
+
+        assertEquals(listOf("play"), callbacks.calls)
+    }
 }

@@ -10,15 +10,6 @@ import NoMercyVideoPlayer
 import SwiftUI
 import UIKit
 
-/// The shared cue type, under a name worth typing.
-///
-/// A dependency's classes come through the framework carrying the module they
-/// came from — `Nomercy_player_core_kmpSpriteCue` — which is accurate and
-/// unusable. The alias costs nothing and is the difference between an API that
-/// reads as Swift and one that reads as a build artifact.
-public typealias SpriteCue = Nomercy_player_core_kmpSpriteCue
-public typealias Chapter = Nomercy_player_core_kmpChapter
-
 /// Where one frame sits inside the sheet, once the sheet is drawn at a size that
 /// makes that frame the width the chrome asked for.
 ///
