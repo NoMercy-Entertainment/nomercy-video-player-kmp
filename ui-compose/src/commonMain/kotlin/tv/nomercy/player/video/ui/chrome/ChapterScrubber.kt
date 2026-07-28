@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.cues.SpriteCue
 import tv.nomercy.player.video.thumbnails.frameAt
 import tv.nomercy.player.video.ui.tv.ChapterProgressBar
-import tv.nomercy.player.video.ui.tv.formatTime
+import tv.nomercy.player.video.tv.formatTime
 
 // Dragging a finger or a pointer along the film.
 //

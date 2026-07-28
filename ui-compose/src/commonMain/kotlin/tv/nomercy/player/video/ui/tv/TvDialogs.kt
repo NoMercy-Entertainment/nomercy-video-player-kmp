@@ -26,6 +26,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import tv.nomercy.player.video.tv.TvEpisode
+import tv.nomercy.player.video.tv.TvTrack
 
 // The lists a viewer opens from the chrome.
 //

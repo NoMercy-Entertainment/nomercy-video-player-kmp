@@ -87,6 +87,21 @@ final enum class tv.nomercy.player.video.cast/WakeOutcome : kotlin/Enum<tv.nomer
     final fun values(): kotlin/Array<tv.nomercy.player.video.cast/WakeOutcome> // tv.nomercy.player.video.cast/WakeOutcome.values|values#static(){}[0]
 }
 
+final enum class tv.nomercy.player.video.tv/TvDialog : kotlin/Enum<tv.nomercy.player.video.tv/TvDialog> { // tv.nomercy.player.video.tv/TvDialog|null[0]
+    enum entry Episodes // tv.nomercy.player.video.tv/TvDialog.Episodes|null[0]
+    enum entry Language // tv.nomercy.player.video.tv/TvDialog.Language|null[0]
+    enum entry None // tv.nomercy.player.video.tv/TvDialog.None|null[0]
+    enum entry PreScreen // tv.nomercy.player.video.tv/TvDialog.PreScreen|null[0]
+    enum entry Subtitle // tv.nomercy.player.video.tv/TvDialog.Subtitle|null[0]
+    enum entry SubtitleSearch // tv.nomercy.player.video.tv/TvDialog.SubtitleSearch|null[0]
+
+    final val entries // tv.nomercy.player.video.tv/TvDialog.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.tv/TvDialog> // tv.nomercy.player.video.tv/TvDialog.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video.tv/TvDialog // tv.nomercy.player.video.tv/TvDialog.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video.tv/TvDialog> // tv.nomercy.player.video.tv/TvDialog.values|values#static(){}[0]
+}
+
 final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.player.video/Stretching> { // tv.nomercy.player.video/Stretching|null[0]
     enum entry Fill // tv.nomercy.player.video/Stretching.Fill|null[0]
     enum entry None // tv.nomercy.player.video/Stretching.None|null[0]
@@ -104,6 +119,14 @@ final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.pla
     final object Companion { // tv.nomercy.player.video/Stretching.Companion|null[0]
         final fun fromToken(kotlin/String): tv.nomercy.player.video/Stretching // tv.nomercy.player.video/Stretching.Companion.fromToken|fromToken(kotlin.String){}[0]
     }
+}
+
+abstract fun interface tv.nomercy.player.video.tv/Cancellable { // tv.nomercy.player.video.tv/Cancellable|null[0]
+    abstract fun cancel() // tv.nomercy.player.video.tv/Cancellable.cancel|cancel(){}[0]
+}
+
+abstract fun interface tv.nomercy.player.video.tv/Scheduler { // tv.nomercy.player.video.tv/Scheduler|null[0]
+    abstract fun schedule(kotlin/Long, kotlin/Function0<kotlin/Unit>): tv.nomercy.player.video.tv/Cancellable // tv.nomercy.player.video.tv/Scheduler.schedule|schedule(kotlin.Long;kotlin.Function0<kotlin.Unit>){}[0]
 }
 
 abstract interface tv.nomercy.player.video.cast/CastWaker { // tv.nomercy.player.video.cast/CastWaker|null[0]
@@ -185,6 +208,24 @@ abstract interface tv.nomercy.player.video.input/VideoVolume { // tv.nomercy.pla
     abstract fun toggleMute() // tv.nomercy.player.video.input/VideoVolume.toggleMute|toggleMute(){}[0]
     abstract fun volumeDown() // tv.nomercy.player.video.input/VideoVolume.volumeDown|volumeDown(){}[0]
     abstract fun volumeUp() // tv.nomercy.player.video.input/VideoVolume.volumeUp|volumeUp(){}[0]
+}
+
+abstract interface tv.nomercy.player.video.tv/TvChromeCallbacks { // tv.nomercy.player.video.tv/TvChromeCallbacks|null[0]
+    abstract fun exitPlayer() // tv.nomercy.player.video.tv/TvChromeCallbacks.exitPlayer|exitPlayer(){}[0]
+    abstract fun next() // tv.nomercy.player.video.tv/TvChromeCallbacks.next|next(){}[0]
+    abstract fun overrideTime(kotlin/Float?) // tv.nomercy.player.video.tv/TvChromeCallbacks.overrideTime|overrideTime(kotlin.Float?){}[0]
+    abstract fun pause() // tv.nomercy.player.video.tv/TvChromeCallbacks.pause|pause(){}[0]
+    abstract fun play() // tv.nomercy.player.video.tv/TvChromeCallbacks.play|play(){}[0]
+    abstract fun restart() // tv.nomercy.player.video.tv/TvChromeCallbacks.restart|restart(){}[0]
+    abstract fun seek(kotlin/Float) // tv.nomercy.player.video.tv/TvChromeCallbacks.seek|seek(kotlin.Float){}[0]
+    abstract fun togglePlay() // tv.nomercy.player.video.tv/TvChromeCallbacks.togglePlay|togglePlay(){}[0]
+}
+
+abstract interface tv.nomercy.player.video.tv/TvContentCallbacks { // tv.nomercy.player.video.tv/TvContentCallbacks|null[0]
+    abstract fun searchSubtitlesOnline() // tv.nomercy.player.video.tv/TvContentCallbacks.searchSubtitlesOnline|searchSubtitlesOnline(){}[0]
+    abstract fun selectAudioTrack(kotlin/String) // tv.nomercy.player.video.tv/TvContentCallbacks.selectAudioTrack|selectAudioTrack(kotlin.String){}[0]
+    abstract fun selectEpisode(kotlin/String) // tv.nomercy.player.video.tv/TvContentCallbacks.selectEpisode|selectEpisode(kotlin.String){}[0]
+    abstract fun selectSubtitleTrack(kotlin/String) // tv.nomercy.player.video.tv/TvContentCallbacks.selectSubtitleTrack|selectSubtitleTrack(kotlin.String){}[0]
 }
 
 sealed interface tv.nomercy.player.video.cast/RemoteEvent { // tv.nomercy.player.video.cast/RemoteEvent|null[0]
@@ -566,6 +607,208 @@ final class tv.nomercy.player.video.input/TvPlaybackSummary { // tv.nomercy.play
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.input/TvPlaybackSummary.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video.input/TvPlaybackSummary.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video.input/TvPlaybackSummary.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.tv/EpisodeLabels { // tv.nomercy.player.video.tv/EpisodeLabels|null[0]
+    constructor <init>(kotlin/String = ..., kotlin/String = ..., kotlin/String = ...) // tv.nomercy.player.video.tv/EpisodeLabels.<init>|<init>(kotlin.String;kotlin.String;kotlin.String){}[0]
+
+    final val episode // tv.nomercy.player.video.tv/EpisodeLabels.episode|{}episode[0]
+        final fun <get-episode>(): kotlin/String // tv.nomercy.player.video.tv/EpisodeLabels.episode.<get-episode>|<get-episode>(){}[0]
+    final val extras // tv.nomercy.player.video.tv/EpisodeLabels.extras|{}extras[0]
+        final fun <get-extras>(): kotlin/String // tv.nomercy.player.video.tv/EpisodeLabels.extras.<get-extras>|<get-extras>(){}[0]
+    final val season // tv.nomercy.player.video.tv/EpisodeLabels.season|{}season[0]
+        final fun <get-season>(): kotlin/String // tv.nomercy.player.video.tv/EpisodeLabels.season.<get-season>|<get-season>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.tv/EpisodeLabels.component1|component1(){}[0]
+    final fun component2(): kotlin/String // tv.nomercy.player.video.tv/EpisodeLabels.component2|component2(){}[0]
+    final fun component3(): kotlin/String // tv.nomercy.player.video.tv/EpisodeLabels.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String = ...): tv.nomercy.player.video.tv/EpisodeLabels // tv.nomercy.player.video.tv/EpisodeLabels.copy|copy(kotlin.String;kotlin.String;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/EpisodeLabels.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/EpisodeLabels.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.tv/EpisodeLabels.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.tv/TvChapter { // tv.nomercy.player.video.tv/TvChapter|null[0]
+    constructor <init>(kotlin/Double, kotlin/String? = ...) // tv.nomercy.player.video.tv/TvChapter.<init>|<init>(kotlin.Double;kotlin.String?){}[0]
+
+    final val startSeconds // tv.nomercy.player.video.tv/TvChapter.startSeconds|{}startSeconds[0]
+        final fun <get-startSeconds>(): kotlin/Double // tv.nomercy.player.video.tv/TvChapter.startSeconds.<get-startSeconds>|<get-startSeconds>(){}[0]
+    final val title // tv.nomercy.player.video.tv/TvChapter.title|{}title[0]
+        final fun <get-title>(): kotlin/String? // tv.nomercy.player.video.tv/TvChapter.title.<get-title>|<get-title>(){}[0]
+
+    final fun component1(): kotlin/Double // tv.nomercy.player.video.tv/TvChapter.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // tv.nomercy.player.video.tv/TvChapter.component2|component2(){}[0]
+    final fun copy(kotlin/Double = ..., kotlin/String? = ...): tv.nomercy.player.video.tv/TvChapter // tv.nomercy.player.video.tv/TvChapter.copy|copy(kotlin.Double;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/TvChapter.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/TvChapter.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.tv/TvChapter.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.tv/TvChromeContent { // tv.nomercy.player.video.tv/TvChromeContent|null[0]
+    constructor <init>(tv.nomercy.player.video.tv/TvChromeItem? = ..., kotlin.collections/List<tv.nomercy.player.video.tv/TvEpisode> = ..., kotlin.collections/List<tv.nomercy.player.video.tv/TvTrack> = ..., kotlin.collections/List<tv.nomercy.player.video.tv/TvTrack> = ...) // tv.nomercy.player.video.tv/TvChromeContent.<init>|<init>(tv.nomercy.player.video.tv.TvChromeItem?;kotlin.collections.List<tv.nomercy.player.video.tv.TvEpisode>;kotlin.collections.List<tv.nomercy.player.video.tv.TvTrack>;kotlin.collections.List<tv.nomercy.player.video.tv.TvTrack>){}[0]
+
+    final val audioTracks // tv.nomercy.player.video.tv/TvChromeContent.audioTracks|{}audioTracks[0]
+        final fun <get-audioTracks>(): kotlin.collections/List<tv.nomercy.player.video.tv/TvTrack> // tv.nomercy.player.video.tv/TvChromeContent.audioTracks.<get-audioTracks>|<get-audioTracks>(){}[0]
+    final val episodes // tv.nomercy.player.video.tv/TvChromeContent.episodes|{}episodes[0]
+        final fun <get-episodes>(): kotlin.collections/List<tv.nomercy.player.video.tv/TvEpisode> // tv.nomercy.player.video.tv/TvChromeContent.episodes.<get-episodes>|<get-episodes>(){}[0]
+    final val item // tv.nomercy.player.video.tv/TvChromeContent.item|{}item[0]
+        final fun <get-item>(): tv.nomercy.player.video.tv/TvChromeItem? // tv.nomercy.player.video.tv/TvChromeContent.item.<get-item>|<get-item>(){}[0]
+    final val subtitleTracks // tv.nomercy.player.video.tv/TvChromeContent.subtitleTracks|{}subtitleTracks[0]
+        final fun <get-subtitleTracks>(): kotlin.collections/List<tv.nomercy.player.video.tv/TvTrack> // tv.nomercy.player.video.tv/TvChromeContent.subtitleTracks.<get-subtitleTracks>|<get-subtitleTracks>(){}[0]
+
+    final fun component1(): tv.nomercy.player.video.tv/TvChromeItem? // tv.nomercy.player.video.tv/TvChromeContent.component1|component1(){}[0]
+    final fun component2(): kotlin.collections/List<tv.nomercy.player.video.tv/TvEpisode> // tv.nomercy.player.video.tv/TvChromeContent.component2|component2(){}[0]
+    final fun component3(): kotlin.collections/List<tv.nomercy.player.video.tv/TvTrack> // tv.nomercy.player.video.tv/TvChromeContent.component3|component3(){}[0]
+    final fun component4(): kotlin.collections/List<tv.nomercy.player.video.tv/TvTrack> // tv.nomercy.player.video.tv/TvChromeContent.component4|component4(){}[0]
+    final fun copy(tv.nomercy.player.video.tv/TvChromeItem? = ..., kotlin.collections/List<tv.nomercy.player.video.tv/TvEpisode> = ..., kotlin.collections/List<tv.nomercy.player.video.tv/TvTrack> = ..., kotlin.collections/List<tv.nomercy.player.video.tv/TvTrack> = ...): tv.nomercy.player.video.tv/TvChromeContent // tv.nomercy.player.video.tv/TvChromeContent.copy|copy(tv.nomercy.player.video.tv.TvChromeItem?;kotlin.collections.List<tv.nomercy.player.video.tv.TvEpisode>;kotlin.collections.List<tv.nomercy.player.video.tv.TvTrack>;kotlin.collections.List<tv.nomercy.player.video.tv.TvTrack>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeContent.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/TvChromeContent.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.tv/TvChromeContent.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.tv/TvChromeController { // tv.nomercy.player.video.tv/TvChromeController|null[0]
+    constructor <init>(tv.nomercy.player.video.tv/TvChromeCallbacks, tv.nomercy.player.video.tv/Scheduler, kotlin/Boolean = ..., kotlin/Boolean = ..., tv.nomercy.player.video.tv/TvContentCallbacks? = ...) // tv.nomercy.player.video.tv/TvChromeController.<init>|<init>(tv.nomercy.player.video.tv.TvChromeCallbacks;tv.nomercy.player.video.tv.Scheduler;kotlin.Boolean;kotlin.Boolean;tv.nomercy.player.video.tv.TvContentCallbacks?){}[0]
+
+    final val callbacks // tv.nomercy.player.video.tv/TvChromeController.callbacks|{}callbacks[0]
+        final fun <get-callbacks>(): tv.nomercy.player.video.tv/TvChromeCallbacks // tv.nomercy.player.video.tv/TvChromeController.callbacks.<get-callbacks>|<get-callbacks>(){}[0]
+    final val ui // tv.nomercy.player.video.tv/TvChromeController.ui|{}ui[0]
+        final fun <get-ui>(): kotlinx.coroutines.flow/StateFlow<tv.nomercy.player.video.tv/TvChromeUi> // tv.nomercy.player.video.tv/TvChromeController.ui.<get-ui>|<get-ui>(){}[0]
+
+    final fun cancelSeek(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeController.cancelSeek|cancelSeek(){}[0]
+    final fun chooseAudioTrack(kotlin/String) // tv.nomercy.player.video.tv/TvChromeController.chooseAudioTrack|chooseAudioTrack(kotlin.String){}[0]
+    final fun chooseEpisode(kotlin/String) // tv.nomercy.player.video.tv/TvChromeController.chooseEpisode|chooseEpisode(kotlin.String){}[0]
+    final fun chooseSubtitleTrack(kotlin/String) // tv.nomercy.player.video.tv/TvChromeController.chooseSubtitleTrack|chooseSubtitleTrack(kotlin.String){}[0]
+    final fun commitSeek(kotlin/Float) // tv.nomercy.player.video.tv/TvChromeController.commitSeek|commitSeek(kotlin.Float){}[0]
+    final fun dismissPreScreen() // tv.nomercy.player.video.tv/TvChromeController.dismissPreScreen|dismissPreScreen(){}[0]
+    final fun dispose() // tv.nomercy.player.video.tv/TvChromeController.dispose|dispose(){}[0]
+    final fun onBack(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeController.onBack|onBack(){}[0]
+    final fun onKey(tv.nomercy.player.core.input/PlayerKey): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeController.onKey|onKey(tv.nomercy.player.core.input.PlayerKey){}[0]
+    final fun onPlaybackChanged(kotlin/Boolean) // tv.nomercy.player.video.tv/TvChromeController.onPlaybackChanged|onPlaybackChanged(kotlin.Boolean){}[0]
+    final fun openDialog(tv.nomercy.player.video.tv/TvDialog) // tv.nomercy.player.video.tv/TvChromeController.openDialog|openDialog(tv.nomercy.player.video.tv.TvDialog){}[0]
+    final fun setTopBarFocus(kotlin/Boolean) // tv.nomercy.player.video.tv/TvChromeController.setTopBarFocus|setTopBarFocus(kotlin.Boolean){}[0]
+    final fun showVolume() // tv.nomercy.player.video.tv/TvChromeController.showVolume|showVolume(){}[0]
+}
+
+final class tv.nomercy.player.video.tv/TvChromeItem { // tv.nomercy.player.video.tv/TvChromeItem|null[0]
+    constructor <init>(kotlin/String? = ..., kotlin/String? = ..., kotlin/Int? = ..., kotlin/Int? = ..., kotlin/String? = ..., kotlin/String? = ...) // tv.nomercy.player.video.tv/TvChromeItem.<init>|<init>(kotlin.String?;kotlin.String?;kotlin.Int?;kotlin.Int?;kotlin.String?;kotlin.String?){}[0]
+
+    final val episode // tv.nomercy.player.video.tv/TvChromeItem.episode|{}episode[0]
+        final fun <get-episode>(): kotlin/Int? // tv.nomercy.player.video.tv/TvChromeItem.episode.<get-episode>|<get-episode>(){}[0]
+    final val playlistType // tv.nomercy.player.video.tv/TvChromeItem.playlistType|{}playlistType[0]
+        final fun <get-playlistType>(): kotlin/String? // tv.nomercy.player.video.tv/TvChromeItem.playlistType.<get-playlistType>|<get-playlistType>(){}[0]
+    final val season // tv.nomercy.player.video.tv/TvChromeItem.season|{}season[0]
+        final fun <get-season>(): kotlin/Int? // tv.nomercy.player.video.tv/TvChromeItem.season.<get-season>|<get-season>(){}[0]
+    final val show // tv.nomercy.player.video.tv/TvChromeItem.show|{}show[0]
+        final fun <get-show>(): kotlin/String? // tv.nomercy.player.video.tv/TvChromeItem.show.<get-show>|<get-show>(){}[0]
+    final val title // tv.nomercy.player.video.tv/TvChromeItem.title|{}title[0]
+        final fun <get-title>(): kotlin/String? // tv.nomercy.player.video.tv/TvChromeItem.title.<get-title>|<get-title>(){}[0]
+    final val videoType // tv.nomercy.player.video.tv/TvChromeItem.videoType|{}videoType[0]
+        final fun <get-videoType>(): kotlin/String? // tv.nomercy.player.video.tv/TvChromeItem.videoType.<get-videoType>|<get-videoType>(){}[0]
+
+    final fun component1(): kotlin/String? // tv.nomercy.player.video.tv/TvChromeItem.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // tv.nomercy.player.video.tv/TvChromeItem.component2|component2(){}[0]
+    final fun component3(): kotlin/Int? // tv.nomercy.player.video.tv/TvChromeItem.component3|component3(){}[0]
+    final fun component4(): kotlin/Int? // tv.nomercy.player.video.tv/TvChromeItem.component4|component4(){}[0]
+    final fun component5(): kotlin/String? // tv.nomercy.player.video.tv/TvChromeItem.component5|component5(){}[0]
+    final fun component6(): kotlin/String? // tv.nomercy.player.video.tv/TvChromeItem.component6|component6(){}[0]
+    final fun copy(kotlin/String? = ..., kotlin/String? = ..., kotlin/Int? = ..., kotlin/Int? = ..., kotlin/String? = ..., kotlin/String? = ...): tv.nomercy.player.video.tv/TvChromeItem // tv.nomercy.player.video.tv/TvChromeItem.copy|copy(kotlin.String?;kotlin.String?;kotlin.Int?;kotlin.Int?;kotlin.String?;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeItem.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/TvChromeItem.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.tv/TvChromeItem.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.tv/TvChromeUi { // tv.nomercy.player.video.tv/TvChromeUi|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., tv.nomercy.player.video.tv/TvDialog = ..., kotlin/Boolean = ..., kotlin/Boolean = ...) // tv.nomercy.player.video.tv/TvChromeUi.<init>|<init>(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;tv.nomercy.player.video.tv.TvDialog;kotlin.Boolean;kotlin.Boolean){}[0]
+
+    final val controlsVisible // tv.nomercy.player.video.tv/TvChromeUi.controlsVisible|{}controlsVisible[0]
+        final fun <get-controlsVisible>(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.controlsVisible.<get-controlsVisible>|<get-controlsVisible>(){}[0]
+    final val dialog // tv.nomercy.player.video.tv/TvChromeUi.dialog|{}dialog[0]
+        final fun <get-dialog>(): tv.nomercy.player.video.tv/TvDialog // tv.nomercy.player.video.tv/TvChromeUi.dialog.<get-dialog>|<get-dialog>(){}[0]
+    final val preScreenVisible // tv.nomercy.player.video.tv/TvChromeUi.preScreenVisible|{}preScreenVisible[0]
+        final fun <get-preScreenVisible>(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.preScreenVisible.<get-preScreenVisible>|<get-preScreenVisible>(){}[0]
+    final val seekMode // tv.nomercy.player.video.tv/TvChromeUi.seekMode|{}seekMode[0]
+        final fun <get-seekMode>(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.seekMode.<get-seekMode>|<get-seekMode>(){}[0]
+    final val topBarHasFocus // tv.nomercy.player.video.tv/TvChromeUi.topBarHasFocus|{}topBarHasFocus[0]
+        final fun <get-topBarHasFocus>(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.topBarHasFocus.<get-topBarHasFocus>|<get-topBarHasFocus>(){}[0]
+    final val volumeIndicatorVisible // tv.nomercy.player.video.tv/TvChromeUi.volumeIndicatorVisible|{}volumeIndicatorVisible[0]
+        final fun <get-volumeIndicatorVisible>(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.volumeIndicatorVisible.<get-volumeIndicatorVisible>|<get-volumeIndicatorVisible>(){}[0]
+
+    final fun component1(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.component1|component1(){}[0]
+    final fun component2(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.component2|component2(){}[0]
+    final fun component3(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.component3|component3(){}[0]
+    final fun component4(): tv.nomercy.player.video.tv/TvDialog // tv.nomercy.player.video.tv/TvChromeUi.component4|component4(){}[0]
+    final fun component5(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.component5|component5(){}[0]
+    final fun component6(): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.component6|component6(){}[0]
+    final fun copy(kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Boolean = ..., tv.nomercy.player.video.tv/TvDialog = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): tv.nomercy.player.video.tv/TvChromeUi // tv.nomercy.player.video.tv/TvChromeUi.copy|copy(kotlin.Boolean;kotlin.Boolean;kotlin.Boolean;tv.nomercy.player.video.tv.TvDialog;kotlin.Boolean;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeUi.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/TvChromeUi.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.tv/TvChromeUi.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.tv/TvEpisode { // tv.nomercy.player.video.tv/TvEpisode|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String? = ..., kotlin/Boolean = ...) // tv.nomercy.player.video.tv/TvEpisode.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
+
+    final val id // tv.nomercy.player.video.tv/TvEpisode.id|{}id[0]
+        final fun <get-id>(): kotlin/String // tv.nomercy.player.video.tv/TvEpisode.id.<get-id>|<get-id>(){}[0]
+    final val isCurrent // tv.nomercy.player.video.tv/TvEpisode.isCurrent|{}isCurrent[0]
+        final fun <get-isCurrent>(): kotlin/Boolean // tv.nomercy.player.video.tv/TvEpisode.isCurrent.<get-isCurrent>|<get-isCurrent>(){}[0]
+    final val subtitle // tv.nomercy.player.video.tv/TvEpisode.subtitle|{}subtitle[0]
+        final fun <get-subtitle>(): kotlin/String? // tv.nomercy.player.video.tv/TvEpisode.subtitle.<get-subtitle>|<get-subtitle>(){}[0]
+    final val title // tv.nomercy.player.video.tv/TvEpisode.title|{}title[0]
+        final fun <get-title>(): kotlin/String // tv.nomercy.player.video.tv/TvEpisode.title.<get-title>|<get-title>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.tv/TvEpisode.component1|component1(){}[0]
+    final fun component2(): kotlin/String // tv.nomercy.player.video.tv/TvEpisode.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // tv.nomercy.player.video.tv/TvEpisode.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // tv.nomercy.player.video.tv/TvEpisode.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Boolean = ...): tv.nomercy.player.video.tv/TvEpisode // tv.nomercy.player.video.tv/TvEpisode.copy|copy(kotlin.String;kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/TvEpisode.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/TvEpisode.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.tv/TvEpisode.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.tv/TvTrack { // tv.nomercy.player.video.tv/TvTrack|null[0]
+    constructor <init>(kotlin/String, kotlin/String, kotlin/String? = ..., kotlin/Boolean = ...) // tv.nomercy.player.video.tv/TvTrack.<init>|<init>(kotlin.String;kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
+
+    final val id // tv.nomercy.player.video.tv/TvTrack.id|{}id[0]
+        final fun <get-id>(): kotlin/String // tv.nomercy.player.video.tv/TvTrack.id.<get-id>|<get-id>(){}[0]
+    final val isCurrent // tv.nomercy.player.video.tv/TvTrack.isCurrent|{}isCurrent[0]
+        final fun <get-isCurrent>(): kotlin/Boolean // tv.nomercy.player.video.tv/TvTrack.isCurrent.<get-isCurrent>|<get-isCurrent>(){}[0]
+    final val label // tv.nomercy.player.video.tv/TvTrack.label|{}label[0]
+        final fun <get-label>(): kotlin/String // tv.nomercy.player.video.tv/TvTrack.label.<get-label>|<get-label>(){}[0]
+    final val language // tv.nomercy.player.video.tv/TvTrack.language|{}language[0]
+        final fun <get-language>(): kotlin/String? // tv.nomercy.player.video.tv/TvTrack.language.<get-language>|<get-language>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.tv/TvTrack.component1|component1(){}[0]
+    final fun component2(): kotlin/String // tv.nomercy.player.video.tv/TvTrack.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // tv.nomercy.player.video.tv/TvTrack.component3|component3(){}[0]
+    final fun component4(): kotlin/Boolean // tv.nomercy.player.video.tv/TvTrack.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String = ..., kotlin/String? = ..., kotlin/Boolean = ...): tv.nomercy.player.video.tv/TvTrack // tv.nomercy.player.video.tv/TvTrack.copy|copy(kotlin.String;kotlin.String;kotlin.String?;kotlin.Boolean){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/TvTrack.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/TvTrack.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.tv/TvTrack.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.tv/TvTransportState { // tv.nomercy.player.video.tv/TvTransportState|null[0]
+    constructor <init>(kotlin/Boolean = ..., kotlin/Double = ..., kotlin/Double = ..., kotlin.collections/List<tv.nomercy.player.video.tv/TvChapter> = ...) // tv.nomercy.player.video.tv/TvTransportState.<init>|<init>(kotlin.Boolean;kotlin.Double;kotlin.Double;kotlin.collections.List<tv.nomercy.player.video.tv.TvChapter>){}[0]
+
+    final val chapters // tv.nomercy.player.video.tv/TvTransportState.chapters|{}chapters[0]
+        final fun <get-chapters>(): kotlin.collections/List<tv.nomercy.player.video.tv/TvChapter> // tv.nomercy.player.video.tv/TvTransportState.chapters.<get-chapters>|<get-chapters>(){}[0]
+    final val durationSeconds // tv.nomercy.player.video.tv/TvTransportState.durationSeconds|{}durationSeconds[0]
+        final fun <get-durationSeconds>(): kotlin/Double // tv.nomercy.player.video.tv/TvTransportState.durationSeconds.<get-durationSeconds>|<get-durationSeconds>(){}[0]
+    final val isPlaying // tv.nomercy.player.video.tv/TvTransportState.isPlaying|{}isPlaying[0]
+        final fun <get-isPlaying>(): kotlin/Boolean // tv.nomercy.player.video.tv/TvTransportState.isPlaying.<get-isPlaying>|<get-isPlaying>(){}[0]
+    final val timeSeconds // tv.nomercy.player.video.tv/TvTransportState.timeSeconds|{}timeSeconds[0]
+        final fun <get-timeSeconds>(): kotlin/Double // tv.nomercy.player.video.tv/TvTransportState.timeSeconds.<get-timeSeconds>|<get-timeSeconds>(){}[0]
+
+    final fun component1(): kotlin/Boolean // tv.nomercy.player.video.tv/TvTransportState.component1|component1(){}[0]
+    final fun component2(): kotlin/Double // tv.nomercy.player.video.tv/TvTransportState.component2|component2(){}[0]
+    final fun component3(): kotlin/Double // tv.nomercy.player.video.tv/TvTransportState.component3|component3(){}[0]
+    final fun component4(): kotlin.collections/List<tv.nomercy.player.video.tv/TvChapter> // tv.nomercy.player.video.tv/TvTransportState.component4|component4(){}[0]
+    final fun copy(kotlin/Boolean = ..., kotlin/Double = ..., kotlin/Double = ..., kotlin.collections/List<tv.nomercy.player.video.tv/TvChapter> = ...): tv.nomercy.player.video.tv/TvTransportState // tv.nomercy.player.video.tv/TvTransportState.copy|copy(kotlin.Boolean;kotlin.Double;kotlin.Double;kotlin.collections.List<tv.nomercy.player.video.tv.TvChapter>){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/TvTransportState.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/TvTransportState.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.tv/TvTransportState.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video/AspectRatioChange { // tv.nomercy.player.video/AspectRatioChange|null[0]
@@ -1024,3 +1267,6 @@ final fun tv.nomercy.player.video.thumbnails/frameIndexAt(kotlin.collections/Lis
 final fun tv.nomercy.player.video.thumbnails/spriteFrameAspect(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Float // tv.nomercy.player.video.thumbnails/spriteFrameAspect|spriteFrameAspect(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
 final fun tv.nomercy.player.video.thumbnails/spriteFrameHeight(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Int // tv.nomercy.player.video.thumbnails/spriteFrameHeight|spriteFrameHeight(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
 final fun tv.nomercy.player.video.thumbnails/spriteFrameWidth(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Int // tv.nomercy.player.video.thumbnails/spriteFrameWidth|spriteFrameWidth(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
+final fun tv.nomercy.player.video.tv/episodeLabel(tv.nomercy.player.video.tv/TvChromeItem?, tv.nomercy.player.video.tv/EpisodeLabels = ...): kotlin/String // tv.nomercy.player.video.tv/episodeLabel|episodeLabel(tv.nomercy.player.video.tv.TvChromeItem?;tv.nomercy.player.video.tv.EpisodeLabels){}[0]
+final fun tv.nomercy.player.video.tv/formatTime(kotlin/Double): kotlin/String // tv.nomercy.player.video.tv/formatTime|formatTime(kotlin.Double){}[0]
+final fun tv.nomercy.player.video.tv/showTitle(tv.nomercy.player.video.tv/TvChromeItem?, kotlin/String): kotlin/String // tv.nomercy.player.video.tv/showTitle|showTitle(tv.nomercy.player.video.tv.TvChromeItem?;kotlin.String){}[0]

@@ -24,6 +24,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import tv.nomercy.player.video.tv.TvChromeCallbacks
+import tv.nomercy.player.video.tv.TvChromeContent
+import tv.nomercy.player.video.tv.TvDialog
+import tv.nomercy.player.video.tv.episodeLabel
+import tv.nomercy.player.video.tv.showTitle
 
 // What a viewer sees when they press back, and before they press play.
 //

@@ -19,8 +19,8 @@ import org.junit.Test
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
-import tv.nomercy.player.video.ui.tv.Cancellable
-import tv.nomercy.player.video.ui.tv.Scheduler
+import tv.nomercy.player.video.tv.Cancellable
+import tv.nomercy.player.video.tv.Scheduler
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

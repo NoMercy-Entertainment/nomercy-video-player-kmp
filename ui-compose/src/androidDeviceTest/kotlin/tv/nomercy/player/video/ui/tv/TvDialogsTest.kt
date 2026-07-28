@@ -22,6 +22,12 @@ import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import tv.nomercy.player.video.tv.TvChromeCallbacks
+import tv.nomercy.player.video.tv.TvChromeContent
+import tv.nomercy.player.video.tv.TvChromeItem
+import tv.nomercy.player.video.tv.TvDialog
+import tv.nomercy.player.video.tv.TvEpisode
+import tv.nomercy.player.video.tv.TvTrack
 
 // The pre-screen and the lists, on a television.
 //

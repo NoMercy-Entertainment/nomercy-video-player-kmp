@@ -11,8 +11,8 @@ package tv.nomercy.player.video.ui.chrome
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import tv.nomercy.player.video.ui.tv.Cancellable
-import tv.nomercy.player.video.ui.tv.Scheduler
+import tv.nomercy.player.video.tv.Cancellable
+import tv.nomercy.player.video.tv.Scheduler
 
 // Whether the controls are on screen.
 //

@@ -16,8 +16,8 @@ import tv.nomercy.player.core.player.BufferState
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerState
 import tv.nomercy.player.video.NMVideoPlayer
-import tv.nomercy.player.video.ui.tv.TvChapter
-import tv.nomercy.player.video.ui.tv.TvChromeItem
+import tv.nomercy.player.video.tv.TvChapter
+import tv.nomercy.player.video.tv.TvChromeItem
 
 // The player, as the chrome reads it.
 //

@@ -18,6 +18,9 @@ import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import tv.nomercy.player.video.tv.TvChromeCallbacks
+import tv.nomercy.player.video.tv.TvTransportState
+import tv.nomercy.player.video.tv.formatTime
 
 // Scrubbing with a remote, on a remote.
 //

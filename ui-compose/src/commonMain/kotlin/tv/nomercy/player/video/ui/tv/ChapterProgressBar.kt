@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import tv.nomercy.player.video.tv.TvChapter
 
 // The progress bar, with the chapter breaks marked on it.
 //

@@ -24,6 +24,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.testTag
 import tv.nomercy.player.core.input.PlayerKey
+import tv.nomercy.player.video.tv.TvChromeContent
+import tv.nomercy.player.video.tv.TvChromeController
+import tv.nomercy.player.video.tv.TvChromeUi
+import tv.nomercy.player.video.tv.TvDialog
+import tv.nomercy.player.video.tv.TvTransportState
 
 // The whole television chrome, over whatever is drawing the picture.
 //

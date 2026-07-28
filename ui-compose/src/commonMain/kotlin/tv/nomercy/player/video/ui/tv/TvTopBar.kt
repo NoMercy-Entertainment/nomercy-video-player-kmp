@@ -22,6 +22,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import tv.nomercy.player.video.tv.TvChromeItem
+import tv.nomercy.player.video.tv.TvDialog
+import tv.nomercy.player.video.tv.episodeLabel
+import tv.nomercy.player.video.tv.showTitle
 
 // What is playing, and the two lists a viewer opens from here.
 //

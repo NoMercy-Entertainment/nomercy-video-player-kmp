@@ -6,7 +6,7 @@
 //  SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
 
-package tv.nomercy.player.video.ui.tv
+package tv.nomercy.player.video.tv
 
 // A chapter of a film, as the bar draws it.
 //

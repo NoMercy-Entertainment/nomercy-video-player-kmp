@@ -11,8 +11,8 @@ package tv.nomercy.player.video.ui.chrome
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
-import tv.nomercy.player.video.ui.tv.TvChapter
-import tv.nomercy.player.video.ui.tv.TvChromeItem
+import tv.nomercy.player.video.tv.TvChapter
+import tv.nomercy.player.video.tv.TvChromeItem
 
 // Everything the chrome draws from, in one value.
 //

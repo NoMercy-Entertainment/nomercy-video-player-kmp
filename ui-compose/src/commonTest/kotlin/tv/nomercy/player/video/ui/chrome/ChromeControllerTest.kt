@@ -8,8 +8,8 @@
 
 package tv.nomercy.player.video.ui.chrome
 
-import tv.nomercy.player.video.ui.tv.Cancellable
-import tv.nomercy.player.video.ui.tv.Scheduler
+import tv.nomercy.player.video.tv.Cancellable
+import tv.nomercy.player.video.tv.Scheduler
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

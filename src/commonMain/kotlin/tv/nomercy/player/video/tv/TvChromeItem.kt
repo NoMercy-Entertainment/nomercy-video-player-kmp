@@ -6,7 +6,7 @@
 //  SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
 
-package tv.nomercy.player.video.ui.tv
+package tv.nomercy.player.video.tv
 
 // What the chrome knows about what is playing.
 //

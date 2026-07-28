@@ -44,7 +44,7 @@ import tv.nomercy.player.video.input.VideoKeyHandlerPlugin
 import tv.nomercy.player.video.input.playerCommandsOf
 import tv.nomercy.player.video.ui.chrome.menus.MenuState
 import tv.nomercy.player.video.ui.chrome.menus.SettingsMenu
-import tv.nomercy.player.video.ui.tv.Scheduler
+import tv.nomercy.player.video.tv.Scheduler
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
 
 // The whole chrome for a screen somebody touches or points at.

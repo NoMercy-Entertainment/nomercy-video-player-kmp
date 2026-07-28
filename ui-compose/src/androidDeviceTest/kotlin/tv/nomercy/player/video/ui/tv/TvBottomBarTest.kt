@@ -16,6 +16,9 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertEquals
+import tv.nomercy.player.video.tv.TvChapter
+import tv.nomercy.player.video.tv.TvChromeCallbacks
+import tv.nomercy.player.video.tv.TvTransportState
 
 // The transport row, rendered on a television.
 //

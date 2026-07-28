@@ -15,8 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import tv.nomercy.player.video.ui.tv.Cancellable
-import tv.nomercy.player.video.ui.tv.Scheduler
+import tv.nomercy.player.video.tv.Cancellable
+import tv.nomercy.player.video.tv.Scheduler
 
 // The autohide timer, on whatever scope the screen already has.
 //

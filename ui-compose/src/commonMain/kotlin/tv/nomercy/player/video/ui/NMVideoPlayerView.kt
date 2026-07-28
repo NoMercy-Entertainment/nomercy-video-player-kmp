@@ -30,7 +30,7 @@ import tv.nomercy.player.video.ui.chrome.VideoChrome
 import tv.nomercy.player.video.ui.tv.NMTvPlayerView
 import tv.nomercy.player.video.ui.tv.TvChrome
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
-import tv.nomercy.player.video.ui.tv.TvEpisode
+import tv.nomercy.player.video.tv.TvEpisode
 import tv.nomercy.player.video.ui.tv.rememberTvChrome
 
 // The drop-in player: everything, routed by what the device is.

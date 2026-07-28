@@ -23,13 +23,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import tv.nomercy.player.video.ui.tv.EpisodeLabels
+import tv.nomercy.player.video.tv.EpisodeLabels
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
 import tv.nomercy.player.video.ui.tv.PlayerIcons
-import tv.nomercy.player.video.ui.tv.TvChromeItem
+import tv.nomercy.player.video.tv.TvChromeItem
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
-import tv.nomercy.player.video.ui.tv.episodeLabel
-import tv.nomercy.player.video.ui.tv.showTitle
+import tv.nomercy.player.video.tv.episodeLabel
+import tv.nomercy.player.video.tv.showTitle
 
 // The name across the top, and the way out.
 //

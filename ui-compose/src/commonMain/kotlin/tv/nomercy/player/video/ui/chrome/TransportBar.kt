@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
 import tv.nomercy.player.video.ui.tv.PlayerIcons
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
-import tv.nomercy.player.video.ui.tv.formatTime
+import tv.nomercy.player.video.tv.formatTime
 
 // The transport row, for a pointer or a finger rather than a remote.
 //
