@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import tv.nomercy.player.video.ui.chrome.ChromeTranslations
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -90,6 +91,43 @@ public fun TvBottomBar(
 // A library that shipped English would be a library nobody outside English can
 // use, and one that reached for a resource identifier would only work on
 // Android.
+// Built for a locale, so a viewer reads the string the browser renders.
+//
+// The defaults below stay English because a data class needs some, and because
+// a host constructing one by hand should get something readable. Nobody should
+// construct one by hand: `TvChromeStrings.of("nl")` reads the generated table,
+// which is 79 locales of the web's own values.
+//
+// This class used to be the only translations the native chrome had — English,
+// reworded on the way in. Both halves of that were divergence.
+public fun tvChromeStrings(locale: String): TvChromeStrings {
+    fun tip(name: String): String =
+        ChromeTranslations.get(locale, "plugin.desktop-ui.tooltip.$name")
+
+    return TvChromeStrings(
+        play = tip("play"),
+        pause = tip("play"),
+        next = tip("next"),
+        subtitles = tip("subtitles"),
+        language = tip("audio"),
+        close = tip("close"),
+        previous = tip("previous"),
+        seekBack = tip("seekBack"),
+        seekForward = tip("seekForward"),
+        chapterBack = tip("chapterPrev"),
+        chapterForward = tip("chapterNext"),
+        mute = tip("mute"),
+        unmute = tip("mute"),
+        aspectRatio = tip("aspectRatio"),
+        theater = tip("theater"),
+        pictureInPicture = tip("pip"),
+        speed = tip("speed"),
+        quality = tip("quality"),
+        playlist = tip("playlist"),
+        settings = tip("settings"),
+    )
+}
+
 public data class TvChromeStrings(
     val play: String = "Play",
     val pause: String = "Pause",

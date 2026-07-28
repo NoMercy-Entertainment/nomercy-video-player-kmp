@@ -255,6 +255,15 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTrackCom
 	public abstract fun selectSubtitleTrack (Ltv/nomercy/player/core/ports/SubtitleTrack;)V
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChromeTranslations {
+	public static final field $stable I
+	public static final field FALLBACK Ljava/lang/String;
+	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/ChromeTranslations;
+	public final fun get (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun getAvailable ()Ljava/util/Set;
+	public final fun of (Ljava/lang/String;)Ljava/util/Map;
+}
+
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTransportCommands {
 	public abstract fun next ()V
 	public abstract fun openAudioMenu ()V
@@ -589,6 +598,7 @@ public final class tv/nomercy/player/video/ui/tv/PlayerIcons {
 
 public final class tv/nomercy/player/video/ui/tv/TvBottomBarKt {
 	public static final fun TvBottomBar (Ltv/nomercy/player/video/tv/TvTransportState;Ltv/nomercy/player/video/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/focus/FocusRequester;Landroidx/compose/runtime/Composer;II)V
+	public static final fun tvChromeStrings (Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
 }
 
 public final class tv/nomercy/player/video/ui/tv/TvChrome {
