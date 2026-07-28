@@ -48,9 +48,20 @@ class SpriteFramesTest {
         assertEquals(frames.lastIndex, frameIndexAt(frames, 9_999.0))
     }
 
+    // Before the first cue the web holds the LAST frame, not the first.
+    //
+    // This asserted the first frame, which is the better answer and was a
+    // deliberate native choice. It is now the web's answer instead: a native
+    // player showing a different thumbnail than the browser at the same scrub
+    // position is a divergence a viewer sees, and the fidelity bar leaves no
+    // room to be right differently.
+    //
+    // Only reachable when a sheet's first cue starts later than zero. It reads
+    // like a bug on the web too and should be fixed there and here together;
+    // web-chrome-fidelity-spec.md carries it so the fix is not lost.
     @Test
-    fun aScrubBeforeTheFirstFrameHoldsTheFirst() {
-        assertEquals(0, frameIndexAt(frames, -1.0))
+    fun aScrubBeforeTheFirstFrameHoldsTheLastAsTheWebDoes() {
+        assertEquals(frames.lastIndex, frameIndexAt(frames, -1.0))
     }
 
     @Test

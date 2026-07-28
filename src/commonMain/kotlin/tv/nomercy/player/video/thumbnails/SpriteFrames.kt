@@ -28,12 +28,20 @@ import tv.nomercy.player.core.cues.SpriteCue
 public fun frameIndexAt(frames: List<SpriteCue>, seconds: Double): Int? {
     if (frames.isEmpty()) return null
 
-    // Before the first frame starts, nothing has begun and indexOfLast says so.
-    // That is a real position — a viewer scrubbing to zero on a sheet whose
-    // first cue starts slightly later — and the first frame is the honest answer.
-    val started: Int = frames.indexOfLast { it.start <= seconds }
+    // The cue whose window contains this second, and the LAST cue when none
+    // does. That fallback is the web's, from desktop-ui/helpers/sprite.ts
+    // lookupCue, which does `find(...) ?? cues.at(-1)`.
+    //
+    // Past the end of the sheet it is obviously right. Before the FIRST cue —
+    // reachable only when a sheet's first cue starts later than zero — it shows
+    // the last frame of the item, which reads like a bug and is what the web
+    // does. Matched deliberately rather than improved: a native player showing
+    // a different thumbnail than the browser at the same scrub position is a
+    // divergence a viewer sees, and the fix belongs on both sides at once.
+    // Recorded in web-chrome-fidelity-spec.md.
+    val containing: Int = frames.indexOfFirst { seconds >= it.start && seconds < it.end }
 
-    return if (started < 0) 0 else started
+    return if (containing >= 0) containing else frames.lastIndex
 }
 
 public fun frameAt(frames: List<SpriteCue>, seconds: Double): SpriteCue? =
