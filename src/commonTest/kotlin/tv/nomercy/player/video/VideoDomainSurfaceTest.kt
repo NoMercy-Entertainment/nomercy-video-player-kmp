@@ -17,6 +17,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import tv.nomercy.player.testing.FakeVideoBackend
 
 private val DUTCH = SubtitleTrack(id = "sub-nl", language = "nl", label = "Nederlands")
 private val ENGLISH = SubtitleTrack(id = "sub-en", language = "en", label = "English")

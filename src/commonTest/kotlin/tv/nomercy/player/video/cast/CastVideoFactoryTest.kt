@@ -25,7 +25,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import tv.nomercy.player.core.player.PlayerConfig
-import tv.nomercy.player.video.FakeVideoBackend
+import tv.nomercy.player.testing.FakeVideoBackend
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoItem
 import kotlin.test.Test

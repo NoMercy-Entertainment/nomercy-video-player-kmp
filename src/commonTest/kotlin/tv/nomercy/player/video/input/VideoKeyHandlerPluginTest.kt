@@ -13,7 +13,7 @@ import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.core.input.keyCombo
 import kotlinx.coroutines.test.runTest
-import tv.nomercy.player.video.FakeVideoBackend
+import tv.nomercy.player.testing.FakeVideoBackend
 import tv.nomercy.player.video.NMVideoPlayer
 import kotlin.test.Test
 import kotlin.test.assertEquals

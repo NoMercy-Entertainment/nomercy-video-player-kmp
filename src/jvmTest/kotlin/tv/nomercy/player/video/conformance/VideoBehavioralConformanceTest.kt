@@ -20,7 +20,7 @@ import tv.nomercy.player.conformance.scenarioItems
 import tv.nomercy.player.core.events.BeforeEvent
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.EventKey
-import tv.nomercy.player.video.FakeVideoBackend
+import tv.nomercy.player.testing.FakeVideoBackend
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoItem
 import kotlin.test.Test
