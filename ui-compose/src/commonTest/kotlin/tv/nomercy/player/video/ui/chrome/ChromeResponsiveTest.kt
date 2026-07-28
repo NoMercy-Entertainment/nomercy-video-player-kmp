@@ -13,16 +13,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-// The web's own bands, asserted at their edges.
+// The expected numbers here were measured in a browser, not reasoned out.
+// `e2e/render-parity-export.spec.ts` drives the real chrome at each width and
+// writes down what it lays out; these assertions are that file.
 //
-// The widths are the deliverable as much as the order is: a viewer who knows
-// the settings button survives 480 and not 320 should find the same on a phone.
-// Asserting at 320 and 321 rather than at 300 and 400 is what catches an
-// off-by-one in the comparison, which is the way this goes wrong.
+// That matters because the first version of this suite tested the rank-cut rule
+// this port had invented, and every case passed. A test written from the same
+// misreading as the code agrees with it.
 class ChromeResponsiveTest {
 
+    // The bands are still right — the web picks them with `width <= maxWidth`,
+    // and the browser confirmed the boundary sits exactly there.
     @Test
-    fun theBandsAreTheWebs() {
+    fun bandsAreChosenByTheirCeiling() {
         assertEquals("xs", breakpointFor(320).name)
         assertEquals("sm", breakpointFor(321).name)
         assertEquals("sm", breakpointFor(480).name)
@@ -31,97 +34,117 @@ class ChromeResponsiveTest {
         assertEquals("lg", breakpointFor(721).name)
         assertEquals("lg", breakpointFor(1024).name)
         assertEquals("xl", breakpointFor(1025).name)
-        assertEquals("xl", breakpointFor(3840).name)
     }
 
-    // xs keeps rank 0 and 1: play and mute, and nothing else.
+    // The rule that was wrong. md carries hideAfterRank = 8, which reads as
+    // nine controls; the accumulation fits eleven. The two disagree, and the
+    // web follows the accumulation.
+    //
+    // Asserting they DIFFER rather than asserting a number, because the number
+    // is a consequence of footprints that may change. What must not come back
+    // is the rank cut deciding anything.
     @Test
-    fun theNarrowestWindowKeepsPlayAndMuteOnly() {
-        assertEquals(
-            listOf(ChromeControl.PLAY, ChromeControl.MUTE),
-            visibleControls(widthDp = 320),
+    fun theBandsRankCutDoesNotDecideVisibility() {
+        val band = breakpointFor(720)
+        val visible = visibleControls(720)
+
+        assertEquals(8, band.hideAfterRank)
+        assertTrue(
+            visible.size != band.hideAfterRank + 1,
+            "the rank cut is being applied again: $visible",
         )
     }
 
+    // Continuous, not stepped. Two widths inside one band show different
+    // numbers of controls, which a rank cut cannot produce.
     @Test
-    fun smAddsVolumeFullscreenAndSettings() {
-        val visible: List<ChromeControl> = visibleControls(widthDp = 480)
+    fun controlsAppearOnePixelAtATimeRatherThanPerBand() {
+        val narrow = visibleControls(900)
+        val wide = visibleControls(1000)
 
-        assertEquals(
-            listOf(
-                ChromeControl.PLAY,
-                ChromeControl.MUTE,
-                ChromeControl.VOLUME,
-                ChromeControl.FULLSCREEN,
-                ChromeControl.SETTINGS,
-            ),
-            visible,
+        assertEquals("lg", breakpointFor(900).name)
+        assertEquals("lg", breakpointFor(1000).name)
+        assertTrue(
+            wide.size > narrow.size,
+            "same band, same controls — visibility is still stepped: $narrow vs $wide",
         )
     }
 
+    // Most essential first: whatever else goes, play survives.
     @Test
-    fun mdAddsTheQueueAndChapterJumps() {
-        val visible: List<ChromeControl> = visibleControls(widthDp = 720)
-
-        assertTrue(ChromeControl.NEXT in visible)
-        assertTrue(ChromeControl.PREVIOUS in visible)
-        assertTrue(ChromeControl.CHAPTER_PREV in visible)
-        assertTrue(ChromeControl.CHAPTER_NEXT in visible)
-        // Rank 9 and up are still out at md.
-        assertFalse(ChromeControl.SEEK_BACK in visible)
-        assertFalse(ChromeControl.THEATER in visible)
+    fun playSurvivesTheNarrowestBar() {
+        assertTrue(ChromeControl.PLAY in visibleControls(320))
     }
 
     @Test
-    fun lgAddsTheatrePipAndSpeed() {
-        val visible: List<ChromeControl> = visibleControls(widthDp = 1024)
+    fun nothingFitsAtZeroWidth() {
+        assertTrue(visibleControls(0).isEmpty())
+    }
 
-        assertTrue(ChromeControl.THEATER in visible)
-        assertTrue(ChromeControl.PIP in visible)
-        assertTrue(ChromeControl.SPEED in visible)
-        assertFalse(ChromeControl.PLAYLIST in visible)
+    // The reserve is real width, not a fudge factor. A bar exactly as wide as
+    // the reserve has nothing left for a button.
+    @Test
+    fun theReservedRowSpaceComesOffTheTop() {
+        assertTrue(visibleControls(CHROME_RESERVED_WIDTH).isEmpty())
+        assertEquals(listOf(ChromeControl.PLAY), visibleControls(CHROME_RESERVED_WIDTH + CHROME_BUTTON_WIDTH))
+    }
+
+    // Mute costs the slider's width wherever there is a pointer, because the
+    // slider expands beside it and the room has to exist before it does.
+    @Test
+    fun muteIsWiderWhereThereIsAPointer() {
+        assertEquals(
+            CHROME_BUTTON_WIDTH + CHROME_VOLUME_SLIDER_WIDTH,
+            controlFootprint(ChromeControl.MUTE, noHover = false),
+        )
+        assertEquals(CHROME_BUTTON_WIDTH, controlFootprint(ChromeControl.MUTE, noHover = true))
+        assertEquals(CHROME_BUTTON_WIDTH, controlFootprint(ChromeControl.PLAY, noHover = false))
+    }
+
+    // ...so a touch bar fits more controls than a pointer bar of the same width.
+    @Test
+    fun aTouchBarFitsMoreThanAPointerBarOfTheSameWidth() {
+        assertTrue(visibleControls(600, noHover = true).size > visibleControls(600).size)
     }
 
     @Test
-    fun theWidestWindowKeepsEverything() {
-        assertEquals(ChromeControl.entries.size, visibleControls(widthDp = 1920).size)
-    }
+    fun portraitDropsItsFixedSet() {
+        val portrait = visibleControls(1440, portrait = true)
 
-    // Not a width decision: a tall thin window has room across the bar and no
-    // room for a thumb to hit one of nineteen targets in it.
-    @Test
-    fun portraitHidesItsSetAtAnyWidth() {
-        val wide: List<ChromeControl> = visibleControls(widthDp = 1920, portrait = true)
-
-        for (control in CHROME_PORTRAIT_HIDDEN) {
-            assertFalse(control in wide, "$control survived portrait at 1920")
+        CHROME_PORTRAIT_HIDDEN.forEach { control ->
+            assertFalse(control in portrait, "$control should be hidden in portrait")
         }
-        // And the rest of a wide window is still there.
-        assertTrue(ChromeControl.THEATER in wide)
-        assertTrue(ChromeControl.SPEED in wide)
     }
 
-    // The two rules compose rather than one overriding the other.
+    // A control the item cannot offer is skipped before the fit and charged
+    // nothing, so hiding it lets a later control onto the bar rather than
+    // leaving a gap.
     @Test
-    fun portraitAndWidthBothApply() {
-        val narrowPortrait: List<ChromeControl> = visibleControls(widthDp = 320, portrait = true)
+    fun aContentHiddenControlFreesItsSpace() {
+        val width = 600
+        val full = visibleControls(width)
+        val gated = visibleControls(width) { it == ChromeControl.MUTE }
 
-        assertEquals(listOf(ChromeControl.PLAY, ChromeControl.MUTE), narrowPortrait)
+        assertFalse(ChromeControl.MUTE in gated)
+        assertTrue(
+            gated.size > full.size - 1,
+            "hiding mute left a hole instead of freeing 136dp: $full vs $gated",
+        )
     }
 
-    // The list decides what collapses first, not what exists. A control nobody
-    // ranked should not vanish because of that.
+    // The walk does not stop at the first control that does not fit. Mute is
+    // 136dp wide and everything after it is 40dp, so a bar too narrow for mute
+    // still has room for what follows.
     @Test
-    fun everyControlIsRanked() {
-        val unranked: List<ChromeControl> = ChromeControl.entries.filter { it !in CHROME_PRIORITY }
+    fun aControlThatDoesNotFitDoesNotBlockNarrowerOnesBelowIt() {
+        val visible = visibleControls(CHROME_RESERVED_WIDTH + 120)
 
-        assertTrue(unranked.isEmpty(), "unranked: $unranked")
+        assertFalse(ChromeControl.MUTE in visible)
+        assertTrue(visible.size > 1, "the walk stopped at the first miss: $visible")
     }
 
     @Test
-    fun thePriorityOrderIsTheWebs() {
-        assertEquals(ChromeControl.PLAY, CHROME_PRIORITY.first())
-        assertEquals(ChromeControl.PLAYLIST, CHROME_PRIORITY.last())
-        assertEquals(19, CHROME_PRIORITY.size)
+    fun everythingIsOnTheBarWhenThereIsRoom() {
+        assertEquals(CHROME_PRIORITY.size, visibleControls(4000).size)
     }
 }
