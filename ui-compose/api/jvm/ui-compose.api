@@ -66,6 +66,22 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeAudioCom
 	public abstract fun setVolume (I)V
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChromeBreakpoint {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;I)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/Integer;
+	public final fun component3 ()I
+	public final fun copy (Ljava/lang/String;Ljava/lang/Integer;I)Ltv/nomercy/player/video/ui/chrome/ChromeBreakpoint;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeBreakpoint;Ljava/lang/String;Ljava/lang/Integer;IILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeBreakpoint;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHideAfterRank ()I
+	public final fun getMaxWidth ()Ljava/lang/Integer;
+	public final fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class tv/nomercy/player/video/ui/chrome/ChromeButtons {
 	public static final field $stable I
 	public fun <init> ()V
@@ -115,6 +131,31 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeButtons {
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeCommands : tv/nomercy/player/video/ui/chrome/ChromeAudioCommands, tv/nomercy/player/video/ui/chrome/ChromePresentationCommands, tv/nomercy/player/video/ui/chrome/ChromeTrackCommands, tv/nomercy/player/video/ui/chrome/ChromeTransportCommands {
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChromeControl : java/lang/Enum {
+	public static final field ASPECT_RATIO Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field AUDIO Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field CHAPTER_NEXT Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field CHAPTER_PREV Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field FULLSCREEN Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field MUTE Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field NEXT Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field PIP Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field PLAY Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field PLAYLIST Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field PREVIOUS Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field QUALITY Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field SEEK_BACK Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field SEEK_FORWARD Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field SETTINGS Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field SPEED Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field SUBTITLES Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field THEATER Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static final field VOLUME Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+	public static fun values ()[Ltv/nomercy/player/video/ui/chrome/ChromeControl;
+}
+
 public final class tv/nomercy/player/video/ui/chrome/ChromeController {
 	public static final field $stable I
 	public fun <init> (Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/tv/Scheduler;J)V
@@ -139,6 +180,17 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/ChromePresenta
 	public abstract fun setPip (Z)V
 	public abstract fun setRate (F)V
 	public abstract fun setTheater (Z)V
+}
+
+public final class tv/nomercy/player/video/ui/chrome/ChromeResponsiveKt {
+	public static final fun breakpointFor (I)Ltv/nomercy/player/video/ui/chrome/ChromeBreakpoint;
+	public static final fun getCHROME_BREAKPOINTS ()Ljava/util/List;
+	public static final fun getCHROME_PORTRAIT_HIDDEN ()Ljava/util/Set;
+	public static final fun getCHROME_PRIORITY ()Ljava/util/List;
+	public static final fun isControlVisible (Ltv/nomercy/player/video/ui/chrome/ChromeControl;IZ)Z
+	public static synthetic fun isControlVisible$default (Ltv/nomercy/player/video/ui/chrome/ChromeControl;IZILjava/lang/Object;)Z
+	public static final fun visibleControls (IZ)Ljava/util/List;
+	public static synthetic fun visibleControls$default (IZILjava/lang/Object;)Ljava/util/List;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeScheduler : tv/nomercy/player/video/tv/Scheduler {
