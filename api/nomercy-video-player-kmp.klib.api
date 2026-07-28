@@ -87,6 +87,50 @@ final enum class tv.nomercy.player.video.cast/WakeOutcome : kotlin/Enum<tv.nomer
     final fun values(): kotlin/Array<tv.nomercy.player.video.cast/WakeOutcome> // tv.nomercy.player.video.cast/WakeOutcome.values|values#static(){}[0]
 }
 
+final enum class tv.nomercy.player.video.input/KeyAction : kotlin/Enum<tv.nomercy.player.video.input/KeyAction> { // tv.nomercy.player.video.input/KeyAction|null[0]
+    enum entry BLUE // tv.nomercy.player.video.input/KeyAction.BLUE|null[0]
+    enum entry CYCLE_ASPECT_RATIO // tv.nomercy.player.video.input/KeyAction.CYCLE_ASPECT_RATIO|null[0]
+    enum entry CYCLE_AUDIO // tv.nomercy.player.video.input/KeyAction.CYCLE_AUDIO|null[0]
+    enum entry CYCLE_SUBTITLES // tv.nomercy.player.video.input/KeyAction.CYCLE_SUBTITLES|null[0]
+    enum entry EXIT_FULLSCREEN // tv.nomercy.player.video.input/KeyAction.EXIT_FULLSCREEN|null[0]
+    enum entry FORWARD // tv.nomercy.player.video.input/KeyAction.FORWARD|null[0]
+    enum entry GREEN // tv.nomercy.player.video.input/KeyAction.GREEN|null[0]
+    enum entry NEXT_CHAPTER // tv.nomercy.player.video.input/KeyAction.NEXT_CHAPTER|null[0]
+    enum entry NEXT_ITEM // tv.nomercy.player.video.input/KeyAction.NEXT_ITEM|null[0]
+    enum entry PAUSE // tv.nomercy.player.video.input/KeyAction.PAUSE|null[0]
+    enum entry PLAY // tv.nomercy.player.video.input/KeyAction.PLAY|null[0]
+    enum entry PLAY_PAUSE // tv.nomercy.player.video.input/KeyAction.PLAY_PAUSE|null[0]
+    enum entry PREVIOUS_CHAPTER // tv.nomercy.player.video.input/KeyAction.PREVIOUS_CHAPTER|null[0]
+    enum entry PREVIOUS_ITEM // tv.nomercy.player.video.input/KeyAction.PREVIOUS_ITEM|null[0]
+    enum entry RED // tv.nomercy.player.video.input/KeyAction.RED|null[0]
+    enum entry REWIND // tv.nomercy.player.video.input/KeyAction.REWIND|null[0]
+    enum entry SEEK_BACK_10 // tv.nomercy.player.video.input/KeyAction.SEEK_BACK_10|null[0]
+    enum entry SEEK_BACK_3 // tv.nomercy.player.video.input/KeyAction.SEEK_BACK_3|null[0]
+    enum entry SEEK_BACK_60 // tv.nomercy.player.video.input/KeyAction.SEEK_BACK_60|null[0]
+    enum entry SEEK_FORWARD_10 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_10|null[0]
+    enum entry SEEK_FORWARD_3 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_3|null[0]
+    enum entry SEEK_FORWARD_60 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_60|null[0]
+    enum entry SPEED_DOWN // tv.nomercy.player.video.input/KeyAction.SPEED_DOWN|null[0]
+    enum entry SPEED_RESET // tv.nomercy.player.video.input/KeyAction.SPEED_RESET|null[0]
+    enum entry SPEED_UP // tv.nomercy.player.video.input/KeyAction.SPEED_UP|null[0]
+    enum entry STOP // tv.nomercy.player.video.input/KeyAction.STOP|null[0]
+    enum entry TOGGLE_FULLSCREEN // tv.nomercy.player.video.input/KeyAction.TOGGLE_FULLSCREEN|null[0]
+    enum entry TOGGLE_MUTE // tv.nomercy.player.video.input/KeyAction.TOGGLE_MUTE|null[0]
+    enum entry TOGGLE_PIP // tv.nomercy.player.video.input/KeyAction.TOGGLE_PIP|null[0]
+    enum entry TOGGLE_SETTINGS // tv.nomercy.player.video.input/KeyAction.TOGGLE_SETTINGS|null[0]
+    enum entry TOGGLE_SHORTCUTS // tv.nomercy.player.video.input/KeyAction.TOGGLE_SHORTCUTS|null[0]
+    enum entry TOGGLE_THEATER // tv.nomercy.player.video.input/KeyAction.TOGGLE_THEATER|null[0]
+    enum entry VOLUME_DOWN // tv.nomercy.player.video.input/KeyAction.VOLUME_DOWN|null[0]
+    enum entry VOLUME_UP // tv.nomercy.player.video.input/KeyAction.VOLUME_UP|null[0]
+    enum entry YELLOW // tv.nomercy.player.video.input/KeyAction.YELLOW|null[0]
+
+    final val entries // tv.nomercy.player.video.input/KeyAction.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.input/KeyAction> // tv.nomercy.player.video.input/KeyAction.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video.input/KeyAction // tv.nomercy.player.video.input/KeyAction.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video.input/KeyAction> // tv.nomercy.player.video.input/KeyAction.values|values#static(){}[0]
+}
+
 final enum class tv.nomercy.player.video.tv/TvDialog : kotlin/Enum<tv.nomercy.player.video.tv/TvDialog> { // tv.nomercy.player.video.tv/TvDialog|null[0]
     enum entry Episodes // tv.nomercy.player.video.tv/TvDialog.Episodes|null[0]
     enum entry Language // tv.nomercy.player.video.tv/TvDialog.Language|null[0]
@@ -607,6 +651,22 @@ final class tv.nomercy.player.video.input/TvPlaybackSummary { // tv.nomercy.play
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.input/TvPlaybackSummary.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video.input/TvPlaybackSummary.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video.input/TvPlaybackSummary.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.input/WebKeyBinding { // tv.nomercy.player.video.input/WebKeyBinding|null[0]
+    constructor <init>(kotlin/String, tv.nomercy.player.video.input/KeyAction) // tv.nomercy.player.video.input/WebKeyBinding.<init>|<init>(kotlin.String;tv.nomercy.player.video.input.KeyAction){}[0]
+
+    final val action // tv.nomercy.player.video.input/WebKeyBinding.action|{}action[0]
+        final fun <get-action>(): tv.nomercy.player.video.input/KeyAction // tv.nomercy.player.video.input/WebKeyBinding.action.<get-action>|<get-action>(){}[0]
+    final val combo // tv.nomercy.player.video.input/WebKeyBinding.combo|{}combo[0]
+        final fun <get-combo>(): kotlin/String // tv.nomercy.player.video.input/WebKeyBinding.combo.<get-combo>|<get-combo>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.input/WebKeyBinding.component1|component1(){}[0]
+    final fun component2(): tv.nomercy.player.video.input/KeyAction // tv.nomercy.player.video.input/WebKeyBinding.component2|component2(){}[0]
+    final fun copy(kotlin/String = ..., tv.nomercy.player.video.input/KeyAction = ...): tv.nomercy.player.video.input/WebKeyBinding // tv.nomercy.player.video.input/WebKeyBinding.copy|copy(kotlin.String;tv.nomercy.player.video.input.KeyAction){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.input/WebKeyBinding.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.input/WebKeyBinding.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.input/WebKeyBinding.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video.tv/EpisodeLabels { // tv.nomercy.player.video.tv/EpisodeLabels|null[0]
@@ -1253,6 +1313,11 @@ final const val tv.nomercy.player.video.cast/CAST_SOURCE // tv.nomercy.player.vi
     final fun <get-CAST_SOURCE>(): kotlin/String // tv.nomercy.player.video.cast/CAST_SOURCE.<get-CAST_SOURCE>|<get-CAST_SOURCE>(){}[0]
 final const val tv.nomercy.player.video.cast/DEFAULT_TV_PORT // tv.nomercy.player.video.cast/DEFAULT_TV_PORT|{}DEFAULT_TV_PORT[0]
     final fun <get-DEFAULT_TV_PORT>(): kotlin/Int // tv.nomercy.player.video.cast/DEFAULT_TV_PORT.<get-DEFAULT_TV_PORT>|<get-DEFAULT_TV_PORT>(){}[0]
+
+final val tv.nomercy.player.video.input/WEB_KEY_BINDINGS // tv.nomercy.player.video.input/WEB_KEY_BINDINGS|{}WEB_KEY_BINDINGS[0]
+    final fun <get-WEB_KEY_BINDINGS>(): kotlin.collections/List<tv.nomercy.player.video.input/WebKeyBinding> // tv.nomercy.player.video.input/WEB_KEY_BINDINGS.<get-WEB_KEY_BINDINGS>|<get-WEB_KEY_BINDINGS>(){}[0]
+final val tv.nomercy.player.video.input/WEB_KEY_COMBOS // tv.nomercy.player.video.input/WEB_KEY_COMBOS|{}WEB_KEY_COMBOS[0]
+    final fun <get-WEB_KEY_COMBOS>(): kotlin.collections/Set<kotlin/String> // tv.nomercy.player.video.input/WEB_KEY_COMBOS.<get-WEB_KEY_COMBOS>|<get-WEB_KEY_COMBOS>(){}[0]
 
 final fun tv.nomercy.player.video.cast/decodeRemoteEvent(kotlin/String, kotlin/String, kotlinx.serialization.json/Json): tv.nomercy.player.video.cast/RemoteEvent? // tv.nomercy.player.video.cast/decodeRemoteEvent|decodeRemoteEvent(kotlin.String;kotlin.String;kotlinx.serialization.json.Json){}[0]
 final fun tv.nomercy.player.video.cast/defaultCastHttpClient(): io.ktor.client/HttpClient // tv.nomercy.player.video.cast/defaultCastHttpClient|defaultCastHttpClient(){}[0]

@@ -744,6 +744,47 @@ public final class tv/nomercy/player/video/chapters/ChapterMarkerMathKt {
 	public static final fun chapterMarkers (Ljava/util/List;D)Ljava/util/List;
 }
 
+public final class tv/nomercy/player/video/input/KeyAction : java/lang/Enum {
+	public static final field BLUE Ltv/nomercy/player/video/input/KeyAction;
+	public static final field CYCLE_ASPECT_RATIO Ltv/nomercy/player/video/input/KeyAction;
+	public static final field CYCLE_AUDIO Ltv/nomercy/player/video/input/KeyAction;
+	public static final field CYCLE_SUBTITLES Ltv/nomercy/player/video/input/KeyAction;
+	public static final field EXIT_FULLSCREEN Ltv/nomercy/player/video/input/KeyAction;
+	public static final field FORWARD Ltv/nomercy/player/video/input/KeyAction;
+	public static final field GREEN Ltv/nomercy/player/video/input/KeyAction;
+	public static final field NEXT_CHAPTER Ltv/nomercy/player/video/input/KeyAction;
+	public static final field NEXT_ITEM Ltv/nomercy/player/video/input/KeyAction;
+	public static final field PAUSE Ltv/nomercy/player/video/input/KeyAction;
+	public static final field PLAY Ltv/nomercy/player/video/input/KeyAction;
+	public static final field PLAY_PAUSE Ltv/nomercy/player/video/input/KeyAction;
+	public static final field PREVIOUS_CHAPTER Ltv/nomercy/player/video/input/KeyAction;
+	public static final field PREVIOUS_ITEM Ltv/nomercy/player/video/input/KeyAction;
+	public static final field RED Ltv/nomercy/player/video/input/KeyAction;
+	public static final field REWIND Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_BACK_10 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_BACK_3 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_BACK_60 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_FORWARD_10 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_FORWARD_3 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_FORWARD_60 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SPEED_DOWN Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SPEED_RESET Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SPEED_UP Ltv/nomercy/player/video/input/KeyAction;
+	public static final field STOP Ltv/nomercy/player/video/input/KeyAction;
+	public static final field TOGGLE_FULLSCREEN Ltv/nomercy/player/video/input/KeyAction;
+	public static final field TOGGLE_MUTE Ltv/nomercy/player/video/input/KeyAction;
+	public static final field TOGGLE_PIP Ltv/nomercy/player/video/input/KeyAction;
+	public static final field TOGGLE_SETTINGS Ltv/nomercy/player/video/input/KeyAction;
+	public static final field TOGGLE_SHORTCUTS Ltv/nomercy/player/video/input/KeyAction;
+	public static final field TOGGLE_THEATER Ltv/nomercy/player/video/input/KeyAction;
+	public static final field VOLUME_DOWN Ltv/nomercy/player/video/input/KeyAction;
+	public static final field VOLUME_UP Ltv/nomercy/player/video/input/KeyAction;
+	public static final field YELLOW Ltv/nomercy/player/video/input/KeyAction;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/input/KeyAction;
+	public static fun values ()[Ltv/nomercy/player/video/input/KeyAction;
+}
+
 public final class tv/nomercy/player/video/input/PlayerCommands {
 	public fun <init> (Ltv/nomercy/player/video/input/VideoTransport;Ltv/nomercy/player/video/input/VideoPresentation;Ltv/nomercy/player/video/input/VideoVolume;Ltv/nomercy/player/video/input/VideoState;)V
 	public final fun getPresentation ()Ltv/nomercy/player/video/input/VideoPresentation;
@@ -898,6 +939,24 @@ public abstract interface class tv/nomercy/player/video/input/VideoVolume {
 	public abstract fun toggleMute ()V
 	public abstract fun volumeDown ()V
 	public abstract fun volumeUp ()V
+}
+
+public final class tv/nomercy/player/video/input/WebKeyBinding {
+	public fun <init> (Ljava/lang/String;Ltv/nomercy/player/video/input/KeyAction;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ltv/nomercy/player/video/input/KeyAction;
+	public final fun copy (Ljava/lang/String;Ltv/nomercy/player/video/input/KeyAction;)Ltv/nomercy/player/video/input/WebKeyBinding;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/WebKeyBinding;Ljava/lang/String;Ltv/nomercy/player/video/input/KeyAction;ILjava/lang/Object;)Ltv/nomercy/player/video/input/WebKeyBinding;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAction ()Ltv/nomercy/player/video/input/KeyAction;
+	public final fun getCombo ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/input/WebKeyBindingsKt {
+	public static final fun getWEB_KEY_BINDINGS ()Ljava/util/List;
+	public static final fun getWEB_KEY_COMBOS ()Ljava/util/Set;
 }
 
 public final class tv/nomercy/player/video/subtitles/AssFontNames {
