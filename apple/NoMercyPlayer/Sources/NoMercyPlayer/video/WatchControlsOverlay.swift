@@ -147,8 +147,11 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
             .font(.caption)
             .foregroundColor(tint)
 
-            // Play, then subtitles, then audio, then quality — the order the
-            // web's builder appends them in, not the order they were thought of.
+            // The web's order, from its own builder: play, previous, the chapter
+            // jumps, next, volume, then the menus. Not the order they were
+            // thought of, and not four of eighteen — every one this protocol can
+            // drive is here, each gated on the same question the browser asks.
+            //
             // Audio wears the globe rather than a waveform because that is the
             // glyph the browser's audio button carries.
             HStack(spacing: 24) {
@@ -157,6 +160,40 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
                 }
                 .accessibilityLabel(model.transport.label)
                 .accessibilityIdentifier("nmPlayPause")
+
+                // Dimmed and unpressable at the ends of a playlist rather than
+                // removed. The web disables rather than hides, and the
+                // difference is not cosmetic: a control that vanishes on the
+                // first item and returns on the second reflows the whole bar,
+                // so every other control moves under the finger reaching for one.
+                Button(action: player.previous) {
+                    PlayerGlyph(FluentIcons.previous)
+                }
+                .disabled(!player.hasPrevious)
+                .accessibilityLabel(strings.previous)
+
+                if !player.chapters.isEmpty {
+                    Button(action: player.chapterBack) {
+                        PlayerGlyph(FluentIcons.chapterBack)
+                    }
+                    .accessibilityLabel(strings.chapterBack)
+
+                    Button(action: player.chapterForward) {
+                        PlayerGlyph(FluentIcons.chapterForward)
+                    }
+                    .accessibilityLabel(strings.chapterForward)
+                }
+
+                Button(action: player.next) {
+                    PlayerGlyph(FluentIcons.next)
+                }
+                .disabled(!player.hasNext)
+                .accessibilityLabel(strings.next)
+
+                Button { player.setMuted(!player.isMuted) } label: {
+                    PlayerGlyph(model.volumeIcon)
+                }
+                .accessibilityLabel(strings.mute)
 
                 if model.offersSubtitleMenu {
                     Button {
@@ -184,6 +221,13 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
                     }
                     .accessibilityLabel(strings.quality)
                 }
+
+                // Last on the row, as it is in the browser, and drawing the exit
+                // glyph while fullscreen rather than the same one both ways.
+                Button { player.setFullscreen(!player.isFullscreen) } label: {
+                    PlayerGlyph(player.isFullscreen ? FluentIcons.exitFullscreen : FluentIcons.fullscreen)
+                }
+                .accessibilityLabel(player.isFullscreen ? strings.exitFullscreen : strings.fullscreen)
             }
             .foregroundColor(tint)
         }

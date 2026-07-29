@@ -93,6 +93,23 @@ public protocol VideoChromePlayer: ObservableObject {
     /// Nil is off, which is a row in the menu rather than an absence.
     var selectedSubtitleID: String? { get }
 
+    /// What the transport row needs beyond play and pause.
+    ///
+    /// The bar drew four controls where the browser draws eighteen, and the
+    /// reason was here rather than in the view: there was nothing to call. A
+    /// chrome cannot offer a next-episode button to a protocol with no next.
+    ///
+    /// Defaulted in the extension below so an existing conformer keeps
+    /// compiling and reports honestly — a build with no playlist says it has no
+    /// next item, and the button is absent rather than dead.
+    var hasNext: Bool { get }
+    var hasPrevious: Bool { get }
+    var chapters: [ChapterMark] { get }
+
+    var volume: Double { get }
+    var isMuted: Bool { get }
+    var isFullscreen: Bool { get }
+
     var error: PlayerChromeError? { get }
 
     /// The layer host's surface. Non-optional because the backend always owns
@@ -108,4 +125,92 @@ public protocol VideoChromePlayer: ObservableObject {
     func selectQuality(_ option: QualityOption?)
     func selectAudio(_ option: TrackOption)
     func selectSubtitle(_ option: TrackOption?)
+
+    func next()
+    func previous()
+
+    /// Jump to the chapter boundary either side of where the film is.
+    ///
+    /// Separate from `seek(to:)` because the chrome does not know where the
+    /// boundaries are until it has the marks, and asking it to work them out
+    /// puts the same arithmetic in every chrome that draws the buttons.
+    func chapterBack()
+    func chapterForward()
+
+    func setVolume(_ percent: Double)
+    func setMuted(_ muted: Bool)
+    func setFullscreen(_ fullscreen: Bool)
 }
+
+/// A chapter boundary, as the bar and the preview bubble read it.
+///
+/// The same two fields Compose's `TvChapter` carries and the same nullable
+/// title, because a source that gives a boundary without a name is normal and a
+/// chrome that required one would drop the boundary with it.
+public struct ChapterMark: Equatable, Sendable {
+    public let startSeconds: Double
+    public let title: String?
+
+    public init(startSeconds: Double, title: String? = nil) {
+        self.startSeconds = startSeconds
+        self.title = title
+    }
+}
+
+/// What a build that has not wired these yet honestly reports.
+///
+/// Defaults rather than requirements so adding them breaks nobody, and each one
+/// is the answer that makes its control disappear rather than the answer that
+/// makes it appear and do nothing. A button somebody presses to find out it is
+/// dead is worse than a button that was never offered.
+public extension VideoChromePlayer {
+    var hasNext: Bool { false }
+    var hasPrevious: Bool { false }
+    var chapters: [ChapterMark] { [] }
+
+    /// A percentage, as it is everywhere else in the ecosystem. Full by default:/n    /// a build that has not wired volume is not a silent one.
+    var volume: Double { 100 }
+    var isMuted: Bool { false }
+    var isFullscreen: Bool { false }
+
+    func next() {}
+    func previous() {}
+
+    /// The boundary before the one the film is in, or the start of the film.
+    ///
+    /// A back press part-way through a chapter goes to the top of that chapter,
+    /// not the one before it — the same rule the web uses and the one every
+    /// music player taught people to expect. Within the grace of a boundary it
+    /// steps to the previous one instead, or a viewer pressing back twice in a
+    /// row never leaves the chapter they are in. Falls back to the start of the
+    /// film when there is no earlier boundary, as `previousChapter` does.
+    func chapterBack() {
+        let marks = chapters.map(\.startSeconds).sorted()
+        let target = marks.last { $0 < currentTime - chapterGrace } ?? 0
+        seek(to: target)
+    }
+
+    /// Nothing when already past the last boundary, which is `nextChapter`'s
+    /// no-op rather than a seek to the end of the film.
+    ///
+    /// The grace applies on this side too. It is not symmetry for its own sake:
+    /// without it, a forward press landing exactly on a boundary picks that same
+    /// boundary and the film does not move.
+    func chapterForward() {
+        let marks = chapters.map(\.startSeconds).sorted()
+        guard let target = marks.first(where: { $0 > currentTime + chapterGrace }) else { return }
+        seek(to: target)
+    }
+
+    func setVolume(_ percent: Double) {}
+    func setMuted(_ muted: Bool) {}
+    func setFullscreen(_ fullscreen: Bool) {}
+}
+
+/// How close to a boundary still counts as being on it, in seconds.
+///
+/// One, which is what desktop-ui/helpers/chapters.ts uses on both sides —
+/// `start < currentTime - 1` going back and `start > currentTime + 1` going
+/// forward. Read off that file rather than picked: a different figure here
+/// would make the same press land somewhere else than it does in a browser.
+private let chapterGrace: Double = 1

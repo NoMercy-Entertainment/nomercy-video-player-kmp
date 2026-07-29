@@ -33,6 +33,15 @@ final class FakeVideoChromePlayer: VideoChromePlayer {
     @Published private(set) var subtitleOptions: [TrackOption] = []
     @Published private(set) var selectedSubtitleID: String?
 
+    // Settable from a test, unlike the rest: the chapter jumps are default
+    // implementations on the protocol, so what is being exercised is arithmetic
+    // over these marks and the position, and both have to be arrangeable.
+    var chapters: [ChapterMark] = []
+
+    func placeAt(_ seconds: Double) {
+        currentTime = seconds
+    }
+
     @Published private(set) var error: PlayerChromeError?
 
     let avPlayer = AVPlayer()

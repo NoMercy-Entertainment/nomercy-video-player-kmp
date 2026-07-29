@@ -36,6 +36,17 @@ public struct VideoChromeStrings: Sendable {
     public var quality: String = "Quality"
     public var close: String = "Close"
 
+    // The rest of the transport row's labels, in the browser's wording from
+    // desktop-ui/i18n/en.ts. "Previous chapter" rather than "Back a chapter"
+    // because that is what a viewer of the web player has already read.
+    public var previous: String = "Previous"
+    public var next: String = "Next"
+    public var chapterBack: String = "Previous chapter"
+    public var chapterForward: String = "Next chapter"
+    public var mute: String = "Mute / Unmute"
+    public var fullscreen: String = "Fullscreen"
+    public var exitFullscreen: String = "Exit fullscreen"
+
     public init() {}
 }
 
@@ -59,6 +70,21 @@ public struct ControlsOverlayModel<Player: VideoChromePlayer> {
         player.isPlaying
             ? TransportGlyph(icon: FluentIcons.pause, label: strings.pause)
             : TransportGlyph(icon: FluentIcons.play, label: strings.play)
+    }
+
+    /// The speaker, at the level it is actually at.
+    ///
+    /// Four glyphs rather than two, as the browser has: muted, and then low,
+    /// medium or high. A bar that only knew loud from silent told a viewer
+    /// nothing about where the slider they just moved had landed.
+    public var volumeIcon: FluentIcon {
+        if player.isMuted || player.volume <= 0 { return FluentIcons.volumeMuted }
+        if player.volume < volumeLowCeiling { return FluentIcons.volumeLow }
+        // At or below, as the web's medium arm is. A strict comparison puts the
+        // speaker one glyph higher at exactly sixty, which is where a slider
+        // dragged to a round number lands.
+        if player.volume <= volumeMediumCeiling { return FluentIcons.volumeMedium }
+        return FluentIcons.volumeHigh
     }
 
     public var elapsed: String { formatTime(player.currentTime) }
@@ -101,3 +127,11 @@ public func formatTime(_ seconds: Double) -> String {
     }
     return String(format: "%d:%02d", minutes, remainder)
 }
+
+/// Where the speaker changes shape, on the browser's own scale.
+///
+/// `desktop-ui/helpers/buttonState.ts`: `volume < 30` is low and `volume <= 60`
+/// is medium. Volume is a percentage across the whole ecosystem, so these are
+/// thirty and sixty rather than fractions.
+private let volumeLowCeiling: Double = 30
+private let volumeMediumCeiling: Double = 60

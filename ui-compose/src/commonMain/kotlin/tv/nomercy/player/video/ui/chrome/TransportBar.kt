@@ -238,7 +238,10 @@ private fun VolumeCluster(
     val icon: ImageVector = when {
         state.muted || state.volume == 0 -> FluentIcons.VolumeMuted
         state.volume < VOLUME_LOW -> FluentIcons.VolumeLow
-        state.volume < VOLUME_HIGH -> FluentIcons.VolumeMedium
+        // At or below, not below. The web's medium arm is `volume <= 60`, and a
+        // strict comparison here put the speaker one glyph higher at exactly
+        // sixty — the value a slider dragged to a round number lands on.
+        state.volume <= VOLUME_MEDIUM -> FluentIcons.VolumeMedium
         else -> FluentIcons.VolumeHigh
     }
 
@@ -487,5 +490,8 @@ private val DIVIDER_MIN_WIDTH = 16.dp
 // The web's own step, and the number its tooltip says out loud.
 private const val SEEK_STEP_SECONDS = 10f
 
-private const val VOLUME_LOW = 33
-private const val VOLUME_HIGH = 66
+// desktop-ui/helpers/buttonState.ts: `volume < 30` is low and `volume <= 60` is
+// medium. These were 33 and 66, which is the same idea and not the same
+// picture: a volume of 62 drew medium here and high in a browser.
+private const val VOLUME_LOW = 30
+private const val VOLUME_MEDIUM = 60
