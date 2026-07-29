@@ -193,6 +193,18 @@ public fun visibleControls(
     noHover: Boolean = false,
     contentHidden: (ChromeControl) -> Boolean = { false },
     enabled: (ChromeControl) -> Boolean = { it in CHROME_DEFAULT_ON },
+    /**
+     * The order controls are dropped in, which the web takes as an option.
+     *
+     * `buttonPriority` on DesktopUiOptions, and his own site passes one: it
+     * raises `chapterNext` and `next` above the menus so a phone viewer can skip
+     * an intro or jump an episode one-handed. This was CHROME_PRIORITY and
+     * nothing else, so that configuration could not be expressed at all — the
+     * library had the mechanism and no way in.
+     */
+    priority: List<ChromeControl> = CHROME_PRIORITY,
+    /** `portraitHidden`. His site replaces this set outright. */
+    portraitHidden: Set<ChromeControl> = CHROME_PORTRAIT_HIDDEN,
 ): List<ChromeControl> {
     // The time labels, the divider and the bar's padding are not buttons and
     // are not in the priority list, but they take room on the same row.
@@ -201,11 +213,11 @@ public fun visibleControls(
     var accumulated = 0
     val visible = mutableListOf<ChromeControl>()
 
-    for (control in CHROME_PRIORITY) {
+    for (control in priority) {
         // Both reasons are "this control is not on the bar at all", and
         // neither charges any width — which is the part that matters: a
         // control that is not drawn must not push a later one off the end.
-        if (isAbsent(control, portrait, contentHidden, enabled)) continue
+        if (isAbsent(control, portraitHidden.takeIf { portrait }, contentHidden, enabled)) continue
 
         val footprint: Int = controlFootprint(control, noHover)
 
@@ -223,15 +235,18 @@ public fun visibleControls(
 
 // Rule 2 (the item cannot offer it) and rule 3 (portrait), which the web
 // checks in different places and which mean the same thing to the bar.
+// Null when the bar is not portrait, which is the same statement as "no control
+// is hidden for orientation" and one parameter fewer than carrying a flag beside
+// the set it selects.
 private fun isAbsent(
     control: ChromeControl,
-    portrait: Boolean,
+    portraitHidden: Set<ChromeControl>?,
     contentHidden: (ChromeControl) -> Boolean,
     enabled: (ChromeControl) -> Boolean,
 ): Boolean {
     if (!enabled(control)) return true
     if (contentHidden(control)) return true
-    return portrait && control in CHROME_PORTRAIT_HIDDEN
+    return control in (portraitHidden ?: emptySet())
 }
 
 /**

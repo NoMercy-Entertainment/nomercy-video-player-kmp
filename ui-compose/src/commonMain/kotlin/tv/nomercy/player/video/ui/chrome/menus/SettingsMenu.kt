@@ -8,8 +8,6 @@
 
 package tv.nomercy.player.video.ui.chrome.menus
 
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -111,13 +109,19 @@ public fun SettingsMenu(
     // The frame is inset on three sides and `margin-top: auto` pushes the card to
     // the bottom of it, which is what puts the panel above the settings button
     // rather than over the film. 52px of bottom inset is the bar's own height.
+    // fillMaxWidth, not fillMaxSize.
+    //
+    // fillMaxSize under an unbounded height throws outright, and an unbounded
+    // height is any parent that scrolls and every test harness. The card's
+    // vertical place comes from the caller's own alignment; all this needs is the
+    // width to right-align within and the insets to sit inside.
     BoxWithConstraints(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .padding(top = FRAME_INSET, end = FRAME_INSET, bottom = FRAME_BOTTOM_INSET),
         contentAlignment = Alignment.BottomEnd,
     ) {
-        SettingsPanel(maxHeight, strings, menu, onMenuChange) {
+        SettingsPanel(maxHeight, MenuHeaderSpec(strings, menu, onMenuChange)) {
             when (menu) {
                 MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
                 MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
@@ -134,6 +138,17 @@ public fun SettingsMenu(
     }
 }
 
+// What the header needs, as one value.
+//
+// Three parameters that only ever travel together, and splitting them made the
+// panel take five — which is a threshold telling the truth: the panel's job is
+// the card, and the header's identity is one thing.
+internal data class MenuHeaderSpec(
+    val strings: MenuStrings,
+    val menu: MenuState,
+    val onMenuChange: (MenuState) -> Unit,
+)
+
 /**
  * The card itself, and the header the port did not have.
  *
@@ -149,11 +164,18 @@ public fun SettingsMenu(
 @Composable
 private fun SettingsPanel(
     room: Dp,
-    strings: MenuStrings,
-    menu: MenuState,
-    onMenuChange: (MenuState) -> Unit,
+    header: MenuHeaderSpec,
     rows: @Composable ColumnScope.() -> Unit,
 ) {
+    // Whether there is a height to take a share of at all.
+    //
+    // A chrome measured with unbounded height — any test harness, any parent that
+    // scrolls — makes `room * 0.6` infinite, and an infinite ceiling is no
+    // ceiling. Both the cap and the scroller are gated on this: a vertical
+    // scroller measured with infinity does not degrade, it throws, and the whole
+    // menu goes with it.
+    val bounded: Boolean = room.value.isFinite()
+
     Column(
         modifier = Modifier
             // A fixed width, not a minimum.
@@ -168,93 +190,35 @@ private fun SettingsPanel(
             //
             // fillMaxHeight(0.6f) made the card 60% tall always, so two rows sat
             // in a panel with a third of a player of empty space under them.
-            .heightIn(max = room * PANEL_MAX_HEIGHT_SHARE)
+            //
+            // Only when there is a height to take a share OF. A chrome measured
+            // with unbounded height — which is any test harness, and any parent
+            // that scrolls — makes `room * 0.6` infinite, and an infinite ceiling
+            // is no ceiling: the scrolling rows below then refuse to measure at
+            // all and the whole menu throws. Unbounded means the card wraps its
+            // rows, which is what `height: auto` does when nothing constrains it.
+            .then(if (bounded) Modifier.heightIn(max = room * PANEL_MAX_HEIGHT_SHARE) else Modifier)
             .clip(RoundedCornerShape(PANEL_RADIUS))
             .background(PANEL_BACKGROUND)
             .testTag(SETTINGS_MENU_TAG),
         verticalArrangement = Arrangement.spacedBy(PANEL_GAP),
     ) {
-        MenuHeader(strings.titleFor(menu), menu, onMenuChange)
+        MenuHeader(header.strings, header.menu, header.onMenuChange)
 
-        // The rows scroll; the header does not.
+        // No scroller here, and that is not a shortcut.
         //
-        // `overflow: hidden` on the card is what keeps the rounded corners, and it
-        // is also what silently CUT the list: the main menu has seven rows and
-        // only the two that fitted were drawn, with no indication the rest
-        // existed. On the web the pane scrolls inside the same clipped card, which
-        // is the only way a forty-episode playlist is reachable at all.
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .testTag(MENU_ROWS_TAG),
-            verticalArrangement = Arrangement.spacedBy(PANEL_GAP),
-        ) {
-            rows()
-        }
+        // Several panes are LazyColumns already — the subtitle list, the episode
+        // rail — and a LazyColumn inside a Column(verticalScroll) is the nested
+        // scroll Compose refuses outright. Wrapping the rows took the whole menu
+        // down with it.
+        //
+        // So the card carries the ceiling and each pane scrolls its own list,
+        // which is also the web's shape: `max-height: 60vh` with `overflow:
+        // hidden` on `.main-menu`, and the list inside doing the scrolling.
+        rows()
     }
 }
 
-// The pane's name, a hairline, and the way out.
-//
-// Back where there is somewhere to go back to, close where there is not: the main
-// list's cross dismisses the menu and a pane's arrow returns to the main list,
-// which is the web's behaviour and the reason a viewer can get out of the
-// subtitle settings without losing the settings menu.
-@Composable
-private fun MenuHeader(title: String, menu: MenuState, onMenuChange: (MenuState) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = HEADER_MIN_HEIGHT)
-            .padding(HEADER_PADDING)
-            .testTag(MENU_HEADER_TAG),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(PANEL_GAP),
-    ) {
-        if (menu != MenuState.Main) {
-            PlayerIconButton(
-                icon = FluentIcons.Back,
-                description = title,
-                onClick = { onMenuChange(MenuState.Main) },
-                buttonSize = HEADER_BUTTON,
-                iconSize = HEADER_ICON,
-                modifier = Modifier.testTag(MENU_BACK_TAG),
-            )
-        }
-
-        BasicText(
-            text = title,
-            style = TextStyle(color = Color.White, fontSize = HEADER_SIZE, fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.weight(1f),
-        )
-
-        PlayerIconButton(
-            icon = FluentIcons.Close,
-            description = title,
-            onClick = { onMenuChange(MenuState.Hidden) },
-            buttonSize = HEADER_BUTTON,
-            iconSize = HEADER_ICON,
-            modifier = Modifier.testTag(MENU_CLOSE_TAG),
-        )
-    }
-
-    // `border-bottom: 1px solid rgba(209, 213, 219, 0.2)`.
-    Box(modifier = Modifier.fillMaxWidth().height(HEADER_RULE).background(HEADER_RULE_COLOR))
-}
-
-// Which pane a viewer is looking at. The web writes the name into the header, and
-// a panel whose header always said "Settings" would be lying three panes deep.
-private fun MenuStrings.titleFor(menu: MenuState): String = when (menu) {
-    MenuState.Quality -> quality
-    MenuState.Audio -> audio
-    MenuState.Subtitle -> subtitles
-    MenuState.Speed -> speed
-    MenuState.Playlist -> playlist
-    MenuState.AspectRatio -> aspectRatio
-    MenuState.SubtitleSettings -> subtitleSettings
-    MenuState.AutoSkip -> autoSkipChapters
-    MenuState.Main, MenuState.Hidden -> settings
-}
 
 // The episode list, flat or with a seasons rail.
 //
@@ -446,6 +410,8 @@ public fun menuStrings(locale: String): MenuStrings {
         aspectCrop = menu("crop"),
         aspectNative = menu("native"),
         settings = menu("settings"),
+        back = menu("back"),
+        close = ChromeTranslations.get(locale, "plugin.desktop-ui.tooltip.close"),
         subtitleSettings = menu("subtitleSettings"),
         subtitleFont = menu("subtitle.font"),
         subtitleTextSize = menu("subtitle.textSize"),
@@ -489,6 +455,12 @@ public data class MenuStrings(
     // The card's own header, which the port had no field for because it had no
     // header. `plugin.desktop-ui.menu.settings` carries it in all 79 locales.
     val settings: String = "Settings",
+
+    // The header's two buttons, which were described with the PANE'S name — so a
+    // screen reader announced "Subtitles" for a close button, and the subtitle
+    // control on the bar and the close cross became the same node to a query.
+    val back: String = "Back",
+    val close: String = "Close",
 
     val subtitleSettings: String = "Subtitle settings",
     val subtitleFont: String = "Font",
@@ -567,21 +539,11 @@ private val PANEL_WIDTH = 256.dp
 private const val PANEL_MAX_HEIGHT_SHARE = 0.6f
 
 private val PANEL_RADIUS = 8.dp
-private val PANEL_GAP = 4.dp
 
 // `rgba(20, 20, 25, 0.95)`.
 private val PANEL_BACKGROUND = Color(red = 20, green = 20, blue = 25, alpha = 242)
 
-// `min-height: 2.5rem`, `padding: 6px`.
-private val HEADER_MIN_HEIGHT = 40.dp
-private val HEADER_PADDING = 6.dp
-private val HEADER_SIZE = 13.sp
-private val HEADER_BUTTON = 28.dp
-private val HEADER_ICON = 16.dp
 
-// `border-bottom: 1px solid rgba(209, 213, 219, 0.2)`.
-private val HEADER_RULE = 1.dp
-private val HEADER_RULE_COLOR = Color(red = 209, green = 213, blue = 219, alpha = 51)
 
 // The playlist rails and their rows, tagged so a test can assert which layout
 // was drawn rather than counting children.

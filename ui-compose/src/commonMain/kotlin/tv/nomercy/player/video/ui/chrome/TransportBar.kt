@@ -55,16 +55,22 @@ public fun TransportBar(
     strings: TvChromeStrings,
     modifier: Modifier = Modifier,
     buttons: ChromeButtons = ChromeButtons(),
+    /** `buttonPriority` — which control goes first when the row runs out of room. */
+    priority: List<ChromeControl> = CHROME_PRIORITY,
+    /** `portraitHidden` — dropped at any width in portrait. */
+    portraitHidden: Set<ChromeControl> = CHROME_PORTRAIT_HIDDEN,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val widthDp: Int = boundedWidthDp(maxWidth)
         val metrics: BarMetrics = remember(widthDp) { barMetricsFor(widthDp) }
 
-        val fits: Set<ChromeControl> = remember(maxWidth, buttons, state) {
+        val fits: Set<ChromeControl> = remember(maxWidth, buttons, state, priority) {
             visibleControls(
                 widthDp = widthDp,
                 contentHidden = { state.lacksContentFor(it) },
                 enabled = { buttons.allows(it) },
+                priority = priority,
+                portraitHidden = portraitHidden,
             ).toSet()
         }
 

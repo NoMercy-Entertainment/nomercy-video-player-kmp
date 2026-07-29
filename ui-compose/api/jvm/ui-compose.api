@@ -356,6 +356,24 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeGestures {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChromeLayout {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Ljava/util/List;Ljava/util/Set;Z)V
+	public synthetic fun <init> (Ljava/util/List;Ljava/util/Set;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()Ljava/util/Set;
+	public final fun component3 ()Z
+	public final fun copy (Ljava/util/List;Ljava/util/Set;Z)Ltv/nomercy/player/video/ui/chrome/ChromeLayout;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeLayout;Ljava/util/List;Ljava/util/Set;ZILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeLayout;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHideTitle ()Z
+	public final fun getPortraitHidden ()Ljava/util/Set;
+	public final fun getPriority ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class tv/nomercy/player/video/ui/chrome/ChromeLocaleKt {
 	public static final fun rememberChromeLocale (Landroidx/compose/runtime/Composer;I)Ljava/lang/String;
 	public static final fun rememberChromeStrings (Ljava/lang/String;Landroidx/compose/runtime/Composer;II)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
@@ -385,8 +403,8 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeResponsiveKt {
 	public static final fun getCHROME_PRIORITY ()Ljava/util/List;
 	public static final fun isControlVisible (Ltv/nomercy/player/video/ui/chrome/ChromeControl;IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Z
 	public static synthetic fun isControlVisible$default (Ltv/nomercy/player/video/ui/chrome/ChromeControl;IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Z
-	public static final fun visibleControls (IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)Ljava/util/List;
-	public static synthetic fun visibleControls$default (IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Ljava/util/List;
+	public static final fun visibleControls (IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/List;Ljava/util/Set;)Ljava/util/List;
+	public static synthetic fun visibleControls$default (IZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/util/List;Ljava/util/Set;ILjava/lang/Object;)Ljava/util/List;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeScheduler : tv/nomercy/player/video/tv/Scheduler {
@@ -514,7 +532,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeTooltip {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeTopBarKt {
-	public static final fun ChromeTopBar (Ltv/nomercy/player/video/tv/TvChromeItem;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/tv/EpisodeLabels;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/chrome/ChromeExits;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ChromeTopBar (Ltv/nomercy/player/video/tv/TvChromeItem;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/tv/EpisodeLabels;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/chrome/ChromeExits;ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTrackCommands {
@@ -569,13 +587,13 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeUi {
 public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$ChromeTopBarKt {
 	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/ComposableSingletons$ChromeTopBarKt;
 	public fun <init> ()V
-	public final fun getLambda$2068484486$ui_compose ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1235722210$ui_compose ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoChromeKt {
 	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoChromeKt;
 	public fun <init> ()V
-	public final fun getLambda$843439783$ui_compose ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1224670541$ui_compose ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/PlaybackErrorMessage {
@@ -697,11 +715,11 @@ public final class tv/nomercy/player/video/ui/chrome/TouchZonesOverlayKt {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/TransportBarKt {
-	public static final fun TransportBar (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Landroidx/compose/runtime/Composer;II)V
+	public static final fun TransportBar (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Ljava/util/Set;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/VideoChromeKt {
-	public static final fun VideoChrome (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/core/device/FormFactor;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/chrome/ChromeGestures;Ltv/nomercy/player/video/ui/chrome/AutoSkipPreference;JLtv/nomercy/player/video/ui/chrome/ChromeSlots;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)V
+	public static final fun VideoChrome (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/core/device/FormFactor;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/chrome/ChromeGestures;Ltv/nomercy/player/video/ui/chrome/AutoSkipPreference;JLtv/nomercy/player/video/ui/chrome/ChromeLayout;Ltv/nomercy/player/video/ui/chrome/ChromeSlots;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/VideoUiKind : java/lang/Enum {
@@ -714,18 +732,28 @@ public final class tv/nomercy/player/video/ui/chrome/VideoUiKind : java/lang/Enu
 
 public final class tv/nomercy/player/video/ui/chrome/VideoUiOptions {
 	public static final field $stable I
-	public fun <init> (Ltv/nomercy/player/core/device/FormFactor;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;)V
-	public synthetic fun <init> (Ltv/nomercy/player/core/device/FormFactor;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ltv/nomercy/player/core/device/FormFactor;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;JLjava/util/List;Ljava/util/Set;ZZ)V
+	public synthetic fun <init> (Ltv/nomercy/player/core/device/FormFactor;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;JLjava/util/List;Ljava/util/Set;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ltv/nomercy/player/core/device/FormFactor;
 	public final fun component2 ()Ltv/nomercy/player/video/ui/chrome/VideoUiKind;
 	public final fun component3 ()Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
 	public final fun component4 ()Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
-	public final fun copy (Ltv/nomercy/player/core/device/FormFactor;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;)Ltv/nomercy/player/video/ui/chrome/VideoUiOptions;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/VideoUiOptions;Ltv/nomercy/player/core/device/FormFactor;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/VideoUiOptions;
+	public final fun component5 ()J
+	public final fun component6 ()Ljava/util/List;
+	public final fun component7 ()Ljava/util/Set;
+	public final fun component8 ()Z
+	public final fun component9 ()Z
+	public final fun copy (Ltv/nomercy/player/core/device/FormFactor;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;JLjava/util/List;Ljava/util/Set;ZZ)Ltv/nomercy/player/video/ui/chrome/VideoUiOptions;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/VideoUiOptions;Ltv/nomercy/player/core/device/FormFactor;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;JLjava/util/List;Ljava/util/Set;ZZILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/VideoUiOptions;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getButtonPriority ()Ljava/util/List;
 	public final fun getButtons ()Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
+	public final fun getDisableClickToPause ()Z
 	public final fun getFormFactor ()Ltv/nomercy/player/core/device/FormFactor;
+	public final fun getHideTitle ()Z
+	public final fun getInactivityMs ()J
 	public final fun getKind ()Ltv/nomercy/player/video/ui/chrome/VideoUiKind;
+	public final fun getPortraitHidden ()Ljava/util/Set;
 	public final fun getStrings ()Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -786,8 +814,8 @@ public final class tv/nomercy/player/video/ui/chrome/menus/MenuState : java/lang
 public final class tv/nomercy/player/video/ui/chrome/menus/MenuStrings {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Ljava/lang/String;
 	public final fun component11 ()Ljava/lang/String;
@@ -809,15 +837,17 @@ public final class tv/nomercy/player/video/ui/chrome/menus/MenuStrings {
 	public final fun component26 ()Ljava/lang/String;
 	public final fun component27 ()Ljava/lang/String;
 	public final fun component28 ()Ljava/lang/String;
+	public final fun component29 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
+	public final fun component30 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6 ()Ljava/lang/String;
 	public final fun component7 ()Ljava/lang/String;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAspectCrop ()Ljava/lang/String;
 	public final fun getAspectNative ()Ljava/lang/String;
@@ -827,6 +857,8 @@ public final class tv/nomercy/player/video/ui/chrome/menus/MenuStrings {
 	public final fun getAudio ()Ljava/lang/String;
 	public final fun getAutoSkipChapters ()Ljava/lang/String;
 	public final fun getAutomatic ()Ljava/lang/String;
+	public final fun getBack ()Ljava/lang/String;
+	public final fun getClose ()Ljava/lang/String;
 	public final fun getNormalSpeed ()Ljava/lang/String;
 	public final fun getOff ()Ljava/lang/String;
 	public final fun getOn ()Ljava/lang/String;

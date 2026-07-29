@@ -102,6 +102,8 @@ public fun VideoChrome(
      * controller itself and never passed it on.
      */
     inactivityMs: Long = DEFAULT_INACTIVITY_MS,
+    /** How the bar arranges itself: priority, portrait-hidden, and the title. */
+    layout: ChromeLayout = ChromeLayout(),
     slots: ChromeSlots = LocalChromeSlots.current,
     surface: @Composable () -> Unit = {},
 ) {
@@ -135,13 +137,29 @@ public fun VideoChrome(
         surface = surface,
     ) {
         ChromeLayers(
-            scene = ChromeScene(state, commands, controller, strings, rememberMenuStrings(), buttons),
+            scene = ChromeScene(
+                state, commands, controller, strings, rememberMenuStrings(), buttons, layout,
+            ),
             host = ChromeHost(sprite, onClose, onBack, onCast, slots),
             menu = menu,
             onMenuChange = { menu = it },
         )
     }
 }
+
+/**
+ * How the bar arranges itself, as one value.
+ *
+ * `buttonPriority`, `portraitHidden` and `hideTitle` on DesktopUiOptions. They
+ * travel together through four layers, and passed one at a time they pushed both
+ * VideoChrome and its scene past what a function is allowed to take — which is
+ * the threshold being right: they are one decision about layout.
+ */
+public data class ChromeLayout(
+    val priority: List<ChromeControl> = CHROME_PRIORITY,
+    val portraitHidden: Set<ChromeControl> = CHROME_PORTRAIT_HIDDEN,
+    val hideTitle: Boolean = false,
+)
 
 // The root, and whichever input this form factor has.
 //
@@ -252,6 +270,7 @@ internal data class ChromeScene(
     val strings: TvChromeStrings,
     val menuStrings: MenuStrings,
     val buttons: ChromeButtons,
+    val layout: ChromeLayout,
 )
 
 // What the host supplied, which the player knows nothing about: the sprite sheet
@@ -286,6 +305,7 @@ private fun ChromeLayers(
                         strings = scene.strings,
                         buttons = scene.buttons,
                         exits = ChromeExits(host.onBack, host.onCast, host.onClose),
+                        hideTitle = scene.layout.hideTitle,
                     )
                 }
 
@@ -298,7 +318,7 @@ private fun ChromeLayers(
             scene.commands,
             menu,
             onMenuChange,
-            Modifier.align(Alignment.BottomCenter),
+            Modifier.align(Alignment.BottomEnd),
             scene.menuStrings,
             scene.buttons,
         )
@@ -365,6 +385,8 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
                 commands = scene.commands,
                 strings = scene.strings,
                 buttons = scene.buttons,
+                priority = scene.layout.priority,
+                portraitHidden = scene.layout.portraitHidden,
             )
         }
     }

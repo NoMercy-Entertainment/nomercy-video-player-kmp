@@ -82,6 +82,41 @@ public data class VideoUiOptions(
     val kind: VideoUiKind = VideoUiKind.Full,
     val buttons: ChromeButtons = ChromeButtons.forKind(kind),
     val strings: TvChromeStrings = TvChromeStrings(),
+
+    // The rest of DesktopUiOptions, which this had four of.
+    //
+    // The web plugin takes fourteen, and the missing ten were not obscure: his
+    // own site passes buttonPriority, portraitHidden and buttonOrder, so the
+    // configuration the NoMercy player actually ships with could not be
+    // expressed through the plugin at all. A consumer moving the same line
+    // across got a chrome that ignored most of it — silently, because an
+    // unknown option in Kotlin is a compile error only if the field exists.
+
+    /** `inactivityMs`. Four seconds is the web's; his mobile player uses three. */
+    val inactivityMs: Long = DEFAULT_INACTIVITY_MS,
+
+    /**
+     * `buttonPriority` — the order controls are dropped in as the bar narrows.
+     *
+     * His site raises `chapterNext` and `next` above the menus, because skipping
+     * an intro or jumping an episode one-handed is what a phone viewer opens the
+     * controls for. The library had the walk and no way to reorder it.
+     */
+    val buttonPriority: List<ChromeControl> = CHROME_PRIORITY,
+
+    /** `portraitHidden` — dropped at any width in portrait. His site replaces it. */
+    val portraitHidden: Set<ChromeControl> = CHROME_PORTRAIT_HIDDEN,
+
+    /** `hideTitle`. A player embedded under its own heading does not repeat it. */
+    val hideTitle: Boolean = false,
+
+    /**
+     * `disableClickToPause`.
+     *
+     * A player inside a link, or one whose surface is a hit target for something
+     * else, must not toggle playback on every press.
+     */
+    val disableClickToPause: Boolean = false,
 )
 
 /**
@@ -139,6 +174,12 @@ public open class VideoUiPlugin(
             modifier = modifier,
             strings = resolved.strings,
             buttons = resolved.buttons,
+            inactivityMs = resolved.inactivityMs,
+            layout = ChromeLayout(
+                priority = resolved.buttonPriority,
+                portraitHidden = resolved.portraitHidden,
+                hideTitle = resolved.hideTitle,
+            ),
             onClose = onBack,
         )
     }

@@ -74,6 +74,8 @@ public fun ChromeTopBar(
     labels: EpisodeLabels = EpisodeLabels(),
     buttons: ChromeButtons = ChromeButtons(),
     exits: ChromeExits = ChromeExits(),
+    /** `hideTitle` — a player under its own heading does not repeat it. */
+    hideTitle: Boolean = false,
     trailing: @Composable () -> Unit = {},
 ) {
     BoxWithConstraints(
@@ -94,7 +96,7 @@ public fun ChromeTopBar(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             TopBarControls(strings, buttons, exits, trailing)
-            TopBarTitle(item, strings, labels, width)
+            if (!hideTitle) TopBarTitle(item, strings, labels, width)
         }
     }
 }
