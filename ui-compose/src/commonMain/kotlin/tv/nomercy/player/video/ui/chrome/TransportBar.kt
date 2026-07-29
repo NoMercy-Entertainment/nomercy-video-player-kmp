@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -244,13 +247,29 @@ private fun VolumeCluster(
 
 // Web order 9-11: current time, a divider element, remaining time.
 @Composable
-private fun TimeReadout(state: ChromeState, buttons: ChromeButtons) {
-    if (!buttons.time) return
+private fun RowScope.TimeReadout(state: ChromeState, buttons: ChromeButtons) {
+    if (!buttons.time) {
+        // The spacer stays even with the clock off. It is what splits the bar,
+        // and a consumer hiding the time must not collapse every control into
+        // one left-aligned clump.
+        Spacer(modifier = Modifier.weight(1f).widthIn(min = DIVIDER_MIN_WIDTH))
+        return
+    }
 
     BasicText(text = formatTime(state.timeSeconds), style = READOUT)
 
-    // A real element on the web rather than padding, so it is one here too.
-    Box(modifier = Modifier.size(width = DIVIDER_WIDTH, height = DIVIDER_HEIGHT))
+    // THE element that splits this bar, and the one this port read wrong.
+    //
+    //     .divider { display: flex; flex: 1; min-width: 16px; }
+    //
+    // A flex spacer that takes every pixel left over, so everything before it
+    // sits left and everything after it sits right. Ported here as a 1dp
+    // hairline on the reading that the web draws "a real element rather than
+    // padding" — which is true of the markup and says nothing about the rule.
+    // The result was one clumped row: transport, volume, both clocks and
+    // settings bunched against the left edge with the whole right half empty,
+    // while the shipped Android player splits at exactly this point.
+    Spacer(modifier = Modifier.weight(1f).widthIn(min = DIVIDER_MIN_WIDTH))
 
     // Remaining rather than total. Somebody deciding whether to start another
     // episode is asking how much is left.
@@ -457,8 +476,8 @@ private val READOUT = TextStyle(color = Color.White)
 
 private val ROW_PADDING = 16.dp
 private val GAP = 8.dp
-private val DIVIDER_WIDTH = 1.dp
-private val DIVIDER_HEIGHT = 12.dp
+// min-width: 16px, from the web rule.
+private val DIVIDER_MIN_WIDTH = 16.dp
 
 // The web's own step, and the number its tooltip says out loud.
 private const val SEEK_STEP_SECONDS = 10f
