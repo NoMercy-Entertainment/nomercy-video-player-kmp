@@ -57,9 +57,12 @@ public fun TransportBar(
     buttons: ChromeButtons = ChromeButtons(),
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val widthDp: Int = boundedWidthDp(maxWidth)
+        val metrics: BarMetrics = remember(widthDp) { barMetricsFor(widthDp) }
+
         val fits: Set<ChromeControl> = remember(maxWidth, buttons, state) {
             visibleControls(
-                widthDp = boundedWidthDp(maxWidth),
+                widthDp = widthDp,
                 contentHidden = { state.lacksContentFor(it) },
                 enabled = { buttons.allows(it) },
             ).toSet()
@@ -68,10 +71,10 @@ public fun TransportBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = ROW_PADDING_H, vertical = ROW_PADDING_V)
+                .padding(horizontal = metrics.paddingHorizontal, vertical = metrics.paddingVertical)
                 .testTag(TRANSPORT_BAR_TAG),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(GAP),
+            horizontalArrangement = Arrangement.spacedBy(metrics.gap),
         ) {
             TransportButtons(state, commands, strings, fits)
             VolumeCluster(state, commands, strings, fits)
@@ -516,16 +519,10 @@ internal const val SETTINGS_TAG = "nm-settings"
 
 private val READOUT = TextStyle(color = Color.White)
 
-// Measured on the running web player, not read off the stylesheet:
-//
-//     .bottom-row { gap: 2px; padding: 4px 16px; height: 40px }
-//
-// The gap was 8 and the padding 16 all round. Eight is four times the web's,
-// and across eighteen controls that alone is 108dp of drift — enough to push
-// the whole right-hand group past the edge of the row, which is what it did.
-private val ROW_PADDING_H = 16.dp
-private val ROW_PADDING_V = 4.dp
-private val GAP = 2.dp
+// The gap and the padding are BarMetrics' now, because the web has four sets of
+// them and they are container queries on the player's own width. They were one
+// constant each here: a gap of 8 against the web's widest 2, which across
+// eighteen controls pushed the whole right-hand group past the edge of the row.
 // min-width: 16px, from the web rule.
 private val DIVIDER_MIN_WIDTH = 16.dp
 
