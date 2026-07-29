@@ -12,6 +12,7 @@ import tv.nomercy.player.core.device.FormFactor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 // The trailer player, against what the app's TrailerMobileUiPlugin actually
@@ -61,8 +62,37 @@ class VideoUiKindTest {
     }
 
     @Test
-    fun theFullPlayerIsUnchangedByAnyOfThis() {
-        assertEquals(ChromeButtons(), ChromeButtons.forKind(VideoUiKind.Full))
+    // This used to assert the full player was the bare constructor, which was a
+    // guard on the wrong thing: it proved adding the trailer kind changed
+    // nothing, and what it locked in was a bar of seven controls with no menu on
+    // it at all. He looked at that and said it was not his player, and he was
+    // right — his site passes eight more buttons and the drop-in was giving
+    // nobody any of them.
+    //
+    // So the guard stays and its subject moves. The full player is his site's
+    // set, and the menus are named one by one because those four are what a
+    // viewer means by the player.
+    fun theFullPlayerIsTheOneHisSiteDraws() {
+        val full: ChromeButtons = ChromeButtons.forKind(VideoUiKind.Full)
+
+        assertEquals(ChromeButtons.nomercyWeb(), full)
+
+        assertTrue(full.quality)
+        assertTrue(full.subtitles)
+        assertTrue(full.audio)
+        assertTrue(full.playlist)
+        assertTrue(full.chapters)
+        assertTrue(full.pictureInPicture)
+    }
+
+    // And the library's own defaults are still the web library's, because that
+    // is what responsive.ts says and a consumer building one by hand is asking
+    // for that. The two being different is the whole point.
+    @Test
+    fun theBareDefaultsAreStillTheWebLibrarysOwn() {
+        assertFalse(ChromeButtons().quality)
+        assertFalse(ChromeButtons().subtitles)
+        assertNotEquals(ChromeButtons(), ChromeButtons.forKind(VideoUiKind.Full))
     }
 
     // A trailer sits inside a page that already showed the poster. A pre-screen

@@ -71,6 +71,52 @@ public data class ChromeButtons(
     public companion object {
 
         /**
+         * The bar the NoMercy web client actually draws.
+         *
+         * The defaults above are the web LIBRARY's — `DEFAULT_ON` in
+         * responsive.ts, nine of the eighteen — and being faithful to them
+         * produced a player nobody recognises. His site does not mount the
+         * plugin bare; `useVideoPlayer.ts` passes eight more, and those eight
+         * are most of what a viewer thinks of as the player: the chapter jumps,
+         * picture-in-picture, and the whole menu group.
+         *
+         * So "faithful to the web" has two answers and this is the one that
+         * matters on screen. A consumer wanting the library's own defaults still
+         * gets them from the constructor.
+         *
+         * Cast is on here and gated on `user.features.nomercyConnect` there,
+         * which is a per-account fact this module cannot see. A host that has no
+         * picker turns it off.
+         *
+         * Read off useVideoPlayer.ts and gated against it by
+         * scripts/check-app-parity.py.
+         */
+        public fun nomercyWeb(): ChromeButtons = ChromeButtons(
+            playPause = true,
+            previousNext = true,
+            volume = true,
+            time = true,
+            chapters = true,
+            fullscreen = true,
+            settings = true,
+            pictureInPicture = true,
+            quality = true,
+            subtitles = true,
+            audio = true,
+            playlist = true,
+            cast = true,
+
+            // Not passed there, so not on here. Seeking by ten seconds is what
+            // the arrow keys are for on a desktop, and theater, speed and aspect
+            // are the three he has never turned on.
+            seekBack = false,
+            seekForward = false,
+            theater = false,
+            speed = false,
+            aspectRatio = false,
+        )
+
+        /**
          * The NoMercy Android client's own bar, as a configuration.
          *
          * The library draws the web's eighteen, because that is the contract a
@@ -121,7 +167,11 @@ public data class ChromeButtons(
          * asking exactly how long it is.
          */
         public fun forKind(kind: VideoUiKind): ChromeButtons = when (kind) {
-            VideoUiKind.Full -> ChromeButtons()
+            // His site's set, not the library's bare defaults. A host that mounts
+            // the full player and passes nothing is asking for the NoMercy
+            // player, and the bare defaults draw seven controls of the eighteen —
+            // no menus at all, which is not a smaller version of this player.
+            VideoUiKind.Full -> nomercyWeb()
             VideoUiKind.Trailer -> ChromeButtons(
                 playPause = true,
                 previousNext = false,
