@@ -15,6 +15,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,6 +50,7 @@ import tv.nomercy.player.video.input.playerCommandsOf
 import tv.nomercy.player.video.ui.chrome.menus.MenuState
 import tv.nomercy.player.video.ui.chrome.menus.SettingsMenu
 import tv.nomercy.player.video.tv.Scheduler
+import tv.nomercy.player.video.tv.TvChapter
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
 
 // The whole chrome for a screen somebody touches or points at.
@@ -78,6 +80,13 @@ public fun VideoChrome(
     // rebuilding the first through the trailing slot.
     onBack: (() -> Unit)? = null,
     onCast: (() -> Unit)? = null,
+    /**
+     * The edge gestures his grid carries: brightness down the left, volume down
+     * the right. Null leaves those rows unbound, which is what a build that
+     * cannot reach the platform's brightness should do rather than drawing a
+     * zone that swallows taps and does nothing.
+     */
+    gestures: ChromeGestures? = null,
     slots: ChromeSlots = LocalChromeSlots.current,
     surface: @Composable () -> Unit = {},
 ) {
@@ -99,7 +108,7 @@ public fun VideoChrome(
     ChromeBindings(controller, state.playing, menu)
 
     ChromeFrame(
-        input = ChromeInput(rememberVideoKeys(player, formFactor), controller, commands, player::now),
+        input = ChromeInput(rememberVideoKeys(player, formFactor), controller, commands, player::now, gestures),
         modifier = modifier,
         surface = surface,
     ) {
@@ -142,6 +151,30 @@ private fun ChromeFrame(
                 nowMs = input.nowMs,
                 modifier = Modifier.fillMaxSize(),
             )
+
+            // Above the three columns, and only the rows they do not cover.
+            //
+            // TouchZonesOverlay is his middle row — skip back, play, skip on —
+            // and it stays as it is. What was missing is the other two: his grid
+            // dims down the left edge and changes volume down the right, and
+            // neither had anywhere to land here.
+            //
+            // Absent unless a host binds them, because brightness and volume are
+            // platform calls this module cannot make. A consumer that binds
+            // nothing gets the same four-corner behaviour as before: a tap
+            // anywhere wakes the controls.
+            input.gestures?.let { gestures ->
+                ChromeGestureGrid(
+                    gestures = gestures.copy(
+                        // The middle row belongs to the zones below. Binding it
+                        // here too would fire both on one double tap.
+                        onTogglePlay = null,
+                        onSeekBack = null,
+                        onSeekForward = null,
+                    ),
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
 
         content()
@@ -158,6 +191,7 @@ private class ChromeInput(
     val controller: ChromeController,
     val commands: ChromeCommands,
     val nowMs: () -> Long,
+    val gestures: ChromeGestures?,
 ) {
 
     val pointerDriven: Boolean get() = keys != null
@@ -217,7 +251,7 @@ private fun ChromeLayers(
     val ui: ChromeUi by scene.controller.ui.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        host.slots.backdrop?.invoke(scene.state, scene.commands)
+        ChromeBackdropLayer(scene, host)
 
         // Outside the visibility gate. A film that is still buffering has to say
         // so whether or not the controls are up, and a viewer looking at a
@@ -255,14 +289,7 @@ private fun ChromeLayers(
 
         SettingsMenu(scene.state, scene.commands, menu, onMenuChange, Modifier.align(Alignment.BottomCenter))
 
-        // Over the controls, not instead of them, which is what his overlay
-        // does: a viewer reading why playback failed still needs the way out and
-        // the playlist to pick something else. Outside the visibility gate for
-        // the same reason the buffering line is — a failure that hides itself
-        // after four seconds of no pointer movement is a failure nobody read.
-        scene.state.error?.let { failure ->
-            ChromeErrorOverlay(failure, Modifier.align(Alignment.Center))
-        }
+        ChromeOverlays(scene)
 
         // Additive rather than replacing. A skip-intro button and a cast banner
         // are the host's features, and a slot that swallowed the chrome to draw
@@ -428,3 +455,89 @@ internal const val TOUCH_CHROME_TAG = "nm-touch-chrome"
 internal const val DESKTOP_CHROME_TAG = "nm-desktop-chrome"
 internal const val BUFFERING_TAG = "nm-chrome-buffering"
 internal const val MESSAGE_TAG = "nm-chrome-message"
+
+// The still behind the picture, gated and scrimmed.
+//
+// Its own function because the assembly is already at the length limit and this
+// is a self-contained decision: whether there is an image, and whether now is a
+// moment that needs one.
+@Composable
+private fun ChromeBackdropLayer(scene: ChromeScene, host: ChromeHost) {
+        // Behind the picture, and only until there is one.
+    //
+    // The slot drew unconditionally before, which is a still sitting over
+    // the film for as long as the host supplied one. His trailer plugin
+    // gates it on `duration <= 0 || time == 0` and fades it out, and that
+    // rule is the whole value of the layer — the image itself is the host's,
+    // because there is no image loader in common code.
+    host.slots.backdrop?.let { image ->
+        ChromeBackdrop(
+            visible = backdropIsVisible(scene.state.durationSeconds, scene.state.timeSeconds),
+        ) {
+            image(scene.state, scene.commands)
+        }
+    }
+}
+
+// The layers that sit over the picture and are not the controls: the skip
+// prompt and the failure. Split from ChromeLayers because that function is the
+// assembly and this is what is layered on it, and together they are longer than
+// one function is allowed to be.
+@Composable
+private fun BoxScope.ChromeOverlays(scene: ChromeScene) {
+        // The skip prompt, on the chapter the film is actually inside.
+    //
+    // Bottom-start for an opening and bottom-end for an ending, as his does,
+    // so the two never appear in the same place and a viewer learns where to
+    // look. Gated on a real chapter list: an item without chapters offers
+    // nothing, which is most films.
+    skipOffer(scene.state)?.let { offer ->
+        SkipButton(
+            kind = offer,
+            label = if (offer == SkipKind.Intro) scene.strings.skipIntro else scene.strings.skipOutro,
+            // To the end of the chapter being skipped, which is where the
+            // next one starts. seekTo rather than a chapter-forward command,
+            // because the boundary is already known here and asking the
+            // player to find it again is a second answer that can differ.
+            onSkip = { skipTargetOf(scene.state)?.let(scene.commands::seekTo) },
+            modifier = Modifier.align(
+                if (offer == SkipKind.Intro) Alignment.BottomStart else Alignment.BottomEnd,
+            ),
+        )
+    }
+
+    // Over the controls, not instead of them, which is what his overlay
+    // does: a viewer reading why playback failed still needs the way out and
+    // the playlist to pick something else. Outside the visibility gate for
+    // the same reason the buffering line is — a failure that hides itself
+    // after four seconds of no pointer movement is a failure nobody read.
+    scene.state.error?.let { failure ->
+        ChromeErrorOverlay(failure, Modifier.align(Alignment.Center))
+    }
+}
+
+// Which skip, if any, the film is currently inside.
+//
+// Reads the chapter under the position and asks SkipPrompt whether it should be
+// offered here — the two playlist guards are its business, not this file's.
+private fun skipOffer(state: ChromeState): SkipKind? {
+    val chapter: TvChapter = SkipPrompt.chapterAt(state.chapters, state.timeSeconds) ?: return null
+    val title: String = chapter.title ?: return null
+
+    val position = SkipPosition(
+        durationSeconds = state.durationSeconds,
+        currentSeconds = state.timeSeconds,
+        index = state.queueIndex,
+        playlistSize = state.queueSize,
+    )
+
+    return if (SkipPrompt.shouldOffer(title, position)) SkipPrompt.typeOf(title) else null
+}
+
+// Where a skip lands: the start of the chapter after the one being skipped, or
+// nothing when there is no chapter after it.
+private fun skipTargetOf(state: ChromeState): Double? =
+    state.chapters
+        .map { it.startSeconds }
+        .filter { it > state.timeSeconds }
+        .minOrNull()

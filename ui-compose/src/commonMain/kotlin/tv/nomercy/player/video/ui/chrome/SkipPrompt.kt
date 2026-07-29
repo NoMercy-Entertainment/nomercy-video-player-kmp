@@ -8,6 +8,22 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
 import tv.nomercy.player.video.tv.TvChapter
 
 /**
@@ -147,3 +163,45 @@ public enum class SkipKind {
     Intro,
     Outro,
 }
+
+/**
+ * The button itself: one line, one press, at the corner its kind belongs to.
+ *
+ * Deliberately plain. His is a Material button in the app's theme, and a library
+ * that shipped Material would put a design system into every consumer's build —
+ * so this is the same shape on foundation, and a host that wants its own
+ * replaces it through the overlays slot.
+ */
+@Composable
+public fun SkipButton(
+    kind: SkipKind,
+    label: String,
+    onSkip: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .padding(SKIP_INSET)
+            .background(SKIP_BACKGROUND, RoundedCornerShape(SKIP_RADIUS))
+            .clickable(onClick = onSkip)
+            .padding(horizontal = SKIP_PADDING_H, vertical = SKIP_PADDING_V)
+            .testTag(if (kind == SkipKind.Intro) SKIP_INTRO_TAG else SKIP_OUTRO_TAG),
+    ) {
+        BasicText(text = label, style = SKIP_LABEL)
+    }
+}
+
+internal const val SKIP_INTRO_TAG = "nm-skip-intro"
+internal const val SKIP_OUTRO_TAG = "nm-skip-outro"
+
+// Clear of the transport row, which is what his 120dp bottom inset is for: a
+// prompt sitting on the controls is one a thumb hits while reaching for pause.
+private val SKIP_INSET = 24.dp
+private val SKIP_RADIUS = 6.dp
+private val SKIP_PADDING_H = 20.dp
+private val SKIP_PADDING_V = 12.dp
+
+private val SKIP_BACKGROUND = Color(red = 20, green = 20, blue = 25, alpha = 242)
+
+private val SKIP_LABEL = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)

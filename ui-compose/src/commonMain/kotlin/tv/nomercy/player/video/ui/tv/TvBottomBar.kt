@@ -186,6 +186,10 @@ public data class TvChromeStrings(
     val fullscreen: String = "Fullscreen",
     val exitFullscreen: String = "Exit fullscreen",
 
+    // The skip prompt's two labels, in his wording.
+    val skipIntro: String = "Skip intro",
+    val skipOutro: String = "Skip outro",
+
     // The top bar's two, appended for the same positional reason as the rest.
     val back: String = "Back",
     val cast: String = "Cast to device",
