@@ -95,8 +95,25 @@ internal class ComposeFrameSink : RenderCallback, BufferFormatCallback {
 
         val reader: ByteBuffer = source.duplicate()
         reader.rewind()
-        reader.get(pixels, 0, minOf(pixels.size, reader.remaining()))
 
+        // Short of a whole frame means the format was renegotiated between the
+        // allocation and this callback. Copying what arrived leaves the tail of
+        // the buffer holding the previous picture, so the frame drawn is the top
+        // of the new one over the bottom of the old — a tear. Refusing it keeps
+        // the last complete frame up, which reads as a still rather than a fault.
+        if (reader.remaining() < pixels.size) return
+
+        reader.get(pixels, 0, pixels.size)
+
+        // Data.makeFromBytes COPIES, and that is the whole point.
+        //
+        // Image.makeRaster over the array WRAPS it. Skia then holds a view of the
+        // one buffer this class overwrites on every frame, so the bitmap Compose
+        // is drawing and the buffer libVLC is filling were the same memory: every
+        // frame tore against the next, and any reallocation blanked the picture
+        // that was already on screen. That is the black player after a window
+        // resize — getBufferFormat runs again, `pixels` becomes a fresh array of
+        // zeroes, and the bitmap already handed to Compose was pointing at it.
         frame.value = Image.makeRaster(info, pixels, rowBytes).toComposeImageBitmap()
     }
 
