@@ -61,4 +61,34 @@ public data class ChromeButtons(
     // handler alone would put the button in front of viewers of every build
     // that has a picker but does not want one offered here.
     val cast: Boolean = false,
-)
+) {
+
+    public companion object {
+
+        /**
+         * The set each of the two players draws.
+         *
+         * A trailer gets subtitles and nothing else, which is what
+         * `TrailerMobileUiPlugin` passes: no episodes, no quality, no audio.
+         * Those rows would each open onto a list with one entry in it, because a
+         * trailer is one file with one audio track — a press that costs a viewer
+         * time and gives them no choice.
+         *
+         * Time stays. Somebody deciding whether to watch a two-minute trailer is
+         * asking exactly how long it is.
+         */
+        public fun forKind(kind: VideoUiKind): ChromeButtons = when (kind) {
+            VideoUiKind.Full -> ChromeButtons()
+            VideoUiKind.Trailer -> ChromeButtons(
+                playPause = true,
+                previousNext = false,
+                volume = true,
+                time = true,
+                chapters = false,
+                fullscreen = true,
+                settings = false,
+                subtitles = true,
+            )
+        }
+    }
+}

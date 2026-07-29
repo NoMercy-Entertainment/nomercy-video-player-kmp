@@ -48,9 +48,39 @@ public interface PlayerUiPlugin {
     public fun handleBack(): Boolean
 }
 
+/**
+ * Which of the two players this is.
+ *
+ * There are two in the NoMercy client and there always were: the full player
+ * over a film, and a compact one over a trailer on a detail page. They are the
+ * same chrome with different answers to three questions, which is why the app
+ * ships them as `MobileUiPlugin` and `TrailerMobileUiPlugin` rather than one
+ * class with a flag threaded through it.
+ *
+ * A kind rather than a second plugin id because the web has exactly one chrome
+ * plugin and the port must expose the same surface — a native-only
+ * `trailer-ui` would be a plugin no web consumer has ever seen, which is the
+ * renamed-plugin failure in the other direction.
+ */
+public enum class VideoUiKind {
+    /** Everything, over a film or an episode. */
+    Full,
+
+    /**
+     * A trailer on a detail page.
+     *
+     * Subtitles and nothing else. A trailer has one audio track, one rendition
+     * of interest, no episodes and no chapters, so the menus those rows open
+     * would each be a press onto an empty list. It has nowhere to cast to
+     * either — casting a trailer to a television is not a thing anybody wants.
+     */
+    Trailer,
+}
+
 public data class VideoUiOptions(
     val formFactor: FormFactor,
-    val buttons: ChromeButtons = ChromeButtons(),
+    val kind: VideoUiKind = VideoUiKind.Full,
+    val buttons: ChromeButtons = ChromeButtons.forKind(kind),
     val strings: TvChromeStrings = TvChromeStrings(),
 )
 
@@ -113,7 +143,16 @@ public open class VideoUiPlugin(
         )
     }
 
+    /**
+     * No-op for a trailer, as `TrailerMobileUiPlugin.showPreScreen` is.
+     *
+     * A pre-screen is the poster-and-play-button a full player shows before it
+     * starts. A trailer is already inside a page that showed the poster, and one
+     * over it would be the same picture twice with a second button to press.
+     */
     override fun showPreScreen() {
+        if (opts.kind == VideoUiKind.Trailer) return
+
         preScreen.value = true
     }
 
