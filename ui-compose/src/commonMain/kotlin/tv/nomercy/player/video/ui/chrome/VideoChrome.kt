@@ -68,6 +68,12 @@ public fun VideoChrome(
     buttons: ChromeButtons = ChromeButtons(),
     sprite: List<SpriteCue> = emptyList(),
     onClose: (() -> Unit)? = null,
+    // The web's other two top-bar events. Back and close are different exits —
+    // one returns to where the viewer came from and one dismisses the player —
+    // and a library that offered only the second would leave every consumer
+    // rebuilding the first through the trailing slot.
+    onBack: (() -> Unit)? = null,
+    onCast: (() -> Unit)? = null,
     slots: ChromeSlots = LocalChromeSlots.current,
     surface: @Composable () -> Unit = {},
 ) {
@@ -94,7 +100,7 @@ public fun VideoChrome(
     ) {
         ChromeLayers(
             scene = ChromeScene(state, commands, controller, strings, buttons),
-            host = ChromeHost(sprite, onClose, slots),
+            host = ChromeHost(sprite, onClose, onBack, onCast, slots),
             menu = menu,
             onMenuChange = { menu = it },
         )
@@ -191,6 +197,8 @@ private data class ChromeScene(
 private data class ChromeHost(
     val sprite: List<SpriteCue>,
     val onClose: (() -> Unit)?,
+    val onBack: (() -> Unit)?,
+    val onCast: (() -> Unit)?,
     val slots: ChromeSlots,
 )
 
@@ -231,7 +239,8 @@ private fun ChromeLayers(
                     host.slots.topBar?.invoke(scene.state, scene.commands) ?: ChromeTopBar(
                         item = scene.state.item,
                         strings = scene.strings,
-                        onClose = host.onClose,
+                        buttons = scene.buttons,
+                        exits = ChromeExits(host.onBack, host.onCast, host.onClose),
                     )
                 }
 

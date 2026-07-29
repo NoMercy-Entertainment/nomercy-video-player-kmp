@@ -56,7 +56,7 @@ public fun TvBottomBar(
             BasicText(text = formatTime(state.timeSeconds), style = TextStyle(color = Color.White))
 
             PlayerIconButton(
-                icon = PlayerIcons.Restart,
+                icon = FluentIcons.Restart,
                 description = strings.restart,
                 onClick = callbacks::restart,
             )
@@ -64,14 +64,14 @@ public fun TvBottomBar(
             // The one control a viewer reaches for without looking, so it is the
             // one that takes focus when the bar appears.
             PlayerIconButton(
-                icon = if (state.isPlaying) PlayerIcons.Pause else PlayerIcons.Play,
+                icon = if (state.isPlaying) FluentIcons.Pause else FluentIcons.Play,
                 description = if (state.isPlaying) strings.pause else strings.play,
                 onClick = callbacks::togglePlay,
                 focusRequester = playFocusRequester,
             )
 
             PlayerIconButton(
-                icon = PlayerIcons.Next,
+                icon = FluentIcons.Next,
                 description = strings.next,
                 onClick = callbacks::next,
             )
@@ -125,6 +125,13 @@ public fun tvChromeStrings(locale: String): TvChromeStrings {
         quality = tip("quality"),
         playlist = tip("playlist"),
         settings = tip("settings"),
+
+        // The two top-bar labels, which are not tooltips on the web and so do
+        // not live under the tooltip prefix. Reading them through `tip` would
+        // have found nothing and quietly left the English defaults in place in
+        // every locale.
+        back = ChromeTranslations.get(locale, "plugin.desktop-ui.menu.back"),
+        cast = ChromeTranslations.get(locale, "plugin.desktop-ui.button.cast"),
     )
 }
 
@@ -172,6 +179,10 @@ public data class TvChromeStrings(
     // pressing it does.
     val fullscreen: String = "Fullscreen",
     val exitFullscreen: String = "Exit fullscreen",
+
+    // The top bar's two, appended for the same positional reason as the rest.
+    val back: String = "Back",
+    val cast: String = "Cast to device",
 )
 
 internal const val BOTTOM_BAR_TAG = "tv-bottom-bar"

@@ -53,4 +53,12 @@ public data class ChromeButtons(
     val playlist: Boolean = false,
     val theater: Boolean = false,
     val pictureInPicture: Boolean = false,
+
+    // The top bar's cast affordance, and the only control gated on an option
+    // rather than on state. Back and close appear when the host gives them
+    // somewhere to go; cast cannot work that way, because pressing it only
+    // surfaces the intent and the consumer opens its own device picker — so a
+    // handler alone would put the button in front of viewers of every build
+    // that has a picker but does not want one offered here.
+    val cast: Boolean = false,
 )

@@ -61,13 +61,13 @@ public fun TvTopBar(
 
         Row(horizontalArrangement = Arrangement.spacedBy(BUTTON_GAP)) {
             PlayerIconButton(
-                icon = PlayerIcons.Episodes,
+                icon = FluentIcons.Playlist,
                 description = strings.episodes,
                 onClick = { onOpen(TvDialog.Episodes) },
                 onFocused = onFocusChanged,
             )
             PlayerIconButton(
-                icon = PlayerIcons.Subtitles,
+                icon = FluentIcons.Subtitles,
                 description = strings.subtitles,
                 onClick = { onOpen(TvDialog.Subtitle) },
                 onFocused = onFocusChanged,

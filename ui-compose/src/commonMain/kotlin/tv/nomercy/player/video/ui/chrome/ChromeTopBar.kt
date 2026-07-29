@@ -8,94 +8,270 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import tv.nomercy.player.video.tv.EpisodeLabels
-import tv.nomercy.player.video.ui.tv.PlayerIconButton
-import tv.nomercy.player.video.ui.tv.PlayerIcons
 import tv.nomercy.player.video.tv.TvChromeItem
-import tv.nomercy.player.video.ui.tv.TvChromeStrings
 import tv.nomercy.player.video.tv.episodeLabel
 import tv.nomercy.player.video.tv.showTitle
+import tv.nomercy.player.video.ui.tv.FluentIcons
+import tv.nomercy.player.video.ui.tv.TvChromeStrings
 
-// The name across the top, and the way out.
+// The name across the top, and the ways out.
 //
-// The same two lines the television bar draws, from the same two functions, so a
-// viewer moving between a phone and a set-top box reads the same title in the
-// same shape. What differs is only that this one has somewhere to press: a
-// television leaves by the remote's back button and a phone has nothing else.
+// A port of desktop-ui/helpers/topBar.ts and the `.top-bar` rules beside it, and
+// before that it was neither: a close cross with the title left-aligned against
+// it. Both originals — the web bar and the MobileTopBar it was written to mirror
+// — put the buttons on one side and the title on the other, right-aligned, under
+// a gradient. Nothing about that was a matter of taste to get wrong.
 //
-// Leaving is a callback rather than something this does. Where "out" goes is the
-// host's — a route, a dismissed sheet, a closed window — and a library that
-// picked one would be wrong in every app that picked another.
+// Every number here is the web's, written as the arithmetic that produced it
+// rather than as a rounded result, because check-chrome-parity.py reads these
+// constants and the stylesheet and compares them. A padding written as 48.dp is
+// a number nobody can check; one written as the value the CSS states is.
+//
+// Which buttons appear follows the web exactly, and the rule is not the same for
+// all three. Back and close are gated on having somewhere to go — the web hides
+// them unless the consumer listens for the event, and a null callback here says
+// the same thing. Cast is gated on the option instead, because a consumer can
+// want the affordance without having wired the picker yet.
 @Composable
 public fun ChromeTopBar(
     item: TvChromeItem?,
     strings: TvChromeStrings,
     modifier: Modifier = Modifier,
     labels: EpisodeLabels = EpisodeLabels(),
-    onClose: (() -> Unit)? = null,
+    buttons: ChromeButtons = ChromeButtons(),
+    exits: ChromeExits = ChromeExits(),
     trailing: @Composable () -> Unit = {},
 ) {
-    val episode: String = episodeLabel(item, labels)
-
-    Row(
-        modifier = modifier.fillMaxWidth().padding(BAR_PADDING).testTag(TOP_BAR_TAG),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(GAP),
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Brush.verticalGradient(GRADIENT))
+            .padding(start = BAR_PADDING, top = BAR_PADDING, end = BAR_PADDING, bottom = BAR_BOTTOM_PADDING)
+            .testTag(TOP_BAR_TAG),
     ) {
-        if (onClose != null) {
-            PlayerIconButton(
-                icon = PlayerIcons.Close,
-                description = strings.close,
-                onClick = onClose,
-                modifier = Modifier.testTag(CLOSE_TAG),
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            // Flex-start, not centred. The right column is two lines tall and the
+            // left one is a single row of buttons; centring the two against each
+            // other drops the buttons half a line down the picture.
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            TopBarControls(strings, buttons, exits, trailing)
+            TopBarTitle(item, strings, labels)
+        }
+    }
+}
+
+/**
+ * The three things the top bar can emit, together.
+ *
+ * One type rather than three parameters because the web treats them as one
+ * decision — `applyStateVisibility()` decides which of these the viewer can
+ * reach — and because a host wiring a player has all three answers at once or
+ * none of them.
+ *
+ * Back and close are different exits. Back returns to wherever the viewer came
+ * from and close dismisses the player where it stands, and a library offering
+ * only the second leaves every consumer rebuilding the first by hand.
+ */
+public data class ChromeExits(
+    val onBack: (() -> Unit)? = null,
+    /**
+     * Pressing this only surfaces the intent. The consumer opens its own device
+     * picker, exactly as on the web, and a library that reached for a cast
+     * session here would be choosing the consumer's protocol for it.
+     */
+    val onCast: (() -> Unit)? = null,
+    val onClose: (() -> Unit)? = null,
+)
+
+// The left column: the ways out, and whatever the host adds beside them.
+@Composable
+private fun TopBarControls(
+    strings: TvChromeStrings,
+    buttons: ChromeButtons,
+    exits: ChromeExits,
+    trailing: @Composable () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(BUTTON_GAP),
+    ) {
+        exits.onBack?.let { TopBarButton(FluentIcons.Back, strings.back, it, BACK_TAG) }
+
+        if (buttons.cast) {
+            exits.onCast?.let { TopBarButton(FluentIcons.Cast, strings.cast, it, CAST_TAG) }
         }
 
-        Column(modifier = Modifier.weight(1f)) {
-            BasicText(
-                text = showTitle(item, strings.loading),
-                style = TextStyle(color = Color.White, fontSize = TITLE_SIZE, fontWeight = FontWeight.Bold),
-            )
+        exits.onClose?.let { TopBarButton(FluentIcons.Close, strings.close, it, CLOSE_TAG) }
 
-            // Absent rather than blank on a film, whose name is already on the
-            // line above. An empty second line is a gap a viewer reads as
-            // something that failed to load.
-            if (episode.isNotEmpty()) {
-                BasicText(
-                    text = episode,
-                    style = TextStyle(color = Color.White, fontSize = EPISODE_SIZE),
-                    modifier = Modifier.testTag(EPISODE_TAG),
-                )
-            }
-        }
-
-        // Where a host puts what only it has: a cast button, a chapter list, a
-        // share sheet. Empty by default, because a slot the library filled would
-        // be one every consumer has to undo.
+        // Where a host puts what only it has: a chapter list, a share sheet.
+        // Empty by default, because a slot the library filled would be one every
+        // consumer has to undo.
         trailing()
     }
 }
 
+// The right column: what is playing, on two lines, right-aligned.
+//
+// Sixty per cent of the bar, which is `max-width: 60%` on the web and the same
+// 0.60 weight in the Android original. A long film title that ran the width of
+// the picture would meet the buttons.
+@Composable
+private fun RowScope.TopBarTitle(
+    item: TvChromeItem?,
+    strings: TvChromeStrings,
+    labels: EpisodeLabels,
+) {
+    val episode: String = episodeLabel(item, labels)
+
+    Column(
+        modifier = Modifier.fillMaxWidth(RIGHT_COLUMN_SHARE),
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(TEXT_GAP),
+    ) {
+        BasicText(
+            text = showTitle(item, strings.loading),
+            style = TITLE_STYLE,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+
+        // Absent rather than blank on a film, whose name is already on the line
+        // above. The web sets `hidden` on the same condition; an empty second
+        // line is a gap a viewer reads as something that failed to load.
+        if (episode.isNotEmpty()) {
+            BasicText(
+                text = episode,
+                style = SHOW_INFO_STYLE,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(bottom = SHOW_INFO_BOTTOM).testTag(EPISODE_TAG),
+            )
+        }
+    }
+}
+
+// A round translucent button, which is what the web's `.back-btn, .cast-btn,
+// .close-btn` rule draws.
+//
+// Not PlayerIconButton: that one is the television's, forty-eight units across
+// and filling white when focus lands on it, because a remote has no pointer and
+// focus is the only cue. These are pressed with a finger or a mouse.
+@Composable
+private fun TopBarButton(
+    icon: ImageVector,
+    description: String,
+    onClick: () -> Unit,
+    tag: String,
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(BUTTON_SIZE)
+            .background(Color.Black.copy(alpha = BUTTON_BACKGROUND_ALPHA), CircleShape)
+            .clickable(onClick = onClick)
+            .semantics { contentDescription = description }
+            .testTag(tag),
+    ) {
+        Image(
+            painter = rememberVectorPainter(icon),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(Color.White),
+            modifier = Modifier.size(ICON_SIZE),
+        )
+    }
+}
+
 internal const val TOP_BAR_TAG = "nm-chrome-top-bar"
+internal const val BACK_TAG = "nm-chrome-back"
+internal const val CAST_TAG = "nm-chrome-cast"
 internal const val CLOSE_TAG = "nm-chrome-close"
 internal const val EPISODE_TAG = "nm-chrome-episode"
 
+// `padding: 16px 16px 48px 16px`. The bottom one is three times the others
+// because it is not spacing — it is the length the gradient has to fade over,
+// and a bar padded evenly puts a hard edge across the picture.
 private val BAR_PADDING = 16.dp
-private val GAP = 12.dp
-private val TITLE_SIZE = 18.sp
-private val EPISODE_SIZE = 14.sp
+private val BAR_BOTTOM_PADDING = 48.dp
+
+// `margin-right: 8px` on each button, and `gap: 0.5rem` down the right column.
+private val BUTTON_GAP = 8.dp
+private val TEXT_GAP = 8.dp
+
+// `width: 40px; height: 40px` with the glyph rendered at svgFromIcon's default 22.
+private val BUTTON_SIZE = 40.dp
+private val ICON_SIZE = 22.dp
+
+// `background: rgba(0, 0, 0, 0.35)`.
+private const val BUTTON_BACKGROUND_ALPHA = 0.35f
+
+// `max-width: 60%`.
+private const val RIGHT_COLUMN_SHARE = 0.60f
+
+// `linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0.4), rgba(0,0,0,0))`.
+// Three stops, not two: the middle one is what keeps the fade from looking like
+// a grey band laid over the picture.
+private val GRADIENT = listOf(
+    Color.Black.copy(alpha = 0.85f),
+    Color.Black.copy(alpha = 0.40f),
+    Color.Transparent,
+)
+
+// Sizes are rem on the web and the browser's root is sixteen pixels, so the
+// arithmetic is written out rather than the answer: 1.05rem is 16.8, not 17.
+private const val REM = 16f
+
+private val TITLE_STYLE = TextStyle(
+    color = Color.White,
+    fontSize = (1.05f * REM).sp,
+    fontWeight = FontWeight.Bold,
+    textAlign = TextAlign.End,
+    // `text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8)`. A white title over a bright
+    // frame is unreadable without it, which is exactly when it matters.
+    shadow = Shadow(color = Color.Black.copy(alpha = 0.8f), offset = Offset(0f, 1f), blurRadius = 4f),
+)
+
+private val SHOW_INFO_STYLE = TextStyle(
+    color = Color.White.copy(alpha = 0.75f),
+    fontSize = (0.88f * REM).sp,
+    fontWeight = FontWeight.SemiBold,
+    textAlign = TextAlign.End,
+)
+
+// `margin-bottom: 2px`.
+private val SHOW_INFO_BOTTOM = 2.dp
