@@ -155,17 +155,15 @@ public class AppleVideoEngine(
         scope.launch { player.previous() }
     }
 
-    public fun selectQuality(level: QualityLevel?) {
-        player.quality(level)
-    }
-
-    public fun selectAudio(track: AudioTrack) {
-        player.audioTrack(track)
-    }
-
-    public fun selectSubtitle(track: SubtitleTrack?) {
-        player.subtitle(track)
-    }
+    /**
+     * What can be picked, and picking it.
+     *
+     * Its own object rather than six more methods on the engine, because it is
+     * its own concern: the transport is what a viewer presses and this is what
+     * a menu offers. Detekt counted the methods and said so, and it was right —
+     * an engine that had grown a track catalogue was an engine doing two jobs.
+     */
+    public val tracks: AppleVideoTracks = AppleVideoTracks(player)
 
     public fun dispose() {
         collecting?.cancel()
@@ -196,6 +194,38 @@ public class AppleVideoEngine(
         subtitleTracks = player.subtitles(),
         activeSubtitle = player.subtitle(),
     )
+}
+
+/**
+ * The track surface, read and selected.
+ *
+ * The lists are read through to the player rather than cached, because Swift
+ * matches a menu selection back to the level it stands for. A quality level is
+ * a height, a bitrate and a codec with no id of its own, so the option handed
+ * to a menu carries a made-up one and the way back is to find the level that
+ * still answers to it. Rebuilding a level from the three fields an option
+ * carries would drop the codec, the dynamic range and the width, and ask the
+ * engine to select something it never offered.
+ */
+public class AppleVideoTracks internal constructor(private val player: NMVideoPlayer) {
+
+    public fun qualityLevels(): List<QualityLevel> = player.qualityLevels()
+
+    public fun audioTracks(): List<AudioTrack> = player.audioTracks()
+
+    public fun subtitleTracks(): List<SubtitleTrack> = player.subtitles()
+
+    public fun selectQuality(level: QualityLevel?) {
+        player.quality(level)
+    }
+
+    public fun selectAudio(track: AudioTrack) {
+        player.audioTrack(track)
+    }
+
+    public fun selectSubtitle(track: SubtitleTrack?) {
+        player.subtitle(track)
+    }
 }
 
 // Zero rather than a division by zero, which is every live stream: the duration
