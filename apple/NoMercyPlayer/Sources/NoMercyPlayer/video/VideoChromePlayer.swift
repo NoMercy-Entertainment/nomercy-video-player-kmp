@@ -110,6 +110,20 @@ public protocol VideoChromePlayer: ObservableObject {
     var isMuted: Bool { get }
     var isFullscreen: Bool { get }
 
+    /// The rest of the web's row: the two view modes, the rate, the fitting and
+    /// whether there is a queue worth opening.
+    ///
+    /// Reads rather than commands, because each of these controls draws
+    /// differently depending on the answer — theater and picture-in-picture
+    /// swap their glyph when active, and the speed and aspect menus mark what
+    /// is currently set. A command-only protocol gives a button that toggles
+    /// something and never says which way it went.
+    var isTheater: Bool { get }
+    var isPictureInPicture: Bool { get }
+    var rate: Double { get }
+    var aspectRatio: AspectFitting { get }
+    var hasPlaylist: Bool { get }
+
     var error: PlayerChromeError? { get }
 
     /// The layer host's surface. Non-optional because the backend always owns
@@ -140,6 +154,29 @@ public protocol VideoChromePlayer: ObservableObject {
     func setVolume(_ percent: Double)
     func setMuted(_ muted: Bool)
     func setFullscreen(_ fullscreen: Bool)
+
+    /// Ten seconds either way, which is what the web's two seek buttons do and
+    /// what their labels say. A step the consumer could choose would be a step
+    /// that disagrees with the label the library ships.
+    func seekBack()
+    func seekForward()
+
+    func setTheater(_ theater: Bool)
+    func setPictureInPicture(_ pip: Bool)
+    func setRate(_ rate: Double)
+    func setAspectRatio(_ fitting: AspectFitting)
+}
+
+/// How the picture is fitted, with the web's four tokens.
+///
+/// The same values Compose's `Stretching` carries and the same spellings —
+/// `exactfit`, not `uniformFill` — because a preference stored by one client is
+/// read by another and a renamed token is a value the other end throws on.
+public enum AspectFitting: String, CaseIterable, Sendable {
+    case uniform
+    case fill
+    case exactfit
+    case none
 }
 
 /// A chapter boundary, as the bar and the preview bubble read it.
@@ -205,7 +242,35 @@ public extension VideoChromePlayer {
     func setVolume(_ percent: Double) {}
     func setMuted(_ muted: Bool) {}
     func setFullscreen(_ fullscreen: Bool) {}
+
+    var isTheater: Bool { false }
+    var isPictureInPicture: Bool { false }
+    var rate: Double { 1 }
+    var aspectRatio: AspectFitting { .uniform }
+    var hasPlaylist: Bool { false }
+
+    /// Clamped at both ends. A seek past the end is a seek to the end, and one
+    /// before the start is a seek to zero — an unclamped step is how a button
+    /// press near a boundary produces an error instead of a picture.
+    func seekBack() {
+        seek(to: max(0, currentTime - seekStep))
+    }
+
+    func seekForward() {
+        seek(to: min(duration, currentTime + seekStep))
+    }
+
+    func setTheater(_ theater: Bool) {}
+    func setPictureInPicture(_ pip: Bool) {}
+    func setRate(_ rate: Double) {}
+    func setAspectRatio(_ fitting: AspectFitting) {}
 }
+
+/// The step both seek buttons take, in seconds.
+///
+/// Ten, which is the number in the web's own labels — "Seek back 10 s". A
+/// different step here would make the library's own tooltip a lie.
+private let seekStep: Double = 10
 
 /// How close to a boundary still counts as being on it, in seconds.
 ///

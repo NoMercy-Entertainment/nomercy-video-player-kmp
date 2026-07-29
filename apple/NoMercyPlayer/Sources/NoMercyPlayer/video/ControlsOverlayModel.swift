@@ -47,6 +47,16 @@ public struct VideoChromeStrings: Sendable {
     public var fullscreen: String = "Fullscreen"
     public var exitFullscreen: String = "Exit fullscreen"
 
+    // The rest of the row, in the browser's wording from desktop-ui/i18n/en.ts.
+    public var seekBack: String = "Seek back 10 s"
+    public var seekForward: String = "Seek forward 10 s"
+    public var aspectRatio: String = "Aspect ratio"
+    public var theater: String = "Theater mode"
+    public var pictureInPicture: String = "Picture-in-picture"
+    public var speed: String = "Playback speed"
+    public var playlist: String = "Playlist"
+    public var settings: String = "Settings"
+
     public init() {}
 }
 
@@ -85,6 +95,30 @@ public struct ControlsOverlayModel<Player: VideoChromePlayer> {
         // dragged to a round number lands.
         if player.volume <= volumeMediumCeiling { return FluentIcons.volumeMedium }
         return FluentIcons.volumeHigh
+    }
+
+    /// The aspect button's glyph, which says which fitting is in effect.
+    ///
+    /// Three glyphs for four modes, as the web has: `none` and `uniform` both
+    /// draw the fit icon there, because neither crops and the difference is not
+    /// something an icon can carry.
+    public var aspectIcon: FluentIcon {
+        switch player.aspectRatio {
+        case .fill: return FluentIcons.aspectFill
+        case .exactfit: return FluentIcons.aspectOriginal
+        case .uniform, .none: return FluentIcons.aspectFit
+        }
+    }
+
+    /// The fitting one press moves to, cycling in the web's order.
+    ///
+    /// Derived here rather than in the view so pressing the button twice on
+    /// either player lands on the same picture — the cycle IS the behaviour,
+    /// and a view that computed its own would drift the moment a case is added.
+    public var nextAspect: AspectFitting {
+        let order = AspectFitting.allCases
+        let index = order.firstIndex(of: player.aspectRatio) ?? 0
+        return order[(index + 1) % order.count]
     }
 
     public var elapsed: String { formatTime(player.currentTime) }

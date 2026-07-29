@@ -172,6 +172,16 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
                 .disabled(!player.hasPrevious)
                 .accessibilityLabel(strings.previous)
 
+                Button(action: player.seekBack) {
+                    PlayerGlyph(FluentIcons.seekBack)
+                }
+                .accessibilityLabel(strings.seekBack)
+
+                Button(action: player.seekForward) {
+                    PlayerGlyph(FluentIcons.seekForward)
+                }
+                .accessibilityLabel(strings.seekForward)
+
                 if !player.chapters.isEmpty {
                     Button(action: player.chapterBack) {
                         PlayerGlyph(FluentIcons.chapterBack)
@@ -194,6 +204,26 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
                     PlayerGlyph(model.volumeIcon)
                 }
                 .accessibilityLabel(strings.mute)
+
+                Button { player.setAspectRatio(model.nextAspect) } label: {
+                    PlayerGlyph(model.aspectIcon)
+                }
+                .accessibilityLabel(strings.aspectRatio)
+
+                Button { player.setTheater(!player.isTheater) } label: {
+                    PlayerGlyph(player.isTheater ? FluentIcons.theaterExit : FluentIcons.theater)
+                }
+                .accessibilityLabel(strings.theater)
+
+                Button { player.setPictureInPicture(!player.isPictureInPicture) } label: {
+                    PlayerGlyph(player.isPictureInPicture ? FluentIcons.pipExit : FluentIcons.pipEnter)
+                }
+                .accessibilityLabel(strings.pictureInPicture)
+
+                Button { intents.setMenuOpen(true) } label: {
+                    PlayerGlyph(FluentIcons.speed)
+                }
+                .accessibilityLabel(strings.speed)
 
                 if model.offersSubtitleMenu {
                     Button {
@@ -221,6 +251,18 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
                     }
                     .accessibilityLabel(strings.quality)
                 }
+
+                if player.hasPlaylist {
+                    Button { intents.setMenuOpen(true) } label: {
+                        PlayerGlyph(FluentIcons.playlist)
+                    }
+                    .accessibilityLabel(strings.playlist)
+                }
+
+                Button { intents.setMenuOpen(true) } label: {
+                    PlayerGlyph(FluentIcons.settings)
+                }
+                .accessibilityLabel(strings.settings)
 
                 // Last on the row, as it is in the browser, and drawing the exit
                 // glyph while fullscreen rather than the same one both ways.
