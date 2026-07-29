@@ -38,6 +38,17 @@ if [ "$core" != "$here" ]; then
   cp "$core/scenarios/scenarios.json" "$here/scenarios/scenarios.json"
 fi
 
+# The Swift tests read their own copy out of the package's test resources,
+# because SPM resolves resources relative to the test bundle and cannot reach
+# up into the repo. That made them a THIRD copy with nothing syncing it: they
+# sat at 2.0.1 while these two moved to 2.0.2, and the only job that noticed
+# was the Apple one — the slowest in the matrix, so the last to say so.
+swift_resources="$here/apple/NoMercyPlayer/Tests/NoMercyPlayerTests/conformance/Resources"
+if [ -d "$swift_resources" ]; then
+  cp "$here/contract/contract.json" "$swift_resources/contract.json"
+  cp "$here/scenarios/scenarios.json" "$swift_resources/scenarios.json"
+fi
+
 sha256sum "$here/contract/contract.json" | awk '{print $1}' > "$here/contract.lock"
 
 # The scenarios too. The contract says what the surface is and the scenarios say

@@ -81,7 +81,22 @@ final class SpriteAndChapterTests: XCTestCase {
 
     func testTheFrameLookupIsTheSharedOne() {
         // Held to the same answers as the Kotlin tests: the last frame that has
-        // started, the first one before anything has, the last one past the end.
+        // started, and the LAST one both before anything has started and past
+        // the end.
+        //
+        // Before the first cue is the surprising one, and it is deliberate.
+        // The web's lookupCue does `find(...) ?? cues.at(-1)`, so a time no cue
+        // covers falls back to the last frame — obviously right past the end of
+        // the sheet, and a bug-looking answer before the first cue, which is
+        // reachable only when a sheet's first cue starts later than zero.
+        // Matched rather than improved: a native player showing a different
+        // thumbnail than the browser at the same scrub position is a divergence
+        // a viewer sees, and the fix belongs on both sides at once. Recorded in
+        // web-chrome-fidelity-spec.md under matched-but-suspect.
+        //
+        // This test asserted the old answer and caught the change, which is
+        // exactly its job — the Swift side shares the Kotlin rule, so an
+        // expectation written here is a second opinion on it.
         //
         // The starts have to differ, which is not a detail. Three cues all
         // starting at zero make every lookup return the last of them, and the
@@ -93,7 +108,7 @@ final class SpriteAndChapterTests: XCTestCase {
             cue(x: 640, y: 0, start: 20),
         ]
 
-        XCTAssertEqual(spriteFrame(in: frames, at: -1)?.x, 0)
+        XCTAssertEqual(spriteFrame(in: frames, at: -1)?.x, 640)
         XCTAssertEqual(spriteFrame(in: frames, at: 5)?.x, 0)
         XCTAssertEqual(spriteFrame(in: frames, at: 15)?.x, 320)
         XCTAssertEqual(spriteFrame(in: frames, at: 9_999)?.x, 640)
