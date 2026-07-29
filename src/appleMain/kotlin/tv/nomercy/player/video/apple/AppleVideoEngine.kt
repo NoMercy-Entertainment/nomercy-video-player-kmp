@@ -18,6 +18,7 @@ import tv.nomercy.player.core.media.PlaylistItem
 import tv.nomercy.player.core.player.BufferState
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerConfig
+import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.player.PlayerState
 import tv.nomercy.player.core.ports.AVPlayerVideoBackend
 import tv.nomercy.player.core.ports.AudioTrack
@@ -107,7 +108,37 @@ public class AppleVideoEngine(
 
     private var collecting: Job? = null
 
-    public fun setup(config: PlayerConfig = PlayerConfig()) {
+    /**
+     * Set up with the defaults.
+     *
+     * A separate function rather than a default argument, because a Kotlin
+     * default argument does not export a no-argument form to Swift -- it
+     * exports the one that takes the parameter and marks the empty one
+     * unavailable. So a Swift caller wanting the ordinary case would have to
+     * spell out every field of PlayerConfig to ask for the values it already
+     * has.
+     */
+    public fun setup() {
+        setup(PlayerConfig())
+    }
+
+    /**
+     * Register a plugin.
+     *
+     * Here rather than through `plugins.register` directly, because Kotlin
+     * generics are invariant across the Objective-C bridge: `Plugin<MessageOptions>`
+     * arrives in Swift as something that will not convert to the `Plugin<AnyObject>`
+     * the registry asks for, so the call cannot be written on that side at all.
+     *
+     * The options go to the plugin's own constructor instead, which is where a
+     * Swift caller can pass them with types intact.
+     */
+    @Suppress("UNCHECKED_CAST")
+    public fun addPlugin(plugin: Plugin<*>) {
+        player.plugins.register(plugin as Plugin<Any>)
+    }
+
+    public fun setup(config: PlayerConfig) {
         scope.launch { player.setup(config) }
     }
 
