@@ -545,6 +545,42 @@ public final class tv/nomercy/player/video/ui/chrome/SeekSide : java/lang/Enum {
 	public static fun values ()[Ltv/nomercy/player/video/ui/chrome/SeekSide;
 }
 
+public final class tv/nomercy/player/video/ui/chrome/SkipKind : java/lang/Enum {
+	public static final field Intro Ltv/nomercy/player/video/ui/chrome/SkipKind;
+	public static final field Outro Ltv/nomercy/player/video/ui/chrome/SkipKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/SkipKind;
+	public static fun values ()[Ltv/nomercy/player/video/ui/chrome/SkipKind;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/SkipPosition {
+	public static final field $stable I
+	public fun <init> (DDII)V
+	public final fun component1 ()D
+	public final fun component2 ()D
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun copy (DDII)Ltv/nomercy/player/video/ui/chrome/SkipPosition;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/SkipPosition;DDIIILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/SkipPosition;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCurrentSeconds ()D
+	public final fun getDurationSeconds ()D
+	public final fun getIndex ()I
+	public final fun getPlaylistSize ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/SkipPrompt {
+	public static final field $stable I
+	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/SkipPrompt;
+	public static final field SAME_CHAPTER_SECONDS D
+	public static final field VISIBLE_MS J
+	public final fun chapterAt (Ljava/util/List;D)Ltv/nomercy/player/video/tv/TvChapter;
+	public final fun shouldOffer (Ljava/lang/String;Ltv/nomercy/player/video/ui/chrome/SkipPosition;)Z
+	public final fun typeOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/SkipKind;
+}
+
 public final class tv/nomercy/player/video/ui/chrome/TouchZonesOptions {
 	public static final field $stable I
 	public fun <init> ()V
