@@ -66,6 +66,43 @@ public data class ChromeButtons(
     public companion object {
 
         /**
+         * The NoMercy Android client's own bar, as a configuration.
+         *
+         * The library draws the web's eighteen, because that is the contract a
+         * consumer moving across expects and because picture-in-picture and
+         * theater mode are framed-page ideas that a phone has no use for. What
+         * the app actually shows is those eighteen with six turned off, which
+         * is what these flags are for — the app is a configuration of the
+         * faithful player, not a second player.
+         *
+         * Read off MobileBottomBar.kt and gated against it by
+         * scripts/check-app-parity.py, so the two cannot drift apart quietly.
+         */
+        public fun androidApp(): ChromeButtons = ChromeButtons(
+            playPause = true,
+            previousNext = true,
+            seekBack = true,
+            seekForward = true,
+            time = true,
+            playlist = true,
+            quality = true,
+            audio = true,
+            subtitles = true,
+            settings = true,
+            fullscreen = true,
+
+            // Off in his bar. Chapters and volume because a phone has hardware
+            // keys and a scrubber; the other four because they are things a
+            // framed page does and a full-screen phone player does not.
+            chapters = false,
+            volume = false,
+            aspectRatio = false,
+            theater = false,
+            pictureInPicture = false,
+            speed = false,
+        )
+
+        /**
          * The set each of the two players draws.
          *
          * A trailer gets subtitles and nothing else, which is what

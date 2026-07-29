@@ -138,6 +138,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeButtons {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeButtons$Companion {
+	public final fun androidApp ()Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
 	public final fun forKind (Ltv/nomercy/player/video/ui/chrome/VideoUiKind;)Ltv/nomercy/player/video/ui/chrome/ChromeButtons;
 }
 
