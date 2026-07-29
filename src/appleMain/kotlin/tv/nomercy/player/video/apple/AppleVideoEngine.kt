@@ -130,12 +130,19 @@ public class AppleVideoEngine(
      * arrives in Swift as something that will not convert to the `Plugin<AnyObject>`
      * the registry asks for, so the call cannot be written on that side at all.
      *
-     * The options go to the plugin's own constructor instead, which is where a
-     * Swift caller can pass them with types intact.
+     * Any rather than Plugin<*>, which does not help: a star projection exports
+     * as Plugin<AnyObject> too, and Swift will not convert a
+     * Plugin<MessageOptions> to it either. The type is checked here instead,
+     * and a caller passing something else is told what they passed.
+     *
+     * The options go to the plugin's own constructor, which is where a Swift
+     * caller can pass them with types intact.
      */
     @Suppress("UNCHECKED_CAST")
-    public fun addPlugin(plugin: Plugin<*>) {
-        player.plugins.register(plugin as Plugin<Any>)
+    public fun addPlugin(plugin: Any) {
+        val registrable: Plugin<Any> = plugin as? Plugin<Any>
+            ?: error("addPlugin takes a Plugin; got ${plugin::class.simpleName}")
+        player.plugins.register(registrable)
     }
 
     public fun setup(config: PlayerConfig) {
