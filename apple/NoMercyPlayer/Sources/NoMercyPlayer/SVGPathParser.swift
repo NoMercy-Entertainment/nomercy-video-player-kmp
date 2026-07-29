@@ -14,7 +14,9 @@ import SwiftUI
 /// Parsed once at construction rather than on every draw: `path(in:)` is called
 /// on every layout pass, and re-tokenising a four-hundred-character string each
 /// time is work a scrolling menu pays for repeatedly.
-public enum PathCommand: Sendable {
+// Equatable so an icon is, which is what lets a test say "the button shows the
+// play glyph" rather than "the button shows a string that used to name one".
+public enum PathCommand: Equatable, Sendable {
     case move(CGPoint)
     case line(CGPoint)
     case curve(to: CGPoint, control1: CGPoint, control2: CGPoint)

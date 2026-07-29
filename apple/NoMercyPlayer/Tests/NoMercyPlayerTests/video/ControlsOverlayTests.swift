@@ -37,11 +37,11 @@ final class ControlsOverlayTests: XCTestCase {
         // the engine is doing, not what it was last asked to do.
         let player = FakeVideoChromePlayer()
         let model = ControlsOverlayModel(player: player)
-        XCTAssertEqual(model.transport.symbol, "play.fill")
+        XCTAssertEqual(model.transport.icon, FluentIcons.play)
 
         player.play()
 
-        XCTAssertEqual(model.transport.symbol, "pause.fill")
+        XCTAssertEqual(model.transport.icon, FluentIcons.pause)
     }
 
     func testTheGlyphAndItsLabelCannotDisagree() {

@@ -96,16 +96,34 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
         }
     }
 
+    // Buttons on one side, the title on the other, right-aligned. The web's
+    // `.top-bar` is `justify-content: space-between` with the two columns either
+    // end of it, and this drew a close cross with the title left-aligned beside
+    // it and the cast button off on its own at the far end.
     private var topBar: some View {
-        HStack(spacing: 12) {
-            if let onClose {
-                Button(action: onClose) {
-                    Image(systemName: "xmark")
+        HStack(alignment: .top, spacing: 0) {
+            HStack(spacing: PlayerGlyph.buttonGap) {
+                // Absent when the host has nowhere to cast to. A control
+                // somebody presses to find out it does nothing is worse than one
+                // that is not there.
+                if let onCast {
+                    Button(action: onCast) {
+                        PlayerGlyph(FluentIcons.cast)
+                    }
+                    .accessibilityLabel(strings.cast)
                 }
-                .accessibilityLabel(strings.close)
+
+                if let onClose {
+                    Button(action: onClose) {
+                        PlayerGlyph(FluentIcons.close)
+                    }
+                    .accessibilityLabel(strings.close)
+                }
             }
 
-            VStack(alignment: .leading, spacing: 2) {
+            Spacer(minLength: 0)
+
+            VStack(alignment: .trailing, spacing: 2) {
                 Text(title).font(.headline)
                 // Absent rather than blank: an empty line is a gap a viewer
                 // reads as something that failed to load.
@@ -113,18 +131,7 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
                     Text(subtitle).font(.subheadline)
                 }
             }
-
-            Spacer()
-
-            // Absent when the host has nowhere to cast to. A control somebody
-            // presses to find out it does nothing is worse than one that is not
-            // there.
-            if let onCast {
-                Button(action: onCast) {
-                    Image(systemName: "airplayvideo")
-                }
-                .accessibilityLabel(strings.cast)
-            }
+            .multilineTextAlignment(.trailing)
         }
         .foregroundColor(tint)
         .padding()
@@ -140,36 +147,40 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
             .font(.caption)
             .foregroundColor(tint)
 
+            // Play, then subtitles, then audio, then quality — the order the
+            // web's builder appends them in, not the order they were thought of.
+            // Audio wears the globe rather than a waveform because that is the
+            // glyph the browser's audio button carries.
             HStack(spacing: 24) {
                 Button(action: intents.togglePlayPause) {
-                    Image(systemName: model.transport.symbol)
+                    PlayerGlyph(model.transport.icon)
                 }
                 .accessibilityLabel(model.transport.label)
                 .accessibilityIdentifier("nmPlayPause")
-
-                if model.offersAudioMenu {
-                    Button {
-                        intents.setMenuOpen(true)
-                    } label: {
-                        Image(systemName: "waveform")
-                    }
-                    .accessibilityLabel(strings.audio)
-                }
 
                 if model.offersSubtitleMenu {
                     Button {
                         intents.setMenuOpen(true)
                     } label: {
-                        Image(systemName: "captions.bubble")
+                        PlayerGlyph(FluentIcons.subtitles)
                     }
                     .accessibilityLabel(strings.subtitles)
+                }
+
+                if model.offersAudioMenu {
+                    Button {
+                        intents.setMenuOpen(true)
+                    } label: {
+                        PlayerGlyph(FluentIcons.language)
+                    }
+                    .accessibilityLabel(strings.audio)
                 }
 
                 if model.offersQualityMenu {
                     Button {
                         intents.setMenuOpen(true)
                     } label: {
-                        Image(systemName: "gearshape")
+                        PlayerGlyph(FluentIcons.quality)
                     }
                     .accessibilityLabel(strings.quality)
                 }

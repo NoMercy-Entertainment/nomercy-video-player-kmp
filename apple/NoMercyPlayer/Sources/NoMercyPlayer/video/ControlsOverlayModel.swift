@@ -15,7 +15,10 @@ import Foundation
 /// wrong for everyone who is not. The Compose chrome had exactly that defect and
 /// it took a planted test to find it.
 public struct TransportGlyph: Equatable, Sendable {
-    public let symbol: String
+    /// The web's own glyph, not an SF Symbol. `play.fill` and `pause.fill` are
+    /// Apple's triangles and they are not the shapes the browser draws, so a
+    /// viewer moving between the two players was looking at a different button.
+    public let icon: FluentIcon
     public let label: String
 }
 
@@ -54,8 +57,8 @@ public struct ControlsOverlayModel<Player: VideoChromePlayer> {
 
     public var transport: TransportGlyph {
         player.isPlaying
-            ? TransportGlyph(symbol: "pause.fill", label: strings.pause)
-            : TransportGlyph(symbol: "play.fill", label: strings.play)
+            ? TransportGlyph(icon: FluentIcons.pause, label: strings.pause)
+            : TransportGlyph(icon: FluentIcons.play, label: strings.play)
     }
 
     public var elapsed: String { formatTime(player.currentTime) }

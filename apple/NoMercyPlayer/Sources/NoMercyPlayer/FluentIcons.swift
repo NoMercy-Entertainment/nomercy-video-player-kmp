@@ -112,7 +112,7 @@ public enum FluentIcons {
 /// renderer hardcodes it too, and an icon on a different grid is the same
 /// picture at the wrong size. The path is scaled into whatever rect SwiftUI
 /// hands it, so a caller sizes the icon and never the geometry.
-public struct FluentIcon: Shape, Sendable {
+public struct FluentIcon: Shape, Equatable, Sendable {
     private let commands: [PathCommand]
 
     public init(path: String) {
