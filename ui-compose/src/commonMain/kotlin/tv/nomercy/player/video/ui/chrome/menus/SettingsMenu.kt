@@ -8,6 +8,9 @@
 
 package tv.nomercy.player.video.ui.chrome.menus
 
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ColumnScope
@@ -24,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.text.TextStyle
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Column
@@ -107,13 +111,13 @@ public fun SettingsMenu(
     // The frame is inset on three sides and `margin-top: auto` pushes the card to
     // the bottom of it, which is what puts the panel above the settings button
     // rather than over the film. 52px of bottom inset is the bar's own height.
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .padding(top = FRAME_INSET, end = FRAME_INSET, bottom = FRAME_BOTTOM_INSET),
         contentAlignment = Alignment.BottomEnd,
     ) {
-        SettingsPanel(strings, menu, onMenuChange) {
+        SettingsPanel(maxHeight, strings, menu, onMenuChange) {
             when (menu) {
                 MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
                 MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
@@ -144,6 +148,7 @@ public fun SettingsMenu(
  */
 @Composable
 private fun SettingsPanel(
+    room: Dp,
     strings: MenuStrings,
     menu: MenuState,
     onMenuChange: (MenuState) -> Unit,
@@ -159,7 +164,11 @@ private fun SettingsPanel(
             // `min-width: 16rem` bounds a flex column of `width: auto`, whose rows
             // do not stretch; the card measures exactly 256 there.
             .width(PANEL_WIDTH)
-            .fillMaxHeight(PANEL_MAX_HEIGHT_SHARE)
+            // `height: auto; max-height: 60vh` — a ceiling, not a height.
+            //
+            // fillMaxHeight(0.6f) made the card 60% tall always, so two rows sat
+            // in a panel with a third of a player of empty space under them.
+            .heightIn(max = room * PANEL_MAX_HEIGHT_SHARE)
             .clip(RoundedCornerShape(PANEL_RADIUS))
             .background(PANEL_BACKGROUND)
             .testTag(SETTINGS_MENU_TAG),
@@ -167,7 +176,21 @@ private fun SettingsPanel(
     ) {
         MenuHeader(strings.titleFor(menu), menu, onMenuChange)
 
-        rows()
+        // The rows scroll; the header does not.
+        //
+        // `overflow: hidden` on the card is what keeps the rounded corners, and it
+        // is also what silently CUT the list: the main menu has seven rows and
+        // only the two that fitted were drawn, with no indication the rest
+        // existed. On the web the pane scrolls inside the same clipped card, which
+        // is the only way a forty-episode playlist is reachable at all.
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .testTag(MENU_ROWS_TAG),
+            verticalArrangement = Arrangement.spacedBy(PANEL_GAP),
+        ) {
+            rows()
+        }
     }
 }
 
@@ -497,6 +520,7 @@ private const val SDR_WIRE = "sdr"
 
 internal const val SETTINGS_MENU_TAG = "nm-settings-menu"
 internal const val MENU_HEADER_TAG = "nm-menu-header"
+internal const val MENU_ROWS_TAG = "nm-menu-rows"
 internal const val MENU_BACK_TAG = "nm-menu-back"
 internal const val MENU_CLOSE_TAG = "nm-menu-close"
 internal const val ROW_QUALITY = "nm-row-quality"
