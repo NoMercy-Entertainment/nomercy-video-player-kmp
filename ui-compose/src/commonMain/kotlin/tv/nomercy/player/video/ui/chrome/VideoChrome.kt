@@ -48,6 +48,7 @@ import tv.nomercy.player.video.VideoEvents
 import tv.nomercy.player.video.input.VideoKeyHandlerPlugin
 import tv.nomercy.player.video.input.playerCommandsOf
 import tv.nomercy.player.video.ui.chrome.menus.MenuState
+import tv.nomercy.player.video.ui.chrome.menus.MenuStrings
 import tv.nomercy.player.video.ui.chrome.menus.SettingsMenu
 import tv.nomercy.player.video.tv.Scheduler
 import tv.nomercy.player.video.tv.TvChapter
@@ -70,7 +71,7 @@ public fun VideoChrome(
     player: NMVideoPlayer,
     formFactor: FormFactor,
     modifier: Modifier = Modifier,
-    strings: TvChromeStrings = TvChromeStrings(),
+    strings: TvChromeStrings = rememberChromeStrings(),
     buttons: ChromeButtons = ChromeButtons(),
     sprite: List<SpriteCue> = emptyList(),
     onClose: (() -> Unit)? = null,
@@ -87,6 +88,11 @@ public fun VideoChrome(
      * zone that swallows taps and does nothing.
      */
     gestures: ChromeGestures? = null,
+    /**
+     * Whether openings and endings are skipped or offered. The app owns the
+     * setting; this is what it currently reads and where a change goes back.
+     */
+    autoSkip: AutoSkipPreference = AutoSkipPreference(),
     slots: ChromeSlots = LocalChromeSlots.current,
     surface: @Composable () -> Unit = {},
 ) {
@@ -97,15 +103,18 @@ public fun VideoChrome(
     val message: String? = rememberPlayerMessage(player)
     val error: ChromeError? = rememberPlayerError(player)
     val state: ChromeState = rememberChromeState(player, message, error)
+        .copy(autoSkipChapters = autoSkip.enabled)
 
     val controller: ChromeController = remember(player, scheduler) {
         ChromeController(isPlaying = { player.playState() == PlayState.PLAYING }, scheduler = scheduler)
     }
     val commands: ChromeCommands = remember(player, scope) {
-        VideoChromeCommands(player, scope) { menu = it }
+        VideoChromeCommands(player, scope, onMenu = { menu = it }, onAutoSkipChange = autoSkip.onChange)
     }
 
     ChromeBindings(controller, state.playing, menu)
+
+    AutoSkipBinding(state, commands)
 
     ChromeFrame(
         input = ChromeInput(rememberVideoKeys(player, formFactor), controller, commands, player::now, gestures),
@@ -113,7 +122,7 @@ public fun VideoChrome(
         surface = surface,
     ) {
         ChromeLayers(
-            scene = ChromeScene(state, commands, controller, strings, buttons),
+            scene = ChromeScene(state, commands, controller, strings, rememberMenuStrings(), buttons),
             host = ChromeHost(sprite, onClose, onBack, onCast, slots),
             menu = menu,
             onMenuChange = { menu = it },
@@ -223,17 +232,18 @@ private class ChromeInput(
 }
 
 // What the player says, as the widgets read it.
-private data class ChromeScene(
+internal data class ChromeScene(
     val state: ChromeState,
     val commands: ChromeCommands,
     val controller: ChromeController,
     val strings: TvChromeStrings,
+    val menuStrings: MenuStrings,
     val buttons: ChromeButtons,
 )
 
 // What the host supplied, which the player knows nothing about: the sprite sheet
 // its server generated, and where "out" goes.
-private data class ChromeHost(
+internal data class ChromeHost(
     val sprite: List<SpriteCue>,
     val onClose: (() -> Unit)?,
     val onBack: (() -> Unit)?,
@@ -253,24 +263,7 @@ private fun ChromeLayers(
     Box(modifier = Modifier.fillMaxSize()) {
         ChromeBackdropLayer(scene, host)
 
-        // Outside the visibility gate. A film that is still buffering has to say
-        // so whether or not the controls are up, and a viewer looking at a
-        // frozen picture with nothing on it cannot tell it from a crash.
-        if (scene.state.buffering) {
-            BasicText(
-                text = scene.strings.loading,
-                style = TextStyle(color = Color.White),
-                modifier = Modifier.align(Alignment.Center).testTag(BUFFERING_TAG),
-            )
-        }
-
-        scene.state.message?.let { text ->
-            BasicText(
-                text = text,
-                style = TextStyle(color = Color.White),
-                modifier = Modifier.align(Alignment.Center).testTag(MESSAGE_TAG),
-            )
-        }
+        ChromeStatusText(scene)
 
         AnimatedVisibility(visible = ui.active, enter = fadeIn(), exit = fadeOut()) {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -287,7 +280,15 @@ private fun ChromeLayers(
             }
         }
 
-        SettingsMenu(scene.state, scene.commands, menu, onMenuChange, Modifier.align(Alignment.BottomCenter))
+        SettingsMenu(
+            scene.state,
+            scene.commands,
+            menu,
+            onMenuChange,
+            Modifier.align(Alignment.BottomCenter),
+            scene.menuStrings,
+            scene.buttons,
+        )
 
         ChromeOverlays(scene)
 
@@ -479,48 +480,11 @@ private fun ChromeBackdropLayer(scene: ChromeScene, host: ChromeHost) {
     }
 }
 
-// The layers that sit over the picture and are not the controls: the skip
-// prompt and the failure. Split from ChromeLayers because that function is the
-// assembly and this is what is layered on it, and together they are longer than
-// one function is allowed to be.
-@Composable
-private fun BoxScope.ChromeOverlays(scene: ChromeScene) {
-        // The skip prompt, on the chapter the film is actually inside.
-    //
-    // Bottom-start for an opening and bottom-end for an ending, as his does,
-    // so the two never appear in the same place and a viewer learns where to
-    // look. Gated on a real chapter list: an item without chapters offers
-    // nothing, which is most films.
-    skipOffer(scene.state)?.let { offer ->
-        SkipButton(
-            kind = offer,
-            label = if (offer == SkipKind.Intro) scene.strings.skipIntro else scene.strings.skipOutro,
-            // To the end of the chapter being skipped, which is where the
-            // next one starts. seekTo rather than a chapter-forward command,
-            // because the boundary is already known here and asking the
-            // player to find it again is a second answer that can differ.
-            onSkip = { skipTargetOf(scene.state)?.let(scene.commands::seekTo) },
-            modifier = Modifier.align(
-                if (offer == SkipKind.Intro) Alignment.BottomStart else Alignment.BottomEnd,
-            ),
-        )
-    }
-
-    // Over the controls, not instead of them, which is what his overlay
-    // does: a viewer reading why playback failed still needs the way out and
-    // the playlist to pick something else. Outside the visibility gate for
-    // the same reason the buffering line is — a failure that hides itself
-    // after four seconds of no pointer movement is a failure nobody read.
-    scene.state.error?.let { failure ->
-        ChromeErrorOverlay(failure, Modifier.align(Alignment.Center))
-    }
-}
-
 // Which skip, if any, the film is currently inside.
 //
 // Reads the chapter under the position and asks SkipPrompt whether it should be
 // offered here — the two playlist guards are its business, not this file's.
-private fun skipOffer(state: ChromeState): SkipKind? {
+internal fun skipOffer(state: ChromeState): SkipKind? {
     val chapter: TvChapter = SkipPrompt.chapterAt(state.chapters, state.timeSeconds) ?: return null
     val title: String = chapter.title ?: return null
 
@@ -536,7 +500,7 @@ private fun skipOffer(state: ChromeState): SkipKind? {
 
 // Where a skip lands: the start of the chapter after the one being skipped, or
 // nothing when there is no chapter after it.
-private fun skipTargetOf(state: ChromeState): Double? =
+internal fun skipTargetOf(state: ChromeState): Double? =
     state.chapters
         .map { it.startSeconds }
         .filter { it > state.timeSeconds }

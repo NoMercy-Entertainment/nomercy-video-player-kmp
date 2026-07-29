@@ -89,6 +89,11 @@ public data class ChromeState(
     // until the item is reloaded. Drawing one as the other put a fatal decode
     // error on screen for three seconds and then hid it.
     val error: ChromeError? = null,
+
+    // Whether openings and endings are skipped for the viewer rather than
+    // offered to them. Not a player capability and not persisted here — the app
+    // owns it, and this is what it currently reads. See [AutoSkipPreference].
+    val autoSkipChapters: Boolean = false,
 ) {
 
     // Drawn by the bar and by the scrubber, so it is computed once here. Zero

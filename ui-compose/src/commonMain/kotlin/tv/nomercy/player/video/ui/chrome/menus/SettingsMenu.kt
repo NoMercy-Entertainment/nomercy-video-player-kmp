@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
+import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.video.ui.chrome.ChromeState
 import tv.nomercy.player.video.ui.chrome.ChromeTranslations
@@ -43,7 +44,18 @@ import tv.nomercy.player.video.ui.tv.FluentIcons
 // Playlist joins the web bar's set. Its own state because the bar opens it
 // straight to the episode rail, AND a row inside Main, because the web lists it
 // there too — reading only the button was how it ended up reachable one way.
-public enum class MenuState { Hidden, Main, Quality, Audio, Subtitle, Speed, Playlist, AspectRatio, SubtitleSettings }
+public enum class MenuState {
+    Hidden,
+    Main,
+    Quality,
+    Audio,
+    Subtitle,
+    Speed,
+    Playlist,
+    AspectRatio,
+    SubtitleSettings,
+    AutoSkip,
+}
 
 // The settings surface: a main list that opens the others.
 //
@@ -59,6 +71,7 @@ public fun SettingsMenu(
     onMenuChange: (MenuState) -> Unit,
     modifier: Modifier = Modifier,
     strings: MenuStrings = MenuStrings(),
+    buttons: ChromeButtons = ChromeButtons(),
 ) {
     if (menu == MenuState.Hidden) return
 
@@ -70,7 +83,7 @@ public fun SettingsMenu(
             .testTag(SETTINGS_MENU_TAG),
     ) {
         when (menu) {
-            MenuState.Main -> MainMenu(state, strings, onMenuChange)
+            MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
             MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
             MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
             MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
@@ -78,6 +91,7 @@ public fun SettingsMenu(
             MenuState.Playlist -> PlaylistMenu(state, onMenuChange)
             MenuState.AspectRatio -> AspectRatioMenu(state, commands, strings, onMenuChange)
             MenuState.SubtitleSettings -> SubtitleSettingsMenu(state, commands, strings)
+            MenuState.AutoSkip -> AutoSkipMenu(state, commands, strings, onMenuChange)
             MenuState.Hidden -> Unit
         }
     }
@@ -108,88 +122,6 @@ private fun PlaylistMenu(state: ChromeState, onMenuChange: (MenuState) -> Unit) 
                 MenuRow(item.title.orEmpty(), tag = "$ROW_EPISODE$index") {
                     onMenuChange(MenuState.Hidden)
                 }
-            }
-        }
-    }
-}
-
-// The web's category list, in the web's order, with the glyph each row carries.
-//
-// It was quality, audio, subtitles, speed — four of the seven, and the first two
-// the other way round. Order is not decoration in a list somebody navigates with
-// a thumb or a d-pad: a viewer who knows audio is the top row on the web reaches
-// for the top row here, and reordering it silently is how a remote press picks
-// the wrong thing.
-//
-// Only the lists that have something in them, still. A row that opens onto one
-// option is a press that costs a viewer time and gives them no choice.
-//
-// All seven now. Subtitle settings was the last to land, because it needed the
-// nine properties and their choice lists before it had anything to open onto,
-// and a row that opens onto nothing is worse than an absent row.
-@Composable
-private fun MainMenu(state: ChromeState, strings: MenuStrings, onMenuChange: (MenuState) -> Unit) {
-    Column {
-        if (state.audioTracks.size > 1) {
-            MenuRow(strings.audio, tag = ROW_AUDIO, icon = FluentIcons.Language, opensSubMenu = true) {
-                onMenuChange(MenuState.Audio)
-            }
-        }
-
-        // Offered whenever the feature is on, even with nothing loaded: turning
-        // subtitles off is a choice, and so is finding out there are none.
-        MenuRow(strings.subtitles, tag = ROW_SUBTITLE, icon = FluentIcons.Subtitles, opensSubMenu = true) {
-            onMenuChange(MenuState.Subtitle)
-        }
-
-        MenuRow(
-            strings.subtitleSettings,
-            tag = ROW_SUBTITLE_SETTINGS,
-            icon = FluentIcons.SubtitleSettings,
-            opensSubMenu = true,
-        ) {
-            onMenuChange(MenuState.SubtitleSettings)
-        }
-
-        if (state.qualityLevels.size > 1) {
-            MenuRow(strings.quality, tag = ROW_QUALITY, icon = FluentIcons.Quality, opensSubMenu = true) {
-                onMenuChange(MenuState.Quality)
-            }
-        }
-
-        MainMenuPresentation(state, strings, onMenuChange)
-    }
-}
-
-// The half of the list that changes how the picture looks rather than what is
-// in it. Split from the rows above only because the whole list is longer than
-// one function is allowed to be; the order across both is still the web's.
-@Composable
-private fun MainMenuPresentation(
-    state: ChromeState,
-    strings: MenuStrings,
-    onMenuChange: (MenuState) -> Unit,
-) {
-    Column {
-        MenuRow(strings.speed, tag = ROW_SPEED, icon = FluentIcons.Speed, opensSubMenu = true) {
-            onMenuChange(MenuState.Speed)
-        }
-
-        MenuRow(
-            strings.aspectRatio,
-            tag = ROW_ASPECT_RATIO,
-            icon = FluentIcons.AspectFit,
-            opensSubMenu = true,
-        ) {
-            onMenuChange(MenuState.AspectRatio)
-        }
-
-        // The web lists this here as well as opening it from its own button, and
-        // this had only the button. Somebody in the settings list looking for
-        // the next episode found nothing.
-        if (state.queue.size > 1) {
-            MenuRow(strings.playlist, tag = ROW_PLAYLIST, icon = FluentIcons.Playlist, opensSubMenu = true) {
-                onMenuChange(MenuState.Playlist)
             }
         }
     }
@@ -365,6 +297,14 @@ public fun menuStrings(locale: String): MenuStrings {
         subtitleAreaColor = menu("subtitle.areaColor"),
         subtitleAreaOpacity = menu("subtitle.areaOpacity"),
         reset = menu("reset"),
+
+        // The auto-skip row's three words are NOT read from the table. The web
+        // has no such row, so it has no keys for them, and `get` returns the key
+        // itself when it finds nothing — which would put
+        // "plugin.desktop-ui.menu.autoSkipChapters" on screen in all 79
+        // locales, English included. They stay on the data class, where a host
+        // that draws the row overrides them from its own resources, which is
+        // where his three already are.
     )
 }
 
@@ -396,6 +336,12 @@ public data class MenuStrings(
     val subtitleBackgroundOpacity: String = "Background opacity",
     val subtitleAreaColor: String = "Area color",
     val subtitleAreaOpacity: String = "Area opacity",
+    // The auto-skip row and its two options, from his own
+    // settings_auto_skip_chapters, player_on and player_off.
+    val autoSkipChapters: String = "Auto-skip intros/outros",
+    val on: String = "On",
+    val off: String = "Off",
+
     val reset: String = "Reset",
     val automatic: String = "Auto",
     val normalSpeed: String = "Normal",
@@ -420,6 +366,9 @@ internal const val ROW_ASPECT = "nm-aspect-"
 internal const val ROW_SUBTITLE_SETTINGS = "nm-row-subtitle-settings"
 internal const val ROW_SUBTITLE_SETTING = "nm-subtitle-setting-"
 internal const val ROW_SUBTITLE_RESET = "nm-subtitle-reset"
+internal const val ROW_AUTO_SKIP = "nm-row-auto-skip"
+internal const val ROW_AUTO_SKIP_ON = "nm-row-auto-skip-on"
+internal const val ROW_AUTO_SKIP_OFF = "nm-row-auto-skip-off"
 internal const val SUBTITLE_PROPERTY_TAG = "nm-subtitle-property"
 
 // Stretching.entries would read the same and is not: the enum's order is the

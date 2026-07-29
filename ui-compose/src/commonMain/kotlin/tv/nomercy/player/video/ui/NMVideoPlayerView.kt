@@ -23,6 +23,7 @@ import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerState
 import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.ui.chrome.rememberChromeStrings
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.VideoUiKind
 import tv.nomercy.player.video.ui.chrome.ChromeSlots
@@ -51,7 +52,7 @@ public fun NMVideoPlayerView(
     player: NMVideoPlayer,
     modifier: Modifier = Modifier,
     capabilities: DeviceCapabilities = rememberDeviceCapabilities(),
-    strings: TvChromeStrings = TvChromeStrings(),
+    strings: TvChromeStrings = rememberChromeStrings(),
     /**
      * Which of the two players this is.
      *

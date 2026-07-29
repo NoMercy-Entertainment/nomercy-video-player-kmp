@@ -24,7 +24,24 @@ public interface ChromeCommands :
     ChromeTransportCommands,
     ChromeAudioCommands,
     ChromeTrackCommands,
-    ChromePresentationCommands
+    ChromePresentationCommands,
+    ChromeSkipCommands
+
+// Whether openings and endings are skipped or offered.
+//
+// Its own seam rather than a method on the transport interface: it is not a
+// button on the bar, it does not reach the player, and it is the only command
+// here whose answer outlives the item being played.
+public interface ChromeSkipCommands {
+
+    /**
+     * Turn auto-skipping of openings and endings on or off.
+     *
+     * Writes through to whoever owns the setting rather than storing it: the
+     * viewer set this once for their account, not once for this film.
+     */
+    public fun setAutoSkipChapters(enabled: Boolean)
+}
 
 // What plays, and where in it.
 // The width is the web bar's, not a decision made here: every method below is a

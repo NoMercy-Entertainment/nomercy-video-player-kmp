@@ -61,6 +61,11 @@ public data class ChromeButtons(
     // handler alone would put the button in front of viewers of every build
     // that has a picker but does not want one offered here.
     val cast: Boolean = false,
+
+    // The auto-skip row in the settings list. Off by default because the web
+    // has no such row and the seven there are gated against it; his player
+    // draws it, which is what androidApp() turns on.
+    val autoSkipChapters: Boolean = false,
 ) {
 
     public companion object {
@@ -90,6 +95,7 @@ public data class ChromeButtons(
             subtitles = true,
             settings = true,
             fullscreen = true,
+            autoSkipChapters = true,
 
             // Off in his bar. Chapters and volume because a phone has hardware
             // keys and a scrubber; the other four because they are things a

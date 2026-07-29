@@ -35,7 +35,12 @@ internal class VideoChromeCommands(
     private val player: NMVideoPlayer,
     private val scope: CoroutineScope,
     private val onMenu: (MenuState) -> Unit,
+    private val onAutoSkipChange: (Boolean) -> Unit,
 ) : ChromeCommands {
+
+    // Straight back out to the host. The player has no opinion about this and
+    // no place to keep it — see AutoSkipPreference.
+    override fun setAutoSkipChapters(enabled: Boolean): Unit = onAutoSkipChange(enabled)
 
     override fun seekTo(seconds: Double) {
         scope.launch { player.time(seconds) }
