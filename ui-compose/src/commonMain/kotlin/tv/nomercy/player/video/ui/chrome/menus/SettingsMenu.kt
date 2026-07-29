@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
@@ -150,7 +151,14 @@ private fun SettingsPanel(
 ) {
     Column(
         modifier = Modifier
-            .widthIn(min = PANEL_MIN_WIDTH)
+            // A fixed width, not a minimum.
+            //
+            // `widthIn(min = 256.dp)` sets a floor and no ceiling, and every row
+            // inside fills its width — so the card expanded to the whole player
+            // and the bottom-right alignment had nothing left to align. On the web
+            // `min-width: 16rem` bounds a flex column of `width: auto`, whose rows
+            // do not stretch; the card measures exactly 256 there.
+            .width(PANEL_WIDTH)
             .fillMaxHeight(PANEL_MAX_HEIGHT_SHARE)
             .clip(RoundedCornerShape(PANEL_RADIUS))
             .background(PANEL_BACKGROUND)
@@ -528,8 +536,8 @@ private val FRAME_INSET = 16.dp
 // The bar's own height. `bottom: 52px` is what lifts the card clear of it.
 private val FRAME_BOTTOM_INSET = 52.dp
 
-// `min-width: 16rem`.
-private val PANEL_MIN_WIDTH = 256.dp
+// `min-width: 16rem`, which is what the card measures on screen.
+private val PANEL_WIDTH = 256.dp
 
 // `max-height: 60vh`, of the player rather than of the window.
 private const val PANEL_MAX_HEIGHT_SHARE = 0.6f
