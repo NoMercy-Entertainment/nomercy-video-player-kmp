@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.ui.chrome.menus.SubtitleStyle
 import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
@@ -123,6 +124,17 @@ public interface ChromePresentationCommands {
      * reach the row somebody tapped.
      */
     public fun setAspectRatio(value: Stretching)
+
+    /**
+     * Write the whole subtitle style back, not a patch.
+     *
+     * The web's `subtitleStyle(partial)` takes a patch and merges, which is the
+     * right shape for a dynamic object and the wrong one for a data class that
+     * already has `copy`. The caller builds the new style with the one field
+     * changed and hands it over whole, so there is no merge to get wrong and
+     * reset is the same call with the defaults.
+     */
+    public fun setSubtitleStyle(style: SubtitleStyle)
 
     // Cleared by whoever showed it. A message that lingers is one a viewer reads
     // as describing what is happening now.

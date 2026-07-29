@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.ui.chrome.menus.SubtitleStyle
 import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
@@ -72,6 +73,11 @@ public data class ChromeState(
     // which is a button and not a menu: a viewer could change the picture and
     // never be told what it had changed to.
     val aspectRatio: Stretching = Stretching.Uniform,
+
+    // How subtitles are drawn. Carried so the settings pane can mark what each
+    // row currently reads, which is the whole difference between a list of
+    // options and a list of settings.
+    val subtitleStyle: SubtitleStyle = SubtitleStyle(),
 
     // What the viewer was last told. Cleared by whoever showed it, because a
     // message that lingers is one somebody reads as current.

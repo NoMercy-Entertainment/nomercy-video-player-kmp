@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -39,7 +43,7 @@ import tv.nomercy.player.video.ui.tv.FluentIcons
 // Playlist joins the web bar's set. Its own state because the bar opens it
 // straight to the episode rail, AND a row inside Main, because the web lists it
 // there too — reading only the button was how it ended up reachable one way.
-public enum class MenuState { Hidden, Main, Quality, Audio, Subtitle, Speed, Playlist, AspectRatio }
+public enum class MenuState { Hidden, Main, Quality, Audio, Subtitle, Speed, Playlist, AspectRatio, SubtitleSettings }
 
 // The settings surface: a main list that opens the others.
 //
@@ -73,6 +77,7 @@ public fun SettingsMenu(
             MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
             MenuState.Playlist -> PlaylistMenu(state, onMenuChange)
             MenuState.AspectRatio -> AspectRatioMenu(state, commands, strings, onMenuChange)
+            MenuState.SubtitleSettings -> SubtitleSettingsMenu(state, commands, strings)
             MenuState.Hidden -> Unit
         }
     }
@@ -119,9 +124,9 @@ private fun PlaylistMenu(state: ChromeState, onMenuChange: (MenuState) -> Unit) 
 // Only the lists that have something in them, still. A row that opens onto one
 // option is a press that costs a viewer time and gives them no choice.
 //
-// One of the web's seven is still missing rather than reordered — subtitle
-// settings — because nothing carries subtitle styling yet. A row that opens onto
-// nothing is worse than an absent row, so it lands with its pane.
+// All seven now. Subtitle settings was the last to land, because it needed the
+// nine properties and their choice lists before it had anything to open onto,
+// and a row that opens onto nothing is worse than an absent row.
 @Composable
 private fun MainMenu(state: ChromeState, strings: MenuStrings, onMenuChange: (MenuState) -> Unit) {
     Column {
@@ -137,12 +142,35 @@ private fun MainMenu(state: ChromeState, strings: MenuStrings, onMenuChange: (Me
             onMenuChange(MenuState.Subtitle)
         }
 
+        MenuRow(
+            strings.subtitleSettings,
+            tag = ROW_SUBTITLE_SETTINGS,
+            icon = FluentIcons.SubtitleSettings,
+            opensSubMenu = true,
+        ) {
+            onMenuChange(MenuState.SubtitleSettings)
+        }
+
         if (state.qualityLevels.size > 1) {
             MenuRow(strings.quality, tag = ROW_QUALITY, icon = FluentIcons.Quality, opensSubMenu = true) {
                 onMenuChange(MenuState.Quality)
             }
         }
 
+        MainMenuPresentation(state, strings, onMenuChange)
+    }
+}
+
+// The half of the list that changes how the picture looks rather than what is
+// in it. Split from the rows above only because the whole list is longer than
+// one function is allowed to be; the order across both is still the web's.
+@Composable
+private fun MainMenuPresentation(
+    state: ChromeState,
+    strings: MenuStrings,
+    onMenuChange: (MenuState) -> Unit,
+) {
+    Column {
         MenuRow(strings.speed, tag = ROW_SPEED, icon = FluentIcons.Speed, opensSubMenu = true) {
             onMenuChange(MenuState.Speed)
         }
@@ -326,6 +354,17 @@ public fun menuStrings(locale: String): MenuStrings {
         aspectStretch = menu("stretch"),
         aspectCrop = menu("crop"),
         aspectNative = menu("native"),
+        subtitleSettings = menu("subtitleSettings"),
+        subtitleFont = menu("subtitle.font"),
+        subtitleTextSize = menu("subtitle.textSize"),
+        subtitleTextColor = menu("subtitle.textColor"),
+        subtitleTextOpacity = menu("subtitle.textOpacity"),
+        subtitleEdgeStyle = menu("subtitle.edgeStyle"),
+        subtitleBackgroundColor = menu("subtitle.backgroundColor"),
+        subtitleBackgroundOpacity = menu("subtitle.backgroundOpacity"),
+        subtitleAreaColor = menu("subtitle.areaColor"),
+        subtitleAreaOpacity = menu("subtitle.areaOpacity"),
+        reset = menu("reset"),
     )
 }
 
@@ -344,6 +383,20 @@ public data class MenuStrings(
     val aspectStretch: String = "Stretch",
     val aspectCrop: String = "Crop",
     val aspectNative: String = "Native",
+
+    // The subtitle settings list. One label per property plus the reset, in the
+    // web's own words from its menu.subtitle.* keys.
+    val subtitleSettings: String = "Subtitle settings",
+    val subtitleFont: String = "Font",
+    val subtitleTextSize: String = "Text size",
+    val subtitleTextColor: String = "Text color",
+    val subtitleTextOpacity: String = "Text opacity",
+    val subtitleEdgeStyle: String = "Edge style",
+    val subtitleBackgroundColor: String = "Background color",
+    val subtitleBackgroundOpacity: String = "Background opacity",
+    val subtitleAreaColor: String = "Area color",
+    val subtitleAreaOpacity: String = "Area opacity",
+    val reset: String = "Reset",
     val automatic: String = "Auto",
     val normalSpeed: String = "Normal",
 )
@@ -364,6 +417,10 @@ internal const val ROW_SPEED = "nm-row-speed"
 internal const val ROW_PLAYLIST = "nm-row-playlist"
 internal const val ROW_ASPECT_RATIO = "nm-row-aspect-ratio"
 internal const val ROW_ASPECT = "nm-aspect-"
+internal const val ROW_SUBTITLE_SETTINGS = "nm-row-subtitle-settings"
+internal const val ROW_SUBTITLE_SETTING = "nm-subtitle-setting-"
+internal const val ROW_SUBTITLE_RESET = "nm-subtitle-reset"
+internal const val SUBTITLE_PROPERTY_TAG = "nm-subtitle-property"
 
 // Stretching.entries would read the same and is not: the enum's order is the
 // cycle order and this is the menu's, and pinning it here means a value added

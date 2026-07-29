@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.ui.chrome.menus.SubtitleStyle
 import tv.nomercy.player.video.Stretching
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -85,6 +86,14 @@ internal class VideoChromeCommands(
     override fun cycleAspectRatio(): Unit = player.cycleAspectRatio()
 
     override fun setAspectRatio(value: Stretching): Unit = player.aspectRatio(value)
+
+    // Held here rather than on the player, because the player has no opinion
+    // about how a cue is drawn — a renderer does, and this is what it reads.
+    private var style: SubtitleStyle = SubtitleStyle()
+
+    override fun setSubtitleStyle(style: SubtitleStyle) {
+        this.style = style
+    }
 
     override fun setVolume(percent: Int) {
         scope.launch { player.volume(percent) }
