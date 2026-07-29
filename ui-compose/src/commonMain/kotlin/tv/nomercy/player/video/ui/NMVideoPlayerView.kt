@@ -24,6 +24,7 @@ import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerState
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
+import tv.nomercy.player.video.ui.chrome.VideoUiKind
 import tv.nomercy.player.video.ui.chrome.ChromeSlots
 import tv.nomercy.player.video.ui.chrome.LocalChromeSlots
 import tv.nomercy.player.video.ui.chrome.VideoChrome
@@ -51,7 +52,18 @@ public fun NMVideoPlayerView(
     modifier: Modifier = Modifier,
     capabilities: DeviceCapabilities = rememberDeviceCapabilities(),
     strings: TvChromeStrings = TvChromeStrings(),
-    buttons: ChromeButtons = ChromeButtons(),
+    /**
+     * Which of the two players this is.
+     *
+     * The NoMercy client has a full player over a film and a compact one over a
+     * trailer on a detail page, and they differ by which controls they offer.
+     * Selecting that here rather than by hand-assembling a ChromeButtons is
+     * what makes the trailer reachable from the drop-in at all — it was only
+     * expressible through VideoUiPlugin, so nothing that mounted this view
+     * could ask for it.
+     */
+    kind: VideoUiKind = VideoUiKind.Full,
+    buttons: ChromeButtons = ChromeButtons.forKind(kind),
     sprite: List<SpriteCue> = emptyList(),
     episodes: List<TvEpisode> = emptyList(),
     onClose: () -> Unit = {},
