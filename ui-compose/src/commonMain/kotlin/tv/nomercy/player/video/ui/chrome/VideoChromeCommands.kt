@@ -8,7 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
-import tv.nomercy.player.video.ui.chrome.menus.SubtitleStyle
+import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.video.Stretching
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -87,13 +87,11 @@ internal class VideoChromeCommands(
 
     override fun setAspectRatio(value: Stretching): Unit = player.aspectRatio(value)
 
-    // Held here rather than on the player, because the player has no opinion
-    // about how a cue is drawn — a renderer does, and this is what it reads.
-    private var style: SubtitleStyle = SubtitleStyle()
-
-    override fun setSubtitleStyle(style: SubtitleStyle) {
-        this.style = style
-    }
+    // Straight through to the player, which holds the style and emits
+    // CoreEvents.SubtitleStyle with it. Held privately here it went nowhere: a
+    // renderer subscribing to the event never heard, and ChromeState read a
+    // default while the menu showed a change.
+    override fun setSubtitleStyle(style: SubtitleStyle): Unit = player.subtitleStyle(style)
 
     override fun setVolume(percent: Int) {
         scope.launch { player.volume(percent) }

@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome.menus
 
+import tv.nomercy.player.core.events.SubtitleStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -31,7 +32,7 @@ class SubtitleStyleTest {
         assertEquals(100, style.textOpacity)
         assertEquals("black", style.backgroundColor)
         assertEquals(0, style.backgroundOpacity)
-        assertEquals(SubtitleEdgeStyle.TextShadow, style.edgeStyle)
+        assertEquals(SubtitleEdgeStyle.TextShadow.token, style.edgeStyle)
         assertEquals("black", style.areaColor)
         assertEquals(0, style.windowOpacity)
     }

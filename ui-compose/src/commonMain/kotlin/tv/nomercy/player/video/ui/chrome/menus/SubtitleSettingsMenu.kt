@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
+import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.video.ui.chrome.ChromeState
 
 // Nine properties and a reset, in the web's SETTING_ROWS order.

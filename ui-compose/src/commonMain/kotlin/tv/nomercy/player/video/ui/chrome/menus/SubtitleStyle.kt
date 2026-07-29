@@ -8,32 +8,16 @@
 
 package tv.nomercy.player.video.ui.chrome.menus
 
-/**
- * How subtitles are drawn, as the web's `SubtitleStyle` carries it.
- *
- * Nine properties, the web's names and the web's defaults, because this is a
- * setting a viewer changes once and expects to find again — on the same account,
- * on a different device, in a different client. A native player that stored
- * "large text" where the browser stored `fontSize: 150` would give somebody two
- * different pictures of the same preference and no way to reconcile them.
- *
- * The percentages are percentages, not fractions. `fontSize: 100` is the base
- * size and `textOpacity: 100` is opaque, exactly as `defaultSubtitleStyles`
- * spells them, so a value moved between the two players means the same thing.
- */
-public data class SubtitleStyle(
-    /** A percentage of the base size, so 100 is unchanged rather than tiny. */
-    val fontSize: Int = 100,
-    val fontFamily: String = "ReithSans, sans-serif",
-    val textColor: String = "white",
-    val textOpacity: Int = 100,
-    val backgroundColor: String = BLACK,
-    val backgroundOpacity: Int = 0,
-    val edgeStyle: SubtitleEdgeStyle = SubtitleEdgeStyle.TextShadow,
-    val areaColor: String = BLACK,
-    /** The web calls the area's opacity `windowOpacity`. Kept, not renamed. */
-    val windowOpacity: Int = 0,
-)
+import tv.nomercy.player.core.events.SubtitleStyle
+
+// The subtitle settings list: which rows, what each reads, what each writes.
+//
+// The style itself is core's `SubtitleStyle`, not a second copy. There was one
+// here for a while and that was the duplicate-concept failure this codebase
+// keeps finding elsewhere: core already carried the type, the player already
+// had an accessor for it, and the accessor already emitted the event a renderer
+// listens to. A parallel type meant the menu wrote to something nothing was
+// watching.
 
 /**
  * What is drawn around a glyph so it stays readable over a bright frame.
@@ -83,7 +67,7 @@ public enum class SubtitleSetting(public val property: String) {
         TextSize -> "${style.fontSize}%"
         TextColor -> style.textColor.replaceFirstChar { it.uppercase() }
         TextOpacity -> "${style.textOpacity}%"
-        EdgeStyle -> style.edgeStyle.token
+        EdgeStyle -> style.edgeStyle
         BackgroundColor -> style.backgroundColor.replaceFirstChar { it.uppercase() }
         BackgroundOpacity -> "${style.backgroundOpacity}%"
         AreaColor -> style.areaColor.replaceFirstChar { it.uppercase() }
@@ -113,7 +97,9 @@ public enum class SubtitleSetting(public val property: String) {
         TextSize -> style.copy(fontSize = percentOf(choice, style.fontSize))
         TextColor -> style.copy(textColor = choice)
         TextOpacity -> style.copy(textOpacity = percentOf(choice, style.textOpacity))
-        EdgeStyle -> style.copy(edgeStyle = SubtitleEdgeStyle.fromToken(choice))
+        // Parsed on the way in so an unknown token is refused here rather
+        // than reaching a renderer that has to guess what it meant.
+        EdgeStyle -> style.copy(edgeStyle = SubtitleEdgeStyle.fromToken(choice).token)
         BackgroundColor -> style.copy(backgroundColor = choice)
         BackgroundOpacity -> style.copy(backgroundOpacity = percentOf(choice, style.backgroundOpacity))
         AreaColor -> style.copy(areaColor = choice)

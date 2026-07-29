@@ -107,7 +107,10 @@ class VideoDomainSurfaceTest {
         val styles: MutableList<SubtitleStyle> = mutableListOf()
         subject.on(CoreEvents.SubtitleStyle) { styles += it }
 
-        val chosen = SubtitleStyle(fontSize = 28.0, color = "#FFEE00")
+        // A percentage and a named colour, which is what the contract carries:
+        // fontSize is a multiple of the base size rather than a point size, and
+        // the colours are the web's eight names rather than hex.
+        val chosen = SubtitleStyle(fontSize = 150, textColor = "yellow")
         subject.subtitleStyle(chosen)
 
         assertEquals(chosen, subject.subtitleStyle())

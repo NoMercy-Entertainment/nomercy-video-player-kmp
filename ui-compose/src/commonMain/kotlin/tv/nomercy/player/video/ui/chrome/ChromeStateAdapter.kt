@@ -72,6 +72,7 @@ public fun chromeStateOf(
     queueIndex = snapshot.index,
     fullscreen = player.fullscreen(),
     aspectRatio = player.aspectRatio(),
+    subtitleStyle = player.subtitleStyle(),
     message = message,
 )
 
