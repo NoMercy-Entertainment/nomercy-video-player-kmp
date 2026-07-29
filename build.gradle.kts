@@ -181,6 +181,16 @@ detekt {
     buildUponDefaultConfig = true
 }
 
+// The same 21 the Kotlin compilations target, said again because detekt does
+// not read it. Left unsaid it takes whatever JVM gradle happens to be running
+// on, and the Mac build host is on 26 — a target detekt has never heard of, so
+// it refuses with "Invalid value (26) passed to --jvm-target" before any rule
+// runs. A machine-dependent gate is one that passes or fails for reasons that
+// have nothing to do with the code.
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "21"
+}
+
 @OptIn(kotlinx.validation.ExperimentalBCVApi::class)
 apiValidation {
     klib {
