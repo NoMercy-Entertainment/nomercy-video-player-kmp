@@ -47,12 +47,21 @@ public class ChapterBarState(
 )
 
 // The colours, so a chrome can theme the bar without forking it.
+//
+// The defaults are the stylesheet's, one for one: `.slider-bar` is white at
+// 0.2, `.slider-buffer` at 0.4, `.slider-hover` at 0.3, and `.slider-progress`
+// is `#fff` outright. Every one of these was a different number invented here,
+// and the buffer was the one that mattered — drawn at 0.08 it is all but
+// invisible, so a viewer on a slow line watched a bar that never showed how
+// much had arrived and could not tell buffering from a stall.
+//
+// check-chrome-parity.py reads these alphas and the CSS and compares them.
 public class ChapterBarColors(
-    public val track: Color = Color.LightGray.copy(alpha = 0.4f),
+    public val track: Color = Color.White.copy(alpha = 0.2f),
     public val segment: Color = Color.White.copy(alpha = 0.3f),
-    public val buffer: Color = Color.White.copy(alpha = 0.08f),
-    public val hover: Color = Color.White.copy(alpha = 0.5f),
-    public val progress: Color = Color.White.copy(alpha = 0.8f),
+    public val buffer: Color = Color.White.copy(alpha = 0.4f),
+    public val hover: Color = Color.White.copy(alpha = 0.3f),
+    public val progress: Color = Color.White.copy(alpha = 1.0f),
 )
 
 // A scrubber divided into the item's chapters.

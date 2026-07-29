@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.ui.unit.Dp
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -261,22 +263,68 @@ private fun ChromeLayers(
 // target the width of the picture is the one a finger actually hits.
 @Composable
 private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifier) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        host.slots.scrubber?.invoke(scene.state, scene.commands) ?: ChapterScrubber(
-            state = scene.state,
-            commands = scene.commands,
-            sprite = host.sprite,
-            onScrubbing = scene.controller::setScrubbing,
-        )
+    var scrub: Double? by remember { mutableStateOf(null) }
 
-        host.slots.transport?.invoke(scene.state, scene.commands) ?: TransportBar(
-            state = scene.state,
-            commands = scene.commands,
-            strings = scene.strings,
-            buttons = scene.buttons,
-        )
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val barWidth: Dp = maxWidth
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Above the bar, as `.slider-pop`'s `bottom: 24px` puts it, and only
+            // while a drag is happening: the web's is `display: none` until then
+            // and a bubble sitting over the picture at rest answers a question
+            // nobody asked.
+            //
+            // No frame yet, so the clock and the chapter name without a picture.
+            // Drawing one needs decoded pixels, which needs a tile source, which
+            // is the host's to supply — the sheet says where each frame lives
+            // and something has to read the bytes. That is the next thing this
+            // takes, and it is a parameter rather than a rewrite.
+            scrub?.let { seconds ->
+                ScrubPreview(
+                    seconds = seconds,
+                    fraction = scrubFraction(seconds, scene.state.durationSeconds),
+                    barWidth = barWidth,
+                    chapterTitle = chapterTitleAt(scene.state, seconds),
+                )
+            }
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                host.slots.scrubber?.invoke(scene.state, scene.commands) ?: ChapterScrubber(
+                    state = scene.state,
+                    commands = scene.commands,
+                    sprite = host.sprite,
+                    onScrubbing = scene.controller::setScrubbing,
+                    onScrub = { scrub = it },
+                )
+
+                // The dot follows the drag while one is happening and the film
+                // otherwise, which is what makes it read as the same handle
+                // rather than two things that swap places when a finger lands.
+                ScrubNipple(
+                    fraction = scrubFraction(scrub ?: scene.state.timeSeconds, scene.state.durationSeconds),
+                    barWidth = barWidth,
+                    modifier = Modifier.align(Alignment.CenterStart),
+                )
+            }
+
+            host.slots.transport?.invoke(scene.state, scene.commands) ?: TransportBar(
+                state = scene.state,
+                commands = scene.commands,
+                strings = scene.strings,
+                buttons = scene.buttons,
+            )
+        }
     }
 }
+
+private fun scrubFraction(seconds: Double, duration: Double): Float =
+    if (duration <= 0.0) 0f else (seconds / duration).coerceIn(0.0, 1.0).toFloat()
+
+// The chapter a position falls in, which is what `.chapter-text` names. The last
+// one whose start is at or before the position, so a time inside a chapter reads
+// that chapter and not the one after it.
+private fun chapterTitleAt(state: ChromeState, seconds: Double): String? =
+    state.chapters.lastOrNull { it.startSeconds <= seconds }?.title
 
 // Everything that has to be told when something else changed.
 //

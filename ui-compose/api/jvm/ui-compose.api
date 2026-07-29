@@ -58,7 +58,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChapterProgressBarKt {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChapterScrubberKt {
-	public static final fun ChapterScrubber (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Landroidx/compose/ui/Modifier;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ChapterScrubber (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Landroidx/compose/ui/Modifier;Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
 }
 
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeAudioCommands {
@@ -459,6 +459,11 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/PlayerUiPlugin
 
 public final class tv/nomercy/player/video/ui/chrome/PlayerUiPlugin$ComposeDefaultImpls {
 	public static final fun Content$default (Ltv/nomercy/player/video/NMVideoPlayer;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/chrome/PlayerUiPlugin;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class tv/nomercy/player/video/ui/chrome/ScrubPreviewKt {
+	public static final fun ScrubNipple-uFdPcIQ (FFLandroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ScrubPreview-eVuawKY (DFFLandroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/ImageBitmap;Landroidx/compose/ui/unit/DpSize;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/SeekAccumulatorKt {

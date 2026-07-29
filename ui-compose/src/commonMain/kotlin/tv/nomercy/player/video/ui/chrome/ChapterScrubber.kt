@@ -45,6 +45,16 @@ public fun ChapterScrubber(
     sprite: List<SpriteCue> = emptyList(),
     onScrubbing: (Boolean) -> Unit = {},
     onPreview: (SpriteCue?) -> Unit = {},
+    /**
+     * Where the drag is, in seconds, and null when it ends.
+     *
+     * Separate from [onPreview] because the two answer different questions and
+     * one of them has an answer when the other does not: an item with no sprite
+     * sheet still has a position, and the bubble still has a clock and a chapter
+     * name to show. Reporting only the frame is why the chrome could not draw
+     * one at all for items without thumbnails.
+     */
+    onScrub: (Double?) -> Unit = {},
 ) {
     var dragSeconds: Double? by remember { mutableStateOf(null) }
     var width: Float by remember { mutableStateOf(1f) }
@@ -66,6 +76,7 @@ public fun ChapterScrubber(
                 val moveTo: (Float) -> Unit = { x ->
                     dragSeconds = secondsAt(x, width, state.durationSeconds)
                     onPreview(frameAt(sprite, dragSeconds ?: 0.0))
+                    onScrub(dragSeconds)
                 }
                 val finish: (Boolean) -> Unit = { commit ->
                     // Only on a completed drag does the film move. A cancel
@@ -74,6 +85,7 @@ public fun ChapterScrubber(
                     if (commit) dragSeconds?.let { commands.seekTo(it) }
                     dragSeconds = null
                     onPreview(null)
+                    onScrub(null)
                     onScrubbing(false)
                 }
 
