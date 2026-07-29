@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
@@ -48,6 +49,15 @@ public fun PlayerIconButton(
     description: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Drawn dimmed and unresponsive rather than removed.
+     *
+     * The web disables rather than hides — `setDisabled(prevBtn, onFirst)` — and
+     * the difference is not cosmetic. A control that vanishes at the first item
+     * and returns at the second reflows the whole bar, so every other control
+     * moves under the viewer's finger exactly when they are pressing one.
+     */
+    enabled: Boolean = true,
     focusRequester: FocusRequester? = null,
     onFocused: (Boolean) -> Unit = {},
 ) {
@@ -72,22 +82,39 @@ public fun PlayerIconButton(
             // clickable already answers the centre of a pad and enter, so adding
             // a second handler for those would fire twice per press.
             .clickable(
+                enabled = enabled,
                 interactionSource = interaction,
                 indication = null,
                 onClick = onClick,
             )
-            .semantics { contentDescription = description },
+            // Announced as disabled, not merely drawn dim. A screen reader that
+            // read this as an ordinary button would send somebody to press it.
+            .semantics {
+                contentDescription = description
+                if (!enabled) disabled()
+            },
     ) {
         // Foundation rather than Material. A player library that pulled Material
         // in would put it in every consumer's build whether or not they use it.
         Image(
             painter = rememberVectorPainter(icon),
             contentDescription = null,
-            colorFilter = ColorFilter.tint(if (focused) Color.Black else Color.White),
+            colorFilter = ColorFilter.tint(
+                when {
+                    !enabled -> DISABLED_TINT
+                    focused -> Color.Black
+                    else -> Color.White
+                },
+            ),
             modifier = Modifier.size(ICON_SIZE),
         )
     }
 }
+
+// Dim enough to read as unavailable, bright enough to still read as a control.
+// A disabled button that disappears into the background is a hidden button with
+// extra steps.
+private val DISABLED_TINT = Color.White.copy(alpha = 0.35f)
 
 // Big enough to read from a sofa. Television guidance puts the floor around this
 // and a control below it is one people lean forward to identify.

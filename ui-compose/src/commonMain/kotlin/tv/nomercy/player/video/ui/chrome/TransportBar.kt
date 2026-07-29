@@ -88,10 +88,13 @@ private fun NextButton(
     strings: TvChromeStrings,
     buttons: ChromeButtons,
 ) {
-    if (buttons.previousNext && state.hasNext) {
+    // Drawn at the end of a queue, disabled. Hiding it there reflows the bar
+    // and moves every other control under the viewer's finger.
+    if (buttons.previousNext) {
         PlayerIconButton(
             icon = FluentIcons.Next,
             description = strings.next,
+            enabled = state.hasNext,
             onClick = { commands.next() },
         )
     }
@@ -125,12 +128,15 @@ private fun PlayPauseAndPrevious(
         )
     }
 
-    // Gated on there being somewhere to go. A previous button on the first item
-    // is a control a viewer presses to find out it does nothing.
-    if (buttons.previousNext && state.hasPrevious) {
+    // Drawn on the first item, disabled — the web's setDisabled(prevBtn,
+    // onFirst). It used to be hidden there, on the reasoning that a control
+    // which does nothing should not be shown; that reads well and it makes the
+    // bar jump every time a queue reaches either end.
+    if (buttons.previousNext) {
         PlayerIconButton(
             icon = FluentIcons.Previous,
             description = strings.previous,
+            enabled = state.hasPrevious,
             onClick = { commands.previous() },
         )
     }
@@ -349,6 +355,24 @@ private fun ListMenuButtons(
             modifier = Modifier.testTag(SETTINGS_TAG),
         )
     }
+
+    // Last in the row, after settings, which is where the web puts it.
+    //
+    // It was missing entirely: ChromeButtons carried the flag, ChromeState
+    // carried the state and ChromeCommands carried setFullscreen, and nothing
+    // ever drew the button. Everything was wired except the one part a viewer
+    // touches.
+    //
+    // The glyph swaps rather than a second button appearing, so the control
+    // stays in one place whether or not the player is fullscreen.
+    if (buttons.fullscreen) {
+        PlayerIconButton(
+            icon = if (state.fullscreen) FluentIcons.ExitFullscreen else FluentIcons.Fullscreen,
+            description = if (state.fullscreen) strings.exitFullscreen else strings.fullscreen,
+            onClick = { commands.setFullscreen(!state.fullscreen) },
+            modifier = Modifier.testTag(FULLSCREEN_TAG),
+        )
+    }
 }
 
 // A glyph and what it announces itself as, which are the same choice.
@@ -367,6 +391,8 @@ internal const val PIP_TAG = "nm-pip"
 internal const val SPEED_TAG = "nm-speed"
 internal const val QUALITY_TAG = "nm-quality"
 internal const val PLAYLIST_TAG = "nm-playlist"
+internal const val FULLSCREEN_TAG: String = "nm-chrome-fullscreen"
+
 internal const val SETTINGS_TAG = "nm-settings"
 
 private val READOUT = TextStyle(color = Color.White)

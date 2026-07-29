@@ -165,6 +165,13 @@ public data class TvChromeStrings(
     val quality: String = "Quality",
     val playlist: String = "Playlist",
     val settings: String = "Settings",
+
+    // Two labels for one button, because the glyph swaps and the label has to
+    // swap with it. A fullscreen control still announcing "Fullscreen" while
+    // the player is fullscreen tells a screen-reader user the opposite of what
+    // pressing it does.
+    val fullscreen: String = "Fullscreen",
+    val exitFullscreen: String = "Exit fullscreen",
 )
 
 internal const val BOTTOM_BAR_TAG = "tv-bottom-bar"
