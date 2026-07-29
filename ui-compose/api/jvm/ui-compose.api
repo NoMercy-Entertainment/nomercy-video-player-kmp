@@ -66,6 +66,11 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeAudioCom
 	public abstract fun setVolume (I)V
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChromeBackdropKt {
+	public static final fun ChromeBackdrop (ZLandroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun backdropIsVisible (DD)Z
+}
+
 public final class tv/nomercy/player/video/ui/chrome/ChromeBreakpoint {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/Integer;I)V
