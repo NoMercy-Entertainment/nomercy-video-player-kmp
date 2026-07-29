@@ -82,6 +82,13 @@ public data class ChromeState(
     // What the viewer was last told. Cleared by whoever showed it, because a
     // message that lingers is one somebody reads as current.
     val message: String? = null,
+
+    // What went wrong, if anything. Separate from [message] because they are
+    // different things with different lifetimes: a message is something the
+    // player chose to say and clears itself, and this is a failure that stays
+    // until the item is reloaded. Drawing one as the other put a fatal decode
+    // error on screen for three seconds and then hid it.
+    val error: ChromeError? = null,
 ) {
 
     // Drawn by the bar and by the scrubber, so it is computed once here. Zero

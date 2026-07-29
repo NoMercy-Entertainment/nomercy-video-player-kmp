@@ -37,6 +37,8 @@ import androidx.compose.ui.text.TextStyle
 import kotlinx.coroutines.CoroutineScope
 import tv.nomercy.player.core.cues.SpriteCue
 import tv.nomercy.player.core.device.FormFactor
+import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.errors.Severity
 import tv.nomercy.player.core.events.Subscription
 import tv.nomercy.player.core.input.KeyCombo
 import tv.nomercy.player.core.player.PlayState
@@ -84,7 +86,8 @@ public fun VideoChrome(
 
     var menu: MenuState by remember { mutableStateOf(MenuState.Hidden) }
     val message: String? = rememberPlayerMessage(player)
-    val state: ChromeState = rememberChromeState(player, message)
+    val error: ChromeError? = rememberPlayerError(player)
+    val state: ChromeState = rememberChromeState(player, message, error)
 
     val controller: ChromeController = remember(player, scheduler) {
         ChromeController(isPlaying = { player.playState() == PlayState.PLAYING }, scheduler = scheduler)
@@ -252,6 +255,15 @@ private fun ChromeLayers(
 
         SettingsMenu(scene.state, scene.commands, menu, onMenuChange, Modifier.align(Alignment.BottomCenter))
 
+        // Over the controls, not instead of them, which is what his overlay
+        // does: a viewer reading why playback failed still needs the way out and
+        // the playlist to pick something else. Outside the visibility gate for
+        // the same reason the buffering line is — a failure that hides itself
+        // after four seconds of no pointer movement is a failure nobody read.
+        scene.state.error?.let { failure ->
+            ChromeErrorOverlay(failure, Modifier.align(Alignment.Center))
+        }
+
         // Additive rather than replacing. A skip-intro button and a cast banner
         // are the host's features, and a slot that swallowed the chrome to draw
         // one would be a host choosing between its feature and the controls.
@@ -360,6 +372,36 @@ private fun rememberPlayerMessage(player: NMVideoPlayer): String? {
     }
 
     return message
+}
+
+// The last failure the player reported, until an item change clears it.
+//
+// Held rather than shown-and-forgotten, which is what the message channel does.
+// A fatal decode error is not an announcement: it is the reason the screen is
+// black, and it has to stay up while the viewer reads it and decides what to do.
+// Cleared on the next item, because that is the one event that means somebody is
+// trying something new.
+@Composable
+private fun rememberPlayerError(player: NMVideoPlayer): ChromeError? {
+    var error: ChromeError? by remember { mutableStateOf(null) }
+
+    DisposableEffect(player) {
+        val failed: Subscription = player.on(CoreEvents.Error) { event ->
+            error = ChromeError(
+                code = event.code,
+                technicalMessage = event.message,
+                fatal = event.severity == Severity.FATAL,
+            )
+        }
+        val moved: Subscription = player.on(CoreEvents.Item) { error = null }
+
+        onDispose {
+            failed.dispose()
+            moved.dispose()
+        }
+    }
+
+    return error
 }
 
 // The shipped bindings, for the surfaces that have a keyboard.

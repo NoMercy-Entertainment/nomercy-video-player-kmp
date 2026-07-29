@@ -12,6 +12,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -73,3 +83,84 @@ public fun backdropIsVisible(durationSeconds: Double, currentSeconds: Double): B
 internal const val BACKDROP_TAG = "nm-chrome-backdrop"
 
 private const val SCRIM_ALPHA = 0.3f
+
+/**
+ * A failure the chrome can put on screen.
+ *
+ * The code and the raw text, kept apart. [PlaybackErrorMessage] turns them into
+ * the sentence a viewer reads, and both are carried so the technical line and
+ * the code can sit under it — his overlay shows all three, because a support
+ * ticket that says "it did not work" costs an exchange of messages to turn into
+ * "error 4003".
+ */
+public data class ChromeError(
+    public val code: String?,
+    public val technicalMessage: String?,
+    public val fatal: Boolean = true,
+) {
+
+    /** What to tell the viewer, from the app's own table. */
+    public val readable: String get() = PlaybackErrorMessage.forError(code, technicalMessage)
+}
+
+/**
+ * The failure, on screen, in the words a viewer can act on.
+ *
+ * Three lines as his ErrorOverlay has them: the readable sentence, then the raw
+ * text underneath when it says something different, then the code. The last two
+ * look like clutter and are not — a support message reading "it did not work"
+ * costs an exchange to turn into "error 4003", and the person who can read the
+ * code off their own screen skips that entirely.
+ */
+@Composable
+public fun ChromeErrorOverlay(error: ChromeError, modifier: Modifier = Modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(ERROR_GAP),
+        modifier = modifier
+            .background(ERROR_BACKGROUND, RoundedCornerShape(ERROR_RADIUS))
+            .padding(ERROR_PADDING)
+            .testTag(ERROR_TAG),
+    ) {
+        BasicText(text = error.readable, style = ERROR_HEADLINE)
+
+        // Only when it adds something. A backend whose raw text is already the
+        // sentence above would print it twice.
+        error.technicalMessage
+            ?.takeIf { it.isNotBlank() && it != error.readable }
+            ?.let { BasicText(text = it, style = ERROR_DETAIL, modifier = Modifier.testTag(ERROR_DETAIL_TAG)) }
+
+        error.code
+            ?.takeIf { it.isNotBlank() }
+            ?.let { BasicText(text = it, style = ERROR_CODE, modifier = Modifier.testTag(ERROR_CODE_TAG)) }
+    }
+}
+
+internal const val ERROR_TAG = "nm-chrome-error"
+internal const val ERROR_DETAIL_TAG = "nm-chrome-error-detail"
+internal const val ERROR_CODE_TAG = "nm-chrome-error-code"
+
+private val ERROR_BACKGROUND = Color(red = 20, green = 20, blue = 25, alpha = 242)
+private val ERROR_RADIUS = 16.dp
+private val ERROR_PADDING = 32.dp
+private val ERROR_GAP = 8.dp
+
+private val ERROR_HEADLINE = TextStyle(
+    color = Color.White,
+    fontSize = 18.sp,
+    fontWeight = FontWeight.Bold,
+    textAlign = TextAlign.Center,
+)
+
+private val ERROR_DETAIL = TextStyle(
+    color = Color.White.copy(alpha = 0.7f),
+    fontSize = 11.sp,
+    textAlign = TextAlign.Center,
+)
+
+private val ERROR_CODE = TextStyle(
+    color = Color.White.copy(alpha = 0.7f),
+    fontSize = 14.sp,
+    fontWeight = FontWeight.Medium,
+    textAlign = TextAlign.Center,
+)

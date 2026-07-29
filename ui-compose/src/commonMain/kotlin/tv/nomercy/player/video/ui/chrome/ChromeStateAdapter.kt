@@ -30,11 +30,12 @@ import tv.nomercy.player.video.tv.TvChromeItem
 public fun rememberChromeState(
     player: NMVideoPlayer,
     message: String? = null,
+    error: ChromeError? = null,
     itemOf: (PlaylistItem?) -> TvChromeItem? = ::chromeItemOf,
 ): ChromeState {
     val snapshot: PlayerState by player.stateFlow.collectAsState()
 
-    return chromeStateOf(player, snapshot, itemOf(snapshot.item), message)
+    return chromeStateOf(player, snapshot, itemOf(snapshot.item), message, error)
 }
 
 // Split from the composable so it can be driven from a fixture.
@@ -48,6 +49,7 @@ public fun chromeStateOf(
     snapshot: PlayerState,
     item: TvChromeItem?,
     message: String? = null,
+    error: ChromeError? = null,
 ): ChromeState = ChromeState(
     playing = snapshot.playState == PlayState.PLAYING,
     // Anything other than idle means the picture is not advancing, which is the
@@ -74,6 +76,7 @@ public fun chromeStateOf(
     aspectRatio = player.aspectRatio(),
     subtitleStyle = player.subtitleStyle(),
     message = message,
+    error = error,
 )
 
 // What the library can honestly say about what is playing.
