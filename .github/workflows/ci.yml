@@ -72,7 +72,19 @@ jobs:
   # cannot be.
   apple:
     runs-on: macos-latest
-    timeout-minutes: 45
+
+    # Seventy-five, not forty-five.
+    #
+    # Forty-five was not a budget, it was a cliff this job had been walking
+    # along: the last three runs that finished took 33, 38 and 41 minutes, and
+    # then seven in a row hit the limit. GitHub reports a timeout as
+    # `cancelled`, which reads exactly like a superseded run — so the failure
+    # announced itself as the one thing nobody investigates.
+    #
+    # The cache below is the actual fix. This is the headroom that stops a slow
+    # runner from reading as a broken commit while that takes effect.
+    timeout-minutes: 75
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -89,6 +101,25 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v4
+
+      # The Kotlin/Native toolchain and its prebuilt platform libraries.
+      #
+      # setup-gradle caches the Gradle user home; ~/.konan is not in it, and it
+      # is where the bulk of this job's time went. Every run downloaded the
+      # native compiler and re-derived the platform klibs for iosArm64,
+      # iosSimulatorArm64, iosX64 and both tvOS targets before compiling a line
+      # of this project — the same work, from nothing, every time.
+      #
+      # Keyed on the version catalogue because that is what pins the Kotlin
+      # version, and a stale toolchain for a bumped compiler is worse than no
+      # cache: it links against libraries built by a different compiler and
+      # fails somewhere unrelated.
+      - name: Cache the Kotlin/Native toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('packages-native/nomercy-video-player-kmp/gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
 
       # The Swift package binds to the framework as a binary target, so the
       # framework has to exist before the package will even resolve.
