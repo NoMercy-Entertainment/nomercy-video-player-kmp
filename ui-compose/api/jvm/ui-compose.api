@@ -489,6 +489,12 @@ public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoC
 	public final fun getLambda$-1002878246$ui_compose ()Lkotlin/jvm/functions/Function2;
 }
 
+public final class tv/nomercy/player/video/ui/chrome/PlaybackErrorMessage {
+	public static final field $stable I
+	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/PlaybackErrorMessage;
+	public final fun forError (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+}
+
 public abstract interface class tv/nomercy/player/video/ui/chrome/PlayerUiPlugin {
 	public abstract fun Content (Ltv/nomercy/player/video/NMVideoPlayer;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)V
 	public abstract fun handleBack ()Z
