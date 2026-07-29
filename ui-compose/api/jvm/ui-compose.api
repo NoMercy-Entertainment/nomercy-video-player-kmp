@@ -353,6 +353,14 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeStateAdapterKt {
 	public static final fun rememberChromeState (Ltv/nomercy/player/video/NMVideoPlayer;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)Ltv/nomercy/player/video/ui/chrome/ChromeState;
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChromeTooltip {
+	public static final field $stable I
+	public static final field DELAY_MS J
+	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/ChromeTooltip;
+	public final fun arrowShift (FFFF)F
+	public final fun leftFor (FFFF)F
+}
+
 public final class tv/nomercy/player/video/ui/chrome/ChromeTopBarKt {
 	public static final fun ChromeTopBar (Ltv/nomercy/player/video/tv/TvChromeItem;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/tv/EpisodeLabels;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
