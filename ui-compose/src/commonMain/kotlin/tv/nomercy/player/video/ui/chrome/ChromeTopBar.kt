@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -75,13 +76,15 @@ public fun ChromeTopBar(
     exits: ChromeExits = ChromeExits(),
     trailing: @Composable () -> Unit = {},
 ) {
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .background(Brush.verticalGradient(GRADIENT))
             .padding(start = BAR_PADDING, top = BAR_PADDING, end = BAR_PADDING, bottom = BAR_BOTTOM_PADDING)
             .testTag(TOP_BAR_TAG),
     ) {
+        val width: Int = maxWidth.value.toInt()
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             // Flex-start, not centred. The right column is two lines tall and the
@@ -91,10 +94,30 @@ public fun ChromeTopBar(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             TopBarControls(strings, buttons, exits, trailing)
-            TopBarTitle(item, strings, labels)
+            TopBarTitle(item, strings, labels, width)
         }
     }
 }
+
+/**
+ * How big the title is at this width, and whether the second line survives.
+ *
+ * The web shrinks `.title` twice on the way down — 1.05rem, then 0.9rem at
+ * 480px, then 0.8rem at 360 — and hides `.show-info` outright below 360. This
+ * drew 1.05rem at every width, so on a phone-sized pane the title was a fifth
+ * larger than the browser's and the episode line was still there under it.
+ *
+ * The same three numbers the stylesheet states, in the same order, so
+ * check-chrome-parity.py can read the media queries and this list and compare
+ * them rather than trusting that somebody transcribed them.
+ */
+private fun titleRemFor(widthDp: Int): Float = when {
+    widthDp <= TITLE_XS_MAX -> TITLE_REM_XS
+    widthDp <= TITLE_SM_MAX -> TITLE_REM_SM
+    else -> TITLE_REM
+}
+
+private fun showsEpisodeLine(widthDp: Int): Boolean = widthDp > TITLE_XS_MAX
 
 /**
  * The three things the top bar can emit, together.
@@ -156,6 +179,7 @@ private fun RowScope.TopBarTitle(
     item: TvChromeItem?,
     strings: TvChromeStrings,
     labels: EpisodeLabels,
+    widthDp: Int,
 ) {
     val episode: String = episodeLabel(item, labels)
 
@@ -166,7 +190,7 @@ private fun RowScope.TopBarTitle(
     ) {
         BasicText(
             text = showTitle(item, strings.loading),
-            style = TITLE_STYLE,
+            style = TITLE_STYLE.copy(fontSize = (titleRemFor(widthDp) * REM).sp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
@@ -174,7 +198,11 @@ private fun RowScope.TopBarTitle(
         // Absent rather than blank on a film, whose name is already on the line
         // above. The web sets `hidden` on the same condition; an empty second
         // line is a gap a viewer reads as something that failed to load.
-        if (episode.isNotEmpty()) {
+        //
+        // And gone entirely on the narrowest panes, where the web sets
+        // `display: none` on it: below 360 there is no room for two lines
+        // beside the buttons without the title truncating to nothing.
+        if (episode.isNotEmpty() && showsEpisodeLine(widthDp)) {
             BasicText(
                 text = episode,
                 style = SHOW_INFO_STYLE,
@@ -256,9 +284,20 @@ private val GRADIENT = listOf(
 // arithmetic is written out rather than the answer: 1.05rem is 16.8, not 17.
 private const val REM = 16f
 
+// The three widths the stylesheet names, and the sizes at each. Written as the
+// rem the CSS states rather than as sp, for the same reason every other number
+// here is: the gate reads the media queries and these constants and diffs them.
+private const val TITLE_REM = 1.05f
+private const val TITLE_REM_SM = 0.9f
+private const val TITLE_REM_XS = 0.8f
+
+// `@container (max-width: 480px)` and `@container (max-width: 360px)`.
+private const val TITLE_SM_MAX = 480
+private const val TITLE_XS_MAX = 360
+
 private val TITLE_STYLE = TextStyle(
     color = Color.White,
-    fontSize = (1.05f * REM).sp,
+    fontSize = (TITLE_REM * REM).sp,
     fontWeight = FontWeight.Bold,
     textAlign = TextAlign.End,
     // `text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8)`. A white title over a bright
