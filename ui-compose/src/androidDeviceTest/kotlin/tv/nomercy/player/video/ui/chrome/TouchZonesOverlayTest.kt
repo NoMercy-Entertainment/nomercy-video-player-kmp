@@ -34,29 +34,9 @@ class TouchZonesOverlayTest {
     @get:Rule
     val compose = createComposeRule()
 
-    private class Recording : ChromeCommands {
-        val seeks: MutableList<Float> = mutableListOf()
-        var fullscreen: Boolean? = null
-        var playing: Boolean? = null
 
-        override fun seekTo(seconds: Double) = Unit
-        override fun seekBy(deltaSeconds: Float) { seeks += deltaSeconds }
-        override fun setPlaying(playing: Boolean) { this.playing = playing }
-        override fun next() = Unit
-        override fun previous() = Unit
-        override fun openAudioMenu() = Unit
-        override fun openSubtitleMenu() = Unit
-        override fun setVolume(percent: Int) = Unit
-        override fun setMuted(muted: Boolean) = Unit
-        override fun selectQuality(level: QualityLevel?) = Unit
-        override fun selectAudioTrack(track: AudioTrack) = Unit
-        override fun selectSubtitleTrack(track: SubtitleTrack?) = Unit
-        override fun setRate(rate: Float) = Unit
-        override fun setFullscreen(fullscreen: Boolean) { this.fullscreen = fullscreen }
-        override fun dismissMessage() = Unit
-    }
 
-    private val commands = Recording()
+    private val commands = RecordingChromeCommands()
     private var clock: Long = 0
 
     // A single tap is held back until the double-tap window has passed, so the

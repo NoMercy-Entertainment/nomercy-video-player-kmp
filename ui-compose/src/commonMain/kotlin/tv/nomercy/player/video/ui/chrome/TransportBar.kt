@@ -10,12 +10,14 @@ package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,16 +52,26 @@ public fun TransportBar(
     modifier: Modifier = Modifier,
     buttons: ChromeButtons = ChromeButtons(),
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth().padding(ROW_PADDING).testTag(TRANSPORT_BAR_TAG),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(GAP),
-    ) {
-        TransportButtons(state, commands, strings, buttons)
-        VolumeCluster(state, commands, strings, buttons)
-        TimeReadout(state, buttons)
-        ViewButtons(state, commands, strings, buttons)
-        MenuButtons(state, commands, strings, buttons)
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val fits: Set<ChromeControl> = remember(maxWidth, buttons, state) {
+            visibleControls(
+                widthDp = maxWidth.value.toInt(),
+                contentHidden = { state.lacksContentFor(it) },
+                enabled = { buttons.allows(it) },
+            ).toSet()
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(ROW_PADDING).testTag(TRANSPORT_BAR_TAG),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(GAP),
+        ) {
+            TransportButtons(state, commands, strings, fits)
+            VolumeCluster(state, commands, strings, fits)
+            TimeReadout(state, buttons)
+            ViewButtons(state, commands, strings, fits)
+            MenuButtons(state, commands, strings, fits)
+        }
     }
 }
 
@@ -72,12 +84,12 @@ private fun TransportButtons(
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    buttons: ChromeButtons,
+    fits: Set<ChromeControl>,
 ) {
-    PlayPauseAndPrevious(state, commands, strings, buttons)
-    SeekButtons(commands, strings, buttons)
-    ChapterButtons(state, commands, strings, buttons)
-    NextButton(state, commands, strings, buttons)
+    PlayPauseAndPrevious(state, commands, strings, fits)
+    SeekButtons(commands, strings, fits)
+    ChapterButtons(state, commands, strings, fits)
+    NextButton(state, commands, strings, fits)
 }
 
 // Next closes the transport group, after the chapter jumps.
@@ -86,11 +98,11 @@ private fun NextButton(
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    buttons: ChromeButtons,
+    fits: Set<ChromeControl>,
 ) {
     // Drawn at the end of a queue, disabled. Hiding it there reflows the bar
     // and moves every other control under the viewer's finger.
-    if (buttons.previousNext) {
+    if (ChromeControl.NEXT in fits) {
         PlayerIconButton(
             icon = FluentIcons.Next,
             description = strings.next,
@@ -106,9 +118,9 @@ private fun PlayPauseAndPrevious(
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    buttons: ChromeButtons,
+    fits: Set<ChromeControl>,
 ) {
-    if (buttons.playPause) {
+    if (ChromeControl.PLAY in fits) {
         // The glyph and the label are one decision rather than two conditions
         // that happen to read the same state. Written apart, an edit to one is
         // an edit to half of it — a pause glyph announcing itself as Play, which
@@ -132,7 +144,7 @@ private fun PlayPauseAndPrevious(
     // onFirst). It used to be hidden there, on the reasoning that a control
     // which does nothing should not be shown; that reads well and it makes the
     // bar jump every time a queue reaches either end.
-    if (buttons.previousNext) {
+    if (ChromeControl.PREVIOUS in fits) {
         PlayerIconButton(
             icon = FluentIcons.Previous,
             description = strings.previous,
@@ -148,9 +160,9 @@ private fun PlayPauseAndPrevious(
 private fun SeekButtons(
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    buttons: ChromeButtons,
+    fits: Set<ChromeControl>,
 ) {
-    if (buttons.seekBack) {
+    if (ChromeControl.SEEK_BACK in fits) {
         PlayerIconButton(
             icon = FluentIcons.SeekBack,
             description = strings.seekBack,
@@ -159,7 +171,7 @@ private fun SeekButtons(
         )
     }
 
-    if (buttons.seekForward) {
+    if (ChromeControl.SEEK_FORWARD in fits) {
         PlayerIconButton(
             icon = FluentIcons.SeekForward,
             description = strings.seekForward,
@@ -177,18 +189,23 @@ private fun ChapterButtons(
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    buttons: ChromeButtons,
+    fits: Set<ChromeControl>,
 ) {
-    if (buttons.chapters && state.chapters.isNotEmpty()) {
-        val starts: List<Double> = state.chapters.map { it.startSeconds }
+    val starts: List<Double> = state.chapters.map { it.startSeconds }
 
+    // Ranked separately by the web, so gated separately here. Drawn as a pair
+    // they would appear and disappear together at whichever of the two widths
+    // came first, which is one control's rule applied to two controls.
+    if (ChromeControl.CHAPTER_PREV in fits) {
         PlayerIconButton(
             icon = FluentIcons.ChapterBack,
             description = strings.chapterBack,
             onClick = { commands.seekTo(previousChapterStart(starts, state.timeSeconds)) },
             modifier = Modifier.testTag(CHAPTER_BACK_TAG),
         )
+    }
 
+    if (ChromeControl.CHAPTER_NEXT in fits) {
         PlayerIconButton(
             icon = FluentIcons.ChapterForward,
             description = strings.chapterForward,
@@ -196,7 +213,6 @@ private fun ChapterButtons(
             modifier = Modifier.testTag(CHAPTER_FORWARD_TAG),
         )
     }
-
 }
 
 // Web order 8. The glyph is the level rather than one speaker: the web has
@@ -207,9 +223,9 @@ private fun VolumeCluster(
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    buttons: ChromeButtons,
+    fits: Set<ChromeControl>,
 ) {
-    if (!buttons.volume) return
+    if (ChromeControl.MUTE !in fits) return
 
     val icon: ImageVector = when {
         state.muted || state.volume == 0 -> FluentIcons.VolumeMuted
@@ -250,9 +266,9 @@ private fun ViewButtons(
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    buttons: ChromeButtons,
+    fits: Set<ChromeControl>,
 ) {
-    if (buttons.aspectRatio) {
+    if (ChromeControl.ASPECT_RATIO in fits) {
         PlayerIconButton(
             icon = FluentIcons.AspectFit,
             description = strings.aspectRatio,
@@ -261,7 +277,7 @@ private fun ViewButtons(
         )
     }
 
-    if (buttons.theater) {
+    if (ChromeControl.THEATER in fits) {
         PlayerIconButton(
             icon = if (state.theater) FluentIcons.TheaterExit else FluentIcons.Theater,
             description = strings.theater,
@@ -270,7 +286,7 @@ private fun ViewButtons(
         )
     }
 
-    if (buttons.pictureInPicture) {
+    if (ChromeControl.PIP in fits) {
         PlayerIconButton(
             icon = if (state.pip) FluentIcons.PipExit else FluentIcons.PipEnter,
             description = strings.pictureInPicture,
@@ -279,7 +295,7 @@ private fun ViewButtons(
         )
     }
 
-    if (buttons.speed) {
+    if (ChromeControl.SPEED in fits) {
         PlayerIconButton(
             icon = FluentIcons.Speed,
             description = strings.speed,
@@ -295,9 +311,9 @@ private fun MenuButtons(
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    buttons: ChromeButtons,
+    fits: Set<ChromeControl>,
 ) {
-    if (buttons.subtitles) {
+    if (ChromeControl.SUBTITLES in fits) {
         // subtitlesOff when none is on, which is how the web says the difference
         // without a viewer opening the menu to find out.
         PlayerIconButton(
@@ -309,7 +325,7 @@ private fun MenuButtons(
 
     // Offered only where there is a choice. One audio track is not a menu, it is
     // a row that opens onto itself.
-    if (buttons.audio && state.audioTracks.size > 1) {
+    if (ChromeControl.AUDIO in fits) {
         PlayerIconButton(
             icon = FluentIcons.Language,
             description = strings.language,
@@ -317,7 +333,7 @@ private fun MenuButtons(
         )
     }
 
-    ListMenuButtons(state, commands, strings, buttons)
+    ListMenuButtons(state, commands, strings, fits)
 }
 
 // Quality, playlist and settings — the three that open a list rather than pick
@@ -327,9 +343,9 @@ private fun ListMenuButtons(
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    buttons: ChromeButtons,
+    fits: Set<ChromeControl>,
 ) {
-    if (buttons.quality && state.qualityLevels.isNotEmpty()) {
+    if (ChromeControl.QUALITY in fits) {
         PlayerIconButton(
             icon = FluentIcons.Quality,
             description = strings.quality,
@@ -338,7 +354,7 @@ private fun ListMenuButtons(
         )
     }
 
-    if (buttons.playlist && state.queueSize > 1) {
+    if (ChromeControl.PLAYLIST in fits) {
         PlayerIconButton(
             icon = FluentIcons.Playlist,
             description = strings.playlist,
@@ -347,7 +363,7 @@ private fun ListMenuButtons(
         )
     }
 
-    if (buttons.settings) {
+    if (ChromeControl.SETTINGS in fits) {
         PlayerIconButton(
             icon = FluentIcons.Settings,
             description = strings.settings,
@@ -365,7 +381,7 @@ private fun ListMenuButtons(
     //
     // The glyph swaps rather than a second button appearing, so the control
     // stays in one place whether or not the player is fullscreen.
-    if (buttons.fullscreen) {
+    if (ChromeControl.FULLSCREEN in fits) {
         PlayerIconButton(
             icon = if (state.fullscreen) FluentIcons.ExitFullscreen else FluentIcons.Fullscreen,
             description = if (state.fullscreen) strings.exitFullscreen else strings.fullscreen,
@@ -377,6 +393,48 @@ private fun ListMenuButtons(
 
 // A glyph and what it announces itself as, which are the same choice.
 private data class TransportControl(val icon: ImageVector, val description: String)
+
+/**
+ * Rule 1: whether the consumer asked for this control at all.
+ *
+ * MUTE and VOLUME both answer to [ChromeButtons.volume] because the web's button
+ * map points `mute` at the volume element and `volume` at nothing — the slider
+ * is what rank 3 stands for, and a bar that has one has both.
+ */
+internal fun ChromeButtons.allows(control: ChromeControl): Boolean = when (control) {
+    ChromeControl.PLAY -> playPause
+    ChromeControl.MUTE, ChromeControl.VOLUME -> volume
+    ChromeControl.FULLSCREEN -> fullscreen
+    ChromeControl.SETTINGS -> settings
+    ChromeControl.NEXT, ChromeControl.PREVIOUS -> previousNext
+    ChromeControl.CHAPTER_PREV, ChromeControl.CHAPTER_NEXT -> chapters
+    ChromeControl.SEEK_BACK -> seekBack
+    ChromeControl.SEEK_FORWARD -> seekForward
+    ChromeControl.THEATER -> theater
+    ChromeControl.PIP -> pictureInPicture
+    ChromeControl.SPEED -> speed
+    ChromeControl.QUALITY -> quality
+    ChromeControl.SUBTITLES -> subtitles
+    ChromeControl.AUDIO -> audio
+    ChromeControl.ASPECT_RATIO -> aspectRatio
+    ChromeControl.PLAYLIST -> playlist
+}
+
+/**
+ * Rule 2: whether the item can offer this control.
+ *
+ * One audio track is not a menu, an item with no chapters is not a player
+ * missing a feature, and a queue of one has nothing to list. These cost no width
+ * in the accumulation, which is the part that matters — a control nobody can see
+ * must not push a later one off the end of the bar.
+ */
+internal fun ChromeState.lacksContentFor(control: ChromeControl): Boolean = when (control) {
+    ChromeControl.CHAPTER_PREV, ChromeControl.CHAPTER_NEXT -> chapters.isEmpty()
+    ChromeControl.AUDIO -> audioTracks.size <= 1
+    ChromeControl.QUALITY -> qualityLevels.isEmpty()
+    ChromeControl.PLAYLIST -> queueSize <= 1
+    else -> false
+}
 
 internal const val TRANSPORT_BAR_TAG = "nm-transport-bar"
 internal const val PLAY_PAUSE_TAG = "nm-play-pause"

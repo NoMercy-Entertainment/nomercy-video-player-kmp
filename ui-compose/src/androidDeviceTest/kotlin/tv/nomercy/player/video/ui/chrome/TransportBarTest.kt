@@ -31,34 +31,9 @@ class TransportBarTest {
     @get:Rule
     val compose = createComposeRule()
 
-    private class Recording : ChromeCommands {
-        val calls: MutableList<String> = mutableListOf()
-        var lastPlaying: Boolean? = null
 
-        override fun seekTo(seconds: Double) { calls += "seekTo" }
 
-        override fun seekBy(deltaSeconds: Float) { calls += "seekBy" }
-
-        override fun setPlaying(playing: Boolean) {
-            calls += "setPlaying"
-            lastPlaying = playing
-        }
-
-        override fun next() { calls += "next" }
-        override fun previous() { calls += "previous" }
-        override fun openAudioMenu() { calls += "openAudioMenu" }
-        override fun openSubtitleMenu() { calls += "openSubtitleMenu" }
-        override fun setVolume(percent: Int) = Unit
-        override fun setMuted(muted: Boolean) = Unit
-        override fun selectQuality(level: QualityLevel?) = Unit
-        override fun selectAudioTrack(track: AudioTrack) = Unit
-        override fun selectSubtitleTrack(track: SubtitleTrack?) = Unit
-        override fun setRate(rate: Float) = Unit
-        override fun setFullscreen(fullscreen: Boolean) = Unit
-        override fun dismissMessage() = Unit
-    }
-
-    private val commands = Recording()
+    private val commands = RecordingChromeCommands()
     private val strings = TvChromeStrings()
 
     private fun render(state: ChromeState, buttons: ChromeButtons = ChromeButtons()) {
@@ -88,7 +63,7 @@ class TransportBarTest {
         compose.onNodeWithTag(PLAY_PAUSE_TAG).performClick()
 
         assertEquals(listOf("setPlaying"), commands.calls)
-        assertEquals(true, commands.lastPlaying)
+        assertEquals(true, commands.playing)
     }
 
     @Test

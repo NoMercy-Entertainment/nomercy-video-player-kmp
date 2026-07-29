@@ -21,6 +21,7 @@ import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.video.ui.chrome.ChromeState
+import tv.nomercy.player.video.ui.chrome.RecordingChromeCommands
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -36,42 +37,9 @@ class SettingsMenuTest {
     @get:Rule
     val compose = createComposeRule()
 
-    private class Recording : ChromeCommands {
-        var lastQuality: QualityLevel? = null
-        var qualityWasSet: Boolean = false
-        var lastAudio: AudioTrack? = null
-        var lastSubtitle: SubtitleTrack? = null
-        var subtitleWasSet: Boolean = false
-        var lastRate: Float? = null
 
-        override fun seekTo(seconds: Double) = Unit
-        override fun seekBy(deltaSeconds: Float) = Unit
-        override fun setPlaying(playing: Boolean) = Unit
-        override fun next() = Unit
-        override fun previous() = Unit
-        override fun openAudioMenu() = Unit
-        override fun openSubtitleMenu() = Unit
-        override fun setVolume(percent: Int) = Unit
-        override fun setMuted(muted: Boolean) = Unit
 
-        override fun selectQuality(level: QualityLevel?) {
-            lastQuality = level
-            qualityWasSet = true
-        }
-
-        override fun selectAudioTrack(track: AudioTrack) { lastAudio = track }
-
-        override fun selectSubtitleTrack(track: SubtitleTrack?) {
-            lastSubtitle = track
-            subtitleWasSet = true
-        }
-
-        override fun setRate(rate: Float) { lastRate = rate }
-        override fun setFullscreen(fullscreen: Boolean) = Unit
-        override fun dismissMessage() = Unit
-    }
-
-    private val commands = Recording()
+    private val commands = RecordingChromeCommands()
     private val strings = MenuStrings()
     private var menu: MenuState = MenuState.Main
 
