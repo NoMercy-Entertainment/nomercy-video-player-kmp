@@ -69,7 +69,9 @@ class CastVideoFactoryTest {
 
         player.addPlugin(plugin)
 
-        assertEquals("video-cast", VideoCastPlugin.id)
+        // The web's id, not a native spelling of it. A consumer's
+        // getPlugin("cast-sender") has to find this one.
+        assertEquals("cast-sender", VideoCastPlugin.id)
     }
 
     @Test

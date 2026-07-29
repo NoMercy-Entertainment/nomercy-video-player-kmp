@@ -40,7 +40,13 @@ public open class VideoCastPlugin(
 ) : Plugin<Unit>() {
 
     public companion object Manifest : PluginManifest {
-        override val id: String = "video-cast"
+        // "cast-sender", the web's id, not "video-cast".
+        //
+        // A renamed plugin id is worse than a missing one. Missing fails at the
+        // call site; renamed means a consumer carrying working web code gets
+        // getPlugin("cast-sender") returning nothing from a library that does
+        // have casting, and nothing in the build says why.
+        override val id: String = "cast-sender"
         override val version: String = "1.0.0"
     }
 
