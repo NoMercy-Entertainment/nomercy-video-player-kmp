@@ -23,6 +23,7 @@ import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerState
 import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.ui.chrome.DEFAULT_INACTIVITY_MS
 import tv.nomercy.player.video.ui.chrome.rememberChromeStrings
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.VideoUiKind

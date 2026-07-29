@@ -93,6 +93,15 @@ public fun VideoChrome(
      * setting; this is what it currently reads and where a change goes back.
      */
     autoSkip: AutoSkipPreference = AutoSkipPreference(),
+    /**
+     * How long the controls stay up with nothing happening.
+     *
+     * Four seconds is the web's own `inactivityMs`, and it is a parameter there
+     * too. His mobile player uses three — a difference the controller could
+     * express the whole time and no host could reach, because this assembled the
+     * controller itself and never passed it on.
+     */
+    inactivityMs: Long = DEFAULT_INACTIVITY_MS,
     slots: ChromeSlots = LocalChromeSlots.current,
     surface: @Composable () -> Unit = {},
 ) {
@@ -105,8 +114,12 @@ public fun VideoChrome(
     val state: ChromeState = rememberChromeState(player, message, error)
         .copy(autoSkipChapters = autoSkip.enabled)
 
-    val controller: ChromeController = remember(player, scheduler) {
-        ChromeController(isPlaying = { player.playState() == PlayState.PLAYING }, scheduler = scheduler)
+    val controller: ChromeController = remember(player, scheduler, inactivityMs) {
+        ChromeController(
+            isPlaying = { player.playState() == PlayState.PLAYING },
+            scheduler = scheduler,
+            inactivityMs = inactivityMs,
+        )
     }
     val commands: ChromeCommands = remember(player, scope) {
         VideoChromeCommands(player, scope, onMenu = { menu = it }, onAutoSkipChange = autoSkip.onChange)

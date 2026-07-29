@@ -169,4 +169,7 @@ public class ChromeController(
 
 // Four seconds, matching the shipped chrome. Long enough to move a pointer from
 // one control to another without them vanishing in between.
-private const val DEFAULT_INACTIVITY_MS = 4_000L
+// The web's own default, and public because VideoChrome now takes it as a
+// parameter: a host that wants his three seconds should be able to say so
+// against a named four rather than against a magic number.
+public const val DEFAULT_INACTIVITY_MS: Long = 4_000L

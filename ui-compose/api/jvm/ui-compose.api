@@ -263,6 +263,10 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeController {
 	public final fun setScrubbing (Z)V
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChromeControllerKt {
+	public static final field DEFAULT_INACTIVITY_MS J
+}
+
 public final class tv/nomercy/player/video/ui/chrome/ChromeError {
 	public static final field $stable I
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Z)V
@@ -550,7 +554,7 @@ public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$Chrome
 public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoChromeKt {
 	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoChromeKt;
 	public fun <init> ()V
-	public final fun getLambda$-1954971179$ui_compose ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$843439783$ui_compose ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/PlaybackErrorMessage {
@@ -676,7 +680,7 @@ public final class tv/nomercy/player/video/ui/chrome/TransportBarKt {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/VideoChromeKt {
-	public static final fun VideoChrome (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/core/device/FormFactor;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/chrome/ChromeGestures;Ltv/nomercy/player/video/ui/chrome/AutoSkipPreference;Ltv/nomercy/player/video/ui/chrome/ChromeSlots;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)V
+	public static final fun VideoChrome (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/core/device/FormFactor;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/chrome/ChromeGestures;Ltv/nomercy/player/video/ui/chrome/AutoSkipPreference;JLtv/nomercy/player/video/ui/chrome/ChromeSlots;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/VideoUiKind : java/lang/Enum {

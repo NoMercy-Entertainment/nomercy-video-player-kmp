@@ -16,11 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.testTag
 import tv.nomercy.player.core.input.PlayerKey
@@ -50,15 +53,19 @@ public fun NMTvPlayerView(
     val ui: TvChromeUi by controller.ui.collectAsState()
     val root: FocusRequester = remember { FocusRequester() }
 
-    // Focus has to start somewhere or the first press goes nowhere, and on a
-    // television there is no pointer to give it somewhere else.
-    LaunchedEffect(Unit) { root.requestFocus() }
+    // Not a one-shot request. Something else taking focus and not giving it back
+    // is a remote that has stopped working, and on a television there is no
+    // pointer to recover with. See TvFocusWatchdog.
+    var rootHasFocus: Boolean by remember { mutableStateOf(false) }
+
+    TvFocusWatchdog(root) { rootHasFocus }
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .testTag(ROOT_TAG)
             .focusRequester(root)
+            .onFocusChanged { rootHasFocus = it.hasFocus }
             .focusable()
             // The chrome first, then the bindings. A press the chrome wants is
             // about what is on screen; anything else is about the film, and one
