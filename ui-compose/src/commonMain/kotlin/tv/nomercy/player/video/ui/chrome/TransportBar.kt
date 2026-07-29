@@ -95,26 +95,6 @@ private fun TransportButtons(
     NextButton(state, commands, strings, fits)
 }
 
-// Next closes the transport group, after the chapter jumps.
-@Composable
-private fun NextButton(
-    state: ChromeState,
-    commands: ChromeCommands,
-    strings: TvChromeStrings,
-    fits: Set<ChromeControl>,
-) {
-    // Drawn at the end of a queue, disabled. Hiding it there reflows the bar
-    // and moves every other control under the viewer's finger.
-    if (ChromeControl.NEXT in fits) {
-        PlayerIconButton(
-            icon = FluentIcons.Next,
-            description = strings.next,
-            enabled = state.hasNext,
-            onClick = { commands.next() },
-        )
-    }
-}
-
 // Play leads the row, previous follows it.
 @Composable
 private fun PlayPauseAndPrevious(
@@ -214,6 +194,31 @@ private fun ChapterButtons(
             description = strings.chapterForward,
             onClick = { nextChapterStart(starts, state.timeSeconds)?.let(commands::seekTo) },
             modifier = Modifier.testTag(CHAPTER_FORWARD_TAG),
+        )
+    }
+}
+
+// Next closes the transport group, after the chapter jumps.
+//
+// Declared in the order it is drawn, like dom.ts is. That is not tidiness:
+// check-chrome-parity.py reads this file top to bottom and compares the glyph
+// sequence to the web's builder, so a helper declared out of order reports as a
+// bar in the wrong order. Keep declaration order and draw order the same.
+@Composable
+private fun NextButton(
+    state: ChromeState,
+    commands: ChromeCommands,
+    strings: TvChromeStrings,
+    fits: Set<ChromeControl>,
+) {
+    // Drawn at the end of a queue, disabled. Hiding it there reflows the bar
+    // and moves every other control under the viewer's finger.
+    if (ChromeControl.NEXT in fits) {
+        PlayerIconButton(
+            icon = FluentIcons.Next,
+            description = strings.next,
+            enabled = state.hasNext,
+            onClick = { commands.next() },
         )
     }
 }
