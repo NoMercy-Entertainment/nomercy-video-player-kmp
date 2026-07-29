@@ -190,6 +190,19 @@ tasks.matching { it.name.startsWith("cinteropLibass") }.configureEach {
 // empty and the check reports the whole public API as deleted — a red build
 // caused by the host rather than by a change. The macOS CI job runs it, which is
 // where the answer means something.
-tasks.matching { it.name == "klibApiCheck" }.configureEach {
+// And the DUMP is guarded the same way, which it was not.
+//
+// Guarding only the check leaves the hole open at the other end: `apiDump` at
+// the repository root recurses into here, finds no Apple targets to extract
+// from, and writes the surface it can see — which is the file with two hundred
+// and thirty lines removed. Nothing goes red locally, because the check that
+// would have said so is skipped on this host for the very same reason. The
+// deletion travels in whatever commit happened to be open and CI fails on
+// macOS, pointing at a module the change never touched. That has now happened
+// twice.
+//
+// So a dump on a host that cannot compile the targets is not a dump. Skipped
+// rather than allowed to write a partial answer over a complete one.
+tasks.matching { it.name == "klibApiCheck" || it.name == "klibApiDump" }.configureEach {
     onlyIf { org.gradle.internal.os.OperatingSystem.current().isMacOsX }
 }
