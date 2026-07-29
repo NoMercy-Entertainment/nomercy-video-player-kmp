@@ -1412,8 +1412,8 @@ public final class tv/nomercy/player/video/tv/TvChromeContent {
 }
 
 public final class tv/nomercy/player/video/tv/TvChromeController {
-	public fun <init> (Ltv/nomercy/player/video/tv/TvChromeCallbacks;Ltv/nomercy/player/video/tv/Scheduler;ZZLtv/nomercy/player/video/tv/TvContentCallbacks;)V
-	public synthetic fun <init> (Ltv/nomercy/player/video/tv/TvChromeCallbacks;Ltv/nomercy/player/video/tv/Scheduler;ZZLtv/nomercy/player/video/tv/TvContentCallbacks;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ltv/nomercy/player/video/tv/TvChromeCallbacks;Ltv/nomercy/player/video/tv/Scheduler;ZZLtv/nomercy/player/video/tv/TvContentCallbacks;J)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/tv/TvChromeCallbacks;Ltv/nomercy/player/video/tv/Scheduler;ZZLtv/nomercy/player/video/tv/TvContentCallbacks;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun cancelSeek ()Z
 	public final fun chooseAudioTrack (Ljava/lang/String;)V
 	public final fun chooseEpisode (Ljava/lang/String;)V
@@ -1429,6 +1429,10 @@ public final class tv/nomercy/player/video/tv/TvChromeController {
 	public final fun openDialog (Ltv/nomercy/player/video/tv/TvDialog;)V
 	public final fun setTopBarFocus (Z)V
 	public final fun showVolume ()V
+}
+
+public final class tv/nomercy/player/video/tv/TvChromeControllerKt {
+	public static final field AUTO_HIDE_MS J
 }
 
 public final class tv/nomercy/player/video/tv/TvChromeItem {

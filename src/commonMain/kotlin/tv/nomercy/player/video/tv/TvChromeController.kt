@@ -36,6 +36,16 @@ public class TvChromeController(
     private var playing: Boolean = false,
     startOnPreScreen: Boolean = true,
     private val content: TvContentCallbacks? = null,
+    /**
+     * How long the controls stay up with nothing pressed.
+     *
+     * Five seconds is his TV player. His TV TRAILER uses four, and that was not
+     * expressible: the constant was private and nothing passed one, so both
+     * would have hidden at five. A trailer is a two-minute clip somebody is
+     * deciding about, and a second of chrome over it is a second of the thing
+     * they are deciding about.
+     */
+    private val autoHideMs: Long = AUTO_HIDE_MS,
 ) {
 
     private val state = MutableStateFlow(TvChromeUi(preScreenVisible = startOnPreScreen))
@@ -275,7 +285,7 @@ public class TvChromeController(
         // scrub both cancel this, so a guard here could never be the thing that
         // saved the controls — removing it changed no test, which is what dead
         // defensiveness looks like from the outside.
-        autoHide = scheduler.schedule(AUTO_HIDE_MS) {
+        autoHide = scheduler.schedule(autoHideMs) {
             state.value = state.value.copy(controlsVisible = false)
         }
     }
@@ -289,6 +299,8 @@ public class TvChromeController(
 // Five seconds, matching the client this is extracted from. Long enough to read
 // the bar and reach for a button, short enough that it is gone before it starts
 // covering the picture.
-private const val AUTO_HIDE_MS = 5_000L
+// His TV player's, and the default. Public so a host asking for the trailer's
+// four is naming a difference from a stated number rather than a bare literal.
+public const val AUTO_HIDE_MS: Long = 5_000L
 
 private const val VOLUME_VISIBLE_MS = 2_000L

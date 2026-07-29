@@ -1118,7 +1118,7 @@ final class tv.nomercy.player.video.tv/TvChromeContent { // tv.nomercy.player.vi
 }
 
 final class tv.nomercy.player.video.tv/TvChromeController { // tv.nomercy.player.video.tv/TvChromeController|null[0]
-    constructor <init>(tv.nomercy.player.video.tv/TvChromeCallbacks, tv.nomercy.player.video.tv/Scheduler, kotlin/Boolean = ..., kotlin/Boolean = ..., tv.nomercy.player.video.tv/TvContentCallbacks? = ...) // tv.nomercy.player.video.tv/TvChromeController.<init>|<init>(tv.nomercy.player.video.tv.TvChromeCallbacks;tv.nomercy.player.video.tv.Scheduler;kotlin.Boolean;kotlin.Boolean;tv.nomercy.player.video.tv.TvContentCallbacks?){}[0]
+    constructor <init>(tv.nomercy.player.video.tv/TvChromeCallbacks, tv.nomercy.player.video.tv/Scheduler, kotlin/Boolean = ..., kotlin/Boolean = ..., tv.nomercy.player.video.tv/TvContentCallbacks? = ..., kotlin/Long = ...) // tv.nomercy.player.video.tv/TvChromeController.<init>|<init>(tv.nomercy.player.video.tv.TvChromeCallbacks;tv.nomercy.player.video.tv.Scheduler;kotlin.Boolean;kotlin.Boolean;tv.nomercy.player.video.tv.TvContentCallbacks?;kotlin.Long){}[0]
 
     final val callbacks // tv.nomercy.player.video.tv/TvChromeController.callbacks|{}callbacks[0]
         final fun <get-callbacks>(): tv.nomercy.player.video.tv/TvChromeCallbacks // tv.nomercy.player.video.tv/TvChromeController.callbacks.<get-callbacks>|<get-callbacks>(){}[0]
@@ -1756,6 +1756,8 @@ final const val tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS // tv.nome
     final fun <get-DOUBLE_TAP_THRESHOLD_MS>(): kotlin/Long // tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS.<get-DOUBLE_TAP_THRESHOLD_MS>|<get-DOUBLE_TAP_THRESHOLD_MS>(){}[0]
 final const val tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS // tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS|{}TOUCH_SEEK_SECONDS[0]
     final fun <get-TOUCH_SEEK_SECONDS>(): kotlin/Double // tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS.<get-TOUCH_SEEK_SECONDS>|<get-TOUCH_SEEK_SECONDS>(){}[0]
+final const val tv.nomercy.player.video.tv/AUTO_HIDE_MS // tv.nomercy.player.video.tv/AUTO_HIDE_MS|{}AUTO_HIDE_MS[0]
+    final fun <get-AUTO_HIDE_MS>(): kotlin/Long // tv.nomercy.player.video.tv/AUTO_HIDE_MS.<get-AUTO_HIDE_MS>|<get-AUTO_HIDE_MS>(){}[0]
 final const val tv.nomercy.player.video.tv/CHAPTER_GRACE_SECONDS // tv.nomercy.player.video.tv/CHAPTER_GRACE_SECONDS|{}CHAPTER_GRACE_SECONDS[0]
     final fun <get-CHAPTER_GRACE_SECONDS>(): kotlin/Double // tv.nomercy.player.video.tv/CHAPTER_GRACE_SECONDS.<get-CHAPTER_GRACE_SECONDS>|<get-CHAPTER_GRACE_SECONDS>(){}[0]
 

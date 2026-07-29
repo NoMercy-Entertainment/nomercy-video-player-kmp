@@ -25,6 +25,7 @@ import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.ui.chrome.chromeItemOf
 import tv.nomercy.player.video.ui.chrome.rememberChromeScheduler
+import tv.nomercy.player.video.tv.AUTO_HIDE_MS
 import tv.nomercy.player.video.tv.TvChapter
 import tv.nomercy.player.video.tv.TvChromeCallbacks
 import tv.nomercy.player.video.tv.TvChromeContent
