@@ -35,8 +35,19 @@ public final class KotlinVideoEngine: VideoEngine {
     /// plugin surface, which was the state of things until now.
     public var player: NMVideoPlayer { engine.player }
 
-    public init(engine: AppleVideoEngine = AppleVideoEngine()) {
+    public init(engine: AppleVideoEngine) {
         self.engine = engine
+    }
+
+    /// The ordinary case: its own backend, its own player.
+    ///
+    /// The backend is named rather than defaulted because a Kotlin constructor
+    /// with default arguments does not export a no-argument `init()` to Swift.
+    /// It exports the one that takes the parameter and marks the empty form
+    /// unavailable, so `AppleVideoEngine()` compiles on the Kotlin side and
+    /// fails on the Mac.
+    public convenience init() {
+        self.init(engine: AppleVideoEngine(backend: AVPlayerVideoBackend()))
     }
 
     public func observe(_ onState: @escaping (VideoEngineState) -> Void) {
