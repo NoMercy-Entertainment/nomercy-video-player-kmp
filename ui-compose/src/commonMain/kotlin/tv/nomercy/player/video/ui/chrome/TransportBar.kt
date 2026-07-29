@@ -66,7 +66,10 @@ public fun TransportBar(
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(ROW_PADDING).testTag(TRANSPORT_BAR_TAG),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = ROW_PADDING_H, vertical = ROW_PADDING_V)
+                .testTag(TRANSPORT_BAR_TAG),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(GAP),
         ) {
@@ -513,8 +516,16 @@ internal const val SETTINGS_TAG = "nm-settings"
 
 private val READOUT = TextStyle(color = Color.White)
 
-private val ROW_PADDING = 16.dp
-private val GAP = 8.dp
+// Measured on the running web player, not read off the stylesheet:
+//
+//     .bottom-row { gap: 2px; padding: 4px 16px; height: 40px }
+//
+// The gap was 8 and the padding 16 all round. Eight is four times the web's,
+// and across eighteen controls that alone is 108dp of drift — enough to push
+// the whole right-hand group past the edge of the row, which is what it did.
+private val ROW_PADDING_H = 16.dp
+private val ROW_PADDING_V = 4.dp
+private val GAP = 2.dp
 // min-width: 16px, from the web rule.
 private val DIVIDER_MIN_WIDTH = 16.dp
 

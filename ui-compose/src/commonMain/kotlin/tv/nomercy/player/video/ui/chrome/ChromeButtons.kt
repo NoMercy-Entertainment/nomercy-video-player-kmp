@@ -106,14 +106,22 @@ public data class ChromeButtons(
             playlist = true,
             cast = true,
 
-            // Not passed there, so not on here. Seeking by ten seconds is what
-            // the arrow keys are for on a desktop, and theater, speed and aspect
-            // are the three he has never turned on.
+            // Measured on the running player in tools/player-testbed, which is
+            // the thing that settled this: aspect-ratio, theater and speed are
+            // all VISIBLE there. I had them off from reading app-web's options
+            // object, and the options object is not the player — a second
+            // consumer passes a third set, and "all the buttons from web" is
+            // what he asked for.
+            aspectRatio = true,
+            theater = true,
+            speed = true,
+
+            // Off, and this is the one thing the real render agrees with: both
+            // are hidden at every width because DEFAULT_ON excludes them and no
+            // web consumer turns them on. His phone bar does, which is what
+            // androidApp() is for — a thumb has no arrow keys.
             seekBack = false,
             seekForward = false,
-            theater = false,
-            speed = false,
-            aspectRatio = false,
         )
 
         /**

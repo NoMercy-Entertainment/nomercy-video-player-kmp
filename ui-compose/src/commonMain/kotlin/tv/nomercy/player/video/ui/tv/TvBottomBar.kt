@@ -55,7 +55,7 @@ public fun TvBottomBar(
         ) {
             BasicText(text = formatTime(state.timeSeconds), style = TextStyle(color = Color.White))
 
-            PlayerIconButton(
+            TvIconButton(
                 icon = FluentIcons.Restart,
                 description = strings.restart,
                 onClick = callbacks::restart,
@@ -63,14 +63,14 @@ public fun TvBottomBar(
 
             // The one control a viewer reaches for without looking, so it is the
             // one that takes focus when the bar appears.
-            PlayerIconButton(
+            TvIconButton(
                 icon = if (state.isPlaying) FluentIcons.Pause else FluentIcons.Play,
                 description = if (state.isPlaying) strings.pause else strings.play,
                 onClick = callbacks::togglePlay,
                 focusRequester = playFocusRequester,
             )
 
-            PlayerIconButton(
+            TvIconButton(
                 icon = FluentIcons.Next,
                 description = strings.next,
                 onClick = callbacks::next,

@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 // A round button on a television.
@@ -60,6 +61,21 @@ public fun PlayerIconButton(
     enabled: Boolean = true,
     focusRequester: FocusRequester? = null,
     onFocused: (Boolean) -> Unit = {},
+    /**
+     * How big the target and the glyph are.
+     *
+     * The web's 40 and 22, measured off the running player rather than read off
+     * the stylesheet — `.btn { width: 40px }`, `.btn-icon { width: 22px }`. They
+     * were 48 and 28, which is a third too wide per control, and eighteen
+     * controls a third too wide overflow the row: everything after the flex
+     * divider was pushed past the right edge and simply not on screen. The
+     * responsive filter was returning them the whole time.
+     *
+     * A television passes its own, because a 40dp target across a room is not
+     * the same decision as one under a mouse.
+     */
+    buttonSize: Dp = WEB_BUTTON_SIZE,
+    iconSize: Dp = WEB_ICON_SIZE,
 ) {
     var focused: Boolean by remember { mutableStateOf(false) }
     val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
@@ -67,7 +83,7 @@ public fun PlayerIconButton(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .size(BUTTON_SIZE)
+            .size(buttonSize)
             .background(if (focused) Color.White else Color.Transparent, CircleShape)
             .then(focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)
             .onFocusChanged {
@@ -106,7 +122,7 @@ public fun PlayerIconButton(
                     else -> Color.White
                 },
             ),
-            modifier = Modifier.size(ICON_SIZE),
+            modifier = Modifier.size(iconSize),
         )
     }
 }
@@ -118,5 +134,10 @@ private val DISABLED_TINT = Color.White.copy(alpha = 0.35f)
 
 // Big enough to read from a sofa. Television guidance puts the floor around this
 // and a control below it is one people lean forward to identify.
-private val BUTTON_SIZE = 48.dp
-private val ICON_SIZE = 28.dp
+// The web's, measured on the running player.
+internal val WEB_BUTTON_SIZE: Dp = 40.dp
+internal val WEB_ICON_SIZE: Dp = 22.dp
+
+// A television's, which is what this file used for everything.
+public val TV_BUTTON_SIZE: Dp = 48.dp
+public val TV_ICON_SIZE: Dp = 28.dp

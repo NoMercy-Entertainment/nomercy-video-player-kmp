@@ -1036,7 +1036,9 @@ public final class tv/nomercy/player/video/ui/tv/NoGamepad : tv/nomercy/player/v
 }
 
 public final class tv/nomercy/player/video/ui/tv/PlayerIconButtonKt {
-	public static final fun PlayerIconButton (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/ui/focus/FocusRequester;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun PlayerIconButton-HXNGIdc (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/ui/focus/FocusRequester;Lkotlin/jvm/functions/Function1;FFLandroidx/compose/runtime/Composer;II)V
+	public static final fun getTV_BUTTON_SIZE ()F
+	public static final fun getTV_ICON_SIZE ()F
 }
 
 public final class tv/nomercy/player/video/ui/tv/TvBottomBarKt {
