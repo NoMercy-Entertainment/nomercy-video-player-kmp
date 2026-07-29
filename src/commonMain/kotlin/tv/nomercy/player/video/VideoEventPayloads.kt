@@ -15,10 +15,21 @@ import tv.nomercy.player.core.media.QualityDescriptor
 // library adds a surface, it does not restate one.
 
 // How the picture is fitted to the surface it is drawn on.
+//
+// The web's four, with the web's tokens, in the web's cycle order. One of them
+// was called UniformFill here and carried the token "uniformFill", which is the
+// Compose name for the same fitting — cover-crop, aspect preserved — and not the
+// name the contract uses. A consumer moving code from the browser wrote
+// 'exactfit' and got an exception from fromToken telling it the token was
+// unknown, on a value the player supports.
+//
+// The order is the cycle order too, because cycleAspectRatio walks the entries
+// and the web walks ['uniform', 'fill', 'exactfit', 'none']. Pressing A twice on
+// one player and twice on the other has to land on the same picture.
 public enum class Stretching(public val token: String) {
     Uniform("uniform"),
-    UniformFill("uniformFill"),
     Fill("fill"),
+    ExactFit("exactfit"),
     None("none"),
     ;
 

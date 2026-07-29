@@ -211,10 +211,10 @@ final enum class tv.nomercy.player.video.tv/TvDialog : kotlin/Enum<tv.nomercy.pl
 }
 
 final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.player.video/Stretching> { // tv.nomercy.player.video/Stretching|null[0]
+    enum entry ExactFit // tv.nomercy.player.video/Stretching.ExactFit|null[0]
     enum entry Fill // tv.nomercy.player.video/Stretching.Fill|null[0]
     enum entry None // tv.nomercy.player.video/Stretching.None|null[0]
     enum entry Uniform // tv.nomercy.player.video/Stretching.Uniform|null[0]
-    enum entry UniformFill // tv.nomercy.player.video/Stretching.UniformFill|null[0]
 
     final val entries // tv.nomercy.player.video/Stretching.entries|#static{}entries[0]
         final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video/Stretching> // tv.nomercy.player.video/Stretching.entries.<get-entries>|<get-entries>#static(){}[0]

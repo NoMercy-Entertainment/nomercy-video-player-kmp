@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.Stretching
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -70,6 +71,7 @@ public fun chromeStateOf(
     queueSize = snapshot.queueLength,
     queueIndex = snapshot.index,
     fullscreen = player.fullscreen(),
+    aspectRatio = player.aspectRatio(),
     message = message,
 )
 

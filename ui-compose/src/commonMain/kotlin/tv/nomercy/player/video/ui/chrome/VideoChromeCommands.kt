@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.Stretching
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import tv.nomercy.player.core.ports.AudioTrack
@@ -82,6 +83,8 @@ internal class VideoChromeCommands(
     override fun setPip(pip: Boolean): Unit = player.pip(pip)
 
     override fun cycleAspectRatio(): Unit = player.cycleAspectRatio()
+
+    override fun setAspectRatio(value: Stretching): Unit = player.aspectRatio(value)
 
     override fun setVolume(percent: Int) {
         scope.launch { player.volume(percent) }

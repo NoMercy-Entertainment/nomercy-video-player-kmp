@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
@@ -113,6 +114,15 @@ public interface ChromePresentationCommands {
     // press moves to the next ratio and the player owns the order. A chrome
     // that picked the next one itself would be a second list to keep in step.
     public fun cycleAspectRatio()
+
+    /**
+     * Pick one fitting outright, which is what the web's aspect menu does.
+     *
+     * Cycling is the button's gesture and choosing is the menu's, and a menu
+     * built on cycling would have to press the button up to three times to
+     * reach the row somebody tapped.
+     */
+    public fun setAspectRatio(value: Stretching)
 
     // Cleared by whoever showed it. A message that lingers is one a viewer reads
     // as describing what is happening now.

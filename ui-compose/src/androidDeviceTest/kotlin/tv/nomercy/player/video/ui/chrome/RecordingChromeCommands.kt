@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
@@ -102,6 +103,8 @@ internal open class RecordingChromeCommands : ChromeCommands {
     override fun setPip(pip: Boolean) { calls += "setPip" }
 
     override fun cycleAspectRatio() { calls += "cycleAspectRatio" }
+
+    override fun setAspectRatio(value: Stretching) { calls += "setAspectRatio:${value.token}" }
 
     override fun dismissMessage() { calls += "dismissMessage" }
 }

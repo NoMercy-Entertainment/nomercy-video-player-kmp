@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
@@ -65,6 +66,12 @@ public data class ChromeState(
     // the web draws when each is active rather than the same one both ways.
     val theater: Boolean = false,
     val pip: Boolean = false,
+
+    // Which of the four fittings is in effect, so the aspect menu can mark one
+    // and the bar's glyph can follow it. The chrome could only cycle before,
+    // which is a button and not a menu: a viewer could change the picture and
+    // never be told what it had changed to.
+    val aspectRatio: Stretching = Stretching.Uniform,
 
     // What the viewer was last told. Cleared by whoever showed it, because a
     // message that lingers is one somebody reads as current.

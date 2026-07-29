@@ -247,6 +247,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeExits {
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromePresentationCommands {
 	public abstract fun cycleAspectRatio ()V
 	public abstract fun dismissMessage ()V
+	public abstract fun setAspectRatio (Ltv/nomercy/player/video/Stretching;)V
 	public abstract fun setFullscreen (Z)V
 	public abstract fun setPip (Z)V
 	public abstract fun setRate (F)V
@@ -308,8 +309,8 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeSlotsKt {
 public final class tv/nomercy/player/video/ui/chrome/ChromeState {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLjava/lang/String;)V
-	public synthetic fun <init> (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLtv/nomercy/player/video/Stretching;Ljava/lang/String;)V
+	public synthetic fun <init> (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLtv/nomercy/player/video/Stretching;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component10 ()Ltv/nomercy/player/core/ports/QualityLevel;
 	public final fun component11 ()Ljava/util/List;
@@ -325,7 +326,8 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeState {
 	public final fun component20 ()Z
 	public final fun component21 ()Z
 	public final fun component22 ()Z
-	public final fun component23 ()Ljava/lang/String;
+	public final fun component23 ()Ltv/nomercy/player/video/Stretching;
+	public final fun component24 ()Ljava/lang/String;
 	public final fun component3 ()D
 	public final fun component4 ()D
 	public final fun component5 ()F
@@ -333,12 +335,13 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeState {
 	public final fun component7 ()Z
 	public final fun component8 ()Ljava/util/List;
 	public final fun component9 ()Ljava/util/List;
-	public final fun copy (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLjava/lang/String;)Ltv/nomercy/player/video/ui/chrome/ChromeState;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeState;ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLjava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeState;
+	public final fun copy (ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLtv/nomercy/player/video/Stretching;Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/ChromeState;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeState;ZZDDFIZLjava/util/List;Ljava/util/List;Ltv/nomercy/player/core/ports/QualityLevel;Ljava/util/List;Ltv/nomercy/player/core/ports/AudioTrack;Ljava/util/List;Ltv/nomercy/player/core/ports/SubtitleTrack;FLtv/nomercy/player/video/tv/TvChromeItem;Ljava/util/List;IIZZZLtv/nomercy/player/video/Stretching;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeState;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActiveAudio ()Ltv/nomercy/player/core/ports/AudioTrack;
 	public final fun getActiveQuality ()Ltv/nomercy/player/core/ports/QualityLevel;
 	public final fun getActiveSubtitle ()Ltv/nomercy/player/core/ports/SubtitleTrack;
+	public final fun getAspectRatio ()Ltv/nomercy/player/video/Stretching;
 	public final fun getAudioTracks ()Ljava/util/List;
 	public final fun getBufferedFraction ()F
 	public final fun getBuffering ()Z
@@ -575,6 +578,7 @@ public final class tv/nomercy/player/video/ui/chrome/VolumeLevel : java/lang/Enu
 }
 
 public final class tv/nomercy/player/video/ui/chrome/menus/MenuState : java/lang/Enum {
+	public static final field AspectRatio Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
 	public static final field Audio Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
 	public static final field Hidden Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
 	public static final field Main Ltv/nomercy/player/video/ui/chrome/menus/MenuState;
@@ -590,9 +594,13 @@ public final class tv/nomercy/player/video/ui/chrome/menus/MenuState : java/lang
 public final class tv/nomercy/player/video/ui/chrome/menus/MenuStrings {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Ljava/lang/String;
+	public final fun component11 ()Ljava/lang/String;
+	public final fun component12 ()Ljava/lang/String;
+	public final fun component13 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
@@ -600,9 +608,15 @@ public final class tv/nomercy/player/video/ui/chrome/menus/MenuStrings {
 	public final fun component6 ()Ljava/lang/String;
 	public final fun component7 ()Ljava/lang/String;
 	public final fun component8 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
+	public final fun component9 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAspectCrop ()Ljava/lang/String;
+	public final fun getAspectNative ()Ljava/lang/String;
+	public final fun getAspectOriginal ()Ljava/lang/String;
+	public final fun getAspectRatio ()Ljava/lang/String;
+	public final fun getAspectStretch ()Ljava/lang/String;
 	public final fun getAudio ()Ljava/lang/String;
 	public final fun getAutomatic ()Ljava/lang/String;
 	public final fun getNormalSpeed ()Ljava/lang/String;
@@ -617,6 +631,7 @@ public final class tv/nomercy/player/video/ui/chrome/menus/MenuStrings {
 
 public final class tv/nomercy/player/video/ui/chrome/menus/SettingsMenuKt {
 	public static final fun SettingsMenu (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Ltv/nomercy/player/video/ui/chrome/menus/MenuState;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;Landroidx/compose/runtime/Composer;II)V
+	public static final fun menuStrings (Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/menus/MenuStrings;
 }
 
 public class tv/nomercy/player/video/ui/thumbnails/PreviewSprite {

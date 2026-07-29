@@ -139,10 +139,10 @@ public final class tv/nomercy/player/video/SegmentBoundary {
 
 public final class tv/nomercy/player/video/Stretching : java/lang/Enum {
 	public static final field Companion Ltv/nomercy/player/video/Stretching$Companion;
+	public static final field ExactFit Ltv/nomercy/player/video/Stretching;
 	public static final field Fill Ltv/nomercy/player/video/Stretching;
 	public static final field None Ltv/nomercy/player/video/Stretching;
 	public static final field Uniform Ltv/nomercy/player/video/Stretching;
-	public static final field UniformFill Ltv/nomercy/player/video/Stretching;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public final fun getToken ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/Stretching;

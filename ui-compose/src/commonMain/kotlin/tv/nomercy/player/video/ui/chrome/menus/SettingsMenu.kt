@@ -27,6 +27,8 @@ import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.video.ui.chrome.ChromeState
+import tv.nomercy.player.video.ui.chrome.ChromeTranslations
+import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.video.ui.tv.FluentIcons
 
 // Which list is open, if any.
@@ -37,7 +39,7 @@ import tv.nomercy.player.video.ui.tv.FluentIcons
 // Playlist joins the web bar's set. Its own state because the bar opens it
 // straight to the episode rail, AND a row inside Main, because the web lists it
 // there too — reading only the button was how it ended up reachable one way.
-public enum class MenuState { Hidden, Main, Quality, Audio, Subtitle, Speed, Playlist }
+public enum class MenuState { Hidden, Main, Quality, Audio, Subtitle, Speed, Playlist, AspectRatio }
 
 // The settings surface: a main list that opens the others.
 //
@@ -70,6 +72,7 @@ public fun SettingsMenu(
             MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
             MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
             MenuState.Playlist -> PlaylistMenu(state, onMenuChange)
+            MenuState.AspectRatio -> AspectRatioMenu(state, commands, strings, onMenuChange)
             MenuState.Hidden -> Unit
         }
     }
@@ -116,11 +119,9 @@ private fun PlaylistMenu(state: ChromeState, onMenuChange: (MenuState) -> Unit) 
 // Only the lists that have something in them, still. A row that opens onto one
 // option is a press that costs a viewer time and gives them no choice.
 //
-// Two of the web's seven are missing rather than reordered — subtitle settings
-// and aspect ratio — because neither has a pane to open. Aspect ratio has only
-// `cycleAspectRatio()` and no state saying which mode is current, and subtitle
-// styling has nothing at all. A row that opens onto nothing is worse than an
-// absent row, so they land with their panes.
+// One of the web's seven is still missing rather than reordered — subtitle
+// settings — because nothing carries subtitle styling yet. A row that opens onto
+// nothing is worse than an absent row, so it lands with its pane.
 @Composable
 private fun MainMenu(state: ChromeState, strings: MenuStrings, onMenuChange: (MenuState) -> Unit) {
     Column {
@@ -146,6 +147,15 @@ private fun MainMenu(state: ChromeState, strings: MenuStrings, onMenuChange: (Me
             onMenuChange(MenuState.Speed)
         }
 
+        MenuRow(
+            strings.aspectRatio,
+            tag = ROW_ASPECT_RATIO,
+            icon = FluentIcons.AspectFit,
+            opensSubMenu = true,
+        ) {
+            onMenuChange(MenuState.AspectRatio)
+        }
+
         // The web lists this here as well as opening it from its own button, and
         // this had only the button. Somebody in the settings list looking for
         // the next episode found nothing.
@@ -155,6 +165,37 @@ private fun MainMenu(state: ChromeState, strings: MenuStrings, onMenuChange: (Me
             }
         }
     }
+}
+
+// The four fittings, in the order the web lists them and the same order the
+// button cycles through. A menu that ordered them differently from the button
+// would make the same player disagree with itself.
+@Composable
+private fun AspectRatioMenu(
+    state: ChromeState,
+    commands: ChromeCommands,
+    strings: MenuStrings,
+    onMenuChange: (MenuState) -> Unit,
+) {
+    Column {
+        ASPECT_RATIOS.forEach { mode ->
+            MenuRow(
+                aspectLabel(mode, strings),
+                isCurrent = mode == state.aspectRatio,
+                tag = "$ROW_ASPECT${mode.token}",
+            ) {
+                commands.setAspectRatio(mode)
+                onMenuChange(MenuState.Hidden)
+            }
+        }
+    }
+}
+
+private fun aspectLabel(mode: Stretching, strings: MenuStrings): String = when (mode) {
+    Stretching.Uniform -> strings.aspectOriginal
+    Stretching.Fill -> strings.aspectStretch
+    Stretching.ExactFit -> strings.aspectCrop
+    Stretching.None -> strings.aspectNative
 }
 
 @Composable
@@ -256,6 +297,38 @@ internal fun audioLabel(track: AudioTrack): String = track.label
 internal fun speedLabel(speed: Float, strings: MenuStrings): String =
     if (speed == 1f) strings.normalSpeed else "${speed}x"
 
+/**
+ * The menu's labels for a locale, read from the web's own table.
+ *
+ * There was no such function, so every consumer got the English defaults below
+ * while ChromeTranslations sat in the same package carrying these exact keys in
+ * seventy-nine languages. The same failure as the generated icons nobody drew:
+ * the translated strings existed and nothing reached for them.
+ *
+ * Keys are the web's, and the wording with them. "Crop" rather than "Cover"
+ * because that is the word a viewer of the browser player has already read.
+ */
+public fun menuStrings(locale: String): MenuStrings {
+    fun menu(name: String): String =
+        ChromeTranslations.get(locale, "plugin.desktop-ui.menu.$name")
+
+    return MenuStrings(
+        quality = menu("quality"),
+        audio = menu("audio"),
+        subtitles = menu("subtitles"),
+        subtitlesOff = menu("off"),
+        speed = menu("speed"),
+        automatic = menu("auto"),
+        normalSpeed = menu("normal"),
+        playlist = menu("playlist"),
+        aspectRatio = menu("aspectRatio"),
+        aspectOriginal = menu("original"),
+        aspectStretch = menu("stretch"),
+        aspectCrop = menu("crop"),
+        aspectNative = menu("native"),
+    )
+}
+
 public data class MenuStrings(
     val quality: String = "Quality",
     val audio: String = "Audio",
@@ -263,6 +336,14 @@ public data class MenuStrings(
     val subtitlesOff: String = "Off",
     val speed: String = "Speed",
     val playlist: String = "Playlist",
+
+    // The aspect menu's labels, which are the web's words rather than its
+    // tokens: a viewer reads "Crop", not "exactfit".
+    val aspectRatio: String = "Aspect ratio",
+    val aspectOriginal: String = "Original",
+    val aspectStretch: String = "Stretch",
+    val aspectCrop: String = "Crop",
+    val aspectNative: String = "Native",
     val automatic: String = "Auto",
     val normalSpeed: String = "Normal",
 )
@@ -281,6 +362,18 @@ internal const val ROW_SUBTITLE = "nm-row-subtitle"
 internal const val ROW_SUBTITLE_OFF = "nm-row-subtitle-off"
 internal const val ROW_SPEED = "nm-row-speed"
 internal const val ROW_PLAYLIST = "nm-row-playlist"
+internal const val ROW_ASPECT_RATIO = "nm-row-aspect-ratio"
+internal const val ROW_ASPECT = "nm-aspect-"
+
+// Stretching.entries would read the same and is not: the enum's order is the
+// cycle order and this is the menu's, and pinning it here means a value added
+// to the enum has to be given a label rather than appearing unlabelled.
+private val ASPECT_RATIOS = listOf(
+    Stretching.Uniform,
+    Stretching.Fill,
+    Stretching.ExactFit,
+    Stretching.None,
+)
 internal const val ROW_AUTO = "nm-row-auto"
 
 private val SCRIM = Color(red = 0f, green = 0f, blue = 0f, alpha = 0.9f)

@@ -132,6 +132,12 @@ public fun tvChromeStrings(locale: String): TvChromeStrings {
         // every locale.
         back = ChromeTranslations.get(locale, "plugin.desktop-ui.menu.back"),
         cast = ChromeTranslations.get(locale, "plugin.desktop-ui.button.cast"),
+
+        // Two more the table carries that nothing was reading, so a Dutch
+        // viewer's fullscreen button announced itself in English while the
+        // Dutch word sat in the same file.
+        fullscreen = tip("fullscreen"),
+        episodes = ChromeTranslations.get(locale, "plugin.desktop-ui.menu.episodes"),
     )
 }
 
