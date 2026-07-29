@@ -9,6 +9,22 @@
 package tv.nomercy.player.video.ui.chrome.menus
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.ui.text.TextStyle
+import tv.nomercy.player.video.ui.tv.PlayerIconButton
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -75,26 +91,138 @@ public fun SettingsMenu(
 ) {
     if (menu == MenuState.Hidden) return
 
-    Column(
+    // A panel in the bottom-right corner, not a sheet across the player.
+    //
+    // This filled the width and grew to whatever height its rows wanted, so the
+    // settings list covered the picture and its rows landed on top of the
+    // transport — the subtitle pane's "Off" row sat directly over the play
+    // button. The web is a card:
+    //
+    //     .menu-frame { position: absolute; top: 16px; right: 16px; bottom: 52px;
+    //                   flex-direction: column; height: auto }
+    //     .main-menu  { min-width: 16rem; max-height: 60vh; border-radius: 8px;
+    //                   background: rgba(20, 20, 25, 0.95); gap: 4px }
+    //
+    // The frame is inset on three sides and `margin-top: auto` pushes the card to
+    // the bottom of it, which is what puts the panel above the settings button
+    // rather than over the film. 52px of bottom inset is the bar's own height.
+    Box(
         modifier = modifier
-            .fillMaxWidth()
-            .background(SCRIM)
-            .padding(MENU_PADDING)
-            .testTag(SETTINGS_MENU_TAG),
+            .fillMaxSize()
+            .padding(top = FRAME_INSET, end = FRAME_INSET, bottom = FRAME_BOTTOM_INSET),
+        contentAlignment = Alignment.BottomEnd,
     ) {
-        when (menu) {
-            MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
-            MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
-            MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
-            MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
-            MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
-            MenuState.Playlist -> PlaylistMenu(state, onMenuChange)
-            MenuState.AspectRatio -> AspectRatioMenu(state, commands, strings, onMenuChange)
-            MenuState.SubtitleSettings -> SubtitleSettingsMenu(state, commands, strings)
-            MenuState.AutoSkip -> AutoSkipMenu(state, commands, strings, onMenuChange)
-            MenuState.Hidden -> Unit
+        SettingsPanel(strings, menu, onMenuChange) {
+            when (menu) {
+                MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
+                MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
+                MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
+                MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
+                MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
+                MenuState.Playlist -> PlaylistMenu(state, onMenuChange)
+                MenuState.AspectRatio -> AspectRatioMenu(state, commands, strings, onMenuChange)
+                MenuState.SubtitleSettings -> SubtitleSettingsMenu(state, commands, strings)
+                MenuState.AutoSkip -> AutoSkipMenu(state, commands, strings, onMenuChange)
+                MenuState.Hidden -> Unit
+            }
         }
     }
+}
+
+/**
+ * The card itself, and the header the port did not have.
+ *
+ * `.menu-header` is a real element on the web — 2.5rem tall with a hairline under
+ * it, carrying the pane's name and a close cross. Without it a viewer who has
+ * opened three panes deep has nothing telling them where they are and no way out
+ * except pressing the settings button again.
+ *
+ * `overflow: hidden` on the card is why the rounding survives a long list, and
+ * `max-height: 60vh` is why a forty-episode playlist scrolls instead of growing
+ * past the top of the player.
+ */
+@Composable
+private fun SettingsPanel(
+    strings: MenuStrings,
+    menu: MenuState,
+    onMenuChange: (MenuState) -> Unit,
+    rows: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .widthIn(min = PANEL_MIN_WIDTH)
+            .fillMaxHeight(PANEL_MAX_HEIGHT_SHARE)
+            .clip(RoundedCornerShape(PANEL_RADIUS))
+            .background(PANEL_BACKGROUND)
+            .testTag(SETTINGS_MENU_TAG),
+        verticalArrangement = Arrangement.spacedBy(PANEL_GAP),
+    ) {
+        MenuHeader(strings.titleFor(menu), menu, onMenuChange)
+
+        rows()
+    }
+}
+
+// The pane's name, a hairline, and the way out.
+//
+// Back where there is somewhere to go back to, close where there is not: the main
+// list's cross dismisses the menu and a pane's arrow returns to the main list,
+// which is the web's behaviour and the reason a viewer can get out of the
+// subtitle settings without losing the settings menu.
+@Composable
+private fun MenuHeader(title: String, menu: MenuState, onMenuChange: (MenuState) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = HEADER_MIN_HEIGHT)
+            .padding(HEADER_PADDING)
+            .testTag(MENU_HEADER_TAG),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(PANEL_GAP),
+    ) {
+        if (menu != MenuState.Main) {
+            PlayerIconButton(
+                icon = FluentIcons.Back,
+                description = title,
+                onClick = { onMenuChange(MenuState.Main) },
+                buttonSize = HEADER_BUTTON,
+                iconSize = HEADER_ICON,
+                modifier = Modifier.testTag(MENU_BACK_TAG),
+            )
+        }
+
+        BasicText(
+            text = title,
+            style = TextStyle(color = Color.White, fontSize = HEADER_SIZE, fontWeight = FontWeight.SemiBold),
+            modifier = Modifier.weight(1f),
+        )
+
+        PlayerIconButton(
+            icon = FluentIcons.Close,
+            description = title,
+            onClick = { onMenuChange(MenuState.Hidden) },
+            buttonSize = HEADER_BUTTON,
+            iconSize = HEADER_ICON,
+            modifier = Modifier.testTag(MENU_CLOSE_TAG),
+        )
+    }
+
+    // `border-bottom: 1px solid rgba(209, 213, 219, 0.2)`.
+    Box(modifier = Modifier.fillMaxWidth().height(HEADER_RULE).background(HEADER_RULE_COLOR))
+}
+
+// Which pane a viewer is looking at. The web writes the name into the header, and
+// a panel whose header always said "Settings" would be lying three panes deep.
+private fun MenuStrings.titleFor(menu: MenuState): String = when (menu) {
+    MenuState.Quality -> quality
+    MenuState.Audio -> audio
+    MenuState.Subtitle -> subtitles
+    MenuState.Speed -> speed
+    MenuState.Playlist -> playlist
+    MenuState.AspectRatio -> aspectRatio
+    MenuState.SubtitleSettings -> subtitleSettings
+    MenuState.AutoSkip -> autoSkipChapters
+    MenuState.Main, MenuState.Hidden -> settings
 }
 
 // The episode list, flat or with a seasons rail.
@@ -286,6 +414,7 @@ public fun menuStrings(locale: String): MenuStrings {
         aspectStretch = menu("stretch"),
         aspectCrop = menu("crop"),
         aspectNative = menu("native"),
+        settings = menu("settings"),
         subtitleSettings = menu("subtitleSettings"),
         subtitleFont = menu("subtitle.font"),
         subtitleTextSize = menu("subtitle.textSize"),
@@ -326,6 +455,10 @@ public data class MenuStrings(
 
     // The subtitle settings list. One label per property plus the reset, in the
     // web's own words from its menu.subtitle.* keys.
+    // The card's own header, which the port had no field for because it had no
+    // header. `plugin.desktop-ui.menu.settings` carries it in all 79 locales.
+    val settings: String = "Settings",
+
     val subtitleSettings: String = "Subtitle settings",
     val subtitleFont: String = "Font",
     val subtitleTextSize: String = "Text size",
@@ -355,6 +488,9 @@ private val SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f)
 private const val SDR_WIRE = "sdr"
 
 internal const val SETTINGS_MENU_TAG = "nm-settings-menu"
+internal const val MENU_HEADER_TAG = "nm-menu-header"
+internal const val MENU_BACK_TAG = "nm-menu-back"
+internal const val MENU_CLOSE_TAG = "nm-menu-close"
 internal const val ROW_QUALITY = "nm-row-quality"
 internal const val ROW_AUDIO = "nm-row-audio"
 internal const val ROW_SUBTITLE = "nm-row-subtitle"
@@ -382,8 +518,38 @@ private val ASPECT_RATIOS = listOf(
 )
 internal const val ROW_AUTO = "nm-row-auto"
 
-private val SCRIM = Color(red = 0f, green = 0f, blue = 0f, alpha = 0.9f)
-private val MENU_PADDING = 16.dp
+// Read off .menu-frame, .main-menu and .menu-header on the running player.
+//
+// The card used to be a full-width black sheet: SCRIM was black at 0.9 and the
+// only geometry was 16dp of padding, so the settings list covered the picture and
+// its rows landed on the transport.
+private val FRAME_INSET = 16.dp
+
+// The bar's own height. `bottom: 52px` is what lifts the card clear of it.
+private val FRAME_BOTTOM_INSET = 52.dp
+
+// `min-width: 16rem`.
+private val PANEL_MIN_WIDTH = 256.dp
+
+// `max-height: 60vh`, of the player rather than of the window.
+private const val PANEL_MAX_HEIGHT_SHARE = 0.6f
+
+private val PANEL_RADIUS = 8.dp
+private val PANEL_GAP = 4.dp
+
+// `rgba(20, 20, 25, 0.95)`.
+private val PANEL_BACKGROUND = Color(red = 20, green = 20, blue = 25, alpha = 242)
+
+// `min-height: 2.5rem`, `padding: 6px`.
+private val HEADER_MIN_HEIGHT = 40.dp
+private val HEADER_PADDING = 6.dp
+private val HEADER_SIZE = 13.sp
+private val HEADER_BUTTON = 28.dp
+private val HEADER_ICON = 16.dp
+
+// `border-bottom: 1px solid rgba(209, 213, 219, 0.2)`.
+private val HEADER_RULE = 1.dp
+private val HEADER_RULE_COLOR = Color(red = 209, green = 213, blue = 219, alpha = 51)
 
 // The playlist rails and their rows, tagged so a test can assert which layout
 // was drawn rather than counting children.

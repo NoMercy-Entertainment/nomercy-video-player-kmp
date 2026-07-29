@@ -36,6 +36,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -96,7 +97,7 @@ internal fun MenuRow(
         // what they are already watching with.
         BasicText(
             text = if (isCurrent) "$CURRENT_MARK $label" else label,
-            style = TextStyle(color = tint, fontSize = LABEL_SIZE),
+            style = TextStyle(color = tint, fontSize = LABEL_SIZE, fontWeight = FontWeight.SemiBold),
             modifier = Modifier.weight(1f),
         )
 
@@ -120,8 +121,15 @@ private fun RowGlyph(icon: ImageVector, tint: Color) {
 }
 
 private const val CURRENT_MARK = "•"
-private val ROW_PADDING = 14.dp
-private val LABEL_SIZE = 18.sp
+// Read off the running player, where `.menu-button-text` is 13px at weight 600
+// and the row's own padding is 16px on the leading edge.
+//
+// The label was 18sp — nearly 40% larger — and with 14dp of padding all round the
+// rows were tall enough that six of them filled a 600px player. On screen beside
+// the browser it did not read as a menu with big text; it read as a different
+// component.
+private val ROW_PADDING = 16.dp
+private val LABEL_SIZE = 13.sp
 
 // The web renders its menu glyphs through the same svgFromIcon default the bar
 // uses, and spaces them with the gap either side of `menu-button-text`.
