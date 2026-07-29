@@ -8,7 +8,11 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -17,6 +21,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerConfig
@@ -60,7 +65,27 @@ abstract class VideoChromeGate {
                 player.load(ChromeTestItem())
             }
 
-            VideoChrome(player, formFactor, buttons = buttons, strings = strings)
+            // A stated width, not the host's.
+            //
+            // The bar drops controls that do not fit, so what is on screen
+            // depends on how wide the window is — and the window is whatever
+            // each host happens to give a test. This mounted bare and passed on
+            // Compose Desktop while failing on Robolectric, whose default
+            // device is narrower: the subtitles button is ranked sixteenth and
+            // did not fit there, so a case about opening its menu could not
+            // find the button. Nothing about that test is about width.
+            //
+            // Plain width, and the HOST is what carries the number. A
+            // requiredWidth ignores the constraints it is handed, which sounds
+            // like the fix and puts the bar outside the window instead — the
+            // nodes then exist and are neither displayed nor clickable. So the
+            // Android host declares a wide device through a Robolectric
+            // qualifier, and this box only has to not shrink it.
+            //
+            // ChromeWidthGate is where the width rule is graded, deliberately.
+            Box(modifier = Modifier.width(MOUNT_WIDTH.dp).height(MOUNT_HEIGHT.dp)) {
+                VideoChrome(player, formFactor, buttons = buttons, strings = strings)
+            }
         }
         waitForIdle()
 
@@ -197,3 +222,8 @@ abstract class VideoChromeGate {
 
 private const val SETTLE_MS = 500L
 private const val SPEED_MESSAGE = "2.0x"
+
+// Wide enough that every control a case asks for is on the bar, so a case about
+// a menu is about that menu.
+private const val MOUNT_WIDTH = 1280
+private const val MOUNT_HEIGHT = 720

@@ -49,8 +49,12 @@ abstract class ChromeWidthGate {
                 player.load(ChromeTestItem())
             }
 
-            // A fixed box rather than the test's own window, because the window
-            // size differs per host and the whole point is a known width.
+            // A fixed box rather than the test's own window, because the
+            // window size differs per host and the whole point is a known
+            // width. Plain width, coerced into what the host hands down: a
+            // requiredWidth would put the bar outside the window and every
+            // node in it would stop being clickable. The Android host declares
+            // a wide device through a Robolectric qualifier instead.
             Box(modifier = Modifier.width(widthDp.dp).height(WINDOW_HEIGHT.dp)) {
                 VideoChrome(player, FormFactor.Phone)
             }
