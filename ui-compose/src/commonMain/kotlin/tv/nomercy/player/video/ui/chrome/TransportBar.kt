@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.video.tv.formatTime
 import tv.nomercy.player.video.tv.nextChapterStart
@@ -58,7 +59,7 @@ public fun TransportBar(
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val fits: Set<ChromeControl> = remember(maxWidth, buttons, state) {
             visibleControls(
-                widthDp = maxWidth.value.toInt(),
+                widthDp = boundedWidthDp(maxWidth),
                 contentHidden = { state.lacksContentFor(it) },
                 enabled = { buttons.allows(it) },
             ).toSet()
@@ -462,6 +463,36 @@ internal fun ChromeState.lacksContentFor(control: ChromeControl): Boolean = when
     ChromeControl.PLAYLIST -> queueSize <= 1
     else -> false
 }
+
+/**
+ * The width to choose a breakpoint from, when there may not be one.
+ *
+ * `BoxWithConstraints` hands back `Dp.Infinity` under a parent that scrolls
+ * horizontally, and the browser has no equivalent — a CSS container query always
+ * has a number to answer with. So the port had a case the oracle cannot teach
+ * it, and what it did with that case was an accident of arithmetic:
+ * `Float.POSITIVE_INFINITY.toInt()` is `Int.MAX_VALUE`, which lands on the
+ * widest band and draws everything. Right answer, reached by not being asked
+ * the question.
+ *
+ * It is written down because the neighbouring accident is not survivable. A
+ * constraint that arrives as `NaN` converts to ZERO, which is the narrowest
+ * band, and a bar that quietly collapses to one control inside a scrolling
+ * container looks like a layout decision rather than a missing width.
+ *
+ * Unbounded means "as much room as you want", so the widest band is the honest
+ * answer as well as the convenient one.
+ */
+private fun boundedWidthDp(width: Dp): Int {
+    val value: Float = width.value
+
+    return if (value.isFinite()) value.toInt() else UNBOUNDED_WIDTH_DP
+}
+
+// Past every ceiling in CHROME_BREAKPOINTS, so it selects the last band the same
+// way any wide screen does. Not Int.MAX_VALUE: a number that large invites an
+// overflow the first time somebody adds an offset to it.
+private const val UNBOUNDED_WIDTH_DP = 100_000
 
 internal const val TRANSPORT_BAR_TAG = "nm-transport-bar"
 internal const val PLAY_PAUSE_TAG = "nm-play-pause"
