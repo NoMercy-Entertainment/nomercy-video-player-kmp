@@ -27,15 +27,16 @@ import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.video.ui.chrome.ChromeState
+import tv.nomercy.player.video.ui.tv.FluentIcons
 
 // Which list is open, if any.
 //
 // One value rather than a boolean per menu. Two open at once is not a state
 // anybody designed; it is what happens when five flags are set independently,
 // and it is how a viewer ends up choosing a quality from behind a subtitle list.
-// Playlist joins the web bar's set. Its own state rather than a row inside
-// Main, because the web opens it from its own button straight to the episode
-// rail — a viewer picking the next episode should not pass through settings.
+// Playlist joins the web bar's set. Its own state because the bar opens it
+// straight to the episode rail, AND a row inside Main, because the web lists it
+// there too — reading only the button was how it ended up reachable one way.
 public enum class MenuState { Hidden, Main, Quality, Audio, Subtitle, Speed, Playlist }
 
 // The settings surface: a main list that opens the others.
@@ -104,21 +105,55 @@ private fun PlaylistMenu(state: ChromeState, onMenuChange: (MenuState) -> Unit) 
     }
 }
 
-// Only the lists that have something in them. A row that opens onto one option
-// is a press that costs a viewer time and gives them no choice.
+// The web's category list, in the web's order, with the glyph each row carries.
+//
+// It was quality, audio, subtitles, speed — four of the seven, and the first two
+// the other way round. Order is not decoration in a list somebody navigates with
+// a thumb or a d-pad: a viewer who knows audio is the top row on the web reaches
+// for the top row here, and reordering it silently is how a remote press picks
+// the wrong thing.
+//
+// Only the lists that have something in them, still. A row that opens onto one
+// option is a press that costs a viewer time and gives them no choice.
+//
+// Two of the web's seven are missing rather than reordered — subtitle settings
+// and aspect ratio — because neither has a pane to open. Aspect ratio has only
+// `cycleAspectRatio()` and no state saying which mode is current, and subtitle
+// styling has nothing at all. A row that opens onto nothing is worse than an
+// absent row, so they land with their panes.
 @Composable
 private fun MainMenu(state: ChromeState, strings: MenuStrings, onMenuChange: (MenuState) -> Unit) {
     Column {
-        if (state.qualityLevels.size > 1) {
-            MenuRow(strings.quality, tag = ROW_QUALITY) { onMenuChange(MenuState.Quality) }
-        }
         if (state.audioTracks.size > 1) {
-            MenuRow(strings.audio, tag = ROW_AUDIO) { onMenuChange(MenuState.Audio) }
+            MenuRow(strings.audio, tag = ROW_AUDIO, icon = FluentIcons.Language, opensSubMenu = true) {
+                onMenuChange(MenuState.Audio)
+            }
         }
+
         // Offered whenever the feature is on, even with nothing loaded: turning
         // subtitles off is a choice, and so is finding out there are none.
-        MenuRow(strings.subtitles, tag = ROW_SUBTITLE) { onMenuChange(MenuState.Subtitle) }
-        MenuRow(strings.speed, tag = ROW_SPEED) { onMenuChange(MenuState.Speed) }
+        MenuRow(strings.subtitles, tag = ROW_SUBTITLE, icon = FluentIcons.Subtitles, opensSubMenu = true) {
+            onMenuChange(MenuState.Subtitle)
+        }
+
+        if (state.qualityLevels.size > 1) {
+            MenuRow(strings.quality, tag = ROW_QUALITY, icon = FluentIcons.Quality, opensSubMenu = true) {
+                onMenuChange(MenuState.Quality)
+            }
+        }
+
+        MenuRow(strings.speed, tag = ROW_SPEED, icon = FluentIcons.Speed, opensSubMenu = true) {
+            onMenuChange(MenuState.Speed)
+        }
+
+        // The web lists this here as well as opening it from its own button, and
+        // this had only the button. Somebody in the settings list looking for
+        // the next episode found nothing.
+        if (state.queue.size > 1) {
+            MenuRow(strings.playlist, tag = ROW_PLAYLIST, icon = FluentIcons.Playlist, opensSubMenu = true) {
+                onMenuChange(MenuState.Playlist)
+            }
+        }
     }
 }
 
@@ -227,6 +262,7 @@ public data class MenuStrings(
     val subtitles: String = "Subtitles",
     val subtitlesOff: String = "Off",
     val speed: String = "Speed",
+    val playlist: String = "Playlist",
     val automatic: String = "Auto",
     val normalSpeed: String = "Normal",
 )
@@ -244,6 +280,7 @@ internal const val ROW_AUDIO = "nm-row-audio"
 internal const val ROW_SUBTITLE = "nm-row-subtitle"
 internal const val ROW_SUBTITLE_OFF = "nm-row-subtitle-off"
 internal const val ROW_SPEED = "nm-row-speed"
+internal const val ROW_PLAYLIST = "nm-row-playlist"
 internal const val ROW_AUTO = "nm-row-auto"
 
 private val SCRIM = Color(red = 0f, green = 0f, blue = 0f, alpha = 0.9f)
