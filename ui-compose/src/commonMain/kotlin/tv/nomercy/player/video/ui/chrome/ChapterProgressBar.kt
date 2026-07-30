@@ -58,11 +58,41 @@ public class ChapterBarState(
 // check-chrome-parity.py reads these alphas and the CSS and compares them.
 public class ChapterBarColors(
     public val track: Color = Color.White.copy(alpha = 0.2f),
-    public val segment: Color = Color.White.copy(alpha = 0.3f),
+    public val segment: Color = Color.White.copy(alpha = 0.2f),
     public val buffer: Color = Color.White.copy(alpha = 0.4f),
     public val hover: Color = Color.White.copy(alpha = 0.3f),
     public val progress: Color = Color.White.copy(alpha = 1.0f),
-)
+    /**
+     * The hover fill inside a chapter segment.
+     *
+     * A separate colour because the stylesheet keeps two palettes, not one:
+     * `.slider-hover` is white at 0.3 and `.chapter-marker-hover` is
+     * `rgba(229, 231, 235, 1)` — opaque, and a different hue. This drew both from
+     * one field, so a scrub across a segmented bar washed out to a translucent
+     * white where the web reads as a solid light grey.
+     */
+    public val chapterHover: Color = Color(CHAPTER_HOVER_ARGB),
+) {
+    public companion object {
+        /**
+         * The bar his own player draws, for a consumer that wants that look.
+         *
+         * Not the default. His buffer sits at 0.08, which is close enough to the
+         * track that a viewer cannot tell an arriving stream from a stalled one,
+         * and the web's 0.4 is the version that answers the question. Naming his
+         * values keeps them available without making that the behaviour everyone
+         * inherits.
+         */
+        public fun androidApp(): ChapterBarColors = ChapterBarColors(
+            track = Color.LightGray.copy(alpha = 0.4f),
+            segment = Color.LightGray.copy(alpha = 0.4f),
+            buffer = Color.White.copy(alpha = 0.08f),
+            hover = Color.White.copy(alpha = 0.5f),
+            progress = Color.White.copy(alpha = 0.8f),
+            chapterHover = Color.White.copy(alpha = 0.5f),
+        )
+    }
+}
 
 // A scrubber divided into the item's chapters.
 //
@@ -96,20 +126,23 @@ public fun ChapterProgressBar(
                 }
             },
     ) {
-        val radius = CornerRadius(size.height / 2f, size.height / 2f)
-        drawRoundRect(color = colors.track, cornerRadius = radius)
+        // `.slider-bar.has-chapters` sets `background: transparent` and hides
+        // `.slider-buffer`, `.slider-hover` and `.slider-progress` outright. Both
+        // sets used to draw: a pill track showed through the 2px gaps between
+        // segments, and the continuous buffer ran across them.
+        if (markers.isEmpty()) {
+            val radius = CornerRadius(size.height / 2f, size.height / 2f)
+            drawRoundRect(color = colors.track, cornerRadius = radius)
 
-        // Everything after this is a rectangle, and the ends of the bar are
-        // round. Without the clip the buffer and the progress square them off.
-        clipPath(Path().apply { addRoundRect(RoundRect(0f, 0f, size.width, size.height, radius)) }) {
-            drawSpan(colors.buffer, state.bufferedFraction)
-
-            if (markers.isEmpty()) {
+            // Everything after this is a rectangle, and the ends of the bar are
+            // round. Without the clip the buffer and the progress square them off.
+            clipPath(Path().apply { addRoundRect(RoundRect(0f, 0f, size.width, size.height, radius)) }) {
+                drawSpan(colors.buffer, state.bufferedFraction)
                 drawSpan(colors.hover, state.hoverFraction())
                 drawSpan(colors.progress, state.progressFraction())
-            } else {
-                drawSegments(markers, state, colors)
             }
+        } else {
+            drawSegments(markers, state, colors)
         }
     }
 }
@@ -120,6 +153,8 @@ private fun DrawScope.drawSegments(
     colors: ChapterBarColors,
 ) {
     val gap: Float = SEGMENT_GAP.toPx()
+    val minWidth: Float = SEGMENT_MIN_WIDTH.toPx()
+    val corner = CornerRadius(SEGMENT_RADIUS.toPx(), SEGMENT_RADIUS.toPx())
 
     for (marker in markers) {
         val left: Float = (marker.leftPercent / PERCENT).toFloat() * size.width
@@ -129,12 +164,21 @@ private fun DrawScope.drawSegments(
         // still reaches its own right edge. Taking it off that one too leaves a
         // sliver of track showing after the final chapter.
         val end: Float = if (marker === markers.last()) right else (right - gap).coerceAtLeast(left)
-        val width: Float = end - left
-        if (width <= 0f) continue
 
-        drawRect(colors.segment, topLeft = Offset(left, 0f), size = Size(width, size.height))
-        drawFill(colors.hover, left, width, chapterFill(marker, state.hoverPercent()))
-        drawFill(colors.progress, left, width, chapterFill(marker, state.progressPercent()))
+        // `min-width: 2px`. A chapter a few seconds long computes to a sub-pixel
+        // width, and dropping it left a gap in the bar where a real chapter is —
+        // the web keeps it visible and clickable instead.
+        val width: Float = (end - left).coerceAtLeast(minWidth)
+
+        // Each `.chapter-marker` is its own 2px-radius box with `overflow: hidden`,
+        // so its fills are clipped to that box. Drawing them as plain rectangles
+        // squared off every segment's corners.
+        clipPath(Path().apply { addRoundRect(RoundRect(left, 0f, left + width, size.height, corner)) }) {
+            drawRect(colors.segment, topLeft = Offset(left, 0f), size = Size(width, size.height))
+            drawFill(colors.buffer, left, width, chapterFill(marker, state.bufferedPercent()))
+            drawFill(colors.chapterHover, left, width, chapterFill(marker, state.hoverPercent()))
+            drawFill(colors.progress, left, width, chapterFill(marker, state.progressPercent()))
+        }
     }
 }
 
@@ -160,6 +204,11 @@ private fun ChapterBarState.hoverFraction(): Double =
 
 private fun ChapterBarState.progressPercent(): Double = progressFraction() * PERCENT
 
+// `.chapter-marker-buffer` is a per-segment fill. This drew the buffer once as a
+// continuous span underneath the segments, so on a segmented bar it ran straight
+// through the gaps and ignored the chapter boundaries the rest of the bar keeps.
+private fun ChapterBarState.bufferedPercent(): Double = bufferedFraction.coerceIn(0.0, 1.0) * PERCENT
+
 // Nought when nothing is hovered, so every segment fills to nothing rather than
 // the first one filling to all of it.
 private fun ChapterBarState.hoverPercent(): Double =
@@ -173,4 +222,12 @@ private fun ChapterBarState.describe(): String =
 
 private const val PERCENT = 100.0
 private val BAR_HEIGHT: Dp = 8.dp
-private val SEGMENT_GAP: Dp = 4.dp
+
+// `width: calc(N% - 2px)` and `border-radius: 2px` on `.chapter-marker`, and
+// `min-width: 2px`. The gap was 4dp, from his player rather than from the web.
+private val SEGMENT_GAP: Dp = 2.dp
+private val SEGMENT_RADIUS: Dp = 2.dp
+private val SEGMENT_MIN_WIDTH: Dp = 2.dp
+
+// `.chapter-marker-hover: rgba(229, 231, 235, 1)`.
+private const val CHAPTER_HOVER_ARGB: Long = 0xFF_E5_E7_EB
