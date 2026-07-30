@@ -105,7 +105,14 @@ public class ChapterBarColors(
 @Composable
 public fun ChapterProgressBar(
     state: ChapterBarState,
-    onSeek: (Double) -> Unit,
+    /**
+     * Where a press or a drag on the bar goes, or null when the caller owns input.
+     *
+     * Null is the important case. ChapterScrubber already handles the whole gesture
+     * and seeks once on RELEASE, as the web's finalizeScrub does; a bar that also
+     * consumed pointer events would swallow them and seek on every pixel of a drag.
+     */
+    onSeek: ((Double) -> Unit)? = null,
     modifier: Modifier = Modifier,
     colors: ChapterBarColors = ChapterBarColors(),
     height: Dp = BAR_HEIGHT,
@@ -117,14 +124,21 @@ public fun ChapterProgressBar(
             .fillMaxWidth()
             .height(height)
             .semantics { contentDescription = state.describe() }
-            .pointerInput(state.duration) {
-                detectTapGestures { at -> onSeek(state.secondsAt(at.x / size.width)) }
-            }
-            .pointerInput(state.duration) {
-                detectHorizontalDragGestures { change, _ ->
-                    onSeek(state.secondsAt(change.position.x / size.width))
-                }
-            },
+            .then(
+                if (onSeek == null) {
+                    Modifier
+                } else {
+                    Modifier
+                        .pointerInput(state.duration) {
+                            detectTapGestures { at -> onSeek(state.secondsAt(at.x / size.width)) }
+                        }
+                        .pointerInput(state.duration) {
+                            detectHorizontalDragGestures { change, _ ->
+                                onSeek(state.secondsAt(change.position.x / size.width))
+                            }
+                        }
+                },
+            ),
     ) {
         // `.slider-bar.has-chapters` sets `background: transparent` and hides
         // `.slider-buffer`, `.slider-hover` and `.slider-progress` outright. Both

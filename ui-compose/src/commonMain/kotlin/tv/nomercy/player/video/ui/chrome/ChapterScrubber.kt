@@ -24,6 +24,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.cues.SpriteCue
+import tv.nomercy.player.core.media.Chapter
 import tv.nomercy.player.video.thumbnails.frameAt
 import tv.nomercy.player.video.ui.tv.ChapterProgressBar
 import tv.nomercy.player.video.tv.formatTime
@@ -101,7 +102,7 @@ public fun ChapterScrubber(
             }
             .semantics { contentDescription = formatTime(shownSeconds) },
     ) {
-        ChapterProgressBar(shownSeconds, state.durationSeconds, state.chapters, Modifier.fillMaxWidth())
+        ScrubberBar(state, shownSeconds, dragSeconds)
     }
 }
 
@@ -120,3 +121,32 @@ internal const val SCRUBBER_TAG = "nm-scrubber"
 
 // Taller than the bar it draws. Fingers are not pixels.
 private val TOUCH_HEIGHT = 32.dp
+
+// The drawn bar, as its own composable.
+//
+// Split because the scrubber is at its length limit and this is the part that says
+// WHICH bar: two ChapterProgressBar composables exist and the wrong one was being
+// drawn, which is worth a name rather than being buried in a gesture handler.
+@Composable
+private fun ScrubberBar(state: ChromeState, shownSeconds: Double, hoverSeconds: Double?) {
+    // The chrome's bar, not the television's.
+    //
+    // Two ChapterProgressBar composables exist and this drew the tv/ one, so every
+    // fix to the segmented drawing — the chapter palette, the per-segment buffer,
+    // the 2px corners and the minimum width — landed on a copy the desktop chrome
+    // never renders. A duplicate is worse than a missing component: the fix looks
+    // applied, the gate reads the file it was applied to, and the screen shows the
+    // other one.
+    ChapterProgressBar(
+        state = ChapterBarState(
+            currentSeconds = shownSeconds,
+            duration = state.durationSeconds,
+            bufferedFraction = state.bufferedFraction.toDouble(),
+            chapters = state.chapters.map { Chapter(startTime = it.startSeconds, title = it.title.orEmpty()) },
+            hoverSeconds = hoverSeconds,
+        ),
+        // Null: this composable owns the gesture and seeks once on release.
+        onSeek = null,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
