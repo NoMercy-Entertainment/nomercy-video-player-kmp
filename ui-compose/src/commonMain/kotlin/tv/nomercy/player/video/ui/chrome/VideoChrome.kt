@@ -123,7 +123,7 @@ public fun VideoChrome(
     val scheduler: Scheduler = rememberChromeScheduler()
 
     var menu: MenuState by remember { mutableStateOf(MenuState.Hidden) }
-    val message: String? = rememberPlayerMessage(player)
+    val message: String? = rememberChromeMessage(player, strings)?.text
     val error: ChromeError? = rememberPlayerError(player)
     val state: ChromeState = rememberChromeState(player, message, error)
         .copy(autoSkipChapters = autoSkip.enabled)
@@ -446,27 +446,8 @@ private fun ChromeBindings(controller: ChromeController, playing: Boolean, menu:
     DisposableEffect(controller) { onDispose { controller.dispose() } }
 }
 
-// What the player last told the viewer.
-//
-// Held here rather than on the player's per-frame snapshot, because a message is
-// shown for a moment and a field on that value would make every frame carry it.
-// Cleared by the player, which is who showed it.
-@Composable
-private fun rememberPlayerMessage(player: NMVideoPlayer): String? {
-    var message: String? by remember { mutableStateOf(null) }
-
-    DisposableEffect(player) {
-        val shown: Subscription = player.on(VideoEvents.DisplayMessage) { message = it.text }
-        val cleared: Subscription = player.on(VideoEvents.RemoveMessage) { message = null }
-
-        onDispose {
-            shown.dispose()
-            cleared.dispose()
-        }
-    }
-
-    return message
-}
+// Superseded by rememberChromeMessage, which listens to all nine of the web's
+// feedback events rather than these two. See ChromeFeedback.kt.
 
 // The last failure the player reported, until an item change clears it.
 //

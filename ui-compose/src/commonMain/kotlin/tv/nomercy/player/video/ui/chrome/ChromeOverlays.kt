@@ -8,6 +8,14 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.text.BasicText
@@ -44,14 +52,47 @@ internal fun BoxScope.ChromeStatusText(scene: ChromeScene) {
         )
     }
 
-    scene.state.message?.let { text ->
+    scene.state.message?.let { text -> PlayerMessage(text) }
+}
+
+/**
+ * The notice band: loading, buffering, a failure, or whatever the host asked for.
+ *
+ * `.player-message`, which this drew as bare white text in the middle of the
+ * picture. The web puts it in a pill near the TOP — `top: 48px` — for a reason
+ * worth keeping: centred, it sits exactly where the film is, so every notice
+ * reads as part of the picture and covers the thing the viewer is waiting to see.
+ */
+@Composable
+private fun BoxScope.PlayerMessage(text: String) {
+    Box(
+        modifier = Modifier
+            .align(Alignment.TopCenter)
+            .padding(top = MESSAGE_TOP)
+            // `max-width: 80%`, so a long failure wraps inside the picture rather
+            // than running off both edges of it.
+            .fillMaxWidth(MESSAGE_MAX_WIDTH_SHARE)
+            .wrapContentWidth()
+            .background(MESSAGE_BACKGROUND, RoundedCornerShape(MESSAGE_RADIUS))
+            .padding(horizontal = MESSAGE_PADDING_HORIZONTAL, vertical = MESSAGE_PADDING_VERTICAL)
+            .testTag(MESSAGE_TAG),
+    ) {
         BasicText(
             text = text,
-            style = TextStyle(color = Color.White),
-            modifier = Modifier.align(Alignment.Center).testTag(MESSAGE_TAG),
+            style = TextStyle(color = Color.White, fontSize = MESSAGE_TEXT_SIZE),
         )
     }
 }
+
+// `top: 48px`, `padding: 8px 16px`, `border-radius: 8px`, `max-width: 80%`,
+// `background: rgba(20, 22, 30, 0.85)`, `font-size: 0.875rem`.
+private val MESSAGE_TOP: Dp = 48.dp
+private val MESSAGE_RADIUS: Dp = 8.dp
+private val MESSAGE_PADDING_HORIZONTAL: Dp = 16.dp
+private val MESSAGE_PADDING_VERTICAL: Dp = 8.dp
+private const val MESSAGE_MAX_WIDTH_SHARE = 0.8f
+private val MESSAGE_BACKGROUND: Color = Color(red = 20, green = 22, blue = 30, alpha = 217)
+private val MESSAGE_TEXT_SIZE = 14.sp
 
 // The layers that sit over the picture and are not the controls: the skip
 // prompt and the failure. Split from ChromeLayers because that function is the

@@ -138,6 +138,12 @@ public fun tvChromeStrings(locale: String): TvChromeStrings {
         // Dutch word sat in the same file.
         fullscreen = tip("fullscreen"),
         episodes = ChromeTranslations.get(locale, "plugin.desktop-ui.menu.episodes"),
+
+        // The message channel's three, under `message.` rather than `tooltip.`.
+        // All three sit in the table for every locale and none was being read.
+        loading = ChromeTranslations.get(locale, "plugin.desktop-ui.message.loading"),
+        buffering = ChromeTranslations.get(locale, "plugin.desktop-ui.message.buffering"),
+        error = ChromeTranslations.get(locale, "plugin.desktop-ui.message.error"),
     )
 }
 
@@ -148,7 +154,14 @@ public data class TvChromeStrings(
     val restart: String = "Restart",
     val subtitles: String = "Subtitles",
     val episodes: String = "Episodes",
-    val loading: String = "Loading",
+    val loading: String = "Loading…",
+
+    // The other two the message channel needs. There were no fields for them, so
+    // the chrome had nothing to say while a stream stalled or a decode failed —
+    // and `loading` had a field and no mapping, which is why it read "Loading" in
+    // every one of the seventy-nine locales that already carry the word.
+    val buffering: String = "Buffering…",
+    val error: String = "Something went wrong trying to play this item",
     val resume: String = "Resume",
     val language: String = "Language",
     val searchSubtitles: String = "Search online",
