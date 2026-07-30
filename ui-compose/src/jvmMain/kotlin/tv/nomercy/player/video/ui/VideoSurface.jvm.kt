@@ -27,9 +27,22 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
  * One surface, set once. An earlier attempt attached a placeholder at backend
  * construction and let the composable swap in the real one; swapping a live
  * callback surface segfaults libVLC. There is nothing to swap now.
+ *
+ * `@JvmOverloads` because the second parameter was added after 2.0.1 shipped. A
+ * Kotlin default argument compiles to ONE constructor plus a synthetic, so without
+ * this the single-argument signature every published consumer linked against would
+ * simply cease to exist — a NoSuchMethodError on construction for anyone who did
+ * not recompile.
  */
-public actual class VideoSurface(
+public actual class VideoSurface @JvmOverloads constructor(
     public val embeddedPlayer: EmbeddedMediaPlayer,
+    // The engine, so the view can tell it how big the picture is drawn.
+    //
+    // Nullable and defaulted, because an app that built the surface from a raw
+    // EmbeddedMediaPlayer still has one — it just gets no ladder cap, which is
+    // where every desktop was before this. Told rather than asked: the engine
+    // renders into a buffer and has no view to measure.
+    internal val backend: VlcjVideoBackend? = null,
 ) {
 
     internal val sink: ComposeFrameSink = ComposeFrameSink()
@@ -43,4 +56,4 @@ public actual class VideoSurface(
 
 // The one line an app writes to mount the view on the desktop.
 public fun VideoSurface(backend: VlcjVideoBackend): VideoSurface =
-    VideoSurface(backend.embeddedPlayer)
+    VideoSurface(backend.embeddedPlayer, backend)

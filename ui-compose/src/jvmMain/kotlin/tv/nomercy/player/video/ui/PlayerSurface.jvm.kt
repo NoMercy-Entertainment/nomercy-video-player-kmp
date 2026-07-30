@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 
 /**
  * Draws whatever the surface's sink last decoded.
@@ -33,7 +34,18 @@ import androidx.compose.ui.layout.ContentScale
 public actual fun PlayerSurface(surface: VideoSurface, modifier: Modifier) {
     // Black, because the alternative is the window's background showing through
     // between the moment the view mounts and the first decoded frame.
-    Box(modifier = modifier.background(Color.Black)) {
+    //
+    // The measured size goes to the engine on every layout pass. It is what caps
+    // the ladder: a 3840-wide rendition into a pane 372 device-pixels tall was
+    // holding delivery at a sixth of the clip's rate, and the engine cannot ask
+    // because it renders into a buffer rather than into this box. Device pixels
+    // already — Compose reports layout in pixels, so there is no density factor to
+    // apply here the way the web multiplies by devicePixelRatio.
+    Box(
+        modifier = modifier
+            .onSizeChanged { size -> surface.backend?.surfaceSize(size.width, size.height) }
+            .background(Color.Black),
+    ) {
         val current: ImageBitmap? = surface.sink.frame.value
         if (current != null) {
             Image(
