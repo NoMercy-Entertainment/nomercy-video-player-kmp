@@ -347,7 +347,10 @@ private fun ViewButtons(
     if (ChromeControl.SPEED in fits) {
         PlayerIconButton(
             icon = FluentIcons.Speed,
-            description = strings.speed,
+            // The rate, when it is not 1. applyRate puts it in the aria-label and
+            // this said only "Speed" at every rate — invisible as an a11y gap until
+            // tooltips landed and started reading the same string.
+            description = speedLabel(strings.speed, state.rate),
             onClick = { commands.openSpeedMenu() },
             modifier = Modifier.testTag(SPEED_TAG),
         )
@@ -397,7 +400,9 @@ private fun ListMenuButtons(
     if (ChromeControl.QUALITY in fits) {
         PlayerIconButton(
             icon = FluentIcons.Quality,
-            description = strings.quality,
+            // What is PLAYING, not what was selected. On an adaptive ladder those
+            // differ constantly, and announcing the selection says "Auto" forever.
+            description = qualityLabel(strings.quality, state.activeQuality?.describe()),
             onClick = { commands.openQualityMenu() },
             modifier = Modifier.testTag(QUALITY_TAG),
         )
