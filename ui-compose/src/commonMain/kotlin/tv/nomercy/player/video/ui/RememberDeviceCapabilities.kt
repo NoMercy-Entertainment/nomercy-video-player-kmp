@@ -41,4 +41,7 @@ private object DesktopFallback : DeviceCapabilities {
     override val hasTouch: Boolean = false
     override val hasPointer: Boolean = true
     override val hasHardwareVolumeKeys: Boolean = false
+
+    // A fallback claims nothing it cannot prove, and it cannot ask a panel.
+    override val hasHdrDisplay: Boolean = false
 }

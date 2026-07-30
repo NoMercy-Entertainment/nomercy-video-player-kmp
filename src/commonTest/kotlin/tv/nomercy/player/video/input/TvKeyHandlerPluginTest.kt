@@ -33,6 +33,7 @@ class TvKeyHandlerPluginTest {
         override val hasTouch: Boolean = false
         override val hasPointer: Boolean = false
         override val hasHardwareVolumeKeys: Boolean = false
+        override val hasHdrDisplay: Boolean = false
     }
 
     private var clock: Long = 0

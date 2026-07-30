@@ -34,6 +34,7 @@ class VideoKeyHandlerPluginTest {
         override val hasTouch: Boolean = formFactor == FormFactor.Phone,
         override val hasPointer: Boolean = formFactor == FormFactor.Desktop,
         override val hasHardwareVolumeKeys: Boolean = formFactor != FormFactor.Tv,
+        override val hasHdrDisplay: Boolean = false
     ) : DeviceCapabilities
 
     private var clock: Long = 0

@@ -36,4 +36,12 @@ internal data class ChromeCapabilities(
     // desktop has none at all. A handheld is the one that has them and delivers
     // them to whatever is in front.
     override val hasHardwareVolumeKeys: Boolean get() = hasTouch
+
+    // False, not derived from the form factor like the rest of this.
+    //
+    // Every other capability here follows from what KIND of device it is, and this
+    // one does not: two televisions differ, and the same desktop differs by which
+    // monitor the window is on. Deriving it would hand the playback path a confident
+    // wrong answer, which is worse than a conservative one.
+    override val hasHdrDisplay: Boolean get() = false
 }

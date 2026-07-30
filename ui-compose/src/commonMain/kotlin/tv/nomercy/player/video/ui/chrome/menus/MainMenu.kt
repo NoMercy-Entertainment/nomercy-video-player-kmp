@@ -9,6 +9,9 @@
 package tv.nomercy.player.video.ui.chrome.menus
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.ChromeState
@@ -35,7 +38,17 @@ internal fun MainMenu(
     buttons: ChromeButtons,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    Column {
+    // Scrollable, because these rows can outgrow the card.
+    //
+    // The panel deliberately carries no scroller: several panes ARE LazyColumns and
+    // a LazyColumn inside a Column(verticalScroll) is the nested scroll Compose
+    // refuses outright. That reasoning is right about the PANEL and was quietly
+    // taken to mean the rows needed none either — so on a short window the last
+    // rows sat below the card's ceiling with no way to reach them.
+    //
+    // These two lists hold fixed rows and nothing lazy, which is exactly the case
+    // where a scroller is safe.
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         if (state.audioTracks.size > 1) {
             MenuRow(strings.audio, tag = ROW_AUDIO, icon = FluentIcons.Language, opensSubMenu = true) {
                 onMenuChange(MenuState.Audio)
@@ -91,7 +104,17 @@ private fun MainMenuPresentation(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    Column {
+    // Scrollable, because these rows can outgrow the card.
+    //
+    // The panel deliberately carries no scroller: several panes ARE LazyColumns and
+    // a LazyColumn inside a Column(verticalScroll) is the nested scroll Compose
+    // refuses outright. That reasoning is right about the PANEL and was quietly
+    // taken to mean the rows needed none either — so on a short window the last
+    // rows sat below the card's ceiling with no way to reach them.
+    //
+    // These two lists hold fixed rows and nothing lazy, which is exactly the case
+    // where a scroller is safe.
+    Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         MenuRow(strings.speed, tag = ROW_SPEED, icon = FluentIcons.Speed, opensSubMenu = true) {
             onMenuChange(MenuState.Speed)
         }
