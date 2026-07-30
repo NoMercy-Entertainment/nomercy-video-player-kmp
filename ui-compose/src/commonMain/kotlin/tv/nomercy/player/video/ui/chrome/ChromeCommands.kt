@@ -89,6 +89,20 @@ public interface ChromeTransportCommands {
 
     public fun openSettingsMenu()
 
+    /**
+     * Play a queue item outright, which is what choosing a playlist card means.
+     *
+     * By id rather than by position, like every other selection on this seam: a
+     * queue is reordered and appended to while a menu is open, and an index read
+     * when the pane was drawn plays whatever moved into that slot.
+     *
+     * Defaulted to nothing so a host that implements this interface itself keeps
+     * compiling — its playlist rows stay inert until it overrides this, which is
+     * a visible gap rather than a broken build. The chrome's own implementation
+     * overrides it.
+     */
+    public fun playQueueItem(id: String) {
+    }
 }
 
 // How loud it is.

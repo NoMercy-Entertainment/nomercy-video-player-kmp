@@ -317,6 +317,10 @@ private fun ChromeLayers(
             Modifier.align(Alignment.BottomEnd),
             scene.menuStrings,
             scene.buttons,
+            // The host's own slots rather than the composition local, because a
+            // caller that passed `slots` to this function without providing the
+            // local would otherwise get the default and lose the one it supplied.
+            host.slots,
         )
 
         ChromeOverlays(scene)

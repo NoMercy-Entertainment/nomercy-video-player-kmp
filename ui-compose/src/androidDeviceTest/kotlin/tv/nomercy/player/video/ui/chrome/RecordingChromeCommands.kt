@@ -38,6 +38,7 @@ internal open class RecordingChromeCommands : ChromeCommands {
     var lastSubtitle: SubtitleTrack? = null
     var subtitleWasSet: Boolean = false
     var lastRate: Float? = null
+    var lastPlayedItem: String? = null
 
     override fun seekTo(seconds: Double) { calls += "seekTo" }
 
@@ -66,6 +67,14 @@ internal open class RecordingChromeCommands : ChromeCommands {
     override fun openPlaylistMenu() { calls += "openPlaylistMenu" }
 
     override fun openSettingsMenu() { calls += "openSettingsMenu" }
+
+    // Overridden even though the interface defaults it, because the default is
+    // the do-nothing a host gets for free and a fake that inherited it would
+    // report a card that plays nothing as a card that works.
+    override fun playQueueItem(id: String) {
+        calls += "playQueueItem"
+        lastPlayedItem = id
+    }
 
     override fun setVolume(percent: Int) { calls += "setVolume" }
 

@@ -8,52 +8,38 @@
 
 package tv.nomercy.player.video.ui.chrome.menus
 
-import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.ui.text.TextStyle
-import tv.nomercy.player.video.ui.tv.PlayerIconButton
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import tv.nomercy.player.video.tv.TvChromeItem
-import tv.nomercy.player.video.tv.sidebarSeasons
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
+import tv.nomercy.player.video.Stretching
+import tv.nomercy.player.video.tv.TvChromeItem
+import tv.nomercy.player.video.tv.sidebarSeasons
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
+import tv.nomercy.player.video.ui.chrome.ChromeSlots
 import tv.nomercy.player.video.ui.chrome.ChromeState
-import tv.nomercy.player.video.ui.chrome.ChromeTranslations
-import tv.nomercy.player.video.Stretching
-import tv.nomercy.player.video.ui.tv.FluentIcons
+import tv.nomercy.player.video.ui.chrome.LocalChromeSlots
 
 // Which list is open, if any.
 //
@@ -91,6 +77,7 @@ public fun SettingsMenu(
     modifier: Modifier = Modifier,
     strings: MenuStrings = MenuStrings(),
     buttons: ChromeButtons = ChromeButtons(),
+    slots: ChromeSlots = LocalChromeSlots.current,
 ) {
     if (menu == MenuState.Hidden) return
 
@@ -102,37 +89,48 @@ public fun SettingsMenu(
     // button. The web is a card:
     //
     //     .menu-frame { position: absolute; top: 16px; right: 16px; bottom: 52px;
-    //                   flex-direction: column; height: auto }
+    //                   width: min-content; height: auto;
+    //                   max-width: min(52rem, calc(100% - 2rem));
+    //                   max-height: calc(100% - 2rem) }
     //     .main-menu  { min-width: 16rem; max-height: 60vh; border-radius: 8px;
     //                   background: rgba(20, 20, 25, 0.95); gap: 4px }
     //
     // The frame is inset on three sides and `margin-top: auto` pushes the card to
     // the bottom of it, which is what puts the panel above the settings button
     // rather than over the film. 52px of bottom inset is the bar's own height.
-    // fillMaxWidth, not fillMaxSize.
     //
-    // fillMaxSize under an unbounded height throws outright, and an unbounded
-    // height is any parent that scrolls and every test harness. The card's
-    // vertical place comes from the caller's own alignment; all this needs is the
-    // width to right-align within and the insets to sit inside.
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = FRAME_INSET, end = FRAME_INSET, bottom = FRAME_BOTTOM_INSET),
-        contentAlignment = Alignment.BottomEnd,
-    ) {
-        SettingsPanel(maxHeight, MenuHeaderSpec(strings, menu, onMenuChange)) {
-            when (menu) {
-                MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
-                MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
-                MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
-                MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
-                MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
-                MenuState.Playlist -> PlaylistMenu(state, onMenuChange)
-                MenuState.AspectRatio -> AspectRatioMenu(state, commands, strings, onMenuChange)
-                MenuState.SubtitleSettings -> SubtitleSettingsMenu(state, commands, strings)
-                MenuState.AutoSkip -> AutoSkipMenu(state, commands, strings, onMenuChange)
-                MenuState.Hidden -> Unit
+    // The constraints are read OUTSIDE the insets, which is what makes them the
+    // player's own width and height rather than what is left after the padding.
+    // `max-width: calc(100% - 2rem)` is a percentage of the player, and the 16px
+    // start inset is what enforces it: the card is right-aligned, so it can grow
+    // leftwards until 16px from the far edge and no further.
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val panel: PanelBox = panelBoxOf(menu, state.queue, maxWidth, maxHeight)
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = FRAME_INSET,
+                    top = FRAME_INSET,
+                    end = FRAME_INSET,
+                    bottom = FRAME_BOTTOM_INSET,
+                ),
+            contentAlignment = Alignment.BottomEnd,
+        ) {
+            SettingsPanel(panel, MenuHeaderSpec(strings, menu, onMenuChange, state.queue)) {
+                when (menu) {
+                    MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
+                    MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
+                    MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
+                    MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
+                    MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
+                    MenuState.Playlist -> PlaylistPane(state, commands, strings, onMenuChange, slots.artwork)
+                    MenuState.AspectRatio -> AspectRatioMenu(state, commands, strings, onMenuChange)
+                    MenuState.SubtitleSettings -> SubtitleSettingsMenu(state, commands, strings)
+                    MenuState.AutoSkip -> AutoSkipMenu(state, commands, strings, onMenuChange)
+                    MenuState.Hidden -> Unit
+                }
             }
         }
     }
@@ -140,14 +138,77 @@ public fun SettingsMenu(
 
 // What the header needs, as one value.
 //
-// Three parameters that only ever travel together, and splitting them made the
-// panel take five — which is a threshold telling the truth: the panel's job is
-// the card, and the header's identity is one thing.
+// Parameters that only ever travel together, and splitting them made the panel
+// take five — which is a threshold telling the truth: the panel's job is the
+// card, and the header's identity is one thing. The queue is here because the
+// playlist pane's own header names itself from it: "Episodes" over television,
+// "Playlist" over a collection of films.
 internal data class MenuHeaderSpec(
     val strings: MenuStrings,
     val menu: MenuState,
     val onMenuChange: (MenuState) -> Unit,
+    val queue: List<TvChromeItem> = emptyList(),
 )
+
+/**
+ * How wide and how tall the card may be, given the player it is drawn in.
+ *
+ * The port had `PANEL_WIDTH = 256.dp` — a constant, on a 4K television and in a
+ * 400px sidebar alike. 256 is the web's `min-width: 16rem`, which is the FLOOR of
+ * a `width: min-content` card, and reading a floor as the whole rule is why the
+ * playlist pane had 256px to fit a 16rem seasons rail beside a 36rem episode rail
+ * in. Both were drawn; the second one had no width left.
+ *
+ *     .menu-frame { width: min-content;
+ *                   max-width: min(52rem, calc(100% - 2rem));
+ *                   max-height: calc(100% - 2rem) }
+ *     .main-menu  { min-width: 16rem; max-height: 60vh }
+ *
+ * So: what the pane needs, clamped by what the player has, floored at 16rem —
+ * and the floor wins over the clamp, which is CSS's own precedence between
+ * `min-width` and `max-width`.
+ *
+ * A null ceiling is no ceiling, which is the honest answer for a chrome measured
+ * with an unbounded height: `room * 0.6` on an infinity is an infinity, and a
+ * scrolling pane handed one does not degrade, it throws.
+ */
+internal fun panelBoxOf(
+    menu: MenuState,
+    queue: List<TvChromeItem>,
+    roomWidth: Dp,
+    roomHeight: Dp,
+): PanelBox {
+    val widest: Dp = (roomWidth - FRAME_INSET * 2).coerceAtMost(FRAME_MAX_WIDTH)
+
+    return PanelBox(
+        width = contentWidthOf(menu, queue).coerceAtMost(widest).coerceAtLeast(PANEL_MIN_WIDTH),
+        maxHeight = if (roomHeight.value.isFinite()) {
+            (roomHeight * PANEL_MAX_HEIGHT_SHARE).coerceAtMost(roomHeight - FRAME_INSET * 2)
+        } else {
+            null
+        },
+    )
+}
+
+internal data class PanelBox(val width: Dp, val maxHeight: Dp?)
+
+/**
+ * `width: min-content` — what the open pane cannot be drawn narrower than.
+ *
+ * Every pane but the playlist is a single column of rows with nothing that
+ * demands width, so `.main-menu`'s own `min-width: 16rem` is its content width.
+ * The playlist is two flex children with floors of their own — 16rem of seasons
+ * and 36rem of episodes — and their sum is 52rem, which is exactly the frame's
+ * `max-width` and not a coincidence.
+ *
+ * The rail is only there when `sidebarSeasons` says so, so the flat case asks for
+ * the episode rail's floor alone rather than for room it will not use.
+ */
+private fun contentWidthOf(menu: MenuState, queue: List<TvChromeItem>): Dp = when {
+    menu != MenuState.Playlist -> PANEL_MIN_WIDTH
+    sidebarSeasons(queue).isNotEmpty() -> SEASONS_MIN_WIDTH + EPISODES_MIN_WIDTH
+    else -> EPISODES_MIN_WIDTH
+}
 
 /**
  * The card itself, and the header the port did not have.
@@ -163,47 +224,38 @@ internal data class MenuHeaderSpec(
  */
 @Composable
 private fun SettingsPanel(
-    room: Dp,
+    panel: PanelBox,
     header: MenuHeaderSpec,
     rows: @Composable ColumnScope.() -> Unit,
 ) {
-    // Whether there is a height to take a share of at all.
-    //
-    // A chrome measured with unbounded height — any test harness, any parent that
-    // scrolls — makes `room * 0.6` infinite, and an infinite ceiling is no
-    // ceiling. Both the cap and the scroller are gated on this: a vertical
-    // scroller measured with infinity does not degrade, it throws, and the whole
-    // menu goes with it.
-    val bounded: Boolean = room.value.isFinite()
-
     Column(
         modifier = Modifier
-            // A fixed width, not a minimum.
+            // A resolved width, not a minimum.
             //
             // `widthIn(min = 256.dp)` sets a floor and no ceiling, and every row
             // inside fills its width — so the card expanded to the whole player
             // and the bottom-right alignment had nothing left to align. On the web
-            // `min-width: 16rem` bounds a flex column of `width: auto`, whose rows
-            // do not stretch; the card measures exactly 256 there.
-            .width(PANEL_WIDTH)
+            // `min-width: 16rem` bounds a flex column of `width: min-content`,
+            // whose rows do not stretch. So the width is computed once, from the
+            // pane's content and the player's room, and applied — see panelBoxOf.
+            .width(panel.width)
             // `height: auto; max-height: 60vh` — a ceiling, not a height.
             //
             // fillMaxHeight(0.6f) made the card 60% tall always, so two rows sat
             // in a panel with a third of a player of empty space under them.
             //
-            // Only when there is a height to take a share OF. A chrome measured
-            // with unbounded height — which is any test harness, and any parent
-            // that scrolls — makes `room * 0.6` infinite, and an infinite ceiling
-            // is no ceiling: the scrolling rows below then refuse to measure at
-            // all and the whole menu throws. Unbounded means the card wraps its
-            // rows, which is what `height: auto` does when nothing constrains it.
-            .then(if (bounded) Modifier.heightIn(max = room * PANEL_MAX_HEIGHT_SHARE) else Modifier)
+            // Absent when there is no height to take a share OF: a chrome measured
+            // unbounded — any test harness, any parent that scrolls — has no 60%
+            // to compute, and a scrolling pane handed an infinite ceiling does not
+            // degrade, it throws. Unbounded means the card wraps its rows, which
+            // is what `height: auto` does when nothing constrains it.
+            .then(panel.maxHeight?.let { Modifier.heightIn(max = it) } ?: Modifier)
             .clip(RoundedCornerShape(PANEL_RADIUS))
             .background(PANEL_BACKGROUND)
             .testTag(SETTINGS_MENU_TAG),
         verticalArrangement = Arrangement.spacedBy(PANEL_GAP),
     ) {
-        MenuHeader(header.strings, header.menu, header.onMenuChange)
+        MenuHeader(header)
 
         // No scroller here, and that is not a shortcut.
         //
@@ -219,36 +271,6 @@ private fun SettingsPanel(
     }
 }
 
-
-// The episode list, flat or with a seasons rail.
-//
-// Which one is shouldShowSeasonSidebar's decision, not this composable's: the
-// rule excludes specials and movie collections as well as single seasons, and
-// re-deriving it here is how the two come to disagree. It reads the answer.
-@Composable
-private fun PlaylistMenu(state: ChromeState, onMenuChange: (MenuState) -> Unit) {
-    val seasons: List<Int> = sidebarSeasons(state.queue)
-
-    Row {
-        if (seasons.isNotEmpty()) {
-            Column(modifier = Modifier.testTag(SEASONS_RAIL_TAG)) {
-                seasons.forEach { season ->
-                    MenuRow("$SEASON_LABEL $season", tag = "$ROW_SEASON$season") {
-                        onMenuChange(MenuState.Playlist)
-                    }
-                }
-            }
-        }
-
-        Column(modifier = Modifier.testTag(EPISODES_RAIL_TAG)) {
-            state.queue.forEachIndexed { index, item ->
-                MenuRow(item.title.orEmpty(), tag = "$ROW_EPISODE$index") {
-                    onMenuChange(MenuState.Hidden)
-                }
-            }
-        }
-    }
-}
 
 // The four fittings, in the order the web lists them and the same order the
 // button cycles through. A menu that ordered them differently from the button
@@ -380,109 +402,6 @@ internal fun audioLabel(track: AudioTrack): String = track.label
 internal fun speedLabel(speed: Float, strings: MenuStrings): String =
     if (speed == 1f) strings.normalSpeed else "${speed}x"
 
-/**
- * The menu's labels for a locale, read from the web's own table.
- *
- * There was no such function, so every consumer got the English defaults below
- * while ChromeTranslations sat in the same package carrying these exact keys in
- * seventy-nine languages. The same failure as the generated icons nobody drew:
- * the translated strings existed and nothing reached for them.
- *
- * Keys are the web's, and the wording with them. "Crop" rather than "Cover"
- * because that is the word a viewer of the browser player has already read.
- */
-public fun menuStrings(locale: String): MenuStrings {
-    fun menu(name: String): String =
-        ChromeTranslations.get(locale, "plugin.desktop-ui.menu.$name")
-
-    return MenuStrings(
-        quality = menu("quality"),
-        audio = menu("audio"),
-        subtitles = menu("subtitles"),
-        subtitlesOff = menu("off"),
-        speed = menu("speed"),
-        automatic = menu("auto"),
-        normalSpeed = menu("normal"),
-        playlist = menu("playlist"),
-        aspectRatio = menu("aspectRatio"),
-        aspectOriginal = menu("original"),
-        aspectStretch = menu("stretch"),
-        aspectCrop = menu("crop"),
-        aspectNative = menu("native"),
-        settings = menu("settings"),
-        back = menu("back"),
-        close = ChromeTranslations.get(locale, "plugin.desktop-ui.tooltip.close"),
-        subtitleSettings = menu("subtitleSettings"),
-        subtitleFont = menu("subtitle.font"),
-        subtitleTextSize = menu("subtitle.textSize"),
-        subtitleTextColor = menu("subtitle.textColor"),
-        subtitleTextOpacity = menu("subtitle.textOpacity"),
-        subtitleEdgeStyle = menu("subtitle.edgeStyle"),
-        subtitleBackgroundColor = menu("subtitle.backgroundColor"),
-        subtitleBackgroundOpacity = menu("subtitle.backgroundOpacity"),
-        subtitleAreaColor = menu("subtitle.areaColor"),
-        subtitleAreaOpacity = menu("subtitle.areaOpacity"),
-        reset = menu("reset"),
-
-        // The auto-skip row's three words are NOT read from the table. The web
-        // has no such row, so it has no keys for them, and `get` returns the key
-        // itself when it finds nothing — which would put
-        // "plugin.desktop-ui.menu.autoSkipChapters" on screen in all 79
-        // locales, English included. They stay on the data class, where a host
-        // that draws the row overrides them from its own resources, which is
-        // where his three already are.
-    )
-}
-
-public data class MenuStrings(
-    val quality: String = "Quality",
-    val audio: String = "Audio",
-    val subtitles: String = "Subtitles",
-    val subtitlesOff: String = "Off",
-    val speed: String = "Speed",
-    val playlist: String = "Playlist",
-
-    // The aspect menu's labels, which are the web's words rather than its
-    // tokens: a viewer reads "Crop", not "exactfit".
-    val aspectRatio: String = "Aspect ratio",
-    val aspectOriginal: String = "Original",
-    val aspectStretch: String = "Stretch",
-    val aspectCrop: String = "Crop",
-    val aspectNative: String = "Native",
-
-    // The subtitle settings list. One label per property plus the reset, in the
-    // web's own words from its menu.subtitle.* keys.
-    // The card's own header, which the port had no field for because it had no
-    // header. `plugin.desktop-ui.menu.settings` carries it in all 79 locales.
-    val settings: String = "Settings",
-
-    // The header's two buttons, which were described with the PANE'S name — so a
-    // screen reader announced "Subtitles" for a close button, and the subtitle
-    // control on the bar and the close cross became the same node to a query.
-    val back: String = "Back",
-    val close: String = "Close",
-
-    val subtitleSettings: String = "Subtitle settings",
-    val subtitleFont: String = "Font",
-    val subtitleTextSize: String = "Text size",
-    val subtitleTextColor: String = "Text color",
-    val subtitleTextOpacity: String = "Text opacity",
-    val subtitleEdgeStyle: String = "Edge style",
-    val subtitleBackgroundColor: String = "Background color",
-    val subtitleBackgroundOpacity: String = "Background opacity",
-    val subtitleAreaColor: String = "Area color",
-    val subtitleAreaOpacity: String = "Area opacity",
-    // The auto-skip row and its two options, from his own
-    // settings_auto_skip_chapters, player_on and player_off.
-    val autoSkipChapters: String = "Auto-skip intros/outros",
-    val on: String = "On",
-    val off: String = "Off",
-
-    val reset: String = "Reset",
-    val automatic: String = "Auto",
-    val normalSpeed: String = "Normal",
-)
-
 // The rates every player offers. Written here rather than asked of the engine,
 // because an engine reports what it can do and this is what a viewer should be
 // offered: a list of thirty options is not a menu.
@@ -532,8 +451,14 @@ private val FRAME_INSET = 16.dp
 // The bar's own height. `bottom: 52px` is what lifts the card clear of it.
 private val FRAME_BOTTOM_INSET = 52.dp
 
-// `min-width: 16rem`, which is what the card measures on screen.
-private val PANEL_WIDTH = 256.dp
+// `.main-menu { min-width: 16rem }` — the FLOOR of the card, which the port used
+// as its whole width. See panelBoxOf for what the rest of the rule is.
+private val PANEL_MIN_WIDTH = 256.dp
+
+// `.menu-frame { max-width: min(52rem, calc(100% - 2rem)) }`. 52rem is not an
+// arbitrary ceiling: it is exactly 16rem of seasons plus 36rem of episodes, so
+// the widest pane the player has fits it and nothing is allowed past it.
+private val FRAME_MAX_WIDTH = 832.dp
 
 // `max-height: 60vh`, of the player rather than of the window.
 private const val PANEL_MAX_HEIGHT_SHARE = 0.6f
@@ -543,14 +468,9 @@ private val PANEL_RADIUS = 8.dp
 // `rgba(20, 20, 25, 0.95)`.
 private val PANEL_BACKGROUND = Color(red = 20, green = 20, blue = 25, alpha = 242)
 
-
-
 // The playlist rails and their rows, tagged so a test can assert which layout
 // was drawn rather than counting children.
 internal const val SEASONS_RAIL_TAG = "nm-seasons-rail"
 internal const val EPISODES_RAIL_TAG = "nm-episodes-rail"
 internal const val ROW_SEASON = "nm-season-"
 internal const val ROW_EPISODE = "nm-episode-"
-
-// Translated by the host like every other label; the default is the web's.
-private const val SEASON_LABEL = "Season"

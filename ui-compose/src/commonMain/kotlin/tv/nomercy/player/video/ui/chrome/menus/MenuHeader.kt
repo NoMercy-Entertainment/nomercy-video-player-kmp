@@ -26,6 +26,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import tv.nomercy.player.video.tv.TvChromeItem
 import tv.nomercy.player.video.ui.tv.FluentIcons
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
 
@@ -36,8 +37,8 @@ import tv.nomercy.player.video.ui.tv.PlayerIconButton
 // which is the web's behaviour and the reason a viewer can get out of the
 // subtitle settings without losing the settings menu.
 @Composable
-internal fun MenuHeader(strings: MenuStrings, menu: MenuState, onMenuChange: (MenuState) -> Unit) {
-    val title: String = strings.titleFor(menu)
+internal fun MenuHeader(spec: MenuHeaderSpec) {
+    val title: String = menuTitle(spec.strings, spec.menu, spec.queue)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -47,11 +48,11 @@ internal fun MenuHeader(strings: MenuStrings, menu: MenuState, onMenuChange: (Me
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PANEL_GAP),
     ) {
-        if (menu != MenuState.Main) {
+        if (spec.menu != MenuState.Main) {
             PlayerIconButton(
                 icon = FluentIcons.Back,
-                description = strings.back,
-                onClick = { onMenuChange(MenuState.Main) },
+                description = spec.strings.back,
+                onClick = { spec.onMenuChange(MenuState.Main) },
                 buttonSize = HEADER_BUTTON,
                 iconSize = HEADER_ICON,
                 modifier = Modifier.testTag(MENU_BACK_TAG),
@@ -66,8 +67,8 @@ internal fun MenuHeader(strings: MenuStrings, menu: MenuState, onMenuChange: (Me
 
         PlayerIconButton(
             icon = FluentIcons.Close,
-            description = strings.close,
-            onClick = { onMenuChange(MenuState.Hidden) },
+            description = spec.strings.close,
+            onClick = { spec.onMenuChange(MenuState.Hidden) },
             buttonSize = HEADER_BUTTON,
             iconSize = HEADER_ICON,
             modifier = Modifier.testTag(MENU_CLOSE_TAG),
@@ -80,17 +81,22 @@ internal fun MenuHeader(strings: MenuStrings, menu: MenuState, onMenuChange: (Me
 
 // Which pane a viewer is looking at. The web writes the name into the header, and
 // a panel whose header always said "Settings" would be lying three panes deep.
-private fun MenuStrings.titleFor(menu: MenuState): String = when (menu) {
-    MenuState.Quality -> quality
-    MenuState.Audio -> audio
-    MenuState.Subtitle -> subtitles
-    MenuState.Speed -> speed
-    MenuState.Playlist -> playlist
-    MenuState.AspectRatio -> aspectRatio
-    MenuState.SubtitleSettings -> subtitleSettings
-    MenuState.AutoSkip -> autoSkipChapters
-    MenuState.Main, MenuState.Hidden -> settings
-}
+//
+// The playlist is the one that cannot answer from the pane alone: `.playlist-title`
+// is rewritten per render from what is IN the queue, so the same pane is headed
+// "Episodes" over a run of television and "Playlist" over a shelf of films.
+private fun menuTitle(strings: MenuStrings, menu: MenuState, queue: List<TvChromeItem>): String =
+    when (menu) {
+        MenuState.Quality -> strings.quality
+        MenuState.Audio -> strings.audio
+        MenuState.Subtitle -> strings.subtitles
+        MenuState.Speed -> strings.speed
+        MenuState.Playlist -> playlistTitle(strings, queue)
+        MenuState.AspectRatio -> strings.aspectRatio
+        MenuState.SubtitleSettings -> strings.subtitleSettings
+        MenuState.AutoSkip -> strings.autoSkipChapters
+        MenuState.Main, MenuState.Hidden -> strings.settings
+    }
 
 // `min-height: 2.5rem`, `padding: 6px`.
 private val HEADER_MIN_HEIGHT = 40.dp

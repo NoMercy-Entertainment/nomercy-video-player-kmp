@@ -24,6 +24,25 @@ public data class TvChromeItem(
     // arrive labelled either way.
     val playlistType: String? = null,
     val videoType: String? = null,
+
+    // What the playlist card draws, appended rather than woven in so a host
+    // constructing this positionally keeps compiling.
+    //
+    // The card is the web's `buildPlaylistCard`, and every one of these is a
+    // field it reads: the id is what a chosen row plays (`player.item(id)`),
+    // and the rest fill the thumbnail's overlay and the text beside it. A
+    // playlist menu built from title alone is a list of strings, which is what
+    // the port drew.
+    val id: String? = null,
+    // `readItemImage`'s answer — image, then poster, then thumbnail, resolved
+    // by whoever built this. Drawn through `ChromeSlots.artwork`, because this
+    // library has no image loader and no business having one.
+    val image: String? = null,
+    val description: String? = null,
+    val durationSeconds: Double? = null,
+    // 0-100, the web's `progress.percentage`. Nothing here writes it: it is
+    // continue-watching state the host persists and the card renders.
+    val progressPercent: Int? = null,
 )
 
 // The name across the top.

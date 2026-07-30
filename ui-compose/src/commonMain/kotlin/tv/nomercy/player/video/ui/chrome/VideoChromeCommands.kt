@@ -80,6 +80,12 @@ internal class VideoChromeCommands(
 
     override fun openSettingsMenu(): Unit = onMenu(MenuState.Main)
 
+    // Autoplay, because the web's card passes `{ source: 'user', autoplay: true }`
+    // and somebody who picked an episode is not asking to have it cued up.
+    override fun playQueueItem(id: String) {
+        scope.launch { player.item(id, autoplay = true) }
+    }
+
     // Theater and picture-in-picture are the player's own view modes, so they
     // go straight through. The chrome does not remember them; it reads them
     // back off the state, which is what keeps the exit glyph honest when

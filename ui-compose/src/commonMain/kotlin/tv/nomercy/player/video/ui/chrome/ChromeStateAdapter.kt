@@ -35,7 +35,21 @@ public fun rememberChromeState(
 ): ChromeState {
     val snapshot: PlayerState by player.stateFlow.collectAsState()
 
-    return chromeStateOf(player, snapshot, itemOf(snapshot.item), message, error)
+    return chromeStateOf(
+        player,
+        snapshot,
+        itemOf(snapshot.item),
+        message,
+        error,
+        // Through the SAME hook the playing item goes through, so the queue and
+        // the title bar cannot disagree about what an item is called.
+        //
+        // This was not passed at all, so `ChromeState.queue` was empty on every
+        // real player and the playlist pane drew nothing — a pane with a button
+        // that opened it, a row in the settings list that opened it, and no
+        // content either way.
+        player.queue().mapNotNull(itemOf),
+    )
 }
 
 // Split from the composable so it can be driven from a fixture.
@@ -50,6 +64,7 @@ public fun chromeStateOf(
     item: TvChromeItem?,
     message: String? = null,
     error: ChromeError? = null,
+    queue: List<TvChromeItem> = emptyList(),
 ): ChromeState = ChromeState(
     playing = snapshot.playState == PlayState.PLAYING,
     // Anything other than idle means the picture is not advancing, which is the
@@ -70,6 +85,7 @@ public fun chromeStateOf(
     activeSubtitle = player.subtitle(),
     rate = snapshot.playbackRate.toFloat(),
     item = item,
+    queue = queue,
     queueSize = snapshot.queueLength,
     queueIndex = snapshot.index,
     fullscreen = player.fullscreen(),
@@ -83,11 +99,14 @@ public fun chromeStateOf(
 //
 // A playlist item carries an id, a title and a url, and that is the whole of it:
 // a show name, a season and an episode number are the host's, arriving from
-// whichever server it talks to. So the default fills the one field it has and
+// whichever server it talks to. So the default fills the two fields it has and
 // the itemOf hook is how a host supplies the rest, rather than this inventing a
 // wire format and quietly mis-parsing everybody else's.
+//
+// The id is not decoration. It is what a chosen playlist card plays, so a host
+// overriding this and dropping it gets a pane whose rows do nothing.
 public fun chromeItemOf(item: PlaylistItem?): TvChromeItem? =
-    item?.let { TvChromeItem(title = it.title) }
+    item?.let { TvChromeItem(title = it.title, id = it.id) }
 
 // Zero rather than a division by zero, which is every live stream: the duration
 // is unknown and a bar has nothing to fill against.
