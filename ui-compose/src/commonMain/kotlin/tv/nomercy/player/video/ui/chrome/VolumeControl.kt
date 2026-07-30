@@ -45,6 +45,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
 
@@ -131,11 +132,17 @@ private fun VerticalVolume(
         MuteButton(state, commands, spec.label, onClick = { open = !open })
 
         if (open) {
+            // A Popup for the same reason the tooltip is one: the card is
+            // `position: absolute` above a 40dp button, and measured inside that
+            // button it would be squeezed to 40dp wide.
+            Popup(
+                popupPositionProvider = AboveAnchorPosition(POPUP_OFFSET),
+                onDismissRequest = { open = false },
+            ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(POPUP_GAP),
                 modifier = Modifier
-                    .aboveAnchor(POPUP_OFFSET)
                     .background(POPUP_BACKGROUND, RoundedCornerShape(POPUP_RADIUS))
                     .padding(horizontal = POPUP_PADDING_HORIZONTAL, vertical = POPUP_PADDING_VERTICAL)
                     .testTag(VOLUME_POPUP_TAG),
@@ -150,6 +157,7 @@ private fun VerticalVolume(
                     onSet = commands::setVolume,
                     label = spec.label,
                 )
+            }
             }
         }
     }

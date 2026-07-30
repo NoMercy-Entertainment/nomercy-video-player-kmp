@@ -34,6 +34,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
 import kotlinx.coroutines.delay
 
 /**
@@ -75,9 +81,20 @@ public fun ControlTooltip(
 
     if (opacity <= 0f) return
 
-    Box(modifier = modifier.alpha(opacity).aboveAnchor(GAP)) {
+    // A Popup, not a Box inside the control.
+    //
+    // Drawn as a child it was measured against the button's own 40dp, so
+    // `white-space: nowrap` plus a 40dp ceiling clipped every label to one glyph —
+    // "Dempen" rendered as "D". `.tooltip` is `position: absolute`: it escapes its
+    // control, and a popup is what escapes a parent's constraints here.
+    //
+    // It also hands the position provider the anchor's bounds AND the window's
+    // size, which is what ChromeTooltip.leftFor needs and never had. Clamping
+    // against the button meant clamping into 40dp.
+    Popup(popupPositionProvider = AboveAnchorPosition(GAP)) {
         Box(
-            modifier = Modifier
+            modifier = modifier
+                .alpha(opacity)
                 .background(BACKGROUND, RoundedCornerShape(RADIUS))
                 .padding(horizontal = PADDING_HORIZONTAL, vertical = PADDING_VERTICAL),
         ) {
@@ -137,32 +154,6 @@ public fun rememberTooltipVisible(interactions: InteractionSource): Boolean {
     return shown
 }
 
-/**
- * Draw above the thing this is anchored to, clamped inside the parent.
- *
- * `position: absolute; bottom: calc(100% + 8px)` in one modifier: it reports no
- * size of its own, so the control it decorates keeps its place in the row, and
- * it uses [ChromeTooltip.leftFor] for the horizontal placement — which is what
- * that arithmetic was written for and never called with.
- */
-internal fun Modifier.aboveAnchor(gap: Dp): Modifier = layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
-
-    // Zero, so the row lays out as though this were not here. A tooltip that
-    // occupied space would widen the bar every time a pointer crossed it.
-    layout(width = 0, height = 0) {
-        val anchorCentre: Float = constraints.maxWidth / 2f
-        val left: Float = ChromeTooltip.leftFor(
-            buttonCenter = anchorCentre,
-            tooltipWidth = placeable.width.toFloat(),
-            boundsLeft = 0f,
-            boundsRight = constraints.maxWidth.toFloat(),
-        )
-
-        placeable.place(x = left.toInt() - anchorCentre.toInt(), y = -placeable.height - gap.roundToPx())
-    }
-}
-
 private val GAP: Dp = 8.dp
 private val RADIUS: Dp = 8.dp
 private val PADDING_HORIZONTAL: Dp = 16.dp
@@ -179,3 +170,37 @@ private val TEXT_LINE_HEIGHT = 24.sp
 
 private const val FADE_MS = 150
 internal val ARROW_SIZE: Dp = 5.dp
+
+/**
+ * Above the control, centred on it, kept inside the window.
+ *
+ * `bottom: calc(100% + 8px)` and `clampPopOffset` in one place, and the first
+ * caller of ChromeTooltip.leftFor with bounds that mean anything: the anchor's
+ * position and the window's width are both given here, where a modifier inside the
+ * button only ever knew about the button.
+ */
+internal class AboveAnchorPosition(private val gap: Dp) : PopupPositionProvider {
+
+    override fun calculatePosition(
+        anchorBounds: IntRect,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        popupContentSize: IntSize,
+    ): IntOffset {
+        val left: Float = ChromeTooltip.leftFor(
+            buttonCenter = anchorBounds.center.x.toFloat(),
+            tooltipWidth = popupContentSize.width.toFloat(),
+            boundsLeft = 0f,
+            boundsRight = windowSize.width.toFloat(),
+        )
+
+        // Above, and clamped to the top edge: a control near the top of a small
+        // window would otherwise place its label off-screen.
+        val top: Int = anchorBounds.top - popupContentSize.height - gapPx
+        return IntOffset(left.toInt(), top.coerceAtLeast(0))
+    }
+
+    // The gap in pixels. A position provider has no Density, so this is resolved
+    // from the value it was constructed with rather than converted here.
+    private val gapPx: Int = gap.value.toInt()
+}
