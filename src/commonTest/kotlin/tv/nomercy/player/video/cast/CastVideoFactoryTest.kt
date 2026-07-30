@@ -43,6 +43,23 @@ class CastVideoFactoryTest {
 
     private fun TestScope.eager(): CoroutineScope = CoroutineScope(UnconfinedTestDispatcher(testScheduler))
 
+    // Read by index, never iterated.
+    //
+    // startCast leaves a session poll running on the eager scope, so the engine
+    // goes on appending while an assertion reads. An iterator over the live list
+    // threw ConcurrentModificationException in the Android host-test run and
+    // passed on the JVM one, which is the shape of a flake nobody can reproduce
+    // on demand. The list only ever grows, so an index walk cannot miss its footing.
+    private fun requestedUrls(): List<String> {
+        val urls: MutableList<String> = mutableListOf()
+        var index = 0
+        while (index < requests.size) {
+            urls += requests[index].url.toString()
+            index += 1
+        }
+        return urls
+    }
+
     private fun http(session: String = """{"itemTitle":"Blade Runner 2049"}"""): HttpClient {
         val engine = MockEngine { request ->
             requests += request
@@ -90,9 +107,11 @@ class CastVideoFactoryTest {
             "https://media.example.test/a.mkv",
         )
 
+        val urls: List<String> = requestedUrls()
+
         assertTrue(
-            requests.any { it.url.toString().startsWith("http://192.168.1.40:7626/v1") },
-            "the stack talked to ${requests.map { it.url }}",
+            urls.any { it.startsWith("http://192.168.1.40:7626/v1") },
+            "the stack talked to $urls",
         )
     }
 
