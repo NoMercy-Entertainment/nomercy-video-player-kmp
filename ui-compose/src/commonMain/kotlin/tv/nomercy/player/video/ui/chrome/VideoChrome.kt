@@ -123,6 +123,7 @@ public fun VideoChrome(
     val scheduler: Scheduler = rememberChromeScheduler()
 
     var menu: MenuState by remember { mutableStateOf(MenuState.Hidden) }
+    val panel: ShortcutsPanel = rememberShortcutsPanel()
     val message: String? = rememberChromeMessage(player, strings)?.text
     val error: ChromeError? = rememberPlayerError(player)
     val state: ChromeState = rememberChromeState(player, message, error)
@@ -144,7 +145,7 @@ public fun VideoChrome(
     AutoSkipBinding(state, commands)
 
     ChromeFrame(
-        input = ChromeInput(rememberVideoKeys(player, formFactor), controller, commands, player::now, gestures),
+        input = ChromeInput(rememberVideoKeys(player, formFactor), controller, commands, player::now, gestures, panel),
         modifier = modifier,
         surface = surface,
     ) {
@@ -156,6 +157,8 @@ public fun VideoChrome(
             menu = menu,
             onMenuChange = { menu = it },
         )
+
+        ShortcutsLayer(panel)
     }
 }
 
@@ -245,41 +248,6 @@ private fun ChromeFrame(
 // The key handler being null is the whole question: a build with a keyboard has
 // one, a build without has tap zones instead. Asking it once here is what keeps
 // three places from each deciding separately what a phone is.
-private class ChromeInput(
-    val keys: VideoKeyHandlerPlugin?,
-    val controller: ChromeController,
-    val commands: ChromeCommands,
-    val nowMs: () -> Long,
-    val gestures: ChromeGestures?,
-) {
-
-    val pointerDriven: Boolean get() = keys != null
-
-    fun pointerModifier(): Modifier =
-        if (!pointerDriven) {
-            Modifier
-        } else {
-            Modifier
-                .focusable()
-                .pointerActivity(controller::bumpActivity, controller::onPointerExit)
-        }
-
-    // The chrome wakes on any press it recognises and then the key does whatever
-    // it is bound to. A press neither of them wants stays with the platform,
-    // which is what leaves the window's own shortcuts working.
-    fun keyModifier(): Modifier {
-        val handler: VideoKeyHandlerPlugin = keys ?: return Modifier
-
-        return Modifier.onKeyEvent { event -> handlePress(handler, keyComboOf(event)) }
-    }
-
-    private fun handlePress(handler: VideoKeyHandlerPlugin, combo: KeyCombo?): Boolean {
-        if (combo == null) return false
-
-        controller.bumpActivity()
-        return handler.handle(combo)
-    }
-}
 
 // What the player says, as the widgets read it.
 internal data class ChromeScene(
@@ -493,7 +461,7 @@ private fun rememberPlayerError(player: NMVideoPlayer): ChromeError? {
 // belongs to the player, and a second chrome on the same player would install a
 // second copy of the same table; built here it goes when the screen goes.
 @Composable
-private fun rememberVideoKeys(player: NMVideoPlayer, formFactor: FormFactor): VideoKeyHandlerPlugin? {
+internal fun rememberVideoKeys(player: NMVideoPlayer, formFactor: FormFactor): VideoKeyHandlerPlugin? {
     if (formFactor != FormFactor.Desktop) return null
 
     val scope: CoroutineScope = rememberCoroutineScope()
@@ -560,3 +528,5 @@ internal fun skipTargetOf(state: ChromeState): Double? =
         .map { it.startSeconds }
         .filter { it > state.timeSeconds }
         .minOrNull()
+
+
