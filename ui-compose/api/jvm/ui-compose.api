@@ -669,6 +669,20 @@ public final class tv/nomercy/player/video/ui/chrome/ScrubPreviewKt {
 public final class tv/nomercy/player/video/ui/chrome/SeekAccumulatorKt {
 	public static final fun isVisible (Ltv/nomercy/player/video/ui/chrome/SeekRun;JJ)Z
 	public static final fun plus (Ltv/nomercy/player/video/ui/chrome/SeekRun;Ltv/nomercy/player/video/ui/chrome/SeekSide;FJJ)Ltv/nomercy/player/video/ui/chrome/SeekRun;
+	public static final fun seekIndicatorPhase (Ltv/nomercy/player/video/ui/chrome/SeekRun;JLtv/nomercy/player/video/ui/chrome/TouchZonesOptions;)Ltv/nomercy/player/video/ui/chrome/SeekIndicatorPhase;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/SeekIndicatorKt {
+	public static final fun SeekIndicator (Ltv/nomercy/player/video/ui/chrome/SeekRun;ZLandroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class tv/nomercy/player/video/ui/chrome/SeekIndicatorPhase : java/lang/Enum {
+	public static final field Fading Ltv/nomercy/player/video/ui/chrome/SeekIndicatorPhase;
+	public static final field Gone Ltv/nomercy/player/video/ui/chrome/SeekIndicatorPhase;
+	public static final field Shown Ltv/nomercy/player/video/ui/chrome/SeekIndicatorPhase;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/chrome/SeekIndicatorPhase;
+	public static fun values ()[Ltv/nomercy/player/video/ui/chrome/SeekIndicatorPhase;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/SeekRun {
@@ -792,15 +806,17 @@ public final class tv/nomercy/player/video/ui/chrome/TooltipHostKt {
 public final class tv/nomercy/player/video/ui/chrome/TouchZonesOptions {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (FJZ)V
-	public synthetic fun <init> (FJZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (FJJZ)V
+	public synthetic fun <init> (FJJZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()F
 	public final fun component2 ()J
-	public final fun component3 ()Z
-	public final fun copy (FJZ)Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;FJZILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;
+	public final fun component3 ()J
+	public final fun component4 ()Z
+	public final fun copy (FJJZ)Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;FJJZILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/TouchZonesOptions;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDisableClickToPause ()Z
+	public final fun getHideDelayMs ()J
 	public final fun getRunWindowMs ()J
 	public final fun getSeekSeconds ()F
 	public fun hashCode ()I

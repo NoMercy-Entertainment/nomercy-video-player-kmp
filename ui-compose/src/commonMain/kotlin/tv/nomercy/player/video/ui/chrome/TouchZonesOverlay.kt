@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,11 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 // Tapping the picture.
 //
@@ -80,13 +79,20 @@ public fun TouchZonesOverlay(
             )
         }
 
-        if (run.isVisible(nowMs(), options.runWindowMs)) {
-            BasicText(
-                text = run.label,
-                style = TextStyle(color = Color.White, fontSize = INDICATOR_SIZE),
+        // Three states, not two. See [seekIndicatorPhase]: the disc stays composed
+        // through its fade, because a composable removed the moment it is told to
+        // hide never finishes fading and pops out of existence instead.
+        val phase: SeekIndicatorPhase = seekIndicatorPhase(run, nowMs(), options)
+        if (phase != SeekIndicatorPhase.Gone) {
+            SeekIndicator(
+                run = run,
+                visible = phase == SeekIndicatorPhase.Shown,
                 modifier = Modifier
                     .align(if (run.side == SeekSide.Back) Alignment.CenterStart else Alignment.CenterEnd)
-                    .testTag(if (run.side == SeekSide.Back) INDICATOR_BACK else INDICATOR_FORWARD),
+                    // `left: 16px` / `right: 16px`. The disc is pinned to the edge
+                    // of the picture, not floated in the middle of the third that
+                    // was tapped.
+                    .padding(horizontal = EDGE_INSET),
             )
         }
     }
@@ -133,6 +139,14 @@ public data class TouchZonesOptions(
     // How long a run of taps stays one run. Long enough to tap four times
     // deliberately, short enough that a later tap is a new gesture.
     val runWindowMs: Long = 1_000L,
+    /**
+     * How long the disc stays on screen after the run has collapsed.
+     *
+     * The web's second timer: `collapseTimer` at a second resets the figure and
+     * arms `hideTimer` for 200ms more. The figure holds still through it, so the
+     * control is seen letting go rather than vanishing.
+     */
+    val hideDelayMs: Long = 200L,
     // Some hosts put their own control on the middle of the picture. Turning
     // this off leaves the tap doing only what the chrome does with it.
     val disableClickToPause: Boolean = false,
@@ -144,4 +158,5 @@ internal const val ZONE_FORWARD = "nm-zone-forward"
 internal const val INDICATOR_BACK = "nm-seek-indicator-back"
 internal const val INDICATOR_FORWARD = "nm-seek-indicator-forward"
 
-private val INDICATOR_SIZE = 24.sp
+// `.nm-seek-indicator--left { left: 16px }` and its mirror.
+private val EDGE_INSET: Dp = 16.dp

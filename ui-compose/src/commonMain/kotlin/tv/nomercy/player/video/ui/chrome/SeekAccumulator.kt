@@ -58,3 +58,45 @@ public fun SeekRun.plus(side: SeekSide, seconds: Float, nowMs: Long, windowMs: L
 // dispose. Whatever is drawing it already recomposes on a clock.
 public fun SeekRun.isVisible(nowMs: Long, windowMs: Long): Boolean =
     !isEmpty && nowMs - lastTapMs < windowMs
+
+// Where the disc is in its life, which is three states and not two.
+//
+// The web arms TWO timers on every tap: `collapseTimer` ends the run at a second,
+// and `hideTimer` takes the visible class off 200ms after that — so the figure
+// holds still for a fifth of a second and then fades over 120ms. Drawn as a
+// straight on-or-off at the collapse, the disc vanished mid-gesture, which reads
+// as a glitch rather than as a control letting go.
+//
+// Asked rather than scheduled, like [isVisible], so nothing here owns a timer.
+public enum class SeekIndicatorPhase {
+    /** Not drawn at all. */
+    Gone,
+
+    /** Fully drawn: the run is live, or being held after it. */
+    Shown,
+
+    /** Told to hide and still composed, so the fade can finish. */
+    Fading,
+}
+
+public fun seekIndicatorPhase(
+    run: SeekRun,
+    nowMs: Long,
+    options: TouchZonesOptions,
+): SeekIndicatorPhase {
+    if (run.isEmpty) return SeekIndicatorPhase.Gone
+
+    val since: Long = nowMs - run.lastTapMs
+    val held: Long = options.runWindowMs + options.hideDelayMs
+
+    return when {
+        since < held -> SeekIndicatorPhase.Shown
+        since < held + SEEK_INDICATOR_FADE_MS -> SeekIndicatorPhase.Fading
+        else -> SeekIndicatorPhase.Gone
+    }
+}
+
+// The stylesheet's `transition: opacity 120ms`. Named here as well as beside the
+// disc because this is what decides how long it stays COMPOSED after being told
+// to hide, and a composable removed mid-transition never finishes fading.
+internal const val SEEK_INDICATOR_FADE_MS: Long = 120L
