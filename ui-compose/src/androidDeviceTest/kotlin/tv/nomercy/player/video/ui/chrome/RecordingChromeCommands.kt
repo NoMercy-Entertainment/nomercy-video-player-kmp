@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.ui.chrome.menus.SubtitleStyle
 import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
@@ -114,6 +115,14 @@ internal open class RecordingChromeCommands : ChromeCommands {
     override fun cycleAspectRatio() { calls += "cycleAspectRatio" }
 
     override fun setAspectRatio(value: Stretching) { calls += "setAspectRatio:${value.token}" }
+
+    // Both were added to ChromeCommands and never to this double, so the whole
+    // androidDeviceTest source set stopped compiling — and native-gate.sh does not
+    // build that source set, so it reported green while the entire on-device render
+    // gate could not run at all. A gate that cannot compile cannot go red.
+    override fun setAutoSkipChapters(enabled: Boolean) { calls += "setAutoSkipChapters:$enabled" }
+
+    override fun setSubtitleStyle(style: SubtitleStyle) { calls += "setSubtitleStyle" }
 
     override fun dismissMessage() { calls += "dismissMessage" }
 }

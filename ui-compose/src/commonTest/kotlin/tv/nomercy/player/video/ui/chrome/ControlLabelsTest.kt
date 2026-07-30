@@ -26,34 +26,34 @@ class ControlLabelsTest {
     fun theRateIsNamedOnlyWhenItIsNotNormal() {
         // The web's condition. "Speed (1×)" on ordinary playback is noise, and a
         // screen reader reads it on every focus.
-        assertEquals("Speed", speedLabel("Speed", 1f))
-        assertEquals("Speed (1.5×)", speedLabel("Speed", 1.5f))
+        assertEquals("Speed", speedButtonLabel("Speed", 1f))
+        assertEquals("Speed (1.5×)", speedButtonLabel("Speed", 1.5f))
     }
 
     @Test
     fun awholeRateDropsItsDecimal() {
         // JS prints `2×`; Kotlin's Float gives "2.0" without help. A parity check on
         // the string would catch it and a human would call it a typo.
-        assertEquals("Speed (2×)", speedLabel("Speed", 2f))
-        assertEquals("Speed (0.5×)", speedLabel("Speed", 0.5f))
+        assertEquals("Speed (2×)", speedButtonLabel("Speed", 2f))
+        assertEquals("Speed (0.5×)", speedButtonLabel("Speed", 0.5f))
     }
 
     @Test
     fun theMultiplicationSignIsNotTheLetterX() {
-        assertEquals(true, speedLabel("Speed", 2f).contains("×"))
-        assertEquals(false, speedLabel("Speed", 2f).contains("x"))
+        assertEquals(true, speedButtonLabel("Speed", 2f).contains("×"))
+        assertEquals(false, speedButtonLabel("Speed", 2f).contains("x"))
     }
 
     @Test
     fun theQualityLabelNamesWhatIsPlaying() {
-        assertEquals("Quality: 1080p", qualityLabel("Quality", "1080p"))
+        assertEquals("Quality: 1080p", qualityButtonLabel("Quality", "1080p"))
     }
 
     @Test
     fun anUnknownQualityLeavesTheLabelAlone() {
         // Before the first level-switched lands, and on any non-adaptive source.
         // "Quality: null" or a trailing colon would both be worse than the noun.
-        assertEquals("Quality", qualityLabel("Quality", null))
+        assertEquals("Quality", qualityButtonLabel("Quality", null))
     }
 
     @Test

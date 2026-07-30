@@ -13,6 +13,12 @@ import tv.nomercy.player.core.ports.QualityLevel
 /**
  * The labels that carry a VALUE, not just a name.
  *
+ * Named `...ButtonLabel` because the settings menu already has a `speedLabel` and a
+ * `qualityLabel` for its ROWS, and those are different sentences: a row says "1.5×"
+ * and a button says "Speed (1.5×)". Two functions with one name is how somebody fixes
+ * the wrong one — scripts/check-duplicate-components.py went red on exactly this
+ * collision, which my own commit introduced.
+ *
  * `iconStateMethods.ts` does two things per control and only one of them was ported.
  * The glyph swaps — theater, pip, subtitles, fullscreen — were all here and correct.
  * The aria-label enrichment was not: every control announced a static noun, so the
@@ -30,7 +36,7 @@ import tv.nomercy.player.core.ports.QualityLevel
  * Only when it differs, which is the web's condition. "Speed (1×)" on every ordinary
  * playback is noise, and a screen reader would read it on every focus.
  */
-internal fun speedLabel(base: String, rate: Float): String =
+internal fun speedButtonLabel(base: String, rate: Float): String =
     if (rate == NORMAL_RATE) base else "$base (${trimRate(rate)}$RATE_SUFFIX)"
 
 /**
@@ -40,7 +46,7 @@ internal fun speedLabel(base: String, rate: Float): String =
  * picked Auto still wants to know what they are getting, and announcing the selection
  * would say "Auto" forever.
  */
-internal fun qualityLabel(base: String, playing: String?): String =
+internal fun qualityButtonLabel(base: String, playing: String?): String =
     if (playing == null) base else "$base: $playing"
 
 /**
@@ -50,7 +56,7 @@ internal fun qualityLabel(base: String, playing: String?): String =
  * without this a 2× speed reads "2.0×" against the web's "2×" — a difference a parity
  * check on the string would catch and a human would call a typo.
  */
-private fun trimRate(rate: Float): String {
+internal fun trimRate(rate: Float): String {
     val whole: Int = rate.toInt()
 
     return if (rate == whole.toFloat()) whole.toString() else rate.toString()

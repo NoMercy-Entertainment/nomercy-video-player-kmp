@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome.menus
 
+import tv.nomercy.player.video.ui.chrome.trimRate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -399,13 +400,19 @@ internal fun qualityLabel(level: QualityLevel): String =
 // different tracks somebody chooses between and the language alone hides that.
 internal fun audioLabel(track: AudioTrack): String = track.label
 
+// `rate === 1 ? t('menu.normal') : `${rate}×`` — the multiplication sign, and a whole
+// rate without its decimal. This wrote the letter x and rendered 2f as "2.0x", so the
+// menu row and the transport button disagreed about the same number in two ways.
 internal fun speedLabel(speed: Float, strings: MenuStrings): String =
-    if (speed == 1f) strings.normalSpeed else "${speed}x"
+    if (speed == 1f) strings.normalSpeed else "${trimRate(speed)}×"
 
 // The rates every player offers. Written here rather than asked of the engine,
 // because an engine reports what it can do and this is what a viewer should be
 // offered: a list of thirty options is not a menu.
-private val SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f)
+// The web's own list: `player.playbackRates?.() ?? [0.5, 0.75, 1, 1.25, 1.5, 2]`.
+// This carried an extra 1.75 that the web never offers — an invented option, which is
+// the one kind of divergence a viewer cannot report because nothing looks broken.
+private val SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
 
 private const val SDR_WIRE = "sdr"
 
