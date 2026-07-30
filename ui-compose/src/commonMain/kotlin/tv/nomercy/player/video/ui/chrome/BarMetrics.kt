@@ -57,6 +57,6 @@ public fun barMetricsFor(widthDp: Int): BarMetrics = when {
     else -> BarMetrics(gap = 2.dp, paddingVertical = 4.dp, paddingHorizontal = 16.dp)
 }
 
-private const val XS_MAX = 360
-private const val SM_MAX = 480
-private const val MD_MAX = 720
+internal const val XS_MAX = 360
+internal const val SM_MAX = 480
+internal const val MD_MAX = 720

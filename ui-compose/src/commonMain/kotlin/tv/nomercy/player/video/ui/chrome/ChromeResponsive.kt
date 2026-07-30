@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.ui.unit.Dp
+
 // Which controls survive a narrow window, and in what order they go.
 //
 // Ported from desktop-ui/helpers/responsive.ts rather than decided here. It is
@@ -279,3 +281,14 @@ public const val CHROME_VOLUME_SLIDER_WIDTH: Int = 96
  * remaining time and the row's padding. Not buttons, same row.
  */
 public const val CHROME_RESERVED_WIDTH: Int = 148
+
+internal fun boundedWidthDp(width: Dp): Int {
+    val value: Float = width.value
+
+    return if (value.isFinite()) value.toInt() else UNBOUNDED_WIDTH_DP
+}
+
+// Past every ceiling in CHROME_BREAKPOINTS, so it selects the last band the same
+// way any wide screen does. Not Int.MAX_VALUE: a number that large invites an
+// overflow the first time somebody adds an offset to it.
+private const val UNBOUNDED_WIDTH_DP = 100_000

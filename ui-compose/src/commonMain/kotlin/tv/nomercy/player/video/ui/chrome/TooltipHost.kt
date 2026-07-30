@@ -145,7 +145,7 @@ public fun rememberTooltipVisible(interactions: InteractionSource): Boolean {
  * it uses [ChromeTooltip.leftFor] for the horizontal placement — which is what
  * that arithmetic was written for and never called with.
  */
-private fun Modifier.aboveAnchor(gap: Dp): Modifier = layout { measurable, constraints ->
+internal fun Modifier.aboveAnchor(gap: Dp): Modifier = layout { measurable, constraints ->
     val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
 
     // Zero, so the row lays out as though this were not here. A tooltip that

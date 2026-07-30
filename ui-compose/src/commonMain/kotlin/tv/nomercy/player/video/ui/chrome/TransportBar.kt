@@ -59,6 +59,8 @@ public fun TransportBar(
     priority: List<ChromeControl> = CHROME_PRIORITY,
     /** `portraitHidden` — dropped at any width in portrait. */
     portraitHidden: Set<ChromeControl> = CHROME_PORTRAIT_HIDDEN,
+    /** `volumeSlider` — whether the level is set on a track or in a popup. */
+    volumeSlider: VolumeSliderMode = VolumeSliderMode.Auto,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val widthDp: Int = boundedWidthDp(maxWidth)
@@ -83,7 +85,7 @@ public fun TransportBar(
             horizontalArrangement = Arrangement.spacedBy(metrics.gap),
         ) {
             TransportButtons(state, commands, strings, fits)
-            VolumeCluster(state, commands, strings, fits)
+            VolumeCluster(state, commands, fits, volumeSpecFor(state, strings, volumeSlider, widthDp))
             TimeReadout(state, buttons)
             ViewButtons(state, commands, strings, fits)
             MenuButtons(state, commands, strings, fits)
@@ -243,27 +245,34 @@ private fun NextButton(
 private fun VolumeCluster(
     state: ChromeState,
     commands: ChromeCommands,
-    strings: TvChromeStrings,
     fits: Set<ChromeControl>,
+    spec: VolumeSpec,
 ) {
     if (ChromeControl.MUTE !in fits) return
 
-    val icon: ImageVector = when {
-        state.muted || state.volume == 0 -> FluentIcons.VolumeMuted
-        state.volume < VOLUME_LOW -> FluentIcons.VolumeLow
-        // At or below, not below. The web's medium arm is `volume <= 60`, and a
-        // strict comparison here put the speaker one glyph higher at exactly
-        // sixty — the value a slider dragged to a round number lands on.
-        state.volume <= VOLUME_MEDIUM -> FluentIcons.VolumeMedium
-        else -> FluentIcons.VolumeHigh
-    }
-
-    PlayerIconButton(
-        icon = icon,
-        description = if (state.muted) strings.unmute else strings.mute,
-        onClick = { commands.setMuted(!state.muted) },
+    // The button AND the way to set the level. This drew the button alone while
+    // the responsive arithmetic reserved 96dp beside it for a track nothing put
+    // there, so a viewer could mute and could not turn it down.
+    VolumeControl(
+        state = state,
+        commands = commands,
+        spec = spec,
         modifier = Modifier.testTag(VOLUME_TAG),
     )
+}
+
+
+// The web's four speaker glyphs, by level. Kept here beside the bar's other icon
+// choices and read by the volume control, so the button in the popup and the one
+// on the row cannot disagree about which speaker the level is.
+internal fun volumeIconFor(state: ChromeState): ImageVector = when {
+    state.muted || state.volume == 0 -> FluentIcons.VolumeMuted
+    state.volume < VOLUME_LOW -> FluentIcons.VolumeLow
+    // At or below, not below. The web's medium arm is `volume <= 60`, and a
+    // strict comparison here put the speaker one glyph higher at exactly
+    // sixty — the value a slider dragged to a round number lands on.
+    state.volume <= VOLUME_MEDIUM -> FluentIcons.VolumeMedium
+    else -> FluentIcons.VolumeHigh
 }
 
 // Web order 9-11: current time, a divider element, remaining time.
@@ -495,16 +504,7 @@ internal fun ChromeState.lacksContentFor(control: ChromeControl): Boolean = when
  * Unbounded means "as much room as you want", so the widest band is the honest
  * answer as well as the convenient one.
  */
-private fun boundedWidthDp(width: Dp): Int {
-    val value: Float = width.value
 
-    return if (value.isFinite()) value.toInt() else UNBOUNDED_WIDTH_DP
-}
-
-// Past every ceiling in CHROME_BREAKPOINTS, so it selects the last band the same
-// way any wide screen does. Not Int.MAX_VALUE: a number that large invites an
-// overflow the first time somebody adds an offset to it.
-private const val UNBOUNDED_WIDTH_DP = 100_000
 
 internal const val TRANSPORT_BAR_TAG = "nm-transport-bar"
 internal const val PLAY_PAUSE_TAG = "nm-play-pause"
@@ -538,5 +538,5 @@ private const val SEEK_STEP_SECONDS = 10f
 // desktop-ui/helpers/buttonState.ts: `volume < 30` is low and `volume <= 60` is
 // medium. These were 33 and 66, which is the same idea and not the same
 // picture: a volume of 62 drew medium here and high in a browser.
-private const val VOLUME_LOW = 30
-private const val VOLUME_MEDIUM = 60
+internal const val VOLUME_LOW = 30
+internal const val VOLUME_MEDIUM = 60

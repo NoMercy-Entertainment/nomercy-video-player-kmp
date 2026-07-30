@@ -111,6 +111,14 @@ public data class VideoUiOptions(
     val hideTitle: Boolean = false,
 
     /**
+     * `volumeSlider`. Auto, a horizontal track, or a vertical popup.
+     *
+     * Auto by the web's reasoning: expand-on-hover needs a real pointer, so it
+     * cannot be what a touch device is given.
+     */
+    val volumeSlider: VolumeSliderMode = VolumeSliderMode.Auto,
+
+    /**
      * `disableClickToPause`.
      *
      * A player inside a link, or one whose surface is a hit target for something
@@ -179,6 +187,7 @@ public open class VideoUiPlugin(
                 priority = resolved.buttonPriority,
                 portraitHidden = resolved.portraitHidden,
                 hideTitle = resolved.hideTitle,
+                volumeSlider = resolved.volumeSlider,
             ),
             onClose = onBack,
         )

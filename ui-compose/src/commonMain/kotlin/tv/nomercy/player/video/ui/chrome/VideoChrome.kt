@@ -171,6 +171,13 @@ public data class ChromeLayout(
     val priority: List<ChromeControl> = CHROME_PRIORITY,
     val portraitHidden: Set<ChromeControl> = CHROME_PORTRAIT_HIDDEN,
     val hideTitle: Boolean = false,
+    /**
+     * `volumeSlider` on DesktopUiOptions: 'auto', 'horizontal' or 'vertical'.
+     *
+     * Auto by the web's reasoning — expand-on-hover needs a real pointer, so it
+     * cannot be what a touch device is given.
+     */
+    val volumeSlider: VolumeSliderMode = VolumeSliderMode.Auto,
 )
 
 // The root, and whichever input this form factor has.
@@ -418,6 +425,7 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
                 buttons = scene.buttons,
                 priority = scene.layout.priority,
                 portraitHidden = scene.layout.portraitHidden,
+                volumeSlider = scene.layout.volumeSlider,
             )
         }
     }
