@@ -162,7 +162,10 @@ class TvKeyHandlerPluginTest {
     }
 
     @Test
-    fun theChapterWordOnThePanelIsTheHostsTranslatedOne() = runTest {
+    fun theChapterWordOnThePanelComesFromTheViewersLocale() = runTest {
+        // Asked for by locale rather than handed in as a string, which is the
+        // whole difference the table makes: the word is the one the web plugin
+        // already ships for Dutch, not one this test invented for it.
         val commands = RecordingPlayerCommands()
         commands.at(seconds = 700.0, of = 3600.0)
         commands.withChapters(listOf(Chapter(startTime = 600.0, title = "De Oversteek")))
@@ -174,7 +177,7 @@ class TvKeyHandlerPluginTest {
             commands.commands,
             Television(),
             { clock },
-            TvKeyHandlerOptions(chapterWord = "Hoofdstuk"),
+            TvKeyHandlerOptions(locale = "nl"),
         )
         player.addPlugin(plugin)
 
@@ -184,7 +187,7 @@ class TvKeyHandlerPluginTest {
     }
 
     @Test
-    fun anUnnamedItemGetsTheHostsWordForNothingNamed() = runTest {
+    fun anUnnamedItemGetsTheWordForNothingNamedInTheViewersLocale() = runTest {
         // A server sending an empty title is not a server naming the item "", and
         // a panel whose first line is blank reads as a panel that failed to load.
         val commands = RecordingPlayerCommands()
@@ -196,7 +199,7 @@ class TvKeyHandlerPluginTest {
             commands.commands,
             Television(),
             { clock },
-            TvKeyHandlerOptions(noTitleWord = "Geen titel"),
+            TvKeyHandlerOptions(locale = "nl"),
         )
         player.addPlugin(plugin)
 
@@ -235,7 +238,20 @@ class TvKeyHandlerPluginTest {
         plugin.handle(PlayerKey.Favorites)
 
         assertTrue(commands.calls.contains("cycleAspectRatio"))
-        assertEquals(1, commands.messages.size)
+        // The web plugin's own English, not a rewording of it. This said
+        // "aspect ratio changed", which is a fourth spelling of a string the web
+        // already had in 79 languages.
+        assertEquals(listOf("Aspect ratio"), commands.messages)
+    }
+
+    @Test
+    fun theShapeMessageIsAnnouncedInTheViewersLocale() = runTest {
+        val commands = RecordingPlayerCommands()
+        val plugin: TvKeyHandlerPlugin = handler(commands, TvKeyHandlerOptions(locale = "nl"))
+
+        plugin.handle(PlayerKey.Favorites)
+
+        assertEquals(listOf("Beeldverhouding"), commands.messages)
     }
 
     @Test

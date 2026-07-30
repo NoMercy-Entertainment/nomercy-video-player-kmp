@@ -40,10 +40,6 @@ public final class tv/nomercy/player/video/AudioTracksChange {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class tv/nomercy/player/video/BufferedFrontierKt {
-	public static final fun bufferedFrontier (Ljava/util/List;D)D
-}
-
 public final class tv/nomercy/player/video/DisplayMessage {
 	public fun <init> (Ljava/lang/String;Ljava/lang/Double;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Double;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -826,18 +822,22 @@ public final class tv/nomercy/player/video/input/TvKeyEvents {
 
 public final class tv/nomercy/player/video/input/TvKeyHandlerOptions {
 	public fun <init> ()V
-	public fun <init> (IJLjava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (IJLjava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (IJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (IJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()I
 	public final fun component2 ()J
 	public final fun component3 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
-	public final fun copy (IJLjava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/TvKeyHandlerOptions;IJLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun copy (IJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/TvKeyHandlerOptions;IJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getArrowSeekSeconds ()I
+	public final fun getAspectRatioWord ()Ljava/lang/String;
 	public final fun getChapterWord ()Ljava/lang/String;
 	public final fun getInfoDisplayMs ()J
+	public final fun getLocale ()Ljava/lang/String;
 	public final fun getNoTitleWord ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -865,6 +865,14 @@ public final class tv/nomercy/player/video/input/TvKeyHandlerPlugin$Manifest : t
 	public fun getRequires ()Ljava/util/List;
 	public fun getTranslations ()Ljava/util/Map;
 	public fun getVersion ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/input/TvKeyHandlerTranslations {
+	public static final field FALLBACK Ljava/lang/String;
+	public static final field INSTANCE Ltv/nomercy/player/video/input/TvKeyHandlerTranslations;
+	public final fun get (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun getAvailable ()Ljava/util/Set;
+	public final fun of (Ljava/lang/String;)Ljava/util/Map;
 }
 
 public final class tv/nomercy/player/video/input/TvPlaybackSummary {

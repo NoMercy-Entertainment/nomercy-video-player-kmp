@@ -73,7 +73,7 @@ public open class TvKeyHandlerPlugin(
 
         bindings.replace(PlayerKey.Favorites.asCombo()) {
             commands.presentation.cycleAspectRatio()
-            commands.presentation.message(ASPECT_RATIO_CYCLED)
+            commands.presentation.message(tvOptions.aspectRatioWord)
         }
     }
 
@@ -123,16 +123,29 @@ public data class TvKeyHandlerOptions(
     val arrowSeekSeconds: Int = 5,
     val infoDisplayMs: Long = 5_000,
     /**
-     * The word in front of a chapter number on the info panel.
+     * The viewer's language, as a tag [TvKeyHandlerTranslations] is keyed by. The
+     * three words below are read out of that table for it.
      *
-     * Supplied by the host because it is translated and this library carries no
-     * table for the tv-key-handler strings. English is the fallback for the same
-     * reason `ChromeTranslations.FALLBACK` is: a missing string should read as a
-     * word rather than as a key.
+     * Pass the viewer's own. This defaults to English because commonMain has no
+     * ambient locale to read — the chrome gets one from Compose through
+     * `rememberChromeLocale()` and there is no equivalent outside a composition —
+     * so a construction site that leaves it out ships English to every viewer.
+     * That is how the chrome's own strings came to be English in all 79 locales
+     * for a while: the table was there and every caller took the default.
      */
-    val chapterWord: String = DEFAULT_CHAPTER_WORD,
-    /** What the panel reads when the item carries no title. Translated, like [chapterWord]. */
-    val noTitleWord: String = DEFAULT_NO_TITLE_WORD,
+    val locale: String = TvKeyHandlerTranslations.FALLBACK,
+    /** The word in front of a chapter number on the info panel. */
+    val chapterWord: String = TvKeyHandlerTranslations.get(locale, KEY_CHAPTER),
+    /** What the panel reads when the item carries no title. */
+    val noTitleWord: String = TvKeyHandlerTranslations.get(locale, KEY_NO_TITLE),
+    /**
+     * What the OSD says when the picture changes shape.
+     *
+     * This was "aspect ratio changed", written here rather than taken from the
+     * web table, which is a rewording of a string the web already had in 79
+     * languages — the fidelity failure the generated table exists to stop.
+     */
+    val aspectRatioWord: String = TvKeyHandlerTranslations.get(locale, KEY_ASPECT_RATIO),
 )
 
 // What the info button reports.
@@ -153,9 +166,8 @@ public data class TvPlaybackSummary(
 
 public data class TvBookmark(val timeSeconds: Double)
 
-private const val ASPECT_RATIO_CYCLED = "aspect ratio changed"
-
-// `plugin.tv-key-handler.info.chapter` and `.info.noTitle` in the web plugin's
-// English table.
-private const val DEFAULT_CHAPTER_WORD = "Chapter"
-private const val DEFAULT_NO_TITLE_WORD = "No title"
+// The web plugin's own keys, so the two players read the same value for the same
+// thing rather than one of them a paraphrase of it.
+private const val KEY_CHAPTER = "plugin.tv-key-handler.info.chapter"
+private const val KEY_NO_TITLE = "plugin.tv-key-handler.info.noTitle"
+private const val KEY_ASPECT_RATIO = "plugin.tv-key-handler.aspectRatio.cycled"

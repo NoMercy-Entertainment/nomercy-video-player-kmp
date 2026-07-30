@@ -854,14 +854,18 @@ final class tv.nomercy.player.video.input/TvBookmark { // tv.nomercy.player.vide
 }
 
 final class tv.nomercy.player.video.input/TvKeyHandlerOptions { // tv.nomercy.player.video.input/TvKeyHandlerOptions|null[0]
-    constructor <init>(kotlin/Int = ..., kotlin/Long = ..., kotlin/String = ..., kotlin/String = ...) // tv.nomercy.player.video.input/TvKeyHandlerOptions.<init>|<init>(kotlin.Int;kotlin.Long;kotlin.String;kotlin.String){}[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Long = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ...) // tv.nomercy.player.video.input/TvKeyHandlerOptions.<init>|<init>(kotlin.Int;kotlin.Long;kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
 
     final val arrowSeekSeconds // tv.nomercy.player.video.input/TvKeyHandlerOptions.arrowSeekSeconds|{}arrowSeekSeconds[0]
         final fun <get-arrowSeekSeconds>(): kotlin/Int // tv.nomercy.player.video.input/TvKeyHandlerOptions.arrowSeekSeconds.<get-arrowSeekSeconds>|<get-arrowSeekSeconds>(){}[0]
+    final val aspectRatioWord // tv.nomercy.player.video.input/TvKeyHandlerOptions.aspectRatioWord|{}aspectRatioWord[0]
+        final fun <get-aspectRatioWord>(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.aspectRatioWord.<get-aspectRatioWord>|<get-aspectRatioWord>(){}[0]
     final val chapterWord // tv.nomercy.player.video.input/TvKeyHandlerOptions.chapterWord|{}chapterWord[0]
         final fun <get-chapterWord>(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.chapterWord.<get-chapterWord>|<get-chapterWord>(){}[0]
     final val infoDisplayMs // tv.nomercy.player.video.input/TvKeyHandlerOptions.infoDisplayMs|{}infoDisplayMs[0]
         final fun <get-infoDisplayMs>(): kotlin/Long // tv.nomercy.player.video.input/TvKeyHandlerOptions.infoDisplayMs.<get-infoDisplayMs>|<get-infoDisplayMs>(){}[0]
+    final val locale // tv.nomercy.player.video.input/TvKeyHandlerOptions.locale|{}locale[0]
+        final fun <get-locale>(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.locale.<get-locale>|<get-locale>(){}[0]
     final val noTitleWord // tv.nomercy.player.video.input/TvKeyHandlerOptions.noTitleWord|{}noTitleWord[0]
         final fun <get-noTitleWord>(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.noTitleWord.<get-noTitleWord>|<get-noTitleWord>(){}[0]
 
@@ -869,7 +873,9 @@ final class tv.nomercy.player.video.input/TvKeyHandlerOptions { // tv.nomercy.pl
     final fun component2(): kotlin/Long // tv.nomercy.player.video.input/TvKeyHandlerOptions.component2|component2(){}[0]
     final fun component3(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.component3|component3(){}[0]
     final fun component4(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.component4|component4(){}[0]
-    final fun copy(kotlin/Int = ..., kotlin/Long = ..., kotlin/String = ..., kotlin/String = ...): tv.nomercy.player.video.input/TvKeyHandlerOptions // tv.nomercy.player.video.input/TvKeyHandlerOptions.copy|copy(kotlin.Int;kotlin.Long;kotlin.String;kotlin.String){}[0]
+    final fun component5(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.component5|component5(){}[0]
+    final fun component6(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.component6|component6(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Long = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ..., kotlin/String = ...): tv.nomercy.player.video.input/TvKeyHandlerOptions // tv.nomercy.player.video.input/TvKeyHandlerOptions.copy|copy(kotlin.Int;kotlin.Long;kotlin.String;kotlin.String;kotlin.String;kotlin.String){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.input/TvKeyHandlerOptions.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video.input/TvKeyHandlerOptions.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerOptions.toString|toString(){}[0]
@@ -1745,6 +1751,17 @@ final object tv.nomercy.player.video.input/TvKeyEvents { // tv.nomercy.player.vi
         final fun <get-InfoOnPlayer>(): tv.nomercy.player.core.events/EventKey<tv.nomercy.player.video.input/TvPlaybackSummary> // tv.nomercy.player.video.input/TvKeyEvents.InfoOnPlayer.<get-InfoOnPlayer>|<get-InfoOnPlayer>(){}[0]
 }
 
+final object tv.nomercy.player.video.input/TvKeyHandlerTranslations { // tv.nomercy.player.video.input/TvKeyHandlerTranslations|null[0]
+    final const val FALLBACK // tv.nomercy.player.video.input/TvKeyHandlerTranslations.FALLBACK|{}FALLBACK[0]
+        final fun <get-FALLBACK>(): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerTranslations.FALLBACK.<get-FALLBACK>|<get-FALLBACK>(){}[0]
+
+    final val available // tv.nomercy.player.video.input/TvKeyHandlerTranslations.available|{}available[0]
+        final fun <get-available>(): kotlin.collections/Set<kotlin/String> // tv.nomercy.player.video.input/TvKeyHandlerTranslations.available.<get-available>|<get-available>(){}[0]
+
+    final fun get(kotlin/String, kotlin/String): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerTranslations.get|get(kotlin.String;kotlin.String){}[0]
+    final fun of(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/String> // tv.nomercy.player.video.input/TvKeyHandlerTranslations.of|of(kotlin.String){}[0]
+}
+
 final object tv.nomercy.player.video.subtitles/AssFontNames { // tv.nomercy.player.video.subtitles/AssFontNames|null[0]
     final fun parse(kotlin/String): kotlin.collections/List<kotlin/String> // tv.nomercy.player.video.subtitles/AssFontNames.parse|parse(kotlin.String){}[0]
 }
@@ -1861,4 +1878,3 @@ final fun tv.nomercy.player.video.tv/shouldShowSeasonSidebar(kotlin.collections/
 final fun tv.nomercy.player.video.tv/showTitle(tv.nomercy.player.video.tv/TvChromeItem?, kotlin/String): kotlin/String // tv.nomercy.player.video.tv/showTitle|showTitle(tv.nomercy.player.video.tv.TvChromeItem?;kotlin.String){}[0]
 final fun tv.nomercy.player.video.tv/sidebarSeasons(kotlin.collections/List<tv.nomercy.player.video.tv/TvChromeItem>): kotlin.collections/List<kotlin/Int> // tv.nomercy.player.video.tv/sidebarSeasons|sidebarSeasons(kotlin.collections.List<tv.nomercy.player.video.tv.TvChromeItem>){}[0]
 final fun tv.nomercy.player.video.tv/titleBarText(tv.nomercy.player.video.tv/TvChromeItem?, kotlin/Function1<kotlin/Int, kotlin/String>, kotlin/Function1<kotlin/Int, kotlin/String>, kotlin/Function0<kotlin/String>): tv.nomercy.player.video.tv/TitleBarText // tv.nomercy.player.video.tv/titleBarText|titleBarText(tv.nomercy.player.video.tv.TvChromeItem?;kotlin.Function1<kotlin.Int,kotlin.String>;kotlin.Function1<kotlin.Int,kotlin.String>;kotlin.Function0<kotlin.String>){}[0]
-final fun tv.nomercy.player.video/bufferedFrontier(kotlin.collections/List<tv.nomercy.player.core.ports/TimeRange>, kotlin/Double): kotlin/Double // tv.nomercy.player.video/bufferedFrontier|bufferedFrontier(kotlin.collections.List<tv.nomercy.player.core.ports.TimeRange>;kotlin.Double){}[0]
