@@ -43,7 +43,11 @@ public suspend fun loadPreviewSprite(
     // short to have frames, or a VTT that arrived truncated, would otherwise
     // become a sprite answering null to every time — a chrome drawing an empty
     // box under the scrubber for the whole title.
-    val frames: List<SpriteCue> = layout.await()?.let { parseVttSprite(it, spriteUrl) }.orEmpty()
+    // Against the VTT's own URL, which is what the web passes and what the cue
+    // paths are written relative to. Resolving them against the SHEET happens to
+    // agree whenever the two files sit in the same directory — which is the usual
+    // case, and the reason a wrong base here would have stayed hidden.
+    val frames: List<SpriteCue> = layout.await()?.let { parseVttSprite(it, vttUrl) }.orEmpty()
 
     if (bytes == null || frames.isEmpty()) {
         null

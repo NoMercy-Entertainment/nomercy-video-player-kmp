@@ -37,6 +37,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import kotlinx.coroutines.CoroutineScope
 import tv.nomercy.player.core.cues.SpriteCue
+import tv.nomercy.player.video.ui.thumbnails.PreviewSprite
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.DpSize
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.errors.Severity
@@ -74,6 +77,15 @@ public fun VideoChrome(
     strings: TvChromeStrings = rememberChromeStrings(),
     buttons: ChromeButtons = ChromeButtons(),
     sprite: List<SpriteCue> = emptyList(),
+    /**
+     * The decoded sheet, when the host has one.
+     *
+     * Separate from [sprite] because the two answer different questions: the cue
+     * table says a frame exists, and this one can draw it. loadPreviewSprite
+     * builds it and had no caller, so the preview bubble showed a clock over an
+     * empty box while the same drag in a browser showed the scene.
+     */
+    previewSprite: PreviewSprite? = null,
     onClose: (() -> Unit)? = null,
     // The web's other two top-bar events. Back and close are different exits —
     // one returns to where the viewer came from and one dismisses the player —
@@ -140,7 +152,7 @@ public fun VideoChrome(
             scene = ChromeScene(
                 state, commands, controller, strings, rememberMenuStrings(), buttons, layout,
             ),
-            host = ChromeHost(sprite, onClose, onBack, onCast, slots),
+            host = ChromeHost(sprite, previewSprite, onClose, onBack, onCast, slots),
             menu = menu,
             onMenuChange = { menu = it },
         )
@@ -277,6 +289,15 @@ internal data class ChromeScene(
 // its server generated, and where "out" goes.
 internal data class ChromeHost(
     val sprite: List<SpriteCue>,
+    /**
+     * The same sheet with its pixels reachable, when the host has decoded one.
+     *
+     * [sprite] is the cue table alone, which is enough to know a frame exists and
+     * not enough to draw it. loadPreviewSprite builds this and had no callers, so
+     * the whole apparatus sat one parameter away from working: the bubble showed a
+     * clock and a chapter name over an empty box while a browser showed the scene.
+     */
+    val previewSprite: PreviewSprite?,
     val onClose: (() -> Unit)?,
     val onBack: (() -> Unit)?,
     val onCast: (() -> Unit)?,
@@ -334,6 +355,29 @@ private fun ChromeLayers(
 
 // The scrubber sits above the buttons rather than inside the row, because a drag
 // target the width of the picture is the one a finger actually hits.
+// The bubble over the bar: the clock, the chapter, and the frame at that moment.
+//
+// Its own composable because the frame lookup is the part that was missing — the
+// sprite was loaded, the cue was found, and the answer went into an onPreview
+// nothing was listening to.
+@Composable
+private fun ScrubBubble(scene: ChromeScene, host: ChromeHost, seconds: Double, barWidth: Dp) {
+    val sprite: PreviewSprite? = host.previewSprite
+
+    ScrubPreview(
+        seconds = seconds,
+        fraction = scrubFraction(seconds, scene.state.durationSeconds),
+        barWidth = barWidth,
+        // Null while the band behind this frame is still being read, which is why
+        // the box is sized from what the sheet DECLARES rather than from the
+        // pixels: a box that grows when the image lands is a box that jumps under
+        // the thumb dragging it.
+        frame = sprite?.frameAt(seconds),
+        frameSize = sprite?.let { DpSize(it.frameWidthPx.dp, it.frameHeightPx.dp) },
+        chapterTitle = chapterTitleAt(scene.state, seconds),
+    )
+}
+
 @Composable
 private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifier) {
     var scrub: Double? by remember { mutableStateOf(null) }
@@ -346,20 +390,7 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
             // while a drag is happening: the web's is `display: none` until then
             // and a bubble sitting over the picture at rest answers a question
             // nobody asked.
-            //
-            // No frame yet, so the clock and the chapter name without a picture.
-            // Drawing one needs decoded pixels, which needs a tile source, which
-            // is the host's to supply — the sheet says where each frame lives
-            // and something has to read the bytes. That is the next thing this
-            // takes, and it is a parameter rather than a rewrite.
-            scrub?.let { seconds ->
-                ScrubPreview(
-                    seconds = seconds,
-                    fraction = scrubFraction(seconds, scene.state.durationSeconds),
-                    barWidth = barWidth,
-                    chapterTitle = chapterTitleAt(scene.state, seconds),
-                )
-            }
+            scrub?.let { seconds -> ScrubBubble(scene, host, seconds, barWidth) }
 
             Box(modifier = Modifier.fillMaxWidth()) {
                 host.slots.scrubber?.invoke(scene.state, scene.commands) ?: ChapterScrubber(

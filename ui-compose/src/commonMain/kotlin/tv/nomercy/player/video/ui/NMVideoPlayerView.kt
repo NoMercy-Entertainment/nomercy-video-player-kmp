@@ -18,6 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.cues.SpriteCue
+import tv.nomercy.player.video.ui.thumbnails.PreviewSprite
+import tv.nomercy.player.video.ui.chrome.ChromeLayout
 import tv.nomercy.player.core.device.DeviceCapabilities
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.player.PlayState
@@ -67,6 +69,24 @@ public fun NMVideoPlayerView(
     kind: VideoUiKind = VideoUiKind.Full,
     buttons: ChromeButtons = ChromeButtons.forKind(kind),
     sprite: List<SpriteCue> = emptyList(),
+    /**
+     * The decoded sheet, when the host has one.
+     *
+     * Separate from [sprite] because the two answer different questions: the cue
+     * table says a frame exists, and this one can draw it. loadPreviewSprite
+     * builds it and had no caller, so the preview bubble showed a clock over an
+     * empty box while the same drag in a browser showed the scene.
+     */
+    previewSprite: PreviewSprite? = null,
+    /**
+     * How the bar arranges itself: drop order, portrait-hidden, and the title.
+     *
+     * Reachable from the drop-in and not only from VideoUiPlugin, because the
+     * drop-in is what a consumer writes first. VideoUiOptions grew these three and
+     * this view did not, so the same options were expressible through one entry
+     * point and invisible through the other.
+     */
+    layout: ChromeLayout = ChromeLayout(),
     episodes: List<TvEpisode> = emptyList(),
     onClose: () -> Unit = {},
     slots: ChromeSlots = LocalChromeSlots.current,
@@ -98,6 +118,10 @@ public fun NMVideoPlayerView(
             strings = strings,
             buttons = buttons,
             sprite = sprite,
+            previewSprite = previewSprite,
+            // Forwarded, because a parameter this took and did not pass on is a
+            // parameter that silently does nothing — which is what `layout` was.
+            layout = layout,
             onClose = onClose,
             slots = slots,
             surface = picture,

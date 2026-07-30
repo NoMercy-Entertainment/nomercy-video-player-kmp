@@ -1,5 +1,5 @@
 public final class tv/nomercy/player/video/ui/NMVideoPlayerViewKt {
-	public static final fun NMVideoPlayerView (Ltv/nomercy/player/video/NMVideoPlayer;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/core/device/DeviceCapabilities;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/chrome/ChromeSlots;Ltv/nomercy/player/video/ui/VideoSurface;Landroidx/compose/runtime/Composer;III)V
+	public static final fun NMVideoPlayerView (Ltv/nomercy/player/video/NMVideoPlayer;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/core/device/DeviceCapabilities;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/chrome/VideoUiKind;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Ltv/nomercy/player/video/ui/thumbnails/PreviewSprite;Ltv/nomercy/player/video/ui/chrome/ChromeLayout;Ljava/util/List;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/chrome/ChromeSlots;Ltv/nomercy/player/video/ui/VideoSurface;Landroidx/compose/runtime/Composer;III)V
 	public static final fun PlayerControls (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 	public static final fun rememberIsPlaying (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/runtime/Composer;I)Z
 	public static final fun togglePlayback (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/core/player/PlayerState;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -599,7 +599,7 @@ public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$Chrome
 public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoChromeKt {
 	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoChromeKt;
 	public fun <init> ()V
-	public final fun getLambda$1224670541$ui_compose ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$2041226892$ui_compose ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/PlaybackErrorMessage {
@@ -725,7 +725,7 @@ public final class tv/nomercy/player/video/ui/chrome/TransportBarKt {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/VideoChromeKt {
-	public static final fun VideoChrome (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/core/device/FormFactor;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/chrome/ChromeGestures;Ltv/nomercy/player/video/ui/chrome/AutoSkipPreference;JLtv/nomercy/player/video/ui/chrome/ChromeLayout;Ltv/nomercy/player/video/ui/chrome/ChromeSlots;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)V
+	public static final fun VideoChrome (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/core/device/FormFactor;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ljava/util/List;Ltv/nomercy/player/video/ui/thumbnails/PreviewSprite;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/ui/chrome/ChromeGestures;Ltv/nomercy/player/video/ui/chrome/AutoSkipPreference;JLtv/nomercy/player/video/ui/chrome/ChromeLayout;Ltv/nomercy/player/video/ui/chrome/ChromeSlots;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/VideoUiKind : java/lang/Enum {
