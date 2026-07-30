@@ -94,6 +94,12 @@ public data class ChromeState(
     // offered to them. Not a player capability and not persisted here — the app
     // owns it, and this is what it currently reads. See [AutoSkipPreference].
     val autoSkipChapters: Boolean = false,
+
+    // Whether the right-hand clock reads what is left or how long the item is.
+    // The web's remaining-time element is a button that switches between the two
+    // and remembers the choice; this drew what-is-left with no way to reach the
+    // other. Not persisted here — the host owns that, as with [autoSkipChapters].
+    val showRemaining: Boolean = true,
 ) {
 
     // Drawn by the bar and by the scrubber, so it is computed once here. Zero

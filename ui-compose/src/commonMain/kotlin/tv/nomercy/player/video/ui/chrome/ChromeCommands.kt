@@ -41,6 +41,15 @@ public interface ChromeSkipCommands {
      * viewer set this once for their account, not once for this film.
      */
     public fun setAutoSkipChapters(enabled: Boolean)
+
+    /**
+     * Switch the right-hand clock between what is left and how long the item is.
+     *
+     * Here rather than on the transport for the same reason as above: it is a
+     * preference the viewer sets once and not a thing that happens to the film.
+     * The web persists it under `showRemaining` and defaults it on.
+     */
+    public fun setShowRemaining(show: Boolean)
 }
 
 // What plays, and where in it.

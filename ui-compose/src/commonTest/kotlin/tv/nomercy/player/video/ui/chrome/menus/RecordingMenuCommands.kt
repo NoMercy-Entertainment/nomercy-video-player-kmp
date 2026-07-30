@@ -80,5 +80,7 @@ internal open class RecordingMenuCommands : ChromeCommands {
 
     override fun setAutoSkipChapters(enabled: Boolean) { calls += "setAutoSkipChapters" }
 
+    override fun setShowRemaining(show: Boolean) { calls += "setShowRemaining:$show" }
+
     override fun dismissMessage() { calls += "dismissMessage" }
 }

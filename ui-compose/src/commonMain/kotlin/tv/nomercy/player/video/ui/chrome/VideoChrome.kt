@@ -108,6 +108,11 @@ public fun VideoChrome(
      */
     autoSkip: AutoSkipPreference = AutoSkipPreference(),
     /**
+     * Whether the right-hand clock reads what is left or how long the item is.
+     * The app owns the setting, the same way it owns [autoSkip].
+     */
+    clock: ClockPreference = ClockPreference(),
+    /**
      * How long the controls stay up with nothing happening.
      *
      * Four seconds is the web's own `inactivityMs`, and it is a parameter there
@@ -129,17 +134,17 @@ public fun VideoChrome(
     val message: String? = rememberChromeMessage(player, strings)?.text
     val error: ChromeError? = rememberPlayerError(player)
     val state: ChromeState = rememberChromeState(player, message, error)
-        .copy(autoSkipChapters = autoSkip.enabled)
+        .copy(autoSkipChapters = autoSkip.enabled, showRemaining = clock.showRemaining)
 
-    val controller: ChromeController = remember(player, scheduler, inactivityMs) {
-        ChromeController(
-            isPlaying = { player.playState() == PlayState.PLAYING },
-            scheduler = scheduler,
-            inactivityMs = inactivityMs,
-        )
-    }
+    val controller: ChromeController = rememberChromeController(player, scheduler, inactivityMs)
     val commands: ChromeCommands = remember(player, scope) {
-        VideoChromeCommands(player, scope, onMenu = { menu = it }, onAutoSkipChange = autoSkip.onChange)
+        VideoChromeCommands(
+            player,
+            scope,
+            onMenu = { menu = it },
+            onAutoSkipChange = autoSkip.onChange,
+            onShowRemainingChange = clock.onChange,
+        )
     }
 
     ChromeBindings(controller, state.playing, menu)
@@ -162,6 +167,25 @@ public fun VideoChrome(
 
         ShortcutsLayer(panel)
     }
+}
+
+// The auto-hide state machine, kept across recompositions.
+//
+// Its own function so the assembly above reads as a list of the pieces it needs
+// rather than as one of them spelled out and the rest named. Rebuilt only when the
+// player, the clock or the timeout changes: rebuilding it on any other
+// recomposition would reset the countdown and leave the controls up for ever.
+@Composable
+private fun rememberChromeController(
+    player: NMVideoPlayer,
+    scheduler: Scheduler,
+    inactivityMs: Long,
+): ChromeController = remember(player, scheduler, inactivityMs) {
+    ChromeController(
+        isPlaying = { player.playState() == PlayState.PLAYING },
+        scheduler = scheduler,
+        inactivityMs = inactivityMs,
+    )
 }
 
 /**

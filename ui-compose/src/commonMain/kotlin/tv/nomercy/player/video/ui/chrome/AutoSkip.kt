@@ -34,6 +34,22 @@ public data class AutoSkipPreference(
 )
 
 /**
+ * Whether the right-hand clock reads what is left or how long the item is.
+ *
+ * The same shape as [AutoSkipPreference] and here for the same reason: the web
+ * persists this under `showRemaining` and defaults it on, it is one choice across
+ * every item a viewer opens, and a library that stored it would store it where
+ * the app cannot read it. So it arrives as a value and leaves through [onChange].
+ *
+ * The port drew what-is-left with no way to reach the other reading at all — the
+ * web's remaining-time element is a button, and clicking it switches.
+ */
+public data class ClockPreference(
+    val showRemaining: Boolean = true,
+    val onChange: (Boolean) -> Unit = {},
+)
+
+/**
  * The chapters this item has already been carried past.
  *
  * Without it an auto-skip fights the viewer: they scrub back into the opening

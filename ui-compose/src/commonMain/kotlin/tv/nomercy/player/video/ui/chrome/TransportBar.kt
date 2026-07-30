@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -86,7 +87,7 @@ public fun TransportBar(
         ) {
             TransportButtons(state, commands, strings, fits)
             VolumeCluster(state, commands, fits, volumeSpecFor(state, strings, volumeSlider, widthDp))
-            TimeReadout(state, buttons)
+            TimeReadout(state, commands, buttons)
             ViewButtons(state, commands, strings, fits)
             MenuButtons(state, commands, strings, fits)
         }
@@ -277,7 +278,11 @@ internal fun volumeIconFor(state: ChromeState): ImageVector = when {
 
 // Web order 9-11: current time, a divider element, remaining time.
 @Composable
-private fun RowScope.TimeReadout(state: ChromeState, buttons: ChromeButtons) {
+private fun RowScope.TimeReadout(
+    state: ChromeState,
+    commands: ChromeCommands,
+    buttons: ChromeButtons,
+) {
     if (!buttons.time) {
         // The spacer stays even with the clock off. It is what splits the bar,
         // and a consumer hiding the time must not collapse every control into
@@ -301,11 +306,14 @@ private fun RowScope.TimeReadout(state: ChromeState, buttons: ChromeButtons) {
     // while the shipped Android player splits at exactly this point.
     Spacer(modifier = Modifier.weight(1f).widthIn(min = DIVIDER_MIN_WIDTH))
 
-    // Remaining rather than total. Somebody deciding whether to start another
-    // episode is asking how much is left.
+    // A BUTTON, as it is on the web: clicking it switches between what is left
+    // and how long the item is. It drew what-is-left with no way to reach the
+    // other, and drew "-0:00" for the whole of every live stream. See
+    // [remainingReadout].
     BasicText(
-        text = "-" + formatTime((state.durationSeconds - state.timeSeconds).coerceAtLeast(0.0)),
+        text = remainingReadout(state.timeSeconds, state.durationSeconds, state.showRemaining),
         style = READOUT,
+        modifier = Modifier.clickable { commands.setShowRemaining(!state.showRemaining) },
     )
 }
 

@@ -36,11 +36,16 @@ internal class VideoChromeCommands(
     private val scope: CoroutineScope,
     private val onMenu: (MenuState) -> Unit,
     private val onAutoSkipChange: (Boolean) -> Unit,
+    private val onShowRemainingChange: (Boolean) -> Unit,
 ) : ChromeCommands {
 
     // Straight back out to the host. The player has no opinion about this and
     // no place to keep it — see AutoSkipPreference.
     override fun setAutoSkipChapters(enabled: Boolean): Unit = onAutoSkipChange(enabled)
+
+    // Also straight back out. The web persists it and this library has no store;
+    // a preference kept here would reset every time the chrome remounted.
+    override fun setShowRemaining(show: Boolean): Unit = onShowRemainingChange(show)
 
     override fun seekTo(seconds: Double) {
         scope.launch { player.time(seconds) }

@@ -122,6 +122,8 @@ internal open class RecordingChromeCommands : ChromeCommands {
     // gate could not run at all. A gate that cannot compile cannot go red.
     override fun setAutoSkipChapters(enabled: Boolean) { calls += "setAutoSkipChapters:$enabled" }
 
+    override fun setShowRemaining(show: Boolean) { calls += "setShowRemaining:$show" }
+
     override fun setSubtitleStyle(style: SubtitleStyle) { calls += "setSubtitleStyle" }
 
     override fun dismissMessage() { calls += "dismissMessage" }
