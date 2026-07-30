@@ -11,6 +11,7 @@ package tv.nomercy.player.video.input
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import tv.nomercy.player.core.events.EventKey
+import tv.nomercy.player.core.media.Chapter
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.video.NMVideoPlayer
 import kotlin.math.abs
@@ -91,6 +92,10 @@ private class PlayerStateReader(private val player: NMVideoPlayer) : VideoState 
     override fun duration(): Double = player.duration()
 
     override fun isPlaying(): Boolean = player.playState() == PlayState.PLAYING
+
+    override fun chapters(): List<Chapter> = player.chapters()
+
+    override fun title(): String? = player.item()?.title
 }
 
 private class PlayerPresentation(

@@ -13,6 +13,7 @@ import tv.nomercy.player.core.device.DeviceCapabilities
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.core.input.keyCombo
+import tv.nomercy.player.core.media.Chapter
 import tv.nomercy.player.testing.FakeVideoBackend
 import tv.nomercy.player.video.NMVideoPlayer
 import kotlin.test.Test
@@ -132,6 +133,76 @@ class TvKeyHandlerPluginTest {
         assertEquals(1, seen.size)
         assertEquals(90.0, seen.first().timeSeconds)
         assertEquals(3600.0, seen.first().durationSeconds)
+    }
+
+    @Test
+    fun theInfoPanelIsToldWhichChapterAndHowMuchIsLeft() = runTest {
+        // The two numbers were all this sent. On a television that is the only
+        // place a viewer can read either, so a film with chapters announced a
+        // position and left them to work out where in the film it was.
+        val commands = RecordingPlayerCommands()
+        commands.at(seconds = 700.0, of = 3600.0)
+        commands.withChapters(
+            listOf(
+                Chapter(startTime = 0.0, title = "Titles"),
+                Chapter(startTime = 600.0, title = "The Crossing"),
+            ),
+        )
+        val player = NMVideoPlayer(FakeVideoBackend())
+        val seen: MutableList<TvPlaybackSummary> = mutableListOf()
+        player.on(TvKeyEvents.InfoOnPlayer) { seen += it }
+        player.setup()
+        val plugin = TvKeyHandlerPlugin(commands.commands, Television(), { clock })
+        player.addPlugin(plugin)
+
+        plugin.handle(PlayerKey.Info)
+
+        assertEquals("Chapter 2: The Crossing", seen.first().chapterLabel)
+        assertEquals(2900.0, seen.first().remainingSeconds)
+    }
+
+    @Test
+    fun theChapterWordOnThePanelIsTheHostsTranslatedOne() = runTest {
+        val commands = RecordingPlayerCommands()
+        commands.at(seconds = 700.0, of = 3600.0)
+        commands.withChapters(listOf(Chapter(startTime = 600.0, title = "De Oversteek")))
+        val player = NMVideoPlayer(FakeVideoBackend())
+        val seen: MutableList<TvPlaybackSummary> = mutableListOf()
+        player.on(TvKeyEvents.InfoOnPlayer) { seen += it }
+        player.setup()
+        val plugin = TvKeyHandlerPlugin(
+            commands.commands,
+            Television(),
+            { clock },
+            TvKeyHandlerOptions(chapterWord = "Hoofdstuk"),
+        )
+        player.addPlugin(plugin)
+
+        plugin.handle(PlayerKey.Info)
+
+        assertEquals("Hoofdstuk 1: De Oversteek", seen.first().chapterLabel)
+    }
+
+    @Test
+    fun anUnnamedItemGetsTheHostsWordForNothingNamed() = runTest {
+        // A server sending an empty title is not a server naming the item "", and
+        // a panel whose first line is blank reads as a panel that failed to load.
+        val commands = RecordingPlayerCommands()
+        val player = NMVideoPlayer(FakeVideoBackend())
+        val seen: MutableList<TvPlaybackSummary> = mutableListOf()
+        player.on(TvKeyEvents.InfoOnPlayer) { seen += it }
+        player.setup()
+        val plugin = TvKeyHandlerPlugin(
+            commands.commands,
+            Television(),
+            { clock },
+            TvKeyHandlerOptions(noTitleWord = "Geen titel"),
+        )
+        player.addPlugin(plugin)
+
+        plugin.handle(PlayerKey.Info)
+
+        assertEquals("Geen titel", seen.first().title)
     }
 
     @Test

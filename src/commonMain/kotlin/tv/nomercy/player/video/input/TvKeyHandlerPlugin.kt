@@ -12,6 +12,7 @@ import tv.nomercy.player.core.device.DeviceCapabilities
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.core.input.asCombo
 import tv.nomercy.player.core.plugin.PluginManifest
+import tv.nomercy.player.video.chapters.resolveChapterLabel
 
 // The bindings a remote needs that a keyboard does not.
 //
@@ -92,11 +93,28 @@ public open class TvKeyHandlerPlugin(
         }
     }
 
-    private fun summaryOf(): TvPlaybackSummary = TvPlaybackSummary(
-        timeSeconds = commands.state.time(),
-        durationSeconds = commands.state.duration(),
-        displayForMs = tvOptions.infoDisplayMs,
-    )
+    private fun summaryOf(): TvPlaybackSummary {
+        val position: Double = commands.state.time()
+        val total: Double = commands.state.duration()
+
+        return TvPlaybackSummary(
+            timeSeconds = position,
+            durationSeconds = total,
+            displayForMs = tvOptions.infoDisplayMs,
+            // The item's own name, or the word the host gave for nothing named.
+            // Blank counts as unnamed: a server sending an empty title is not a
+            // server naming the item "".
+            title = commands.state.title()?.takeIf { it.isNotBlank() } ?: tvOptions.noTitleWord,
+            // Never negative. An engine reporting a position past a duration it
+            // has not refreshed yet is ordinary at the end of an item.
+            remainingSeconds = (total - position).coerceAtLeast(0.0),
+            chapterLabel = resolveChapterLabel(
+                commands.state.chapters(),
+                position,
+                tvOptions.chapterWord,
+            ),
+        )
+    }
 }
 
 public data class TvKeyHandlerOptions(
@@ -104,14 +122,40 @@ public data class TvKeyHandlerOptions(
     // coloured buttons are there for anything longer.
     val arrowSeekSeconds: Int = 5,
     val infoDisplayMs: Long = 5_000,
+    /**
+     * The word in front of a chapter number on the info panel.
+     *
+     * Supplied by the host because it is translated and this library carries no
+     * table for the tv-key-handler strings. English is the fallback for the same
+     * reason `ChromeTranslations.FALLBACK` is: a missing string should read as a
+     * word rather than as a key.
+     */
+    val chapterWord: String = DEFAULT_CHAPTER_WORD,
+    /** What the panel reads when the item carries no title. Translated, like [chapterWord]. */
+    val noTitleWord: String = DEFAULT_NO_TITLE_WORD,
 )
 
+// What the info button reports.
+//
+// The remaining time and the chapter are here because the web's `info` payload
+// carries them and a viewer on a television has nowhere else to read either. The
+// two numbers alone are what this sent, so a film with chapters announced a
+// position and left the viewer to work out where in the film that was.
 public data class TvPlaybackSummary(
     val timeSeconds: Double,
     val durationSeconds: Double,
     val displayForMs: Long,
+    val remainingSeconds: Double = 0.0,
+    /** Empty when the item has no chapters, or none has started yet. */
+    val chapterLabel: String = "",
+    val title: String = "",
 )
 
 public data class TvBookmark(val timeSeconds: Double)
 
 private const val ASPECT_RATIO_CYCLED = "aspect ratio changed"
+
+// `plugin.tv-key-handler.info.chapter` and `.info.noTitle` in the web plugin's
+// English table.
+private const val DEFAULT_CHAPTER_WORD = "Chapter"
+private const val DEFAULT_NO_TITLE_WORD = "No title"

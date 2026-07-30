@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.input
 
+import tv.nomercy.player.core.media.Chapter
+
 // A player that only remembers what it was asked to do.
 //
 // The bindings are what is under test, so the player has to be the part that
@@ -83,6 +85,8 @@ internal class RecordingPlayerCommands(
 
     override fun isPlaying(): Boolean = playing
 
+    override fun chapters(): List<Chapter> = chapterList
+
     override fun emit(name: String) {
         emitted += name
     }
@@ -95,4 +99,10 @@ internal class RecordingPlayerCommands(
         position = seconds
         length = of
     }
+
+    fun withChapters(chapters: List<Chapter>) {
+        chapterList = chapters
+    }
+
+    private var chapterList: List<Chapter> = emptyList()
 }

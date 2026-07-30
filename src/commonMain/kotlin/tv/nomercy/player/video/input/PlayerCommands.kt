@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.input
 
+import tv.nomercy.player.core.media.Chapter
+
 // Everything a key press can ask the player to do.
 //
 // A contract rather than the player itself, for two reasons. A key handler that
@@ -64,6 +66,18 @@ public interface VideoState {
     public fun duration(): Double
 
     public fun isPlaying(): Boolean
+
+    // What the info panel needs beyond the numbers: which chapter the viewer is
+    // in. Defaulted to empty rather than added as a requirement, so a host that
+    // implemented this before chapters existed still compiles — and empty means
+    // "this host cannot say", which is the same convention the backend's own
+    // range methods use.
+    public fun chapters(): List<Chapter> = emptyList()
+
+    // What is playing, by name. Null rather than a placeholder: the word a
+    // viewer reads when nothing is named is translated, so choosing it here
+    // would put English on a television in seventy-eight locales.
+    public fun title(): String? = null
 }
 
 // How it is shown, which includes the two things a key press changes about the

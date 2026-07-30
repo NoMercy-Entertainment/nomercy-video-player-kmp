@@ -728,6 +728,10 @@ public final class tv/nomercy/player/video/cast/WakeOutcome : java/lang/Enum {
 	public static fun values ()[Ltv/nomercy/player/video/cast/WakeOutcome;
 }
 
+public final class tv/nomercy/player/video/chapters/ChapterLabelKt {
+	public static final fun resolveChapterLabel (Ljava/util/List;DLjava/lang/String;)Ljava/lang/String;
+}
+
 public final class tv/nomercy/player/video/chapters/ChapterMarker {
 	public fun <init> (IDD)V
 	public final fun component1 ()I
@@ -822,15 +826,19 @@ public final class tv/nomercy/player/video/input/TvKeyEvents {
 
 public final class tv/nomercy/player/video/input/TvKeyHandlerOptions {
 	public fun <init> ()V
-	public fun <init> (IJ)V
-	public synthetic fun <init> (IJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (IJLjava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (IJLjava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()I
 	public final fun component2 ()J
-	public final fun copy (IJ)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/TvKeyHandlerOptions;IJILjava/lang/Object;)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (IJLjava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/TvKeyHandlerOptions;IJLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/input/TvKeyHandlerOptions;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getArrowSeekSeconds ()I
+	public final fun getChapterWord ()Ljava/lang/String;
 	public final fun getInfoDisplayMs ()J
+	public final fun getNoTitleWord ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -860,16 +868,23 @@ public final class tv/nomercy/player/video/input/TvKeyHandlerPlugin$Manifest : t
 }
 
 public final class tv/nomercy/player/video/input/TvPlaybackSummary {
-	public fun <init> (DDJ)V
+	public fun <init> (DDJDLjava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (DDJDLjava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()D
 	public final fun component2 ()D
 	public final fun component3 ()J
-	public final fun copy (DDJ)Ltv/nomercy/player/video/input/TvPlaybackSummary;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/TvPlaybackSummary;DDJILjava/lang/Object;)Ltv/nomercy/player/video/input/TvPlaybackSummary;
+	public final fun component4 ()D
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun copy (DDJDLjava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/input/TvPlaybackSummary;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/input/TvPlaybackSummary;DDJDLjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/input/TvPlaybackSummary;
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChapterLabel ()Ljava/lang/String;
 	public final fun getDisplayForMs ()J
 	public final fun getDurationSeconds ()D
+	public final fun getRemainingSeconds ()D
 	public final fun getTimeSeconds ()D
+	public final fun getTitle ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -922,9 +937,16 @@ public abstract interface class tv/nomercy/player/video/input/VideoPresentation 
 }
 
 public abstract interface class tv/nomercy/player/video/input/VideoState {
+	public fun chapters ()Ljava/util/List;
 	public abstract fun duration ()D
 	public abstract fun isPlaying ()Z
 	public abstract fun time ()D
+	public fun title ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/input/VideoState$DefaultImpls {
+	public static fun chapters (Ltv/nomercy/player/video/input/VideoState;)Ljava/util/List;
+	public static fun title (Ltv/nomercy/player/video/input/VideoState;)Ljava/lang/String;
 }
 
 public abstract interface class tv/nomercy/player/video/input/VideoTransport {
