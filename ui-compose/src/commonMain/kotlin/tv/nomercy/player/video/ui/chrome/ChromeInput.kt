@@ -92,14 +92,7 @@ internal class ChromeInput(
         return handler.handle(combo)
     }
 
-    // A KeyCombo is a canonical string, not a key and a set of modifiers, so this
-    // matches the strings keyComboOf produces. `?` is Shift and slash on most
-    // layouts and its own key on some, and both spellings mean help.
-    private fun isShortcutsKey(combo: KeyCombo): Boolean = when (combo.canonical.lowercase()) {
-        "?", "shift+?", "shift+/" -> true
-        "escape" -> panel.open
-        else -> false
-    }
+    private fun isShortcutsKey(combo: KeyCombo): Boolean = isShortcutsCombo(combo, panel.open)
 }
 
 
@@ -122,3 +115,22 @@ internal fun ShortcutsLayer(panel: ShortcutsPanel) {
         onDismiss = panel.onDismiss,
     )
 }
+
+/**
+ * Whether a press means "show me the shortcuts" or "close them".
+ *
+ * Its own function so it can be driven without a window. Every part of this that
+ * could be wrong is a STRING — keyComboOf builds a canonical like `shift+?` out of
+ * the event's code point, and a predicate that matched `slash` or `question` instead
+ * would compile, read correctly, and never fire. That is not something the render
+ * proves either: the overlay simply never appears and looks unimplemented.
+ */
+internal fun isShortcutsCombo(combo: KeyCombo, open: Boolean): Boolean =
+    when (combo.canonical.lowercase()) {
+        // `?` on a layout that has its own key for it, and Shift-and-slash on the
+        // layouts that do not. Both are the web's `shortcuts.help`.
+        "?", "shift+?", "shift+/" -> true
+        // Only while it is up, so Escape still leaves fullscreen otherwise.
+        "escape" -> open
+        else -> false
+    }
