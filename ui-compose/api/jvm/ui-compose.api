@@ -698,6 +698,11 @@ public final class tv/nomercy/player/video/ui/chrome/SkipPromptKt {
 	public static final fun SkipButton (Ltv/nomercy/player/video/ui/chrome/SkipKind;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class tv/nomercy/player/video/ui/chrome/TooltipHostKt {
+	public static final fun ControlTooltip (Ljava/lang/String;ZLandroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun rememberTooltipVisible (Landroidx/compose/foundation/interaction/InteractionSource;Landroidx/compose/runtime/Composer;I)Z
+}
+
 public final class tv/nomercy/player/video/ui/chrome/TouchZonesOptions {
 	public static final field $stable I
 	public fun <init> ()V

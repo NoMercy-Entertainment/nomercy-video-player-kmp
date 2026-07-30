@@ -9,6 +9,8 @@
 package tv.nomercy.player.video.ui.tv
 
 import androidx.compose.foundation.background
+import tv.nomercy.player.video.ui.chrome.ControlTooltip
+import tv.nomercy.player.video.ui.chrome.rememberTooltipVisible
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -124,6 +126,15 @@ public fun PlayerIconButton(
             ),
             modifier = Modifier.size(iconSize),
         )
+
+        // `wireTooltips` attaches one of these to all eighteen controls. The
+        // arithmetic for placing it existed here with its own tests and no
+        // renderer, so a pointer resting on a button said nothing.
+        //
+        // No flag guarding this for television: a tooltip appears on HOVER, and a
+        // remote never produces one. Adding a form-factor parameter would be
+        // describing that in a second place.
+        ControlTooltip(text = description, visible = rememberTooltipVisible(interaction))
     }
 }
 
