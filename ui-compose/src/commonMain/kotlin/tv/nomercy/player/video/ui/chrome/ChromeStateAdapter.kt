@@ -17,6 +17,7 @@ import tv.nomercy.player.core.player.BufferState
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerState
 import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.bufferedFrontier
 import tv.nomercy.player.video.tv.TvChapter
 import tv.nomercy.player.video.tv.TvChromeItem
 
@@ -73,7 +74,12 @@ public fun chromeStateOf(
     buffering = snapshot.bufferState != BufferState.IDLE,
     timeSeconds = snapshot.time,
     durationSeconds = snapshot.duration,
-    bufferedFraction = fractionOf(snapshot.buffered, snapshot.duration),
+    // Through the walk over the engine's RANGES, not the frontier it reports on
+    // its own. The two agree until a seek backwards leaves a hole: the engine
+    // keeps [0, 90] and [3500, 3600] with the playhead at five, `buffered`
+    // reports 3600, and the bar promises an hour of buffer over a stretch that
+    // holds none. See [bufferedFrontier].
+    bufferedFraction = fractionOf(bufferedFrontier(player.bufferedRanges(), snapshot.time), snapshot.duration),
     volume = snapshot.volume,
     muted = snapshot.muted,
     chapters = player.chapters().map { TvChapter(it.startTime, it.title) },

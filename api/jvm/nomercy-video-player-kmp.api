@@ -40,6 +40,10 @@ public final class tv/nomercy/player/video/AudioTracksChange {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/BufferedFrontierKt {
+	public static final fun bufferedFrontier (Ljava/util/List;D)D
+}
+
 public final class tv/nomercy/player/video/DisplayMessage {
 	public fun <init> (Ljava/lang/String;Ljava/lang/Double;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Double;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

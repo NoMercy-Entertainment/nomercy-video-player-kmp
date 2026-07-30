@@ -21,7 +21,10 @@ import tv.nomercy.player.video.ui.RecordingBackend
 // empty leaves every menu blank — which is a passing test that measured nothing,
 // and is exactly the failure the video parameter on ComposedPlayer exists to
 // prevent.
-class RecordingVideoBackend : RecordingBackend(), tv.nomercy.player.core.ports.VideoBackend {
+// Open so a case can vary ONE answer. The buffered-ranges case needs an engine
+// that is ordinary in every respect except that it reports holes, and a final
+// class forces a second whole fake that then drifts from this one.
+open class RecordingVideoBackend : RecordingBackend(), tv.nomercy.player.core.ports.VideoBackend {
 
     private var audio: AudioTrack? = TRACKS.first()
     private var subtitle: SubtitleTrack? = null
