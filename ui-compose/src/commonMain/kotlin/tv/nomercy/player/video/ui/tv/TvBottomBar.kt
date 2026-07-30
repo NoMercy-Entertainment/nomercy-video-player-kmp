@@ -206,6 +206,13 @@ public data class TvChromeStrings(
     // The top bar's two, appended for the same positional reason as the rest.
     val back: String = "Back",
     val cast: String = "Cast to device",
+
+    // What each thumbnail on the television's seek strip announces itself as,
+    // followed by the moment it shows. His own is the literal "Seek preview" and
+    // the web has no key for it — there is no strip in a browser — so this is one
+    // of the handful that cannot be read out of the generated table and has to be
+    // supplied by a host that wants it translated.
+    val seekPreview: String = "Seek preview",
 )
 
 internal const val BOTTOM_BAR_TAG = "tv-bottom-bar"

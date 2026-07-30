@@ -12,6 +12,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,7 +27,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.input.PlayerKey
+import tv.nomercy.player.video.ui.thumbnails.PreviewSprite
 import tv.nomercy.player.video.tv.TvChromeContent
 import tv.nomercy.player.video.tv.TvChromeController
 import tv.nomercy.player.video.tv.TvChromeUi
@@ -47,6 +51,14 @@ public fun NMTvPlayerView(
     content: TvChromeContent,
     strings: TvChromeStrings,
     modifier: Modifier = Modifier,
+    /**
+     * The decoded sheet the seek strip is drawn from.
+     *
+     * Nothing could supply one before, which made the television the one surface
+     * with no seek preview at all: the arrows moved a clock over the picture while
+     * the same scrub on a phone showed the scene being hunted for.
+     */
+    sprite: PreviewSprite? = null,
     onUnhandledKey: (PlayerKey) -> Boolean = { false },
     surface: @Composable () -> Unit = {},
 ) {
@@ -77,32 +89,36 @@ public fun NMTvPlayerView(
     ) {
         surface()
 
-        TvChromeLayers(ui, TvScene(controller, transport, content, strings))
+        TvChromeLayers(ui, TvScene(controller, transport, content, strings, sprite))
     }
 }
 
 // The layers over the picture, and which of them is up.
 //
 // Its own function so the view above stays the wiring: focus, keys, and the
-// surface. Splitting them is also what keeps "controls or scrubber, never both"
-// readable as one condition rather than three scattered ones.
+// surface.
+//
+// The three visibility conditions are his TvUiPlugin's, and they are not one
+// rule with the bars on the same side of it. The TOP bar is `controlsVisible &&
+// !seekMode` and the BOTTOM bar is `controlsVisible || seekMode` — the transport
+// row stays under the seek strip while a viewer scrubs, because it is where the
+// clock and the chapter bar are. Hiding it with the title was the port reading
+// "controls or scrubber, never both" off its own earlier draft: a viewer stepping
+// through thumbnails had no idea what time any of them was.
 @Composable
 private fun TvChromeLayers(ui: TvChromeUi, scene: TvScene) {
-    val watching: Boolean = ui.dialog == TvDialog.None && ui.controlsVisible && !ui.seekMode
+    val undisturbed: Boolean = ui.dialog == TvDialog.None
 
-    AnimatedVisibility(visible = watching) {
-        TvWatchingLayer(scene)
+    AnimatedVisibility(visible = undisturbed && ui.controlsVisible && !ui.seekMode) {
+        TvTopBarLayer(scene)
+    }
+
+    AnimatedVisibility(visible = undisturbed && (ui.controlsVisible || ui.seekMode)) {
+        TvBottomBarLayer(scene)
     }
 
     AnimatedVisibility(visible = ui.seekMode) {
-        Box(modifier = Modifier.fillMaxSize().tvSafeArea(), contentAlignment = Alignment.BottomCenter) {
-            TvSeekContainer(
-                state = scene.transport,
-                callbacks = scene.controller.callbacks,
-                onCommit = scene.controller::commitSeek,
-                onCancel = { scene.controller.cancelSeek() },
-            )
-        }
+        TvSeekLayer(scene)
     }
 
     AnimatedVisibility(visible = ui.preScreenVisible) {
@@ -119,7 +135,7 @@ private fun TvChromeLayers(ui: TvChromeUi, scene: TvScene) {
 }
 
 @Composable
-private fun TvWatchingLayer(scene: TvScene) {
+private fun TvTopBarLayer(scene: TvScene) {
     Box(modifier = Modifier.fillMaxSize().tvSafeArea()) {
         TvTopBar(
             item = scene.content.item,
@@ -128,7 +144,12 @@ private fun TvWatchingLayer(scene: TvScene) {
             onFocusChanged = scene.controller::setTopBarFocus,
             modifier = Modifier.align(Alignment.TopCenter),
         )
+    }
+}
 
+@Composable
+private fun TvBottomBarLayer(scene: TvScene) {
+    Box(modifier = Modifier.fillMaxSize().tvSafeArea()) {
         TvBottomBar(
             state = scene.transport,
             callbacks = scene.controller.callbacks,
@@ -138,9 +159,27 @@ private fun TvWatchingLayer(scene: TvScene) {
     }
 }
 
-// The four things every layer needs, carried together.
+// The strip, held clear of the transport row underneath it.
+@Composable
+private fun TvSeekLayer(scene: TvScene) {
+    Box(
+        modifier = Modifier.fillMaxSize().tvSafeArea().padding(bottom = SEEK_BOTTOM_INSET),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        TvSeekContainer(
+            state = scene.transport,
+            callbacks = scene.controller.callbacks,
+            onCommit = scene.controller::commitSeek,
+            onCancel = { scene.controller.cancelSeek() },
+            sprite = scene.sprite,
+            strings = scene.strings,
+        )
+    }
+}
+
+// The five things every layer needs, carried together.
 //
-// They are one thing — what the chrome is showing — and passing them as four
+// They are one thing — what the chrome is showing — and passing them as five
 // arguments through three functions is where one of them ends up stale in a
 // layer nobody looked at.
 private data class TvScene(
@@ -148,6 +187,7 @@ private data class TvScene(
     val transport: TvTransportState,
     val content: TvChromeContent,
     val strings: TvChromeStrings,
+    val sprite: PreviewSprite?,
 )
 
 @Composable
@@ -186,3 +226,7 @@ private fun TvChromeDialogs(dialog: TvDialog, scene: TvScene) {
 }
 
 internal const val ROOT_TAG = "nm-tv-root"
+
+// `.padding(bottom = 132.dp)` on his seek layer, which is what holds the strip
+// clear of the transport row that stays visible underneath it.
+private val SEEK_BOTTOM_INSET: Dp = 132.dp

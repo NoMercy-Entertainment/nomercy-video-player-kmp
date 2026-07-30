@@ -95,8 +95,12 @@ public fun NMVideoPlayerView(
     val picture: @Composable () -> Unit = { surface?.let { PlayerSurface(it, Modifier.fillMaxSize()) } }
 
     when (capabilities.formFactor) {
+        // Forwarded here for the same reason `layout` had to be: a parameter this
+        // took and did not pass on is a parameter that silently does nothing.
+        // `previewSprite` reached the touch chrome and stopped at this branch, so
+        // a television was the one surface where a scrub showed no picture.
         FormFactor.Tv -> {
-            val chrome: TvChrome = rememberTvChrome(player, episodes, onClose)
+            val chrome: TvChrome = rememberTvChrome(player, episodes, onClose, previewSprite = previewSprite)
 
             NMTvPlayerView(
                 controller = chrome.controller,
@@ -104,6 +108,7 @@ public fun NMVideoPlayerView(
                 content = chrome.content,
                 strings = strings,
                 modifier = modifier,
+                sprite = chrome.sprite,
                 surface = picture,
             )
         }

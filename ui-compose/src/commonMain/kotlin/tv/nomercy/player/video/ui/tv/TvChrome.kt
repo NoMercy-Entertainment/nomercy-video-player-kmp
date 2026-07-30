@@ -34,6 +34,7 @@ import tv.nomercy.player.video.tv.TvContentCallbacks
 import tv.nomercy.player.video.tv.TvEpisode
 import tv.nomercy.player.video.tv.TvTrack
 import tv.nomercy.player.video.tv.TvTransportState
+import tv.nomercy.player.video.ui.thumbnails.PreviewSprite
 
 // The television chrome, bound to a player.
 //
@@ -46,6 +47,16 @@ public class TvChrome(
     public val controller: TvChromeController,
     public val transport: TvTransportState,
     public val content: TvChromeContent,
+    /**
+     * The decoded sheet the seek strip is drawn from, when the host has one.
+     *
+     * Carried here rather than on TvTransportState because that type lives in the
+     * library's own commonMain, which depends on no UI toolkit at all — a decoded
+     * ImageBitmap on it would tie every consumer of a transport snapshot to
+     * Compose. This class is already the Compose-side assembly, so it is where a
+     * Compose bitmap belongs.
+     */
+    public val sprite: PreviewSprite? = null,
 )
 
 // The lists and the episodes come from different places on purpose. Tracks are
@@ -58,6 +69,16 @@ public fun rememberTvChrome(
     onExit: () -> Unit = {},
     onSelectEpisode: (String) -> Unit = {},
     onSearchSubtitles: () -> Unit = {},
+    /**
+     * The sheet, from whoever loaded it.
+     *
+     * A parameter rather than something read off the player, for the reason the
+     * episode list is: decoding a sprite sheet is a fetch and a bitmap, and a
+     * player library that did it would be choosing a host's image loader for it.
+     * loadPreviewSprite builds one; this is the door it goes through on a
+     * television, and until it existed there was none.
+     */
+    previewSprite: PreviewSprite? = null,
 ): TvChrome {
     val scope: CoroutineScope = rememberCoroutineScope()
     val snapshot: PlayerState by player.stateFlow.collectAsState()
@@ -94,6 +115,7 @@ public fun rememberTvChrome(
             audioTracks = player.audioTracks().map { tvTrackOf(it, player.audioTrack()) },
             subtitleTracks = player.subtitles().map { tvTrackOf(it, player.subtitle()) },
         ),
+        sprite = previewSprite,
     )
 }
 
