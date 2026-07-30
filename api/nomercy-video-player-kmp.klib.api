@@ -318,6 +318,13 @@ abstract interface tv.nomercy.player.video.input/VideoVolume { // tv.nomercy.pla
     abstract fun volumeUp() // tv.nomercy.player.video.input/VideoVolume.volumeUp|volumeUp(){}[0]
 }
 
+abstract interface tv.nomercy.player.video.item/VideoPlaylistItem : tv.nomercy.player.core.media/PlaylistItem { // tv.nomercy.player.video.item/VideoPlaylistItem|null[0]
+    abstract val durationSeconds // tv.nomercy.player.video.item/VideoPlaylistItem.durationSeconds|{}durationSeconds[0]
+        abstract fun <get-durationSeconds>(): kotlin/Double? // tv.nomercy.player.video.item/VideoPlaylistItem.durationSeconds.<get-durationSeconds>|<get-durationSeconds>(){}[0]
+    abstract val progress // tv.nomercy.player.video.item/VideoPlaylistItem.progress|{}progress[0]
+        abstract fun <get-progress>(): tv.nomercy.player.video.item/WatchProgress? // tv.nomercy.player.video.item/VideoPlaylistItem.progress.<get-progress>|<get-progress>(){}[0]
+}
+
 abstract interface tv.nomercy.player.video.tv/TvChromeCallbacks { // tv.nomercy.player.video.tv/TvChromeCallbacks|null[0]
     abstract fun exitPlayer() // tv.nomercy.player.video.tv/TvChromeCallbacks.exitPlayer|exitPlayer(){}[0]
     abstract fun next() // tv.nomercy.player.video.tv/TvChromeCallbacks.next|next(){}[0]
@@ -893,6 +900,28 @@ final class tv.nomercy.player.video.input/WebKeyBinding { // tv.nomercy.player.v
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.input/WebKeyBinding.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video.input/WebKeyBinding.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video.input/WebKeyBinding.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.item/WatchProgress { // tv.nomercy.player.video.item/WatchProgress|null[0]
+    constructor <init>(kotlin/Long? = ..., kotlin/Double = ..., kotlin/Double? = ..., kotlin/String? = ...) // tv.nomercy.player.video.item/WatchProgress.<init>|<init>(kotlin.Long?;kotlin.Double;kotlin.Double?;kotlin.String?){}[0]
+
+    final val date // tv.nomercy.player.video.item/WatchProgress.date|{}date[0]
+        final fun <get-date>(): kotlin/String? // tv.nomercy.player.video.item/WatchProgress.date.<get-date>|<get-date>(){}[0]
+    final val percentage // tv.nomercy.player.video.item/WatchProgress.percentage|{}percentage[0]
+        final fun <get-percentage>(): kotlin/Double // tv.nomercy.player.video.item/WatchProgress.percentage.<get-percentage>|<get-percentage>(){}[0]
+    final val time // tv.nomercy.player.video.item/WatchProgress.time|{}time[0]
+        final fun <get-time>(): kotlin/Double? // tv.nomercy.player.video.item/WatchProgress.time.<get-time>|<get-time>(){}[0]
+    final val timestamp // tv.nomercy.player.video.item/WatchProgress.timestamp|{}timestamp[0]
+        final fun <get-timestamp>(): kotlin/Long? // tv.nomercy.player.video.item/WatchProgress.timestamp.<get-timestamp>|<get-timestamp>(){}[0]
+
+    final fun component1(): kotlin/Long? // tv.nomercy.player.video.item/WatchProgress.component1|component1(){}[0]
+    final fun component2(): kotlin/Double // tv.nomercy.player.video.item/WatchProgress.component2|component2(){}[0]
+    final fun component3(): kotlin/Double? // tv.nomercy.player.video.item/WatchProgress.component3|component3(){}[0]
+    final fun component4(): kotlin/String? // tv.nomercy.player.video.item/WatchProgress.component4|component4(){}[0]
+    final fun copy(kotlin/Long? = ..., kotlin/Double = ..., kotlin/Double? = ..., kotlin/String? = ...): tv.nomercy.player.video.item/WatchProgress // tv.nomercy.player.video.item/WatchProgress.copy|copy(kotlin.Long?;kotlin.Double;kotlin.Double?;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.item/WatchProgress.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.item/WatchProgress.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.item/WatchProgress.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video.menu/MenuOpenState { // tv.nomercy.player.video.menu/MenuOpenState|null[0]
@@ -1781,6 +1810,7 @@ final val tv.nomercy.player.video.input/WEB_KEY_BINDINGS // tv.nomercy.player.vi
 final val tv.nomercy.player.video.input/WEB_KEY_COMBOS // tv.nomercy.player.video.input/WEB_KEY_COMBOS|{}WEB_KEY_COMBOS[0]
     final fun <get-WEB_KEY_COMBOS>(): kotlin.collections/Set<kotlin/String> // tv.nomercy.player.video.input/WEB_KEY_COMBOS.<get-WEB_KEY_COMBOS>|<get-WEB_KEY_COMBOS>(){}[0]
 
+final fun (tv.nomercy.player.video.item/WatchProgress).tv.nomercy.player.video.item/isLegacy(): kotlin/Boolean // tv.nomercy.player.video.item/isLegacy|isLegacy@tv.nomercy.player.video.item.WatchProgress(){}[0]
 final fun <#A: kotlin/Any?> tv.nomercy.player.video.menu/navigableRows(kotlin.collections/List<#A>, kotlin/Function1<#A, kotlin/Boolean>): kotlin.collections/List<#A> // tv.nomercy.player.video.menu/navigableRows|navigableRows(kotlin.collections.List<0:0>;kotlin.Function1<0:0,kotlin.Boolean>){0§<kotlin.Any?>}[0]
 final fun tv.nomercy.player.video.cast/decodeRemoteEvent(kotlin/String, kotlin/String, kotlinx.serialization.json/Json): tv.nomercy.player.video.cast/RemoteEvent? // tv.nomercy.player.video.cast/decodeRemoteEvent|decodeRemoteEvent(kotlin.String;kotlin.String;kotlinx.serialization.json.Json){}[0]
 final fun tv.nomercy.player.video.cast/defaultCastHttpClient(): io.ktor.client/HttpClient // tv.nomercy.player.video.cast/defaultCastHttpClient|defaultCastHttpClient(){}[0]
@@ -1790,6 +1820,7 @@ final fun tv.nomercy.player.video.cast/videoCastPlugin(kotlin/String, kotlinx.co
 final fun tv.nomercy.player.video.chapters/chapterFill(tv.nomercy.player.video.chapters/ChapterMarker, kotlin/Double): kotlin/Double // tv.nomercy.player.video.chapters/chapterFill|chapterFill(tv.nomercy.player.video.chapters.ChapterMarker;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.chapters/chapterMarkers(kotlin.collections/List<tv.nomercy.player.core.media/Chapter>, kotlin/Double): kotlin.collections/List<tv.nomercy.player.video.chapters/ChapterMarker> // tv.nomercy.player.video.chapters/chapterMarkers|chapterMarkers(kotlin.collections.List<tv.nomercy.player.core.media.Chapter>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.input/playerCommandsOf(tv.nomercy.player.video/NMVideoPlayer, kotlinx.coroutines/CoroutineScope): tv.nomercy.player.video.input/PlayerCommands // tv.nomercy.player.video.input/playerCommandsOf|playerCommandsOf(tv.nomercy.player.video.NMVideoPlayer;kotlinx.coroutines.CoroutineScope){}[0]
+final fun tv.nomercy.player.video.item/normalizeWatchProgress(tv.nomercy.player.video.item/WatchProgress?, kotlin/Double?): tv.nomercy.player.video.item/WatchProgress? // tv.nomercy.player.video.item/normalizeWatchProgress|normalizeWatchProgress(tv.nomercy.player.video.item.WatchProgress?;kotlin.Double?){}[0]
 final fun tv.nomercy.player.video.menu/menuSwallowsKeys(kotlin/Boolean): kotlin/Boolean // tv.nomercy.player.video.menu/menuSwallowsKeys|menuSwallowsKeys(kotlin.Boolean){}[0]
 final fun tv.nomercy.player.video.menu/nextMenuRow(kotlin/Int, kotlin/Int, kotlin/Boolean): kotlin/Int? // tv.nomercy.player.video.menu/nextMenuRow|nextMenuRow(kotlin.Int;kotlin.Int;kotlin.Boolean){}[0]
 final fun tv.nomercy.player.video.subtitles/anchorFor(kotlin/Double): tv.nomercy.player.video.subtitles/CueAnchor // tv.nomercy.player.video.subtitles/anchorFor|anchorFor(kotlin.Double){}[0]

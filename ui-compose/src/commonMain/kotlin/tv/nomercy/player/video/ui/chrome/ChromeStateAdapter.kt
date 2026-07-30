@@ -18,8 +18,12 @@ import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerState
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.bufferedFrontier
+import tv.nomercy.player.video.item.VideoPlaylistItem
+import tv.nomercy.player.video.item.WatchProgress
+import tv.nomercy.player.video.item.normalizeWatchProgress
 import tv.nomercy.player.video.tv.TvChapter
 import tv.nomercy.player.video.tv.TvChromeItem
+import kotlin.math.roundToInt
 
 // The player, as the chrome reads it.
 //
@@ -103,16 +107,34 @@ public fun chromeStateOf(
 
 // What the library can honestly say about what is playing.
 //
-// A playlist item carries an id, a title and a url, and that is the whole of it:
-// a show name, a season and an episode number are the host's, arriving from
-// whichever server it talks to. So the default fills the two fields it has and
-// the itemOf hook is how a host supplies the rest, rather than this inventing a
-// wire format and quietly mis-parsing everybody else's.
+// A show name, a season and an episode number are the host's, arriving from
+// whichever server it talks to, so the itemOf hook is how it supplies those
+// rather than this inventing a wire format and quietly mis-parsing everybody
+// else's.
+//
+// The runtime and the continue-watching bar are different: an item that
+// implements [VideoPlaylistItem] states both, and this read neither — so a host
+// passing a server payload and using the default got a playlist of bare titles
+// while the fields to draw them sat on the item it had handed over.
 //
 // The id is not decoration. It is what a chosen playlist card plays, so a host
 // overriding this and dropping it gets a pane whose rows do nothing.
-public fun chromeItemOf(item: PlaylistItem?): TvChromeItem? =
-    item?.let { TvChromeItem(title = it.title, id = it.id) }
+public fun chromeItemOf(item: PlaylistItem?): TvChromeItem? {
+    if (item == null) return null
+
+    val video: VideoPlaylistItem? = item as? VideoPlaylistItem
+    // Through the normaliser, not straight off the item. An older server sends a
+    // date and a position and no percentage at all, and reading `percentage`
+    // directly there draws every part-watched episode as untouched.
+    val progress: WatchProgress? = normalizeWatchProgress(video?.progress, video?.durationSeconds)
+
+    return TvChromeItem(
+        title = item.title,
+        id = item.id,
+        durationSeconds = video?.durationSeconds,
+        progressPercent = progress?.percentage?.roundToInt(),
+    )
+}
 
 // Zero rather than a division by zero, which is every live stream: the duration
 // is unknown and a bar has nothing to fill against.
