@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -123,6 +124,7 @@ public fun ChapterProgressBar(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
+            .testTag(CHAPTER_BAR_TAG)
             .semantics { contentDescription = state.describe() }
             .then(
                 if (onSeek == null) {
@@ -234,8 +236,27 @@ private fun ChapterBarState.secondsAt(fraction: Float): Double =
 private fun ChapterBarState.describe(): String =
     "Seek bar, ${currentSeconds.toInt()} of ${duration.toInt()} seconds"
 
+// Which bar is on screen, as something a test can ask.
+//
+// Only the television's copy carried a tag, so every gate that wanted to grade
+// "the segmented bar" had to grade the FILE instead — which is how a fix could be
+// applied to this one, read back by a check, and never drawn. A duplicate
+// component with a tag on one of them is a duplicate nothing can tell apart.
+internal const val CHAPTER_BAR_TAG = "nm-chapter-bar"
+
 private const val PERCENT = 100.0
-private val BAR_HEIGHT: Dp = 8.dp
+
+// `.slider-bar` has TWO heights, not one: 8px at rest, and 12px whenever a
+// pointer is on the strip or a drag is under way —
+// `@media (hover: hover) { .top-row:hover .slider-bar, .slider-bar.slider-scrubbing
+// { height: 12px } }`. Drawn at a single height, the bar gave a viewer no sign
+// that the thing under their pointer was a handle, which is the one thing it is.
+//
+// Internal rather than private because ChapterScrubber owns the two reasons the
+// bar is grown while this file owns what `.slider-bar` measures. A second 8
+// written next door is the copy that drifts.
+internal val BAR_HEIGHT: Dp = 8.dp
+internal val BAR_HEIGHT_GROWN: Dp = 12.dp
 
 // `width: calc(N% - 2px)` and `border-radius: 2px` on `.chapter-marker`, and
 // `min-width: 2px`. The gap was 4dp, from his player rather than from the web.

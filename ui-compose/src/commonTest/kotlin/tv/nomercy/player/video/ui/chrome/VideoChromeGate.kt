@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -20,6 +21,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.device.FormFactor
@@ -27,6 +29,7 @@ import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.ui.chrome.menus.SETTINGS_MENU_TAG
+import tv.nomercy.player.video.ui.tv.PROGRESS_TAG
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -160,6 +163,61 @@ abstract class VideoChromeGate {
     }
 
     @Test
+    fun andItIsTheChromesOwnBarThatIsDrawn() = runComposeUiTest {
+        // Two ChapterProgressBar composables exist and the scrubber drew the
+        // television's, so every fix to the segmented drawing landed on a copy this
+        // never renders. Nothing could say so: only the tv copy had a tag, which
+        // left every check grading the file the fix was applied to rather than the
+        // thing on screen.
+        mount(player())
+
+        onNodeWithTag(CHAPTER_BAR_TAG).assertExists()
+        onNodeWithTag(PROGRESS_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    fun aDragLetGoOffTheStripStillSeeks() = runComposeUiTest {
+        // `finalizeScrub` is bound on `document`, not on the bar. A viewer who
+        // drags along the strip, wanders off it and lets go there has still chosen
+        // a place, and dropping the seek would leave the film where it was with a
+        // bubble showing where they meant to go.
+        val backend = RecordingVideoBackend()
+        mount(NMVideoPlayer(backend))
+
+        onNodeWithTag(SCRUBBER_TAG).performTouchInput {
+            down(centerLeft)
+            moveTo(center)
+            moveTo(Offset(center.x, height * OFF_THE_STRIP))
+            up()
+        }
+        settle()
+
+        assertEquals(
+            listOf(MIDPOINT_SECONDS),
+            backend.seeks,
+            "a drag released off the strip did not commit at the position it was let go",
+        )
+    }
+
+    @Test
+    fun aPressOnTheBarSeeksToWhereItLanded() = runComposeUiTest {
+        // A click on `.slider-bar` is a mousedown and a mouseup with no travel in
+        // between, and `finalizeScrub` seeks to where the pointer was released.
+        // detectDragGestures never fires for that, so pressing the bar here did
+        // nothing at all — the one gesture every viewer tries first.
+        val backend = RecordingVideoBackend()
+        mount(NMVideoPlayer(backend))
+
+        onNodeWithTag(SCRUBBER_TAG).performTouchInput {
+            down(center)
+            up()
+        }
+        settle()
+
+        assertEquals(listOf(MIDPOINT_SECONDS), backend.seeks, "a press on the bar seeked nowhere")
+    }
+
+    @Test
     fun theTopBarNamesWhatIsPlaying() = runComposeUiTest {
         mount(player())
 
@@ -222,6 +280,14 @@ abstract class VideoChromeGate {
 
 private const val SETTLE_MS = 500L
 private const val SPEED_MESSAGE = "2.0x"
+
+// Halfway along a strip that spans a 120-second fixture, which is what the middle
+// of the bar means. Written as the answer rather than the arithmetic so a seek
+// landing anywhere else names a number rather than a formula.
+private const val MIDPOINT_SECONDS = 60.0
+
+// Far enough below the strip that the pointer is nowhere near it when it comes up.
+private const val OFF_THE_STRIP = 4f
 
 // Wide enough that every control a case asks for is on the bar, so a case about
 // a menu is about that menu.

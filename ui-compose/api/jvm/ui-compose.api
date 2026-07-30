@@ -660,7 +660,7 @@ public final class tv/nomercy/player/video/ui/chrome/PlayerUiPlugin$ComposeDefau
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ScrubPreviewKt {
-	public static final fun ScrubNipple-uFdPcIQ (FFLandroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ScrubNipple-DzVHIIc (FFLandroidx/compose/ui/Modifier;ZLandroidx/compose/runtime/Composer;II)V
 	public static final fun ScrubPreview-eVuawKY (DFFLandroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/ImageBitmap;Landroidx/compose/ui/unit/DpSize;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 

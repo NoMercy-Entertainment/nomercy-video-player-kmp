@@ -18,13 +18,13 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.platform.testTag
 import org.junit.Rule
 import org.junit.Test
 import tv.nomercy.player.core.chapters.ChapterController
 import tv.nomercy.player.core.cues.ChapterCues
 import tv.nomercy.player.core.cues.SpriteCue
+import tv.nomercy.player.video.ui.chrome.CHAPTER_BAR_TAG
 import tv.nomercy.player.video.ui.chrome.ChapterBarState
 import tv.nomercy.player.video.ui.chrome.ChapterProgressBar
 import kotlin.test.assertTrue
@@ -69,7 +69,10 @@ class PreviewChromeRenderGateTest {
         }
         compose.waitForIdle()
 
-        val painted: Bitmap = compose.onRoot().captureToImage().asAndroidBitmap()
+        // The bar's own pixels, found by its tag rather than by capturing the whole
+        // surface. The root is mostly background, and reading a quarter of the way
+        // across it is reading the test host as often as the bar.
+        val painted: Bitmap = compose.onNodeWithTag(CHAPTER_BAR_TAG).captureToImage().asAndroidBitmap()
         val middleRow: Int = painted.height / 2
 
         // A quarter in and three quarters in: one side of the playhead each,

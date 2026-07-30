@@ -21,8 +21,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -339,22 +341,39 @@ private fun ChromeLayers(
 // Its own composable because the frame lookup is the part that was missing — the
 // sprite was loaded, the cue was found, and the answer went into an onPreview
 // nothing was listening to.
+//
+// Faded rather than mounted and unmounted. `.slider-pop` is always in the tree and
+// carries `opacity: var(--visibility, 0)` over a `transition: opacity 0.12s ease`,
+// so a pointer crossing the bar makes it appear rather than snap.
 @Composable
-private fun ScrubBubble(scene: ChromeScene, host: ChromeHost, seconds: Double, barWidth: Dp) {
-    val sprite: PreviewSprite? = host.previewSprite
+private fun ScrubBubble(scene: ChromeScene, host: ChromeHost, scrub: Double?, barWidth: Dp) {
+    // The last position it was told, held so the fade OUT has somewhere to point.
+    // The web's bubble keeps its place while its opacity runs down; recomputing
+    // from a null would slide it to the playhead on the way out.
+    val held: MutableState<Double> = remember { mutableStateOf(0.0) }
+    if (scrub != null) held.value = scrub
 
-    ScrubPreview(
-        seconds = seconds,
-        fraction = scrubFraction(seconds, scene.state.durationSeconds),
-        barWidth = barWidth,
-        // Null while the band behind this frame is still being read, which is why
-        // the box is sized from what the sheet DECLARES rather than from the
-        // pixels: a box that grows when the image lands is a box that jumps under
-        // the thumb dragging it.
-        frame = sprite?.frameAt(seconds),
-        frameSize = sprite?.let { DpSize(it.frameWidthPx.dp, it.frameHeightPx.dp) },
-        chapterTitle = chapterTitleAt(scene.state, seconds),
-    )
+    AnimatedVisibility(
+        visible = scrub != null,
+        enter = fadeIn(tween(POP_FADE_MS, easing = POP_EASE)),
+        exit = fadeOut(tween(POP_FADE_MS, easing = POP_EASE)),
+    ) {
+        val seconds: Double = held.value
+        val sprite: PreviewSprite? = host.previewSprite
+
+        ScrubPreview(
+            seconds = seconds,
+            fraction = scrubFraction(seconds, scene.state.durationSeconds),
+            barWidth = barWidth,
+            // Null while the band behind this frame is still being read, which is
+            // why the box is sized from what the sheet DECLARES rather than from
+            // the pixels: a box that grows when the image lands is a box that
+            // jumps under the thumb dragging it.
+            frame = sprite?.frameAt(seconds),
+            frameSize = sprite?.let { DpSize(it.frameWidthPx.dp, it.frameHeightPx.dp) },
+            chapterTitle = chapterTitleAt(scene.state, seconds),
+        )
+    }
 }
 
 @Composable
@@ -366,10 +385,10 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
 
         Column(modifier = Modifier.fillMaxWidth()) {
             // Above the bar, as `.slider-pop`'s `bottom: 24px` puts it, and only
-            // while a drag is happening: the web's is `display: none` until then
-            // and a bubble sitting over the picture at rest answers a question
-            // nobody asked.
-            scrub?.let { seconds -> ScrubBubble(scene, host, seconds, barWidth) }
+            // while something is being hunted: a drag, or a pointer resting on the
+            // strip. The web's sits at `--visibility: 0` otherwise, and a bubble
+            // over the picture at rest answers a question nobody asked.
+            ScrubBubble(scene, host, scrub, barWidth)
 
             Box(modifier = Modifier.fillMaxWidth()) {
                 host.slots.scrubber?.invoke(scene.state, scene.commands) ?: ChapterScrubber(
@@ -383,10 +402,15 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
                 // The dot follows the drag while one is happening and the film
                 // otherwise, which is what makes it read as the same handle
                 // rather than two things that swap places when a finger lands.
+                //
+                // Grown on the same signal the bar is: `scrub` is non-null exactly
+                // when the web's `:hover` or `.slider-scrubbing` is true, which is
+                // the union both rules key on.
                 ScrubNipple(
                     fraction = scrubFraction(scrub ?: scene.state.timeSeconds, scene.state.durationSeconds),
                     barWidth = barWidth,
                     modifier = Modifier.align(Alignment.CenterStart),
+                    grown = scrub != null,
                 )
             }
 

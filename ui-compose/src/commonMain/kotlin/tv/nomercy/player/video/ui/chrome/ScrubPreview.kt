@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Easing
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -113,11 +115,22 @@ public fun ScrubPreview(
  * than something a viewer has to look for.
  */
 @Composable
-public fun ScrubNipple(fraction: Float, barWidth: Dp, modifier: Modifier = Modifier) {
+public fun ScrubNipple(
+    fraction: Float,
+    barWidth: Dp,
+    modifier: Modifier = Modifier,
+    /**
+     * Grown to 24 units, which is `.slider-bar:hover .slider-nipple` and
+     * `.slider-bar.slider-scrubbing .slider-nipple` — a pointer on the bar or a
+     * drag under way. The stylesheet states both sizes and this drew only the
+     * first, so the handle looked the same whether or not it was being held.
+     */
+    grown: Boolean = false,
+) {
     Box(
         modifier = modifier
             .centeredOn(fraction, barWidth)
-            .size(NIPPLE_SIZE)
+            .size(if (grown) NIPPLE_SIZE_GROWN else NIPPLE_SIZE)
             .background(Color.White, CircleShape)
             .testTag(SCRUB_NIPPLE_TAG),
     )
@@ -156,8 +169,17 @@ private val POP_GAP = 4.dp
 private val POP_BOTTOM_PADDING = 4.dp
 private val TEXT_INSET = 8.dp
 
-// `width: 16px; height: 16px`.
+// `width: 16px; height: 16px`, and `24px` once a pointer is on the bar or a drag
+// is under way.
 private val NIPPLE_SIZE = 16.dp
+private val NIPPLE_SIZE_GROWN = 24.dp
+
+// `.slider-pop`'s `transition: opacity 0.12s ease`, with `ease` written out as the
+// curve it is: `cubic-bezier(0.25, 0.1, 0.25, 1)`. The bubble was mounted and
+// unmounted outright, so a pointer sweeping across the bar snapped it on and off
+// at every entry and exit.
+internal const val POP_FADE_MS: Int = 120
+internal val POP_EASE: Easing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
 
 // The browser root is sixteen pixels, so the arithmetic is written out rather
 // than the answer, exactly as the top bar's sizes are.

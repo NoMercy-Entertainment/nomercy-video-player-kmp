@@ -89,6 +89,40 @@ class VideoChromeDesktopTest {
     }
 
     @Test
+    fun aPointerRestingOnTheBarIsShownWhereItWouldLand() = runComposeUiTest {
+        // `wireSliderBar` shows `.slider-pop` on `mouseover`, not only during a
+        // drag. Without it a viewer with a mouse had to commit to a drag before the
+        // player would tell them anything about where they were pointing.
+        mountPlaying()
+
+        onNodeWithTag(SCRUBBER_TAG).performMouseInput { moveTo(center) }
+        settle()
+
+        onNodeWithTag(SCRUB_PREVIEW_TAG).assertExists()
+    }
+
+    @Test
+    fun andTheBubbleGoesWhenThePointerLeavesTheBar() = runComposeUiTest {
+        // `mouseleave` sets `--visibility: 0` and resets every chapter marker's
+        // hover fill to scaleX(0). Both stayed put, so the bar went on advertising a
+        // position nobody was pointing at.
+        //
+        // Here rather than in the shared gate for the reason at the top of this
+        // file, and it was measured rather than assumed: Robolectric's hover
+        // synthesis lands the enter and drops the exit, so the Android host had the
+        // bubble still up after a pointer had left. That is the emulator's account
+        // of a mouse, not the chrome's behaviour.
+        mountPlaying()
+
+        onNodeWithTag(SCRUBBER_TAG).performMouseInput { moveTo(center) }
+        settle()
+        onNodeWithTag(SCRUBBER_TAG).performMouseInput { exit(center) }
+        settle()
+
+        onNodeWithTag(SCRUB_PREVIEW_TAG).assertDoesNotExist()
+    }
+
+    @Test
     fun spaceTogglesPlayback() = runComposeUiTest {
         // Through the key handler rather than through a binding of the view's
         // own, which is what keeps the desktop keys and the television keys the

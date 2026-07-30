@@ -27,6 +27,15 @@ class RecordingVideoBackend : RecordingBackend(), tv.nomercy.player.core.ports.V
     private var subtitle: SubtitleTrack? = null
     private var level: QualityLevel? = null
 
+    // Every place the chrome asked the film to go. The base drops the value, so a
+    // scrubber case had no way to tell a seek that happened from one that did not
+    // — and "the bar exists" is what a test says instead.
+    val seeks: MutableList<Double> = mutableListOf()
+
+    override fun currentTime(seconds: Double) {
+        seeks += seconds
+    }
+
     override fun audioTracks(): List<AudioTrack> = TRACKS
 
     override fun audioTrack(): AudioTrack? = audio
