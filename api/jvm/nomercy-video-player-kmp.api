@@ -68,8 +68,8 @@ public final class tv/nomercy/player/video/LevelsChange {
 public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/controllers/ComposedPlayer {
 	public static final field Companion Ltv/nomercy/player/video/NMVideoPlayer$Companion;
 	public fun <init> ()V
-	public fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;)V
-	public synthetic fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/core/ports/Fetcher;)V
+	public synthetic fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/core/ports/Fetcher;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ltv/nomercy/player/core/ports/VideoBackend;)V
 	public fun addSubtitleTrack (Ltv/nomercy/player/core/ports/SubtitleTrack;)V
 	public fun aspectRatio ()Ltv/nomercy/player/video/Stretching;
@@ -79,6 +79,7 @@ public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/cont
 	public fun cycleAspectRatio ()V
 	public fun cycleAudioTracks ()V
 	public fun cycleSubtitles ()V
+	public fun dispose (Ltv/nomercy/player/core/player/ActionOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun fullscreen ()Z
 	public fun fullscreen (Z)V
 	public final fun getVideoBridge ()Ltv/nomercy/player/video/VideoBackendBridge;
@@ -90,6 +91,8 @@ public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/cont
 	public fun playSegment (Ltv/nomercy/player/video/SegmentBoundary;Ltv/nomercy/player/video/SegmentEndBehaviour;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun playSegment$default (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/SegmentBoundary;Ltv/nomercy/player/video/SegmentEndBehaviour;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun removeSubtitleTrack (Ljava/lang/String;)V
+	public fun subtitle ()Ltv/nomercy/player/core/ports/SubtitleTrack;
+	public fun subtitle (Ltv/nomercy/player/core/ports/SubtitleTrack;)V
 	public fun subtitleState ()Ltv/nomercy/player/core/player/AudioTrackState;
 	public fun subtitleStyle ()Ltv/nomercy/player/core/events/SubtitleStyle;
 	public fun subtitleStyle (Ltv/nomercy/player/core/events/SubtitleStyle;)V
@@ -1021,6 +1024,7 @@ public abstract interface class tv/nomercy/player/video/item/VideoPlaylistItem :
 	public abstract fun getProgress ()Ltv/nomercy/player/video/item/WatchProgress;
 	public fun getSeason ()Ljava/lang/Integer;
 	public fun getShow ()Ljava/lang/String;
+	public fun getSubtitles ()Ljava/util/List;
 	public fun getThumbnail ()Ljava/lang/String;
 }
 
@@ -1029,6 +1033,7 @@ public final class tv/nomercy/player/video/item/VideoPlaylistItem$DefaultImpls {
 	public static fun getPoster (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getSeason (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/Integer;
 	public static fun getShow (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
+	public static fun getSubtitles (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/util/List;
 	public static fun getThumbnail (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 }
 
@@ -1149,34 +1154,15 @@ public final class tv/nomercy/player/video/subtitles/CueLayoutKt {
 	public static final field SAFE_AREA_INSET_BLOCK_PERCENT D
 	public static final field SAFE_AREA_INSET_INLINE_PERCENT D
 	public static final fun anchorFor (D)Ltv/nomercy/player/video/subtitles/CueAnchor;
+	public static final fun cueAlignOf (Ljava/lang/String;)Ltv/nomercy/player/video/subtitles/CueAlign;
 	public static final fun layOutCues (Ljava/util/List;DD)Ljava/util/List;
 	public static synthetic fun layOutCues$default (Ljava/util/List;DDILjava/lang/Object;)Ljava/util/List;
-	public static final fun layOutHorizontally (Ltv/nomercy/player/video/subtitles/SubtitleCue;)Lkotlin/Pair;
+	public static final fun layOutHorizontally (Ltv/nomercy/player/core/events/SubtitleCue;)Lkotlin/Pair;
 }
 
 public final class tv/nomercy/player/video/subtitles/FontManifest {
 	public static final field INSTANCE Ltv/nomercy/player/video/subtitles/FontManifest;
 	public final fun parse (Ljava/lang/String;Ljava/lang/String;)Ljava/util/Map;
-}
-
-public final class tv/nomercy/player/video/subtitles/SubtitleCue {
-	public fun <init> (Ljava/lang/String;Ljava/lang/Double;Ltv/nomercy/player/video/subtitles/CueAlign;Ljava/lang/Double;D)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Double;Ltv/nomercy/player/video/subtitles/CueAlign;Ljava/lang/Double;DILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/Double;
-	public final fun component3 ()Ltv/nomercy/player/video/subtitles/CueAlign;
-	public final fun component4 ()Ljava/lang/Double;
-	public final fun component5 ()D
-	public final fun copy (Ljava/lang/String;Ljava/lang/Double;Ltv/nomercy/player/video/subtitles/CueAlign;Ljava/lang/Double;D)Ltv/nomercy/player/video/subtitles/SubtitleCue;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/subtitles/SubtitleCue;Ljava/lang/String;Ljava/lang/Double;Ltv/nomercy/player/video/subtitles/CueAlign;Ljava/lang/Double;DILjava/lang/Object;)Ltv/nomercy/player/video/subtitles/SubtitleCue;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAlign ()Ltv/nomercy/player/video/subtitles/CueAlign;
-	public final fun getLinePercent ()Ljava/lang/Double;
-	public final fun getPositionPercent ()Ljava/lang/Double;
-	public final fun getSizePercent ()D
-	public final fun getText ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class tv/nomercy/player/video/subtitles/SubtitleEdge {

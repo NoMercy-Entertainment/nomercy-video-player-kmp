@@ -89,6 +89,30 @@ public data class SegmentBoundary(
     val label: String? = null,
 )
 
+// What happens when the playhead reaches the end of a segment window.
+//
+// On the call rather than on SegmentBoundary: the boundary is what the item has
+// — an intro, a recap, a credits roll — and it is the same marker whether a
+// caller is previewing it on a loop or playing straight through it.
+public enum class SegmentEndBehaviour(public val token: String) {
+    // Seek back to the start and keep watching. The window stays open, so it
+    // repeats until something clears it.
+    Loop("loop"),
+
+    // Pause on the last frame of the window.
+    Hold("hold"),
+
+    // Say so and let playback carry on.
+    Advance("advance"),
+    ;
+
+    public companion object {
+        public fun fromToken(token: String): SegmentEndBehaviour =
+            entries.firstOrNull { it.token == token }
+                ?: throw IllegalArgumentException("unknown SegmentEndBehaviour token: $token")
+    }
+}
+
 // Fullscreen, picture-in-picture and theater all answer the same question, so
 // they share a payload rather than each having a one-field class.
 public data class ViewModeChange(val active: Boolean)

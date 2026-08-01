@@ -8,17 +8,48 @@
 
 package tv.nomercy.player.video
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.core.events.SubtitlesPayload
 import tv.nomercy.player.core.events.Subscription
 import tv.nomercy.player.core.media.PlaylistItem
+import tv.nomercy.player.core.player.ActionOptions
 import tv.nomercy.player.core.player.AudioTrackState
+import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.core.ports.AudioTrack
+import tv.nomercy.player.core.ports.Fetcher
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.MediaBackend
 import tv.nomercy.player.core.ports.VideoBackend
+import tv.nomercy.player.video.item.VideoPlaylistItem
+import tv.nomercy.player.video.subtitles.SidecarSubtitleCues
+
+// The index of the track whose language tag answers to [target], or null.
+//
+// Exact match wins outright. Failing that, the FIRST prefix match in list order
+// counts in either direction — "en" answers to "en-US" and "en-GB" answers to
+// "en" — and the fallback order is the part that gets guessed wrong: an exact
+// match found later in the list still beats a prefix match found earlier.
+internal fun matchLanguage(candidates: List<String?>, target: String): Int? {
+    val wanted: String = target.lowercase()
+    var prefixMatch: Int? = null
+
+    for ((index, candidate) in candidates.withIndex()) {
+        val language: String = candidate?.lowercase().orEmpty()
+        if (language.isEmpty()) continue
+        if (language == wanted) return index
+        if (prefixMatch == null && sharesPrefix(language, wanted)) prefixMatch = index
+    }
+    return prefixMatch
+}
+
+// Either direction, because a viewer's "en" should find "en-US" and a viewer's
+// "en-GB" should fall back to a plain "en".
+private fun sharesPrefix(language: String, wanted: String): Boolean =
+    language.startsWith("$wanted-") || wanted.startsWith("$language-")
 
 // A video player.
 //
@@ -47,7 +78,22 @@ public open class NMVideoPlayer(
     // subtitle — which is exactly what happened here: the whole track surface
     // answered empty and every menu built from it was blank.
     video: VideoBackend? = null,
-) : ComposedPlayer(backend, video = video) {
+    // Where this player's own suspending work runs — a segment window seeking
+    // back on a loop, a hold pausing at the boundary. Injectable for the same
+    // reason core's is: a test that cannot control the scheduler is asserting
+    // against whichever thread happened to win.
+    scope: CoroutineScope? = null,
+    // How the player reads a file that is not the media itself.
+    //
+    // A subtitle sitting beside a film is bytes somebody has to go and get, and
+    // core deliberately owns no HTTP stack — on a real install the sidecar is
+    // behind the same bearer token as the stream and the application already has
+    // something that carries it. This was declared on core and had no way
+    // through: the video player never took one, so `fetch` on any NMVideoPlayer
+    // ever built threw, and no sidecar could have been loaded whatever else was
+    // right.
+    fetcher: Fetcher? = null,
+) : ComposedPlayer(backend, video = video, scope = scope, fetcher = fetcher) {
 
     // A video backend is both, so a caller with one says so once.
     public constructor(video: VideoBackend) : this(video, video)
@@ -62,9 +108,69 @@ public open class NMVideoPlayer(
     // transport events; these are the ones only a video player has a name for.
     public val videoBridge: VideoBackendBridge = VideoBackendBridge(context)
 
+    // A sidecar file the engine cannot reach, fetched and timed here.
+    //
+    // The web kit owns this seam for the same reason: the file is named on the
+    // ITEM, so nothing below the player knows it exists, and the renderer above
+    // must not have to care where a cue came from.
+    private val sidecarCues: SidecarSubtitleCues = SidecarSubtitleCues(this, playerScope)
+
     init {
         register(this)
         backend?.let { videoBridge.attach(it) }
+
+        // Once the engine has populated its lists, which is what mediaReady
+        // says. Asking any earlier reads two empty lists and picks nothing.
+        context.on(CoreEvents.MediaReady) { applyDefaultTracks() }
+
+        // The item's own subtitle files, registered the moment it becomes the
+        // one playing. Without this a host would have to call addSubtitleTrack
+        // for every film it queues, and the fields the server already sends
+        // would be data nothing read.
+        context.on(CoreEvents.Item) { adoptItemSubtitles() }
+    }
+
+    // The item's own subtitle files, taken as this player's external tracks.
+    //
+    // Replaced rather than appended: the previous film's files have nothing to
+    // do with this one, and leaving them would offer a viewer captions for a
+    // film they are no longer watching.
+    //
+    // De-duplicated by url, not by language. Two files in one language are two
+    // real choices — a full translation and a signs-only track are the everyday
+    // pair — and collapsing them would silently drop every variant after the
+    // first. The web deduplicates the item's own list on exactly this field and
+    // says so.
+    private fun adoptItemSubtitles() {
+        externalSubtitles = (item() as? VideoPlaylistItem)
+            ?.subtitles
+            .orEmpty()
+            .filter { !it.url.isNullOrBlank() }
+            .distinctBy { it.url }
+
+        emit(CoreEvents.Subtitles, SubtitlesPayload(subtitles()))
+    }
+
+    // Select the subtitle and audio tracks the host named a language for.
+    //
+    // No match leaves the engine's own pick alone and says nothing: a viewer who
+    // asked for French on a film that has no French subtitles is not owed an
+    // error, and a player that turned captions off to signal the miss would be
+    // making the absence worse than it is.
+    private fun applyDefaultTracks() {
+        val config: PlayerConfig = options()
+
+        config.defaultSubtitleLanguage?.let { wanted ->
+            val tracks: List<SubtitleTrack> = subtitles()
+            matchLanguage(tracks.map { it.language }, wanted)
+                ?.let { index -> subtitle(tracks[index]) }
+        }
+
+        config.defaultAudioLanguage?.let { wanted ->
+            val tracks: List<AudioTrack> = audioTracks()
+            matchLanguage(tracks.map { it.language }, wanted)
+                ?.let { index -> audioTrack(tracks[index]) }
+        }
     }
 
     public open fun fullscreen(): Boolean = fullscreenActive
@@ -138,20 +244,45 @@ public open class NMVideoPlayer(
     //
     // Replaces any window already open. Two watchers on one playhead both fire,
     // and the second one's boundary is about a region the viewer has left.
-    public open suspend fun playSegment(segment: SegmentBoundary) {
+    // [onEnd] decides what the boundary does, which the caller has always been
+    // entitled to say and this always ignored: every window behaved as Advance,
+    // so a preview loop ran once and a hold ran straight past the frame it was
+    // supposed to stop on.
+    public open suspend fun playSegment(
+        segment: SegmentBoundary,
+        onEnd: SegmentEndBehaviour = SegmentEndBehaviour.Advance,
+    ) {
         clearSegment()
         time(segment.startTime)
 
+        val generation: Long = ++segmentGeneration
         segmentWatch = on(CoreEvents.Time) { update ->
-            if (update.time >= segment.endTime) {
-                // Cleared before announcing, so a listener that starts another
-                // segment from inside the callback is not immediately undone by
-                // this one finishing.
-                clearSegment()
-                emit(VideoEvents.SegmentBoundary, segment)
-            }
+            if (update.time >= segment.endTime) closeWindow(segment, onEnd, generation)
         }
     }
+
+    // Announced first, then acted on — the reference's order, and the one a
+    // chrome needs: a "skip intro" button has to come down at the boundary
+    // whether the window loops, holds or lets playback run on.
+    //
+    // Loop leaves the window open, so it repeats until something clears it.
+    // The other two close it, but only if the listener that just ran did not
+    // open a window of its own — hence the generation check, which is the whole
+    // reason the old code cleared before announcing.
+    private fun closeWindow(segment: SegmentBoundary, onEnd: SegmentEndBehaviour, generation: Long) {
+        emit(VideoEvents.SegmentBoundary, segment)
+
+        playerScope.launch {
+            when (onEnd) {
+                SegmentEndBehaviour.Loop -> time(segment.startTime)
+                SegmentEndBehaviour.Hold -> pause()
+                SegmentEndBehaviour.Advance -> Unit
+            }
+            if (onEnd != SegmentEndBehaviour.Loop && generation == segmentGeneration) clearSegment()
+        }
+    }
+
+    private var segmentGeneration: Long = 0L
 
     // Stops watching for the end of the current region.
     //
@@ -240,7 +371,45 @@ public open class NMVideoPlayer(
     }
 
     // What the engine reported, plus what the host added.
-    override fun subtitles(): List<SubtitleTrack> = super.subtitles() + externalSubtitles
+    //
+    // An engine track displaced when a sidecar covers the same language. The
+    // viewer chooses a language once, and the file somebody put beside the film
+    // is the one they meant — which is the rule the web states at this seam and
+    // the reason a NoMercy item with a directory of .vtt does not show every
+    // language twice.
+    override fun subtitles(): List<SubtitleTrack> {
+        val sidecars: List<SubtitleTrack> = externalSubtitles
+        if (sidecars.isEmpty()) return super.subtitles()
+
+        val covered: List<String?> = sidecars.map { it.language }
+        return super.subtitles().filter { matchLanguage(covered, it.language) == null } + sidecars
+    }
+
+    // The sidecar being played, when one is, because the engine cannot answer
+    // for a track it never reported. Core reads its answer straight off the
+    // engine, so without this a viewer who chose a .vtt saw no tick beside it in
+    // the menu and the next episode could not carry the choice forward.
+    override fun subtitle(): SubtitleTrack? = sidecarCues.active ?: super.subtitle()
+
+    // The sidecar's fetch and its subscription to the playhead die with the
+    // player. The scope they run on is the player's, so nothing would leak past
+    // a disposal, but a tracker still advancing while the player is being torn
+    // down emits into listeners that are being removed underneath it.
+    override suspend fun dispose(opts: ActionOptions) {
+        sidecarCues.dispose()
+        super.dispose(opts)
+    }
+
+    // One selection, whichever kind of track it is.
+    //
+    // A sidecar and an engine track are mutually exclusive on purpose. Two
+    // producers feeding one cue channel puts two sets of captions on one
+    // picture, so choosing a file turns the engine's own text off, and choosing
+    // an engine track stops the file.
+    override fun subtitle(track: SubtitleTrack?) {
+        val isSidecar: Boolean = sidecarCues.select(track)
+        super.subtitle(if (isSidecar) null else track)
+    }
 
     // The seam every item passes through on the way into the queue.
     //
