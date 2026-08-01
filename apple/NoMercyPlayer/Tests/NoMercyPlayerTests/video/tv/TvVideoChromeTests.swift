@@ -30,7 +30,11 @@ final class TvVideoChromeTests: XCTestCase {
             scheduler: ImmediateScheduler(),
             playing: false,
             startOnPreScreen: false,
-            content: nil
+            content: nil,
+            // AUTO_HIDE_MS. A Kotlin default does not reach the ObjC header, so
+            // every parameter the controller grows becomes required here — the
+            // same reason swift-conformance in core carries hdrOnSdr by hand.
+            autoHideMs: 5_000
         )
     }
 
