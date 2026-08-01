@@ -11,6 +11,8 @@ package tv.nomercy.player.video.subtitles
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.CueEvent
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
 
@@ -58,12 +60,39 @@ public open class SubtitleOverlayPlugin(
     public val boxes: StateFlow<List<CueBox>> = mutable.asStateFlow()
 
     /**
+     * The one channel cues arrive on, and the item change that clears them.
+     *
+     * This plugin used to be caller-driven only, on the reasoning that "which
+     * event carries cues depends on where they came from — a sidecar file, an
+     * embedded track, a consumer's own parser — and a plugin that picked one
+     * would work for a third of them." The web overlay answers that directly:
+     * it subscribes to `subtitleCue` alone, and the comment beside it says why —
+     * the kit and the backend funnel BOTH the sidecar and the engine's own cues
+     * into that single channel, so there is one event to pick and picking it
+     * works for all of them.
+     *
+     * Left caller-driven, the plugin had no production driver at all: nothing
+     * called [show] outside a test, so the flow the renderer reads was
+     * permanently empty and a correct renderer drew nothing.
+     *
+     * [show] stays public for a caller with richer cues than the event carries.
+     */
+    override fun use() {
+        on(CoreEvents.SubtitleCue) { change -> show(listOfNotNull(change.cue?.let(::cueOf))) }
+
+        // The web's `this.on('item', () => this.renderCues([]))`. Belt and
+        // braces — the producer normally sends an empty change on unload — but
+        // the failure it covers is the one nobody would report as a bug: the
+        // last line of the previous film sitting over the first frame of the
+        // next one.
+        on(CoreEvents.Item) { clear() }
+    }
+
+    /**
      * Hand it the cues active at this moment; it lays them out.
      *
-     * Driven by the caller rather than by subscribing to a cue event, because
-     * which event carries cues depends on where they came from — a sidecar
-     * file, an embedded track the engine reports, a consumer's own parser — and
-     * a plugin that picked one would work for a third of them.
+     * Public as well as driven by [use], for a producer whose cues carry the
+     * WebVTT positioning the core event has no room for.
      */
     public fun show(cues: List<SubtitleCue>) {
         mutable.value = layOutCues(cues, opts.cueHeightPercent)
@@ -78,6 +107,16 @@ public open class SubtitleOverlayPlugin(
         clear()
     }
 }
+
+// The core event's cue, as a cue this can lay out.
+//
+// The core `CueEvent` carries a time range and text and no WebVTT positioning,
+// so everything the layout could do with a `line`, an `align` or a `size` is
+// left at its default and the cue lands where a cue with no instructions goes:
+// near the bottom, centred. That is not a shortcut here, it is the width of the
+// event — a producer that has read the positioning out of a .vtt should call
+// [SubtitleOverlayPlugin.show] with it rather than lose it on the way through.
+private fun cueOf(cue: CueEvent): SubtitleCue = SubtitleCue(text = cue.text.orEmpty())
 
 /**
  * A default that reads as two lines of dialogue at a normal size.

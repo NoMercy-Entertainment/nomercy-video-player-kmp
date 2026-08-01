@@ -45,7 +45,10 @@ import androidx.compose.ui.unit.DpSize
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.errors.Severity
+import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.core.events.Subscription
+import tv.nomercy.player.video.subtitles.CueBox
+import tv.nomercy.player.video.subtitles.SubtitleOverlayPlugin
 import tv.nomercy.player.core.input.KeyCombo
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.video.NMVideoPlayer
@@ -146,7 +149,18 @@ public fun VideoChrome(
 
     val input = ChromeInput(rememberVideoKeys(player, formFactor), controller, commands, player::now, gestures, panel)
 
-    ChromeFrame(input = input, modifier = modifier, surface = surface) {
+    // The picture and the words on it, as one layer.
+    //
+    // Together rather than as two arguments because they are one thing to a
+    // viewer and because they have to stay in this order: the surface, then the
+    // cues, then everything else. A chrome that took them separately would let
+    // a caller supply a surface and no cues, which is the state this was in.
+    val picture: @Composable BoxScope.() -> Unit = {
+        surface()
+        SubtitleCueLayer(rememberCueBoxes(player), rememberSubtitleStyle(player))
+    }
+
+    ChromeFrame(input = input, modifier = modifier, picture = picture) {
         ChromeMenuScope(keyboard = input.pointerDriven) {
             ChromeLayers(
                 scene = ChromeScene(
@@ -214,7 +228,7 @@ public data class ChromeLayout(
 private fun ChromeFrame(
     input: ChromeInput,
     modifier: Modifier,
-    surface: @Composable () -> Unit,
+    picture: @Composable BoxScope.() -> Unit,
     content: @Composable () -> Unit,
 ) {
     Box(
@@ -226,7 +240,11 @@ private fun ChromeFrame(
             .then(input.keyModifier())
             .then(input.pointerModifier()),
     ) {
-        surface()
+        // The surface and the cues on it, under everything else — which is
+        // where `.subtitle-overlay` sits at `z-index: 0`. Above the tap zones
+        // would put a cue in front of the control a finger is reaching for;
+        // inside the visibility gate below would fade the dialogue with the bar.
+        picture()
 
         if (!input.pointerDriven) {
             TouchZonesOverlay(

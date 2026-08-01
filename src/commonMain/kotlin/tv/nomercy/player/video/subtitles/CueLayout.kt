@@ -205,11 +205,26 @@ private const val MIDPOINT: Double = FULL_WIDTH / 2
 public const val DEFAULT_LINE_PERCENT: Double = 90.0
 
 /**
- * The safe-area inset, as a percentage of each edge.
+ * The safe-area inset off the top and bottom, as a percentage of the picture.
  *
- * SMPTE RP 27.3's 5% rule. FCC 47 CFR requires captions to stay inside the
- * viewable area without pinning a number; 5% is the number the broadcast world
- * settled on, and it is the one the web overlay uses. Cue coordinates are
- * relative to the area INSIDE this, not to the picture.
+ * Five, which keeps captions clear of the edge whatever chrome, scrubber or
+ * device bezel could clip them. Cue coordinates are relative to the area INSIDE
+ * this, not to the picture.
  */
-public const val SAFE_AREA_INSET_PERCENT: Double = 5.0
+public const val SAFE_AREA_INSET_BLOCK_PERCENT: Double = 5.0
+
+/**
+ * And off the left and right, which is a different number.
+ *
+ * Three, not five. SMPTE RP 27.3's equal 5%/5% rule was calibrated to CRT
+ * overscan, which nothing in this delivery path has; FCC 47 CFR asks only that
+ * captions be viewable in their entirety and pins no percentage. Equal
+ * percentages on a picture that is not square produce a lopsided pixel inset and
+ * a shorter readable line, so the web overlay's stylesheet writes
+ * `inset-block: 5%; inset-inline: 3%` and this is the same pair.
+ *
+ * They were one constant here, at five. Nothing had drawn a cue yet, so the
+ * error cost nothing until the first renderer read it — and then it would have
+ * been a line width narrower than the browser's on every device.
+ */
+public const val SAFE_AREA_INSET_INLINE_PERCENT: Double = 3.0
