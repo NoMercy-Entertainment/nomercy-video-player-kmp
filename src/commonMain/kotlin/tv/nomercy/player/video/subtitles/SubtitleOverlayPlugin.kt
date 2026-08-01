@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import tv.nomercy.player.core.events.CoreEvents
-import tv.nomercy.player.core.events.CueEvent
+import tv.nomercy.player.core.events.SubtitleCue
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
 
@@ -78,7 +78,7 @@ public open class SubtitleOverlayPlugin(
      * [show] stays public for a caller with richer cues than the event carries.
      */
     override fun use() {
-        on(CoreEvents.SubtitleCue) { change -> show(listOfNotNull(change.cue?.let(::cueOf))) }
+        on(CoreEvents.SubtitleCue) { change -> show(change.cues) }
 
         // The web's `this.on('item', () => this.renderCues([]))`. Belt and
         // braces — the producer normally sends an empty change on unload — but
@@ -91,8 +91,10 @@ public open class SubtitleOverlayPlugin(
     /**
      * Hand it the cues active at this moment; it lays them out.
      *
-     * Public as well as driven by [use], for a producer whose cues carry the
-     * WebVTT positioning the core event has no room for.
+     * Public as well as driven by [use], for a consumer rendering cues from a
+     * source of their own. Nothing in this library needs it any more: the event
+     * carries the full cue list with its WebVTT positioning, so a producer no
+     * longer has to go around the channel every other listener reads to keep it.
      */
     public fun show(cues: List<SubtitleCue>) {
         mutable.value = layOutCues(cues, opts.cueHeightPercent)
@@ -107,16 +109,6 @@ public open class SubtitleOverlayPlugin(
         clear()
     }
 }
-
-// The core event's cue, as a cue this can lay out.
-//
-// The core `CueEvent` carries a time range and text and no WebVTT positioning,
-// so everything the layout could do with a `line`, an `align` or a `size` is
-// left at its default and the cue lands where a cue with no instructions goes:
-// near the bottom, centred. That is not a shortcut here, it is the width of the
-// event — a producer that has read the positioning out of a .vtt should call
-// [SubtitleOverlayPlugin.show] with it rather than lose it on the way through.
-private fun cueOf(cue: CueEvent): SubtitleCue = SubtitleCue(text = cue.text.orEmpty())
 
 /**
  * A default that reads as two lines of dialogue at a normal size.

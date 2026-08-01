@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.item
 
 import tv.nomercy.player.core.media.PlaylistItem
+import tv.nomercy.player.core.ports.SubtitleTrack
 
 // A queue item with the two fields the video chrome reads off it.
 //
@@ -50,6 +51,21 @@ public interface VideoPlaylistItem : PlaylistItem {
 
     /** Cover art, read when [image] and [poster] are both absent. */
     public val thumbnail: String? get() = null
+
+    /**
+     * Subtitle files that sit beside the item rather than inside it.
+     *
+     * The normal case in a NoMercy library: the film is one file and its
+     * captions are a directory of `.vtt` next to it. An engine will never find
+     * these — it only knows what is in the container it was handed — so an item
+     * that does not declare them has no subtitles at all no matter how many are
+     * on disk. Declared here for the same reason `chapters` is: it is what the
+     * server sends, and the player is what has to act on it.
+     *
+     * Each entry needs a [tv.nomercy.player.core.ports.SubtitleTrack.url]; one
+     * without is a menu row that cannot be played and is skipped.
+     */
+    public val subtitles: List<SubtitleTrack> get() = emptyList()
 
     /** Series title, when the item is an episode. The lock screen's artist line. */
     public val show: String? get() = null

@@ -9,6 +9,8 @@
 package tv.nomercy.player.video
 
 import tv.nomercy.player.core.controllers.PlayerContext
+import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.SubtitleCueChange
 import tv.nomercy.player.core.media.QualityDescriptor
 import tv.nomercy.player.core.ports.CanonicalBackendEvent
 import tv.nomercy.player.core.ports.MediaBackend
@@ -42,6 +44,22 @@ public class VideoBackendBridge(private val ctx: PlayerContext) {
 
         listen(backend, CanonicalBackendEvent.STALLED) {
             ctx.emit(VideoEvents.Stalled, Unit)
+        }
+
+        // The cues of the engine's own text track, forwarded to the one channel
+        // every renderer reads.
+        //
+        // Here rather than in core's bridge because only a video engine has
+        // cues: a music player has nothing to say about a caption, and core's
+        // bridge is the transport spine both share. This is the same reason the
+        // three above are here.
+        //
+        // Both engines that can answer emit a payload of the right type. One
+        // that emits something else is dropped rather than guessed at — a
+        // fabricated empty change would tell a renderer to clear the picture on
+        // an engine that never had anything to say.
+        listen(backend, CanonicalBackendEvent.SUBTITLE_CUE) { payload ->
+            (payload as? SubtitleCueChange)?.let { ctx.emit(CoreEvents.SubtitleCue, it) }
         }
     }
 

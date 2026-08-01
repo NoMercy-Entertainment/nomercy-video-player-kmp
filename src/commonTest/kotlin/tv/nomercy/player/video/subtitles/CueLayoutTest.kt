@@ -8,6 +8,10 @@
 
 package tv.nomercy.player.video.subtitles
 
+import tv.nomercy.player.core.events.ALIGN_CENTER
+import tv.nomercy.player.core.events.ALIGN_END
+import tv.nomercy.player.core.events.ALIGN_START
+import tv.nomercy.player.core.events.SubtitleCue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -20,7 +24,23 @@ class CueLayoutTest {
         align: CueAlign = CueAlign.Center,
         position: Double? = null,
         size: Double = 100.0,
-    ) = SubtitleCue(text, line, align, position, size)
+    ) = SubtitleCue(
+        text = text,
+        plainText = text,
+        line = line,
+        align = tokenOf(align),
+        size = size,
+        position = position,
+    )
+
+    // The cue speaks the format's own three spellings; the layout speaks the
+    // enum. This is the same pairing cueAlignOf reads in the other direction,
+    // written out so a test that disagreed with it would say so.
+    private fun tokenOf(align: CueAlign): String = when (align) {
+        CueAlign.Start -> ALIGN_START
+        CueAlign.End -> ALIGN_END
+        CueAlign.Center -> ALIGN_CENTER
+    }
 
     // W3C WebVTT: left = position - anchor * size, and position defaults to the
     // edge the alignment names.

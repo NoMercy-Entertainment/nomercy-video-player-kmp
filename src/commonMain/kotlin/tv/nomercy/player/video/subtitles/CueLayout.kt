@@ -8,6 +8,9 @@
 
 package tv.nomercy.player.video.subtitles
 
+import tv.nomercy.player.core.events.ALIGN_END
+import tv.nomercy.player.core.events.ALIGN_START
+import tv.nomercy.player.core.events.SubtitleCue
 import kotlin.math.max
 import kotlin.math.min
 
@@ -32,20 +35,24 @@ public enum class CueAlign { Start, Center, End }
 /** Which edge of the box the [CueBox.linePercent] anchor refers to. */
 public enum class CueAnchor { Top, Bottom }
 
-/** One cue as the format describes it, before any layout. */
-public data class SubtitleCue(
-    val text: String,
-    /**
-     * Vertical anchor, 0 at the top of the safe area and 100 at the bottom.
-     * Null is the format's `line:auto`, which stacks up from the bottom.
-     */
-    val linePercent: Double? = null,
-    val align: CueAlign = CueAlign.Center,
-    /** Horizontal anchor. Null takes the default implied by [align]. */
-    val positionPercent: Double? = null,
-    /** Box width as a percentage of the safe area. */
-    val sizePercent: Double = FULL_WIDTH,
-)
+/**
+ * The layout's reading of a cue's alignment.
+ *
+ * The cue itself carries the three W3C spellings as a string, because that is
+ * the vocabulary core's own WebVTT parser already produces and a second Kotlin
+ * spelling of the same three values in the same library is how a mapper starts
+ * being needed between two of our own types. This is that vocabulary at the one
+ * seam that wants to `when` on it.
+ *
+ * Anything unrecognised is centred, which is where a cue with no instruction
+ * goes. A parser that produced a fourth spelling should not stop a line of
+ * dialogue being drawn.
+ */
+public fun cueAlignOf(align: String): CueAlign = when (align) {
+    ALIGN_START -> CueAlign.Start
+    ALIGN_END -> CueAlign.End
+    else -> CueAlign.Center
+}
 
 /** One laid-out box, in safe-area percentages. */
 public data class CueBox(
@@ -70,17 +77,17 @@ public data class CueBox(
  * anchor is preserved and no trailing text is lost off the edge.
  */
 public fun layOutHorizontally(cue: SubtitleCue): Pair<Double, Double> {
-    val size: Double = cue.sizePercent.coerceIn(0.0, FULL_WIDTH)
+    val size: Double = cue.size.coerceIn(0.0, FULL_WIDTH)
 
     val anchor: Double
     val positionDefault: Double
-    when (cue.align) {
+    when (cueAlignOf(cue.align)) {
         CueAlign.Start -> { anchor = 0.0; positionDefault = 0.0 }
         CueAlign.End -> { anchor = 1.0; positionDefault = FULL_WIDTH }
         CueAlign.Center -> { anchor = CENTRE_ANCHOR; positionDefault = MIDPOINT }
     }
 
-    val position: Double = cue.positionPercent ?: positionDefault
+    val position: Double = cue.position ?: positionDefault
     val left: Double = (position - anchor * size).coerceIn(0.0, FULL_WIDTH)
     val width: Double = size.coerceIn(0.0, FULL_WIDTH - left)
 
@@ -130,7 +137,7 @@ public fun layOutCues(
 
     cues.forEach { cue ->
         val (left, width) = layOutHorizontally(cue)
-        val requested: Double = cue.linePercent ?: defaultLinePercent
+        val requested: Double = cue.line ?: defaultLinePercent
         val anchor: CueAnchor = anchorFor(requested)
 
         // Everything is compared as a top edge, whichever edge it anchors to,
@@ -152,7 +159,7 @@ public fun layOutCues(
                 CueAnchor.Bottom -> FULL_WIDTH - top - cueHeightPercent
             },
             anchor = anchor,
-            align = cue.align,
+            align = cueAlignOf(cue.align),
         )
     }
 
