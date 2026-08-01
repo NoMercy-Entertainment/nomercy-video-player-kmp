@@ -9,17 +9,23 @@
 package tv.nomercy.player.video.ass
 
 import com.sun.jna.Native
+import java.io.File
+import tv.nomercy.player.core.natives.NativeRuntimeKind
+import tv.nomercy.player.core.natives.NativeRuntimes
 
 public actual class AssPlatformContext
 
-// libass on the desktop, when the machine has it.
+// libass on the desktop: the copy that came with the library, or failing that
+// whichever one the machine has.
 //
-// It is a system package on Linux and a Homebrew formula on macOS, and this
-// loads whichever is installed. On Windows the only builds in circulation are
-// the copies statically linked inside VLC and mpv, which cannot be loaded from
-// outside them — so Windows gets the sentence rather than the renderer until a
-// vendored build is decided on, and that is a distribution decision rather than
-// a rendering one.
+// The payload is the same arrangement the Apple targets already use — a
+// prebuilt archive, pinned by digest, fetched rather than compiled — and it is
+// resolved through the shared loader in core, so libVLC and libass arrive the
+// same way rather than through two mechanisms nobody can hold in their head.
+//
+// A system libass is still accepted underneath it. On Linux it is a package
+// most distributions already have, and there is no reason to download one over
+// it.
 //
 // Asked rather than assumed, because "styled subtitles or plain text" is a
 // choice the caller makes, and a developer looking at blank subtitles needs a
@@ -41,20 +47,37 @@ public actual object AssRenderers {
     // available" would make the check the crash it exists to prevent.
     private val instance: LibAss? by lazy { candidates().firstNotNullOfOrNull(::attempt) }
 
-    // By name first, then by the paths package managers actually use.
+    // The payload first, the machine second, and that order is the fix.
     //
-    // Homebrew installs into /opt/homebrew on Apple silicon and /usr/local on
-    // Intel, and a JVM searches neither: the default dyld path does not include
-    // them, so a machine with libass installed reports it missing. Naming them
-    // is less elegant than requiring DYLD_LIBRARY_PATH and it is the difference
-    // between working on a developer's machine and not.
-    private fun candidates(): List<String> = listOf(
+    // It used to be the machine only, which meant styled subtitles rendered on
+    // a developer's laptop with Homebrew and silently did not on a user's — the
+    // same defect the desktop engine had when it hunted for an installed VLC.
+    // A library whose features depend on what somebody happened to install is a
+    // library that behaves differently for every user.
+    //
+    // The system paths stay underneath, because a distribution that already
+    // ships libass should not be made to download one, and because a payload
+    // has not been published for every platform yet. Homebrew installs into
+    // /opt/homebrew on Apple silicon and /usr/local on Intel, and a JVM
+    // searches neither.
+    private fun candidates(): List<String> = fromPayload() + listOf(
         "ass",
         "/opt/homebrew/lib/libass.dylib",
         "/usr/local/lib/libass.dylib",
         "/usr/lib/x86_64-linux-gnu/libass.so.9",
         "/usr/lib64/libass.so.9",
     )
+
+    // The copy that arrived through the dependency, if one did. Empty when no
+    // payload has been published for this platform, which is not an error — the
+    // list below is what happens next.
+    private fun fromPayload(): List<String> {
+        val directory: File = NativeRuntimes.directory(NativeRuntimeKind.LIB_ASS) ?: return emptyList()
+        return listOf("libass-9.dll", "libass.so.9", "libass.dylib")
+            .map { name -> File(directory, name) }
+            .filter { candidate -> candidate.isFile }
+            .map { candidate -> candidate.absolutePath }
+    }
 
     @Suppress("TooGenericExceptionCaught")
     private fun attempt(location: String): LibAss? = try {

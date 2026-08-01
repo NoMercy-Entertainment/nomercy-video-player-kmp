@@ -70,20 +70,25 @@ Video painting on Android is proven on a phone and on an Android TV box.
 
 ## What libass needs from the machine
 
-On Linux and macOS it is a package away — `apt install libass9`,
-`brew install libass` — and the renderer loads whichever is installed, including
-from Homebrew's directories, which a JVM does not search by default.
-
-On Windows there is no renderer yet. The only builds in circulation are the
-copies statically linked inside VLC and mpv, which cannot be loaded from outside
-them, so shipping one means vendoring a build. Until then a Windows caller gets
-a sentence from `AssRenderers.whyUnavailable()` and can fall back to plain text.
-
 On Apple nothing is needed. libass, freetype, fribidi and harfbuzz are built
-once from upstream and published as a release asset, and the build fetches them
-— cross-compiling them needs an autotools toolchain and half an hour, which is
-not something a Gradle build should ask of a fresh machine. The archive is
-pinned by tag and checked against a digest.
+once from upstream and published as a release asset, and the build fetches them.
+Cross compiling them needs an autotools toolchain and a long wait, which is not
+something a Gradle build should ask of a fresh machine. The archive is pinned by
+tag and checked against a digest.
+
+The desktop is moving to the same arrangement. `AssRenderers` on the JVM now
+asks `NativeRuntimes` for a libass payload first and only falls back to a system
+copy underneath it, so the loader is shared with libVLC rather than being a
+second mechanism. That ordering is already live; the payloads themselves are
+not published yet, so today a desktop machine still resolves the system copy.
+
+Until they are, Linux and macOS are a package away, `apt install libass9` and
+`brew install libass`, and the renderer loads whichever is installed including
+from Homebrew's directories, which a JVM does not search by default. Windows has
+no system libass to find at all: the only builds in circulation are statically
+linked inside VLC and mpv and cannot be loaded from outside them, so a Windows
+caller gets a sentence from `AssRenderers.whyUnavailable()` and falls back to
+plain text.
 
 ## What the subtitle gate proves, and where
 
