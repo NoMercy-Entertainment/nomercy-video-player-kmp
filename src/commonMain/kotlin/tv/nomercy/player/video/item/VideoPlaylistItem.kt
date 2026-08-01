@@ -34,4 +34,26 @@ public interface VideoPlaylistItem : PlaylistItem {
 
     /** Continue-watching state, in either wire shape. See [WatchProgress]. */
     public val progress: WatchProgress?
+
+    /**
+     * Cover art for the item, read first of the three image fields.
+     *
+     * Three names for one picture because the web item accepts all three and
+     * reads them in this order — a host whose backend calls it a poster and a
+     * host whose backend calls it a thumbnail both work without a mapping step.
+     * This is what a lock screen and a notification draw.
+     */
+    public val image: String? get() = null
+
+    /** Cover art, read when [image] is absent. */
+    public val poster: String? get() = null
+
+    /** Cover art, read when [image] and [poster] are both absent. */
+    public val thumbnail: String? get() = null
+
+    /** Series title, when the item is an episode. The lock screen's artist line. */
+    public val show: String? get() = null
+
+    /** Season number, 1-based. Rendered as the lock screen's album line. */
+    public val season: Int? get() = null
 }
