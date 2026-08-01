@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.onKeyEvent
 import tv.nomercy.player.core.input.KeyCombo
+import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.input.VideoKeyHandlerPlugin
 
@@ -130,7 +131,17 @@ internal fun isShortcutsCombo(combo: KeyCombo, open: Boolean): Boolean =
         // `?` on a layout that has its own key for it, and Shift-and-slash on the
         // layouts that do not. Both are the web's `shortcuts.help`.
         "?", "shift+?", "shift+/" -> true
-        // Only while it is up, so Escape still leaves fullscreen otherwise.
-        "escape" -> open
+        // Only while it is up, so the same press leaves fullscreen otherwise.
+        //
+        // Two spellings for one key. `keyComboOf` asks `playerKeyOf` first, and
+        // that maps a keyboard's Escape and a remote's back button to the same
+        // [PlayerKey.Back] — so what actually arrives is "Back". Matching the
+        // web's own spelling alone compiled, read correctly, and closed nothing.
+        BACK, ESCAPE -> open
         else -> false
     }
+
+private val BACK: String = PlayerKey.Back.combo.lowercase()
+
+// The name a platform that does not route through playerKeyOf would produce.
+private const val ESCAPE = "escape"

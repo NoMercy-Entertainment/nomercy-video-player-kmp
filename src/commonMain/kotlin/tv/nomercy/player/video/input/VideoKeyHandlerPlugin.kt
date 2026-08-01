@@ -66,8 +66,8 @@ public open class VideoKeyHandlerPlugin(
         bindings.bind(PlayerKey.MediaPause) { commands.transport.pause() }
         bindings.bind(PlayerKey.MediaPlayPause) { commands.transport.togglePlay() }
         bindings.bind(PlayerKey.MediaStop) { commands.transport.stop() }
-        bindings.bind(PlayerKey.MediaRewind) { commands.transport.seekBy(-STEP_SECONDS) }
-        bindings.bind(PlayerKey.MediaFastForward) { commands.transport.seekBy(STEP_SECONDS) }
+        bindings.bind(PlayerKey.MediaRewind) { commands.transport.seekBy(-ARROW_SECONDS) }
+        bindings.bind(PlayerKey.MediaFastForward) { commands.transport.seekBy(ARROW_SECONDS) }
     }
 
     // Guarded by the form factor rather than by a string sniff. On a television
@@ -77,8 +77,8 @@ public open class VideoKeyHandlerPlugin(
     protected open fun addNavigationKeys() {
         val notATelevision: () -> Boolean = { capabilities.formFactor != FormFactor.Tv }
 
-        bindings.bind(PlayerKey.Left, enabled = notATelevision) { commands.transport.seekBy(-STEP_SECONDS) }
-        bindings.bind(PlayerKey.Right, enabled = notATelevision) { commands.transport.seekBy(STEP_SECONDS) }
+        bindings.bind(PlayerKey.Left, enabled = notATelevision) { commands.transport.seekBy(-ARROW_SECONDS) }
+        bindings.bind(PlayerKey.Right, enabled = notATelevision) { commands.transport.seekBy(ARROW_SECONDS) }
     }
 
     // A phone has hardware volume keys and a television sends its volume to the
@@ -139,9 +139,28 @@ public open class VideoKeyHandlerPlugin(
         bindings.bind(keyCombo("p", shift = true)) { commands.transport.previousChapter() }
     }
 
+    // Two ways in, and one way out.
+    //
+    // The web's out is Escape. Here it is [PlayerKey.Back], because that is the
+    // press: the input adapters map a keyboard's Escape and a remote's back
+    // button to the same key, so a binding written against the string "Escape"
+    // would sit in the table and never be reached.
+    //
+    // Guarded on already being fullscreen rather than bound unconditionally,
+    // because an unguarded binding CONSUMES the press: a host that uses Escape
+    // to close the player would find it stopped working everywhere the picture
+    // is not filling the screen. Enabled-false leaves the key with the platform.
     protected open fun addFullscreenKeys() {
-        bindings.bind(keyCombo("f")) { commands.presentation.toggleFullscreen() }
-        bindings.bind(keyCombo("F11")) { commands.presentation.toggleFullscreen() }
+        bindings.bind(keyCombo("f")) { commands.window.toggleFullscreen() }
+        bindings.bind(keyCombo("F11")) { commands.window.toggleFullscreen() }
+        // The toggle under the guard, not a second command for leaving. Reached
+        // only while fullscreen is on, where toggling IS leaving — and an
+        // interface carrying both a toggle and a one-way exit would be asking
+        // every implementor to write the same call twice.
+        bindings.bind(
+            PlayerKey.Back,
+            enabled = { commands.window.isFullscreen() },
+        ) { commands.window.toggleFullscreen() }
     }
 
     // Along the list rather than by multiplying, so the steps are the ones the
@@ -219,10 +238,18 @@ private fun clockOf(seconds: Double): String {
 private fun pad(value: Int): String = if (value < TWO_DIGITS) "0$value" else "$value"
 
 // The one a bare arrow or a media key moves by.
-private const val STEP_SECONDS = 10f
+//
+// Five, which is what the web's `rewind()` and `forward()` default to when the
+// handler calls them with no argument, and what the shortcuts panel prints
+// beside the arrows. Ten is the ALT distance and had been used for both, so the
+// panel promised five and the player moved ten.
+private const val ARROW_SECONDS = 5f
 
 // Small enough to find a line of dialogue that was missed.
 private const val NUDGE_SECONDS = 3f
+
+// What alt buys: twice a bare arrow.
+private const val STEP_SECONDS = 10f
 
 private const val MINUTE_SECONDS = 60f
 

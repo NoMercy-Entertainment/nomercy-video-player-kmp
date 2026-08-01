@@ -122,11 +122,65 @@ class VideoKeyHandlerPluginTest {
 
     @Test
     fun everywhereElseTheArrowsSeek() = runTest {
+        // Five seconds, which is what `forward()` with no argument does on the
+        // web and what the shortcuts panel prints beside the arrows. It had been
+        // ten — the ALT distance, shared with the bare key by one constant — so
+        // the panel promised five and the film moved ten.
         val commands = RecordingPlayerCommands()
         val plugin: VideoKeyHandlerPlugin = handler(commands, FormFactor.Desktop)
 
         assertTrue(plugin.handle(PlayerKey.Right))
-        assertEquals(listOf(10f), commands.seeks)
+        assertEquals(listOf(5f), commands.seeks)
+    }
+
+    @Test
+    fun aMediaKeyMovesTheSameFiveSecondsAnArrowDoes() = runTest {
+        val commands = RecordingPlayerCommands()
+        val plugin: VideoKeyHandlerPlugin = handler(commands)
+
+        plugin.handle(PlayerKey.MediaFastForward)
+        plugin.handle(PlayerKey.MediaRewind)
+
+        assertEquals(listOf(5f, -5f), commands.seeks)
+    }
+
+    @Test
+    fun theBackKeyLeavesFullscreen() = runTest {
+        // The web's Escape. The input adapters map a keyboard's Escape and a
+        // remote's back button to the same press, so this is the key that
+        // arrives — and it was bound to nothing, while the shortcuts panel
+        // listed "Esc — exit fullscreen" for a viewer to read and try.
+        val commands = RecordingPlayerCommands(fullscreen = true)
+        val plugin: VideoKeyHandlerPlugin = handler(commands)
+
+        assertTrue(plugin.handle(PlayerKey.Back))
+        assertEquals(listOf("toggleFullscreen"), commands.calls)
+    }
+
+    @Test
+    fun andIsLeftAloneWhenThePictureIsNotFullscreen() = runTest {
+        // Not merely inert — UNCLAIMED. A host that closes the player on Escape
+        // needs the press back, and a binding that answered false while still
+        // reporting handled would take the key away everywhere.
+        val commands = RecordingPlayerCommands(fullscreen = false)
+        val plugin: VideoKeyHandlerPlugin = handler(commands)
+
+        assertFalse(plugin.handle(PlayerKey.Back))
+        assertEquals(emptyList(), commands.calls)
+    }
+
+    @Test
+    fun backNeverEntersFullscreen() = runTest {
+        // Escape has one direction. Ungated it would put a windowed player INTO
+        // fullscreen on the second press, which is the opposite of what the key
+        // means — and the guard is the only thing making a toggle safe here.
+        val commands = RecordingPlayerCommands(fullscreen = true)
+        val plugin: VideoKeyHandlerPlugin = handler(commands)
+
+        plugin.handle(PlayerKey.Back)
+        plugin.handle(PlayerKey.Back)
+
+        assertEquals(listOf("toggleFullscreen"), commands.calls)
     }
 
     @Test

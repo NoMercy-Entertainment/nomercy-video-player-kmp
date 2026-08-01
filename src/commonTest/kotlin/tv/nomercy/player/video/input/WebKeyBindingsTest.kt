@@ -105,6 +105,87 @@ class WebKeyBindingsTest {
         assertEquals(KeyAction.EXIT_FULLSCREEN, byCombo["Escape"])
     }
 
+    // The four keys that read as something else.
+    //
+    // Every one of these had a plausible wrong answer in this table and none of
+    // them had a case here, which is how the table shipped claiming `[` and `]`
+    // were chapters, `e` was picture-in-picture, `t` was theater mode and `s`
+    // opened the settings. Nothing was red: a fixture with no assertion on it
+    // grades nothing, and the handler beside it had been right the whole time.
+    @Test
+    fun theKeysThatLookLikeSomethingElseAreWhatTheWebBinds() {
+        val byCombo: Map<String, KeyAction> = WEB_KEY_BINDINGS.associate { it.combo to it.action }
+
+        // Bracket keys are markers in half the world's software. Here they are speed.
+        assertEquals(KeyAction.SPEED_UP, byCombo["]"])
+        assertEquals(KeyAction.SPEED_DOWN, byCombo["["])
+        // Plus and minus are the size of the SUBTITLES, which is what is left
+        // once the brackets have taken the speed.
+        assertEquals(KeyAction.SUBTITLE_SIZE_UP, byCombo["+"])
+        assertEquals(KeyAction.SUBTITLE_SIZE_UP, byCombo["shift++"])
+        assertEquals(KeyAction.SUBTITLE_SIZE_DOWN, byCombo["-"])
+        // One frame, not picture-in-picture.
+        assertEquals(KeyAction.FRAME_ADVANCE, byCombo["e"])
+        // The clock, not theater mode — the web player has no theater key.
+        assertEquals(KeyAction.SHOW_TIME, byCombo["t"])
+        // Stop. Not the settings menu.
+        assertEquals(KeyAction.STOP, byCombo["s"])
+    }
+
+    // The four jumps, and the numbers are not in the order the digits are.
+    @Test
+    fun theQuickSkipsJumpForwardAndTheColoursMatchThem() {
+        val byCombo: Map<String, KeyAction> = WEB_KEY_BINDINGS.associate { it.combo to it.action }
+
+        assertEquals(KeyAction.SEEK_FORWARD_120, byCombo["1"])
+        assertEquals(KeyAction.SEEK_FORWARD_30, byCombo["3"])
+        assertEquals(KeyAction.SEEK_FORWARD_60, byCombo["6"])
+        assertEquals(KeyAction.SEEK_FORWARD_90, byCombo["9"])
+
+        // The remote's four are the same four, so nobody learns two sets.
+        assertEquals(byCombo["3"], byCombo["ColorF0Red"])
+        assertEquals(byCombo["6"], byCombo["ColorF1Green"])
+        assertEquals(byCombo["9"], byCombo["ColorF2Yellow"])
+        assertEquals(byCombo["1"], byCombo["ColorF3Blue"])
+    }
+
+    // Five, and it is the number the shortcuts panel prints beside the arrows.
+    @Test
+    fun aBareArrowMovesFiveSecondsAndNotTheAltDistance() {
+        val byCombo: Map<String, KeyAction> = WEB_KEY_BINDINGS.associate { it.combo to it.action }
+
+        assertEquals(KeyAction.SEEK_BACK_5, byCombo["ArrowLeft"])
+        assertEquals(KeyAction.SEEK_FORWARD_5, byCombo["ArrowRight"])
+        assertEquals(KeyAction.SEEK_BACK_5, byCombo["MediaRewind"])
+        assertEquals(KeyAction.SEEK_FORWARD_5, byCombo["MediaFastForward"])
+        // Ten belongs to alt, and having one constant serve both is how the
+        // bare arrow came to move twice as far as the panel says it does.
+        assertEquals(KeyAction.SEEK_FORWARD_10, byCombo["alt+ArrowRight"])
+    }
+
+    // Both aspect-ratio keys, and neither of them opens anything.
+    @Test
+    fun theAspectRatioKeysAreALetterAndARemoteButton() {
+        val cycles: List<String> = WEB_KEY_BINDINGS
+            .filter { it.action == KeyAction.CYCLE_ASPECT_RATIO }
+            .map { it.combo }
+
+        assertEquals(listOf("a", "BrowserFavorites"), cycles)
+    }
+
+    // Nothing in this table may name a feature the web player does not have.
+    //
+    // The wrong version invented three: theater mode, picture-in-picture and a
+    // settings toggle, none of which the key handler binds anywhere. An action
+    // no combo uses is the shape that mistake takes, so it is refused outright.
+    @Test
+    fun everyActionIsOneSomeKeyActuallyPerforms() {
+        val used: Set<KeyAction> = WEB_KEY_BINDINGS.map { it.action }.toSet()
+        val unused: List<KeyAction> = KeyAction.entries.filterNot { it in used }
+
+        assertTrue(unused.isEmpty(), "no key performs: $unused")
+    }
+
     private companion object {
         const val EXPECTED_BINDINGS = 53
     }

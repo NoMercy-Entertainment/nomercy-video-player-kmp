@@ -23,7 +23,8 @@ internal class RecordingPlayerCommands(
     private var currentRate: Float = 1f,
     private var position: Double = 0.0,
     private var length: Double = 0.0,
-) : VideoTransport, VideoPresentation, VideoVolume, VideoState {
+    private var fullscreen: Boolean = false,
+) : VideoTransport, VideoPresentation, VideoVolume, VideoState, VideoWindow {
 
     val calls: MutableList<String> = mutableListOf()
 
@@ -33,7 +34,7 @@ internal class RecordingPlayerCommands(
 
     val emitted: MutableList<String> = mutableListOf()
 
-    val commands: PlayerCommands = PlayerCommands(this, this, this, this)
+    val commands: PlayerCommands = PlayerCommands(this, this, this, this, this)
 
     override fun togglePlay() { calls += "togglePlay" }
 
@@ -66,7 +67,12 @@ internal class RecordingPlayerCommands(
 
     override fun toggleMute() { calls += "toggleMute" }
 
-    override fun toggleFullscreen() { calls += "toggleFullscreen" }
+    override fun toggleFullscreen() {
+        calls += "toggleFullscreen"
+        fullscreen = !fullscreen
+    }
+
+    override fun isFullscreen(): Boolean = fullscreen
 
     override fun cycleAspectRatio() { calls += "cycleAspectRatio" }
 

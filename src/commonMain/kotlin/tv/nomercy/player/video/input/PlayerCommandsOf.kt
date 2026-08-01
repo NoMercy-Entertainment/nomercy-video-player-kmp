@@ -33,6 +33,7 @@ public fun playerCommandsOf(player: NMVideoPlayer, scope: CoroutineScope): Playe
         presentation = PlayerPresentation(player, scope),
         volume = PlayerVolume(player, scope),
         state = PlayerStateReader(player),
+        window = PlayerWindow(player),
     )
 
 private class PlayerTransport(
@@ -107,8 +108,6 @@ private class PlayerPresentation(
 
     override fun cycleAudioTracks(): Unit = player.cycleAudioTracks()
 
-    override fun toggleFullscreen(): Unit = player.toggleFullscreen()
-
     override fun cycleAspectRatio(): Unit = player.cycleAspectRatio()
 
     override fun rate(): Float = player.playbackRate().toFloat()
@@ -127,6 +126,16 @@ private class PlayerPresentation(
     }
 
     override fun message(text: String): Unit = player.message(text)
+}
+
+// The window seam, answered by the flag the player keeps. It cannot put itself
+// fullscreen — that is the Activity's or the browser's — and this is the record
+// of what it was told, which is exactly what Escape has to read.
+private class PlayerWindow(private val player: NMVideoPlayer) : VideoWindow {
+
+    override fun toggleFullscreen(): Unit = player.toggleFullscreen()
+
+    override fun isFullscreen(): Boolean = player.fullscreen()
 }
 
 private class PlayerVolume(

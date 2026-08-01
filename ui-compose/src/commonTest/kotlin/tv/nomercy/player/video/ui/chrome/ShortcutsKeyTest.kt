@@ -9,6 +9,8 @@
 package tv.nomercy.player.video.ui.chrome
 
 import tv.nomercy.player.core.input.KeyCombo
+import tv.nomercy.player.core.input.PlayerKey
+import tv.nomercy.player.core.input.asCombo
 import tv.nomercy.player.core.input.keyCombo
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -38,6 +40,20 @@ class ShortcutsKeyTest {
         // swallowed Escape at all times would trap a viewer in fullscreen.
         assertTrue(isShortcutsCombo(KeyCombo("Escape"), open = true))
         assertFalse(isShortcutsCombo(KeyCombo("Escape"), open = false))
+    }
+
+    @Test
+    fun andItIsTheSpellingTheRealPressArrivesWith() {
+        // What `keyComboOf` actually produces for Escape is `Back` — it asks
+        // `playerKeyOf` first, and a keyboard's Escape and a remote's back button
+        // are one [PlayerKey] there. This predicate matched only the web's own
+        // spelling, so pressing Escape over the open panel did nothing at all,
+        // and the case above passed anyway because it built the combo by hand.
+        //
+        // KeyComboOfTest.escapeArrivesAsTheRemotesBackButton is the other half:
+        // it drives a real key event and pins the string this expects.
+        assertTrue(isShortcutsCombo(PlayerKey.Back.asCombo(), open = true))
+        assertFalse(isShortcutsCombo(PlayerKey.Back.asCombo(), open = false))
     }
 
     @Test

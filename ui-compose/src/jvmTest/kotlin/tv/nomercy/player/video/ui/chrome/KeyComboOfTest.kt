@@ -24,6 +24,8 @@ import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.test.withKeyDown
 import tv.nomercy.player.core.input.KeyCombo
+import tv.nomercy.player.core.input.PlayerKey
+import tv.nomercy.player.core.input.asCombo
 import tv.nomercy.player.core.input.keyCombo
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -82,6 +84,16 @@ class KeyComboOfTest {
     @Test
     fun aFunctionKeyIsNamed() = runComposeUiTest {
         assertEquals(keyCombo("F11"), comboFrom { pressKey(Key.F11) })
+    }
+
+    @Test
+    fun escapeArrivesAsTheRemotesBackButton() = runComposeUiTest {
+        // Not "Escape". `playerKeyOf` is asked first and it folds a keyboard's
+        // Escape into the same [PlayerKey] a remote's back button sends, so this
+        // is the string every binding and every predicate has to be written
+        // against. Both of the ones that cared had been written against the
+        // web's spelling instead, and neither could ever fire.
+        assertEquals(PlayerKey.Back.asCombo(), comboFrom { pressKey(Key.Escape) })
     }
 
     @Test
