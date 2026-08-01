@@ -18,11 +18,7 @@ import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.ImageInfo
-import uk.co.caprica.vlcj.player.base.MediaPlayer
-import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat
-import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback
-import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback
-import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32BufferFormat
+import tv.nomercy.player.core.natives.libvlc.VlcVideoFrameSink
 import java.nio.ByteBuffer
 
 // libVLC's frames, turned into something Compose can draw.
@@ -38,7 +34,7 @@ import java.nio.ByteBuffer
 // controls the same way it composites everything else, and there is no Swing in
 // the window. It costs a copy per frame, which is the price of compositing at
 // all — but only a copy, and that is the whole subject of this file.
-internal class ComposeFrameSink : RenderCallback, BufferFormatCallback {
+internal class ComposeFrameSink : VlcVideoFrameSink {
 
     /**
      * The bitmap Compose draws, which is the SAME object for as long as the
@@ -77,43 +73,24 @@ internal class ComposeFrameSink : RenderCallback, BufferFormatCallback {
     private var info: ImageInfo = ImageInfo(0, 0, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
     private var rowBytes: Int = 0
 
-    // RV32 is BGRA in memory on a little-endian machine, which is exactly what
-    // Skia calls BGRA_8888 — so the frame lands with no conversion, only a copy.
+    // The engine delivers RV32, which is BGRA in memory on a little-endian
+    // machine and exactly what Skia calls BGRA_8888 — so the frame lands with no
+    // conversion, only a copy.
     //
     // A NEW Bitmap rather than a reallocated one, because the bitmap already
     // handed to Compose is on screen: reusing it here would blank the live
     // picture between this call and the first frame of the new size.
-    override fun getBufferFormat(sourceWidth: Int, sourceHeight: Int): BufferFormat {
-        rowBytes = sourceWidth * BYTES_PER_PIXEL
-        pixels = ByteArray(rowBytes * sourceHeight)
-        info = ImageInfo(sourceWidth, sourceHeight, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
+    override fun format(width: Int, height: Int) {
+        rowBytes = width * BYTES_PER_PIXEL
+        pixels = ByteArray(rowBytes * height)
+        info = ImageInfo(width, height, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
         bitmap = Bitmap()
         bitmap.allocPixels(info)
         frame.value = bitmap.asComposeImageBitmap()
-        FrameStats.format(sourceWidth, sourceHeight)
-        return RV32BufferFormat(sourceWidth, sourceHeight)
+        FrameStats.format(width, height)
     }
 
-    override fun newFormatSize(
-        bufferWidth: Int,
-        bufferHeight: Int,
-        displayWidth: Int,
-        displayHeight: Int,
-    ): Unit = Unit
-
-    override fun allocatedBuffers(buffers: Array<out ByteBuffer>): Unit = Unit
-
-    override fun lock(mediaPlayer: MediaPlayer): Unit = Unit
-
-    override fun unlock(mediaPlayer: MediaPlayer): Unit = Unit
-
-    override fun display(
-        mediaPlayer: MediaPlayer,
-        nativeBuffers: Array<out ByteBuffer>,
-        bufferFormat: BufferFormat,
-        displayWidth: Int,
-        displayHeight: Int,
-    ): Unit = accept(nativeBuffers[0])
+    override fun display(picture: ByteBuffer): Unit = accept(picture)
 
     // The buffer is libVLC's and it reuses it, so the frame has to be copied out
     // before this returns. Holding the buffer instead would draw whatever the

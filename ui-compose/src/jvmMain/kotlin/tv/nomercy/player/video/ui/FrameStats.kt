@@ -79,7 +79,7 @@ internal object FrameStats {
     }
 
     // Whoever crosses the second boundary first prints and resets. The
-    // compare-and-set is what keeps the vlcj thread and the Compose render
+    // compare-and-set is what keeps libVLC's video thread and the Compose render
     // thread from both claiming the same window and halving each other's counts.
     private fun reportIfWindowClosed() {
         val now: Long = System.nanoTime()

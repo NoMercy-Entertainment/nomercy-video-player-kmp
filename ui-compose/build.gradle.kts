@@ -64,9 +64,6 @@ kotlin {
             implementation(libs.androidx.media3.ui)
             implementation(libs.androidx.media3.exoplayer)
         }
-        jvmMain.dependencies {
-            implementation(libs.vlcj)
-        }
         commonTest.dependencies {
             implementation(kotlin("test"))
             implementation(libs.kotlinx.coroutines.test)

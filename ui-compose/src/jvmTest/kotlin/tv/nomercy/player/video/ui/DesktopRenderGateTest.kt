@@ -23,8 +23,6 @@ import androidx.compose.ui.graphics.toPixelMap
 import kotlinx.coroutines.runBlocking
 import tv.nomercy.player.core.ports.LoadOptions
 import tv.nomercy.player.core.ports.VlcjVideoBackend
-import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface
-import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -59,9 +57,7 @@ class DesktopRenderGateTest {
         val sink = ComposeFrameSink()
 
         try {
-            backend.embeddedPlayer.videoSurface().set(
-                CallbackVideoSurface(sink, sink, true, VideoSurfaceAdapters.getVideoSurfaceAdapter()),
-            )
+            backend.embeddedPlayer.videoFrameSink(sink)
             runBlocking {
                 backend.load(media.toURI().toString(), LoadOptions())
                 backend.play()
@@ -141,9 +137,7 @@ class DesktopRenderGateTest {
         val sink = ComposeFrameSink()
 
         try {
-            backend.embeddedPlayer.videoSurface().set(
-                CallbackVideoSurface(sink, sink, true, VideoSurfaceAdapters.getVideoSurfaceAdapter()),
-            )
+            backend.embeddedPlayer.videoFrameSink(sink)
             runBlocking {
                 backend.load(media.toURI().toString(), LoadOptions())
                 backend.play()

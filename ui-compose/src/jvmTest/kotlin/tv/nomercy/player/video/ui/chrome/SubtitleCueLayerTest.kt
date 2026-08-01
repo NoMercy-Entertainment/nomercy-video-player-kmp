@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.video.NMVideoPlayer
-import tv.nomercy.player.video.subtitles.SubtitleCue
+import tv.nomercy.player.core.events.SubtitleCue
 import tv.nomercy.player.video.subtitles.SubtitleOverlayPlugin
 import kotlin.test.Test
 
@@ -67,7 +67,7 @@ class SubtitleCueLayerTest {
         val overlay = SubtitleOverlayPlugin()
         mount(overlay)
 
-        overlay.show(listOf(SubtitleCue(text = LINE)))
+        overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
         waitForIdle()
 
         onNodeWithTag(SUBTITLE_LAYER_TAG).assertIsDisplayed()
@@ -84,8 +84,8 @@ class SubtitleCueLayerTest {
 
         overlay.show(
             listOf(
-                SubtitleCue(text = LINE, linePercent = 90.0),
-                SubtitleCue(text = SIGN, linePercent = 90.0),
+                SubtitleCue(text = LINE, plainText = LINE, line = 90.0),
+                SubtitleCue(text = SIGN, plainText = SIGN, line = 90.0),
             ),
         )
         waitForIdle()
@@ -99,7 +99,7 @@ class SubtitleCueLayerTest {
         val overlay = SubtitleOverlayPlugin()
         mount(overlay)
 
-        overlay.show(listOf(SubtitleCue(text = LINE)))
+        overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
         waitForIdle()
         overlay.clear()
         waitForIdle()
@@ -118,7 +118,7 @@ class SubtitleCueLayerTest {
         val overlay = SubtitleOverlayPlugin()
         mount(overlay)
 
-        overlay.show(listOf(SubtitleCue(text = LINE)))
+        overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
         waitForIdle()
 
         onNodeWithText(LINE).assertIsDisplayed()

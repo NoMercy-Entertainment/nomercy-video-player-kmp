@@ -56,7 +56,7 @@ class ComposeFrameSinkTest {
     @Test
     fun aFrameArrivesAsPixelsRatherThanAsBlack() {
         val sink = ComposeFrameSink()
-        sink.getBufferFormat(W, H)
+        sink.format(W, H)
 
         sink.accept(redFrame())
 
@@ -82,7 +82,7 @@ class ComposeFrameSinkTest {
     @Test
     fun everyFrameIsWrittenIntoTheSameBitmap() {
         val sink = ComposeFrameSink()
-        sink.getBufferFormat(W, H)
+        sink.format(W, H)
 
         sink.accept(redFrame())
         val first: ImageBitmap = assertNotNull(sink.frame.value)
@@ -101,7 +101,7 @@ class ComposeFrameSinkTest {
     @Test
     fun eachAcceptedFrameAdvancesTheCounter() {
         val sink = ComposeFrameSink()
-        sink.getBufferFormat(W, H)
+        sink.format(W, H)
 
         val start: Int = sink.version.value
         sink.accept(redFrame())
@@ -117,7 +117,7 @@ class ComposeFrameSinkTest {
     @Test
     fun aFrameIsCompleteBeforeItCanBeDrawn() {
         val sink = ComposeFrameSink()
-        sink.getBufferFormat(W, H)
+        sink.format(W, H)
 
         sink.accept(redFrame())
         val first: Int = assertNotNull(sink.frame.value).pixelStoreId()
@@ -134,12 +134,12 @@ class ComposeFrameSinkTest {
     @Test
     fun renegotiatingTheFormatDoesNotBlankTheLastFrame() {
         val sink = ComposeFrameSink()
-        sink.getBufferFormat(W, H)
+        sink.format(W, H)
         sink.accept(redFrame())
 
         val showing: ImageBitmap = assertNotNull(sink.frame.value)
 
-        sink.getBufferFormat(W * 2, H * 2)
+        sink.format(W * 2, H * 2)
 
         assertEquals(1f, showing.toPixelMap()[0, 0].red, "the picture on screen went black")
     }
@@ -150,7 +150,7 @@ class ComposeFrameSinkTest {
     @Test
     fun aPartialFrameIsRefused() {
         val sink = ComposeFrameSink()
-        sink.getBufferFormat(W, H)
+        sink.format(W, H)
         sink.accept(redFrame())
 
         val showing: Int = sink.version.value

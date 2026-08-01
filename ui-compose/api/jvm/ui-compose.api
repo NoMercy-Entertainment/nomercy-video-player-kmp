@@ -23,10 +23,10 @@ public final class tv/nomercy/player/video/ui/RemoteControlKt {
 
 public final class tv/nomercy/player/video/ui/VideoSurface {
 	public static final field $stable I
-	public fun <init> (Luk/co/caprica/vlcj/player/embedded/EmbeddedMediaPlayer;)V
-	public fun <init> (Luk/co/caprica/vlcj/player/embedded/EmbeddedMediaPlayer;Ltv/nomercy/player/core/ports/VlcjVideoBackend;)V
-	public synthetic fun <init> (Luk/co/caprica/vlcj/player/embedded/EmbeddedMediaPlayer;Ltv/nomercy/player/core/ports/VlcjVideoBackend;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getEmbeddedPlayer ()Luk/co/caprica/vlcj/player/embedded/EmbeddedMediaPlayer;
+	public fun <init> (Ltv/nomercy/player/core/natives/libvlc/VlcMediaPlayer;)V
+	public fun <init> (Ltv/nomercy/player/core/natives/libvlc/VlcMediaPlayer;Ltv/nomercy/player/core/ports/VlcjVideoBackend;)V
+	public synthetic fun <init> (Ltv/nomercy/player/core/natives/libvlc/VlcMediaPlayer;Ltv/nomercy/player/core/ports/VlcjVideoBackend;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEmbeddedPlayer ()Ltv/nomercy/player/core/natives/libvlc/VlcMediaPlayer;
 }
 
 public final class tv/nomercy/player/video/ui/VideoSurface_jvmKt {

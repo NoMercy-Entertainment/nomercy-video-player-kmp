@@ -8,10 +8,8 @@
 
 package tv.nomercy.player.video.ui
 
+import tv.nomercy.player.core.natives.libvlc.VlcMediaPlayer
 import tv.nomercy.player.core.ports.VlcjVideoBackend
-import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer
-import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface
-import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
 
 /**
  * Where the desktop picture goes, decided before anything plays.
@@ -35,22 +33,20 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters
  * not recompile.
  */
 public actual class VideoSurface @JvmOverloads constructor(
-    public val embeddedPlayer: EmbeddedMediaPlayer,
+    public val embeddedPlayer: VlcMediaPlayer,
     // The engine, so the view can tell it how big the picture is drawn.
     //
     // Nullable and defaulted, because an app that built the surface from a raw
-    // EmbeddedMediaPlayer still has one — it just gets no ladder cap, which is
-    // where every desktop was before this. Told rather than asked: the engine
-    // renders into a buffer and has no view to measure.
+    // player still has one — it just gets no ladder cap, which is where every
+    // desktop was before this. Told rather than asked: the engine renders into a
+    // buffer and has no view to measure.
     internal val backend: VlcjVideoBackend? = null,
 ) {
 
     internal val sink: ComposeFrameSink = ComposeFrameSink()
 
     init {
-        embeddedPlayer.videoSurface().set(
-            CallbackVideoSurface(sink, sink, true, VideoSurfaceAdapters.getVideoSurfaceAdapter()),
-        )
+        embeddedPlayer.videoFrameSink(sink)
     }
 }
 

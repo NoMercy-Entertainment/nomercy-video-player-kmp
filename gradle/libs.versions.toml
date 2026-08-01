@@ -16,7 +16,6 @@ composeMultiplatform = "1.11.1"
 # Pinned to core, not to the app: the UI layer and the engine it draws load
 # into one process, and two Media3 versions there is a linkage error.
 media3 = "1.9.0"
-vlcj = "4.11.0"
 robolectric = "4.14.1"
 # The portable filesystem. A font cache has to write files on Android, Apple and
 # the desktop, and okio is the one abstraction all three already trust — plus a
@@ -76,7 +75,6 @@ androidx-media3-exoplayer-hls = { module = "androidx.media3:media3-exoplayer-hls
 androidx-media3-datasource-okhttp = { module = "androidx.media3:media3-datasource-okhttp", version.ref = "media3" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
-vlcj = { module = "uk.co.caprica:vlcj", version.ref = "vlcj" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
