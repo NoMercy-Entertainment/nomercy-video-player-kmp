@@ -87,7 +87,8 @@ public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/cont
 	public fun normalizePlaylistItem (Ltv/nomercy/player/core/media/PlaylistItem;)Ltv/nomercy/player/core/media/PlaylistItem;
 	public fun pip ()Z
 	public fun pip (Z)V
-	public fun playSegment (Ltv/nomercy/player/video/SegmentBoundary;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun playSegment (Ltv/nomercy/player/video/SegmentBoundary;Ltv/nomercy/player/video/SegmentEndBehaviour;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun playSegment$default (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/SegmentBoundary;Ltv/nomercy/player/video/SegmentEndBehaviour;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun removeSubtitleTrack (Ljava/lang/String;)V
 	public fun subtitleState ()Ltv/nomercy/player/core/player/AudioTrackState;
 	public fun subtitleStyle ()Ltv/nomercy/player/core/events/SubtitleStyle;
@@ -135,6 +136,21 @@ public final class tv/nomercy/player/video/SegmentBoundary {
 	public final fun getStartTime ()D
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/SegmentEndBehaviour : java/lang/Enum {
+	public static final field Advance Ltv/nomercy/player/video/SegmentEndBehaviour;
+	public static final field Companion Ltv/nomercy/player/video/SegmentEndBehaviour$Companion;
+	public static final field Hold Ltv/nomercy/player/video/SegmentEndBehaviour;
+	public static final field Loop Ltv/nomercy/player/video/SegmentEndBehaviour;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getToken ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/SegmentEndBehaviour;
+	public static fun values ()[Ltv/nomercy/player/video/SegmentEndBehaviour;
+}
+
+public final class tv/nomercy/player/video/SegmentEndBehaviour$Companion {
+	public final fun fromToken (Ljava/lang/String;)Ltv/nomercy/player/video/SegmentEndBehaviour;
 }
 
 public final class tv/nomercy/player/video/Stretching : java/lang/Enum {
@@ -749,13 +765,11 @@ public final class tv/nomercy/player/video/chapters/ChapterMarkerMathKt {
 }
 
 public final class tv/nomercy/player/video/input/KeyAction : java/lang/Enum {
-	public static final field BLUE Ltv/nomercy/player/video/input/KeyAction;
 	public static final field CYCLE_ASPECT_RATIO Ltv/nomercy/player/video/input/KeyAction;
 	public static final field CYCLE_AUDIO Ltv/nomercy/player/video/input/KeyAction;
 	public static final field CYCLE_SUBTITLES Ltv/nomercy/player/video/input/KeyAction;
 	public static final field EXIT_FULLSCREEN Ltv/nomercy/player/video/input/KeyAction;
-	public static final field FORWARD Ltv/nomercy/player/video/input/KeyAction;
-	public static final field GREEN Ltv/nomercy/player/video/input/KeyAction;
+	public static final field FRAME_ADVANCE Ltv/nomercy/player/video/input/KeyAction;
 	public static final field NEXT_CHAPTER Ltv/nomercy/player/video/input/KeyAction;
 	public static final field NEXT_ITEM Ltv/nomercy/player/video/input/KeyAction;
 	public static final field PAUSE Ltv/nomercy/player/video/input/KeyAction;
@@ -763,38 +777,41 @@ public final class tv/nomercy/player/video/input/KeyAction : java/lang/Enum {
 	public static final field PLAY_PAUSE Ltv/nomercy/player/video/input/KeyAction;
 	public static final field PREVIOUS_CHAPTER Ltv/nomercy/player/video/input/KeyAction;
 	public static final field PREVIOUS_ITEM Ltv/nomercy/player/video/input/KeyAction;
-	public static final field RED Ltv/nomercy/player/video/input/KeyAction;
-	public static final field REWIND Ltv/nomercy/player/video/input/KeyAction;
 	public static final field SEEK_BACK_10 Ltv/nomercy/player/video/input/KeyAction;
 	public static final field SEEK_BACK_3 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_BACK_5 Ltv/nomercy/player/video/input/KeyAction;
 	public static final field SEEK_BACK_60 Ltv/nomercy/player/video/input/KeyAction;
 	public static final field SEEK_FORWARD_10 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_FORWARD_120 Ltv/nomercy/player/video/input/KeyAction;
 	public static final field SEEK_FORWARD_3 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_FORWARD_30 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_FORWARD_5 Ltv/nomercy/player/video/input/KeyAction;
 	public static final field SEEK_FORWARD_60 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SEEK_FORWARD_90 Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SHOW_TIME Ltv/nomercy/player/video/input/KeyAction;
 	public static final field SPEED_DOWN Ltv/nomercy/player/video/input/KeyAction;
 	public static final field SPEED_RESET Ltv/nomercy/player/video/input/KeyAction;
 	public static final field SPEED_UP Ltv/nomercy/player/video/input/KeyAction;
 	public static final field STOP Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SUBTITLE_SIZE_DOWN Ltv/nomercy/player/video/input/KeyAction;
+	public static final field SUBTITLE_SIZE_UP Ltv/nomercy/player/video/input/KeyAction;
 	public static final field TOGGLE_FULLSCREEN Ltv/nomercy/player/video/input/KeyAction;
 	public static final field TOGGLE_MUTE Ltv/nomercy/player/video/input/KeyAction;
-	public static final field TOGGLE_PIP Ltv/nomercy/player/video/input/KeyAction;
-	public static final field TOGGLE_SETTINGS Ltv/nomercy/player/video/input/KeyAction;
 	public static final field TOGGLE_SHORTCUTS Ltv/nomercy/player/video/input/KeyAction;
-	public static final field TOGGLE_THEATER Ltv/nomercy/player/video/input/KeyAction;
 	public static final field VOLUME_DOWN Ltv/nomercy/player/video/input/KeyAction;
 	public static final field VOLUME_UP Ltv/nomercy/player/video/input/KeyAction;
-	public static final field YELLOW Ltv/nomercy/player/video/input/KeyAction;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/input/KeyAction;
 	public static fun values ()[Ltv/nomercy/player/video/input/KeyAction;
 }
 
 public final class tv/nomercy/player/video/input/PlayerCommands {
-	public fun <init> (Ltv/nomercy/player/video/input/VideoTransport;Ltv/nomercy/player/video/input/VideoPresentation;Ltv/nomercy/player/video/input/VideoVolume;Ltv/nomercy/player/video/input/VideoState;)V
+	public fun <init> (Ltv/nomercy/player/video/input/VideoTransport;Ltv/nomercy/player/video/input/VideoPresentation;Ltv/nomercy/player/video/input/VideoVolume;Ltv/nomercy/player/video/input/VideoState;Ltv/nomercy/player/video/input/VideoWindow;)V
 	public final fun getPresentation ()Ltv/nomercy/player/video/input/VideoPresentation;
 	public final fun getState ()Ltv/nomercy/player/video/input/VideoState;
 	public final fun getTransport ()Ltv/nomercy/player/video/input/VideoTransport;
 	public final fun getVolume ()Ltv/nomercy/player/video/input/VideoVolume;
+	public final fun getWindow ()Ltv/nomercy/player/video/input/VideoWindow;
 }
 
 public final class tv/nomercy/player/video/input/PlayerCommandsOfKt {
@@ -941,7 +958,6 @@ public abstract interface class tv/nomercy/player/video/input/VideoPresentation 
 	public abstract fun rate ()F
 	public abstract fun rate (F)V
 	public abstract fun rates ()Ljava/util/List;
-	public abstract fun toggleFullscreen ()V
 }
 
 public abstract interface class tv/nomercy/player/video/input/VideoState {
@@ -975,6 +991,11 @@ public abstract interface class tv/nomercy/player/video/input/VideoVolume {
 	public abstract fun volumeUp ()V
 }
 
+public abstract interface class tv/nomercy/player/video/input/VideoWindow {
+	public abstract fun isFullscreen ()Z
+	public abstract fun toggleFullscreen ()V
+}
+
 public final class tv/nomercy/player/video/input/WebKeyBinding {
 	public fun <init> (Ljava/lang/String;Ltv/nomercy/player/video/input/KeyAction;)V
 	public final fun component1 ()Ljava/lang/String;
@@ -995,7 +1016,20 @@ public final class tv/nomercy/player/video/input/WebKeyBindingsKt {
 
 public abstract interface class tv/nomercy/player/video/item/VideoPlaylistItem : tv/nomercy/player/core/media/PlaylistItem {
 	public abstract fun getDurationSeconds ()Ljava/lang/Double;
+	public fun getImage ()Ljava/lang/String;
+	public fun getPoster ()Ljava/lang/String;
 	public abstract fun getProgress ()Ltv/nomercy/player/video/item/WatchProgress;
+	public fun getSeason ()Ljava/lang/Integer;
+	public fun getShow ()Ljava/lang/String;
+	public fun getThumbnail ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/item/VideoPlaylistItem$DefaultImpls {
+	public static fun getImage (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
+	public static fun getPoster (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
+	public static fun getSeason (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/Integer;
+	public static fun getShow (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
+	public static fun getThumbnail (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 }
 
 public final class tv/nomercy/player/video/item/WatchProgress {
@@ -1050,6 +1084,22 @@ public final class tv/nomercy/player/video/menu/MenuOpenState {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/session/MediaSessionTranslations {
+	public static final field FALLBACK Ljava/lang/String;
+	public static final field INSTANCE Ltv/nomercy/player/video/session/MediaSessionTranslations;
+	public final fun get (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun getAvailable ()Ljava/util/Set;
+	public final fun of (Ljava/lang/String;)Ljava/util/Map;
+}
+
+public class tv/nomercy/player/video/session/VideoMediaSessionPlugin : tv/nomercy/player/core/plugin/MediaSessionPlugin {
+	public static final field SEASON_KEY Ljava/lang/String;
+	public static final field SEASON_TOKEN Ljava/lang/String;
+	public fun <init> (Ltv/nomercy/player/core/plugin/TransportCommands;Lkotlin/jvm/functions/Function0;Ljava/lang/String;)V
+	public synthetic fun <init> (Ltv/nomercy/player/core/plugin/TransportCommands;Lkotlin/jvm/functions/Function0;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun nowPlayingFor (Ltv/nomercy/player/core/media/PlaylistItem;)Ltv/nomercy/player/core/ports/NowPlaying;
+}
+
 public final class tv/nomercy/player/video/subtitles/AssFontNames {
 	public static final field INSTANCE Ltv/nomercy/player/video/subtitles/AssFontNames;
 	public final fun parse (Ljava/lang/String;)Ljava/util/List;
@@ -1096,7 +1146,8 @@ public final class tv/nomercy/player/video/subtitles/CueBox {
 public final class tv/nomercy/player/video/subtitles/CueLayoutKt {
 	public static final field DEFAULT_LINE_PERCENT D
 	public static final field FULL_WIDTH D
-	public static final field SAFE_AREA_INSET_PERCENT D
+	public static final field SAFE_AREA_INSET_BLOCK_PERCENT D
+	public static final field SAFE_AREA_INSET_INLINE_PERCENT D
 	public static final fun anchorFor (D)Ltv/nomercy/player/video/subtitles/CueAnchor;
 	public static final fun layOutCues (Ljava/util/List;DD)Ljava/util/List;
 	public static synthetic fun layOutCues$default (Ljava/util/List;DDILjava/lang/Object;)Ljava/util/List;
@@ -1128,6 +1179,23 @@ public final class tv/nomercy/player/video/subtitles/SubtitleCue {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/subtitles/SubtitleEdge {
+	public fun <init> (DDDI)V
+	public final fun component1 ()D
+	public final fun component2 ()D
+	public final fun component3 ()D
+	public final fun component4 ()I
+	public final fun copy (DDDI)Ltv/nomercy/player/video/subtitles/SubtitleEdge;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/subtitles/SubtitleEdge;DDDIILjava/lang/Object;)Ltv/nomercy/player/video/subtitles/SubtitleEdge;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBlurPx ()D
+	public final fun getLayers ()I
+	public final fun getOffsetXPx ()D
+	public final fun getOffsetYPx ()D
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class tv/nomercy/player/video/subtitles/SubtitleOverlayOptions {
 	public fun <init> ()V
 	public fun <init> (D)V
@@ -1153,6 +1221,7 @@ public class tv/nomercy/player/video/subtitles/SubtitleOverlayPlugin : tv/nomerc
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Ltv/nomercy/player/video/subtitles/SubtitleOverlayOptions;
 	public final fun show (Ljava/util/List;)V
+	public fun use ()V
 }
 
 public final class tv/nomercy/player/video/subtitles/SubtitleOverlayPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
@@ -1168,6 +1237,15 @@ public final class tv/nomercy/player/video/subtitles/SubtitleOverlayPlugin$Manif
 
 public final class tv/nomercy/player/video/subtitles/SubtitleOverlayPluginKt {
 	public static final field DEFAULT_CUE_HEIGHT_PERCENT D
+}
+
+public final class tv/nomercy/player/video/subtitles/SubtitlePaintKt {
+	public static final fun getNAMED_SUBTITLE_COLORS ()Ljava/util/Map;
+	public static final fun getNO_EDGE ()Ltv/nomercy/player/video/subtitles/SubtitleEdge;
+	public static final fun normalizeHex (Ljava/lang/String;D)Ljava/lang/String;
+	public static final fun parseColorToHex (Ljava/lang/String;D)Ljava/lang/String;
+	public static final fun rgbToHex (Ljava/lang/String;D)Ljava/lang/String;
+	public static final fun subtitleEdgeOf (Ljava/lang/String;)Ltv/nomercy/player/video/subtitles/SubtitleEdge;
 }
 
 public final class tv/nomercy/player/video/subtitles/TtfNameParser {

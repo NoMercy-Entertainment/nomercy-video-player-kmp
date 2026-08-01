@@ -88,13 +88,11 @@ final enum class tv.nomercy.player.video.cast/WakeOutcome : kotlin/Enum<tv.nomer
 }
 
 final enum class tv.nomercy.player.video.input/KeyAction : kotlin/Enum<tv.nomercy.player.video.input/KeyAction> { // tv.nomercy.player.video.input/KeyAction|null[0]
-    enum entry BLUE // tv.nomercy.player.video.input/KeyAction.BLUE|null[0]
     enum entry CYCLE_ASPECT_RATIO // tv.nomercy.player.video.input/KeyAction.CYCLE_ASPECT_RATIO|null[0]
     enum entry CYCLE_AUDIO // tv.nomercy.player.video.input/KeyAction.CYCLE_AUDIO|null[0]
     enum entry CYCLE_SUBTITLES // tv.nomercy.player.video.input/KeyAction.CYCLE_SUBTITLES|null[0]
     enum entry EXIT_FULLSCREEN // tv.nomercy.player.video.input/KeyAction.EXIT_FULLSCREEN|null[0]
-    enum entry FORWARD // tv.nomercy.player.video.input/KeyAction.FORWARD|null[0]
-    enum entry GREEN // tv.nomercy.player.video.input/KeyAction.GREEN|null[0]
+    enum entry FRAME_ADVANCE // tv.nomercy.player.video.input/KeyAction.FRAME_ADVANCE|null[0]
     enum entry NEXT_CHAPTER // tv.nomercy.player.video.input/KeyAction.NEXT_CHAPTER|null[0]
     enum entry NEXT_ITEM // tv.nomercy.player.video.input/KeyAction.NEXT_ITEM|null[0]
     enum entry PAUSE // tv.nomercy.player.video.input/KeyAction.PAUSE|null[0]
@@ -102,27 +100,29 @@ final enum class tv.nomercy.player.video.input/KeyAction : kotlin/Enum<tv.nomerc
     enum entry PLAY_PAUSE // tv.nomercy.player.video.input/KeyAction.PLAY_PAUSE|null[0]
     enum entry PREVIOUS_CHAPTER // tv.nomercy.player.video.input/KeyAction.PREVIOUS_CHAPTER|null[0]
     enum entry PREVIOUS_ITEM // tv.nomercy.player.video.input/KeyAction.PREVIOUS_ITEM|null[0]
-    enum entry RED // tv.nomercy.player.video.input/KeyAction.RED|null[0]
-    enum entry REWIND // tv.nomercy.player.video.input/KeyAction.REWIND|null[0]
     enum entry SEEK_BACK_10 // tv.nomercy.player.video.input/KeyAction.SEEK_BACK_10|null[0]
     enum entry SEEK_BACK_3 // tv.nomercy.player.video.input/KeyAction.SEEK_BACK_3|null[0]
+    enum entry SEEK_BACK_5 // tv.nomercy.player.video.input/KeyAction.SEEK_BACK_5|null[0]
     enum entry SEEK_BACK_60 // tv.nomercy.player.video.input/KeyAction.SEEK_BACK_60|null[0]
     enum entry SEEK_FORWARD_10 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_10|null[0]
+    enum entry SEEK_FORWARD_120 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_120|null[0]
     enum entry SEEK_FORWARD_3 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_3|null[0]
+    enum entry SEEK_FORWARD_30 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_30|null[0]
+    enum entry SEEK_FORWARD_5 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_5|null[0]
     enum entry SEEK_FORWARD_60 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_60|null[0]
+    enum entry SEEK_FORWARD_90 // tv.nomercy.player.video.input/KeyAction.SEEK_FORWARD_90|null[0]
+    enum entry SHOW_TIME // tv.nomercy.player.video.input/KeyAction.SHOW_TIME|null[0]
     enum entry SPEED_DOWN // tv.nomercy.player.video.input/KeyAction.SPEED_DOWN|null[0]
     enum entry SPEED_RESET // tv.nomercy.player.video.input/KeyAction.SPEED_RESET|null[0]
     enum entry SPEED_UP // tv.nomercy.player.video.input/KeyAction.SPEED_UP|null[0]
     enum entry STOP // tv.nomercy.player.video.input/KeyAction.STOP|null[0]
+    enum entry SUBTITLE_SIZE_DOWN // tv.nomercy.player.video.input/KeyAction.SUBTITLE_SIZE_DOWN|null[0]
+    enum entry SUBTITLE_SIZE_UP // tv.nomercy.player.video.input/KeyAction.SUBTITLE_SIZE_UP|null[0]
     enum entry TOGGLE_FULLSCREEN // tv.nomercy.player.video.input/KeyAction.TOGGLE_FULLSCREEN|null[0]
     enum entry TOGGLE_MUTE // tv.nomercy.player.video.input/KeyAction.TOGGLE_MUTE|null[0]
-    enum entry TOGGLE_PIP // tv.nomercy.player.video.input/KeyAction.TOGGLE_PIP|null[0]
-    enum entry TOGGLE_SETTINGS // tv.nomercy.player.video.input/KeyAction.TOGGLE_SETTINGS|null[0]
     enum entry TOGGLE_SHORTCUTS // tv.nomercy.player.video.input/KeyAction.TOGGLE_SHORTCUTS|null[0]
-    enum entry TOGGLE_THEATER // tv.nomercy.player.video.input/KeyAction.TOGGLE_THEATER|null[0]
     enum entry VOLUME_DOWN // tv.nomercy.player.video.input/KeyAction.VOLUME_DOWN|null[0]
     enum entry VOLUME_UP // tv.nomercy.player.video.input/KeyAction.VOLUME_UP|null[0]
-    enum entry YELLOW // tv.nomercy.player.video.input/KeyAction.YELLOW|null[0]
 
     final val entries // tv.nomercy.player.video.input/KeyAction.entries|#static{}entries[0]
         final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.input/KeyAction> // tv.nomercy.player.video.input/KeyAction.entries.<get-entries>|<get-entries>#static(){}[0]
@@ -210,6 +210,24 @@ final enum class tv.nomercy.player.video.tv/TvDialog : kotlin/Enum<tv.nomercy.pl
     final fun values(): kotlin/Array<tv.nomercy.player.video.tv/TvDialog> // tv.nomercy.player.video.tv/TvDialog.values|values#static(){}[0]
 }
 
+final enum class tv.nomercy.player.video/SegmentEndBehaviour : kotlin/Enum<tv.nomercy.player.video/SegmentEndBehaviour> { // tv.nomercy.player.video/SegmentEndBehaviour|null[0]
+    enum entry Advance // tv.nomercy.player.video/SegmentEndBehaviour.Advance|null[0]
+    enum entry Hold // tv.nomercy.player.video/SegmentEndBehaviour.Hold|null[0]
+    enum entry Loop // tv.nomercy.player.video/SegmentEndBehaviour.Loop|null[0]
+
+    final val entries // tv.nomercy.player.video/SegmentEndBehaviour.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video/SegmentEndBehaviour> // tv.nomercy.player.video/SegmentEndBehaviour.entries.<get-entries>|<get-entries>#static(){}[0]
+    final val token // tv.nomercy.player.video/SegmentEndBehaviour.token|{}token[0]
+        final fun <get-token>(): kotlin/String // tv.nomercy.player.video/SegmentEndBehaviour.token.<get-token>|<get-token>(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video/SegmentEndBehaviour // tv.nomercy.player.video/SegmentEndBehaviour.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video/SegmentEndBehaviour> // tv.nomercy.player.video/SegmentEndBehaviour.values|values#static(){}[0]
+
+    final object Companion { // tv.nomercy.player.video/SegmentEndBehaviour.Companion|null[0]
+        final fun fromToken(kotlin/String): tv.nomercy.player.video/SegmentEndBehaviour // tv.nomercy.player.video/SegmentEndBehaviour.Companion.fromToken|fromToken(kotlin.String){}[0]
+    }
+}
+
 final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.player.video/Stretching> { // tv.nomercy.player.video/Stretching|null[0]
     enum entry ExactFit // tv.nomercy.player.video/Stretching.ExactFit|null[0]
     enum entry Fill // tv.nomercy.player.video/Stretching.Fill|null[0]
@@ -291,7 +309,6 @@ abstract interface tv.nomercy.player.video.input/VideoPresentation { // tv.nomer
     abstract fun rate(): kotlin/Float // tv.nomercy.player.video.input/VideoPresentation.rate|rate(){}[0]
     abstract fun rate(kotlin/Float) // tv.nomercy.player.video.input/VideoPresentation.rate|rate(kotlin.Float){}[0]
     abstract fun rates(): kotlin.collections/List<kotlin/Float> // tv.nomercy.player.video.input/VideoPresentation.rates|rates(){}[0]
-    abstract fun toggleFullscreen() // tv.nomercy.player.video.input/VideoPresentation.toggleFullscreen|toggleFullscreen(){}[0]
 }
 
 abstract interface tv.nomercy.player.video.input/VideoState { // tv.nomercy.player.video.input/VideoState|null[0]
@@ -320,11 +337,26 @@ abstract interface tv.nomercy.player.video.input/VideoVolume { // tv.nomercy.pla
     abstract fun volumeUp() // tv.nomercy.player.video.input/VideoVolume.volumeUp|volumeUp(){}[0]
 }
 
+abstract interface tv.nomercy.player.video.input/VideoWindow { // tv.nomercy.player.video.input/VideoWindow|null[0]
+    abstract fun isFullscreen(): kotlin/Boolean // tv.nomercy.player.video.input/VideoWindow.isFullscreen|isFullscreen(){}[0]
+    abstract fun toggleFullscreen() // tv.nomercy.player.video.input/VideoWindow.toggleFullscreen|toggleFullscreen(){}[0]
+}
+
 abstract interface tv.nomercy.player.video.item/VideoPlaylistItem : tv.nomercy.player.core.media/PlaylistItem { // tv.nomercy.player.video.item/VideoPlaylistItem|null[0]
     abstract val durationSeconds // tv.nomercy.player.video.item/VideoPlaylistItem.durationSeconds|{}durationSeconds[0]
         abstract fun <get-durationSeconds>(): kotlin/Double? // tv.nomercy.player.video.item/VideoPlaylistItem.durationSeconds.<get-durationSeconds>|<get-durationSeconds>(){}[0]
     abstract val progress // tv.nomercy.player.video.item/VideoPlaylistItem.progress|{}progress[0]
         abstract fun <get-progress>(): tv.nomercy.player.video.item/WatchProgress? // tv.nomercy.player.video.item/VideoPlaylistItem.progress.<get-progress>|<get-progress>(){}[0]
+    open val image // tv.nomercy.player.video.item/VideoPlaylistItem.image|{}image[0]
+        open fun <get-image>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.image.<get-image>|<get-image>(){}[0]
+    open val poster // tv.nomercy.player.video.item/VideoPlaylistItem.poster|{}poster[0]
+        open fun <get-poster>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.poster.<get-poster>|<get-poster>(){}[0]
+    open val season // tv.nomercy.player.video.item/VideoPlaylistItem.season|{}season[0]
+        open fun <get-season>(): kotlin/Int? // tv.nomercy.player.video.item/VideoPlaylistItem.season.<get-season>|<get-season>(){}[0]
+    open val show // tv.nomercy.player.video.item/VideoPlaylistItem.show|{}show[0]
+        open fun <get-show>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.show.<get-show>|<get-show>(){}[0]
+    open val thumbnail // tv.nomercy.player.video.item/VideoPlaylistItem.thumbnail|{}thumbnail[0]
+        open fun <get-thumbnail>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.thumbnail.<get-thumbnail>|<get-thumbnail>(){}[0]
 }
 
 abstract interface tv.nomercy.player.video.tv/TvChromeCallbacks { // tv.nomercy.player.video.tv/TvChromeCallbacks|null[0]
@@ -828,7 +860,7 @@ final class tv.nomercy.player.video.chapters/ChapterMarker { // tv.nomercy.playe
 }
 
 final class tv.nomercy.player.video.input/PlayerCommands { // tv.nomercy.player.video.input/PlayerCommands|null[0]
-    constructor <init>(tv.nomercy.player.video.input/VideoTransport, tv.nomercy.player.video.input/VideoPresentation, tv.nomercy.player.video.input/VideoVolume, tv.nomercy.player.video.input/VideoState) // tv.nomercy.player.video.input/PlayerCommands.<init>|<init>(tv.nomercy.player.video.input.VideoTransport;tv.nomercy.player.video.input.VideoPresentation;tv.nomercy.player.video.input.VideoVolume;tv.nomercy.player.video.input.VideoState){}[0]
+    constructor <init>(tv.nomercy.player.video.input/VideoTransport, tv.nomercy.player.video.input/VideoPresentation, tv.nomercy.player.video.input/VideoVolume, tv.nomercy.player.video.input/VideoState, tv.nomercy.player.video.input/VideoWindow) // tv.nomercy.player.video.input/PlayerCommands.<init>|<init>(tv.nomercy.player.video.input.VideoTransport;tv.nomercy.player.video.input.VideoPresentation;tv.nomercy.player.video.input.VideoVolume;tv.nomercy.player.video.input.VideoState;tv.nomercy.player.video.input.VideoWindow){}[0]
 
     final val presentation // tv.nomercy.player.video.input/PlayerCommands.presentation|{}presentation[0]
         final fun <get-presentation>(): tv.nomercy.player.video.input/VideoPresentation // tv.nomercy.player.video.input/PlayerCommands.presentation.<get-presentation>|<get-presentation>(){}[0]
@@ -838,6 +870,8 @@ final class tv.nomercy.player.video.input/PlayerCommands { // tv.nomercy.player.
         final fun <get-transport>(): tv.nomercy.player.video.input/VideoTransport // tv.nomercy.player.video.input/PlayerCommands.transport.<get-transport>|<get-transport>(){}[0]
     final val volume // tv.nomercy.player.video.input/PlayerCommands.volume|{}volume[0]
         final fun <get-volume>(): tv.nomercy.player.video.input/VideoVolume // tv.nomercy.player.video.input/PlayerCommands.volume.<get-volume>|<get-volume>(){}[0]
+    final val window // tv.nomercy.player.video.input/PlayerCommands.window|{}window[0]
+        final fun <get-window>(): tv.nomercy.player.video.input/VideoWindow // tv.nomercy.player.video.input/PlayerCommands.window.<get-window>|<get-window>(){}[0]
 }
 
 final class tv.nomercy.player.video.input/TvBookmark { // tv.nomercy.player.video.input/TvBookmark|null[0]
@@ -1020,6 +1054,28 @@ final class tv.nomercy.player.video.subtitles/SubtitleCue { // tv.nomercy.player
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.subtitles/SubtitleCue.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video.subtitles/SubtitleCue.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/SubtitleCue.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.subtitles/SubtitleEdge { // tv.nomercy.player.video.subtitles/SubtitleEdge|null[0]
+    constructor <init>(kotlin/Double, kotlin/Double, kotlin/Double, kotlin/Int) // tv.nomercy.player.video.subtitles/SubtitleEdge.<init>|<init>(kotlin.Double;kotlin.Double;kotlin.Double;kotlin.Int){}[0]
+
+    final val blurPx // tv.nomercy.player.video.subtitles/SubtitleEdge.blurPx|{}blurPx[0]
+        final fun <get-blurPx>(): kotlin/Double // tv.nomercy.player.video.subtitles/SubtitleEdge.blurPx.<get-blurPx>|<get-blurPx>(){}[0]
+    final val layers // tv.nomercy.player.video.subtitles/SubtitleEdge.layers|{}layers[0]
+        final fun <get-layers>(): kotlin/Int // tv.nomercy.player.video.subtitles/SubtitleEdge.layers.<get-layers>|<get-layers>(){}[0]
+    final val offsetXPx // tv.nomercy.player.video.subtitles/SubtitleEdge.offsetXPx|{}offsetXPx[0]
+        final fun <get-offsetXPx>(): kotlin/Double // tv.nomercy.player.video.subtitles/SubtitleEdge.offsetXPx.<get-offsetXPx>|<get-offsetXPx>(){}[0]
+    final val offsetYPx // tv.nomercy.player.video.subtitles/SubtitleEdge.offsetYPx|{}offsetYPx[0]
+        final fun <get-offsetYPx>(): kotlin/Double // tv.nomercy.player.video.subtitles/SubtitleEdge.offsetYPx.<get-offsetYPx>|<get-offsetYPx>(){}[0]
+
+    final fun component1(): kotlin/Double // tv.nomercy.player.video.subtitles/SubtitleEdge.component1|component1(){}[0]
+    final fun component2(): kotlin/Double // tv.nomercy.player.video.subtitles/SubtitleEdge.component2|component2(){}[0]
+    final fun component3(): kotlin/Double // tv.nomercy.player.video.subtitles/SubtitleEdge.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // tv.nomercy.player.video.subtitles/SubtitleEdge.component4|component4(){}[0]
+    final fun copy(kotlin/Double = ..., kotlin/Double = ..., kotlin/Double = ..., kotlin/Int = ...): tv.nomercy.player.video.subtitles/SubtitleEdge // tv.nomercy.player.video.subtitles/SubtitleEdge.copy|copy(kotlin.Double;kotlin.Double;kotlin.Double;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.subtitles/SubtitleEdge.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.subtitles/SubtitleEdge.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/SubtitleEdge.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video.subtitles/SubtitleOverlayOptions { // tv.nomercy.player.video.subtitles/SubtitleOverlayOptions|null[0]
@@ -1660,6 +1716,12 @@ open class tv.nomercy.player.video.input/VideoKeyHandlerPlugin : tv.nomercy.play
     }
 }
 
+open class tv.nomercy.player.video.session/VideoMediaSessionPlugin : tv.nomercy.player.core.plugin/MediaSessionPlugin { // tv.nomercy.player.video.session/VideoMediaSessionPlugin|null[0]
+    constructor <init>(tv.nomercy.player.core.plugin/TransportCommands, kotlin/Function0<tv.nomercy.player.core.ports/SystemTransport> = ..., kotlin/String = ...) // tv.nomercy.player.video.session/VideoMediaSessionPlugin.<init>|<init>(tv.nomercy.player.core.plugin.TransportCommands;kotlin.Function0<tv.nomercy.player.core.ports.SystemTransport>;kotlin.String){}[0]
+
+    open fun nowPlayingFor(tv.nomercy.player.core.media/PlaylistItem): tv.nomercy.player.core.ports/NowPlaying // tv.nomercy.player.video.session/VideoMediaSessionPlugin.nowPlayingFor|nowPlayingFor(tv.nomercy.player.core.media.PlaylistItem){}[0]
+}
+
 open class tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin : tv.nomercy.player.core.plugin/Plugin<tv.nomercy.player.video.subtitles/SubtitleOverlayOptions> { // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin|null[0]
     constructor <init>(tv.nomercy.player.video.subtitles/SubtitleOverlayOptions = ...) // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.<init>|<init>(tv.nomercy.player.video.subtitles.SubtitleOverlayOptions){}[0]
 
@@ -1673,6 +1735,7 @@ open class tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin : tv.nomercy.
     final fun clear() // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.clear|clear(){}[0]
     final fun show(kotlin.collections/List<tv.nomercy.player.video.subtitles/SubtitleCue>) // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.show|show(kotlin.collections.List<tv.nomercy.player.video.subtitles.SubtitleCue>){}[0]
     open fun dispose() // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.dispose|dispose(){}[0]
+    open fun use() // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.use|use(){}[0]
 
     final object Manifest : tv.nomercy.player.core.plugin/PluginManifest { // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.Manifest|null[0]
         final val id // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.Manifest.id|{}id[0]
@@ -1733,7 +1796,7 @@ open class tv.nomercy.player.video/NMVideoPlayer : tv.nomercy.player.core.contro
     open fun toggleTheater() // tv.nomercy.player.video/NMVideoPlayer.toggleTheater|toggleTheater(){}[0]
     open fun videoRect(): tv.nomercy.player.video/VideoRect? // tv.nomercy.player.video/NMVideoPlayer.videoRect|videoRect(){}[0]
     open fun videoRect(tv.nomercy.player.video/VideoRect?) // tv.nomercy.player.video/NMVideoPlayer.videoRect|videoRect(tv.nomercy.player.video.VideoRect?){}[0]
-    open suspend fun playSegment(tv.nomercy.player.video/SegmentBoundary) // tv.nomercy.player.video/NMVideoPlayer.playSegment|playSegment(tv.nomercy.player.video.SegmentBoundary){}[0]
+    open suspend fun playSegment(tv.nomercy.player.video/SegmentBoundary, tv.nomercy.player.video/SegmentEndBehaviour = ...) // tv.nomercy.player.video/NMVideoPlayer.playSegment|playSegment(tv.nomercy.player.video.SegmentBoundary;tv.nomercy.player.video.SegmentEndBehaviour){}[0]
 
     final object Companion { // tv.nomercy.player.video/NMVideoPlayer.Companion|null[0]
         final fun instances(): kotlin.collections/List<tv.nomercy.player.video/NMVideoPlayer> // tv.nomercy.player.video/NMVideoPlayer.Companion.instances|instances(){}[0]
@@ -1760,6 +1823,17 @@ final object tv.nomercy.player.video.input/TvKeyHandlerTranslations { // tv.nome
 
     final fun get(kotlin/String, kotlin/String): kotlin/String // tv.nomercy.player.video.input/TvKeyHandlerTranslations.get|get(kotlin.String;kotlin.String){}[0]
     final fun of(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/String> // tv.nomercy.player.video.input/TvKeyHandlerTranslations.of|of(kotlin.String){}[0]
+}
+
+final object tv.nomercy.player.video.session/MediaSessionTranslations { // tv.nomercy.player.video.session/MediaSessionTranslations|null[0]
+    final const val FALLBACK // tv.nomercy.player.video.session/MediaSessionTranslations.FALLBACK|{}FALLBACK[0]
+        final fun <get-FALLBACK>(): kotlin/String // tv.nomercy.player.video.session/MediaSessionTranslations.FALLBACK.<get-FALLBACK>|<get-FALLBACK>(){}[0]
+
+    final val available // tv.nomercy.player.video.session/MediaSessionTranslations.available|{}available[0]
+        final fun <get-available>(): kotlin.collections/Set<kotlin/String> // tv.nomercy.player.video.session/MediaSessionTranslations.available.<get-available>|<get-available>(){}[0]
+
+    final fun get(kotlin/String, kotlin/String): kotlin/String // tv.nomercy.player.video.session/MediaSessionTranslations.get|get(kotlin.String;kotlin.String){}[0]
+    final fun of(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/String> // tv.nomercy.player.video.session/MediaSessionTranslations.of|of(kotlin.String){}[0]
 }
 
 final object tv.nomercy.player.video.subtitles/AssFontNames { // tv.nomercy.player.video.subtitles/AssFontNames|null[0]
@@ -1828,8 +1902,10 @@ final const val tv.nomercy.player.video.subtitles/DEFAULT_LINE_PERCENT // tv.nom
     final fun <get-DEFAULT_LINE_PERCENT>(): kotlin/Double // tv.nomercy.player.video.subtitles/DEFAULT_LINE_PERCENT.<get-DEFAULT_LINE_PERCENT>|<get-DEFAULT_LINE_PERCENT>(){}[0]
 final const val tv.nomercy.player.video.subtitles/FULL_WIDTH // tv.nomercy.player.video.subtitles/FULL_WIDTH|{}FULL_WIDTH[0]
     final fun <get-FULL_WIDTH>(): kotlin/Double // tv.nomercy.player.video.subtitles/FULL_WIDTH.<get-FULL_WIDTH>|<get-FULL_WIDTH>(){}[0]
-final const val tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_PERCENT // tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_PERCENT|{}SAFE_AREA_INSET_PERCENT[0]
-    final fun <get-SAFE_AREA_INSET_PERCENT>(): kotlin/Double // tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_PERCENT.<get-SAFE_AREA_INSET_PERCENT>|<get-SAFE_AREA_INSET_PERCENT>(){}[0]
+final const val tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_BLOCK_PERCENT // tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_BLOCK_PERCENT|{}SAFE_AREA_INSET_BLOCK_PERCENT[0]
+    final fun <get-SAFE_AREA_INSET_BLOCK_PERCENT>(): kotlin/Double // tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_BLOCK_PERCENT.<get-SAFE_AREA_INSET_BLOCK_PERCENT>|<get-SAFE_AREA_INSET_BLOCK_PERCENT>(){}[0]
+final const val tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_INLINE_PERCENT // tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_INLINE_PERCENT|{}SAFE_AREA_INSET_INLINE_PERCENT[0]
+    final fun <get-SAFE_AREA_INSET_INLINE_PERCENT>(): kotlin/Double // tv.nomercy.player.video.subtitles/SAFE_AREA_INSET_INLINE_PERCENT.<get-SAFE_AREA_INSET_INLINE_PERCENT>|<get-SAFE_AREA_INSET_INLINE_PERCENT>(){}[0]
 final const val tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS // tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS|{}DOUBLE_TAP_THRESHOLD_MS[0]
     final fun <get-DOUBLE_TAP_THRESHOLD_MS>(): kotlin/Long // tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS.<get-DOUBLE_TAP_THRESHOLD_MS>|<get-DOUBLE_TAP_THRESHOLD_MS>(){}[0]
 final const val tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS // tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS|{}TOUCH_SEEK_SECONDS[0]
@@ -1843,6 +1919,10 @@ final val tv.nomercy.player.video.input/WEB_KEY_BINDINGS // tv.nomercy.player.vi
     final fun <get-WEB_KEY_BINDINGS>(): kotlin.collections/List<tv.nomercy.player.video.input/WebKeyBinding> // tv.nomercy.player.video.input/WEB_KEY_BINDINGS.<get-WEB_KEY_BINDINGS>|<get-WEB_KEY_BINDINGS>(){}[0]
 final val tv.nomercy.player.video.input/WEB_KEY_COMBOS // tv.nomercy.player.video.input/WEB_KEY_COMBOS|{}WEB_KEY_COMBOS[0]
     final fun <get-WEB_KEY_COMBOS>(): kotlin.collections/Set<kotlin/String> // tv.nomercy.player.video.input/WEB_KEY_COMBOS.<get-WEB_KEY_COMBOS>|<get-WEB_KEY_COMBOS>(){}[0]
+final val tv.nomercy.player.video.subtitles/NAMED_SUBTITLE_COLORS // tv.nomercy.player.video.subtitles/NAMED_SUBTITLE_COLORS|{}NAMED_SUBTITLE_COLORS[0]
+    final fun <get-NAMED_SUBTITLE_COLORS>(): kotlin.collections/Map<kotlin/String, kotlin/String> // tv.nomercy.player.video.subtitles/NAMED_SUBTITLE_COLORS.<get-NAMED_SUBTITLE_COLORS>|<get-NAMED_SUBTITLE_COLORS>(){}[0]
+final val tv.nomercy.player.video.subtitles/NO_EDGE // tv.nomercy.player.video.subtitles/NO_EDGE|{}NO_EDGE[0]
+    final fun <get-NO_EDGE>(): tv.nomercy.player.video.subtitles/SubtitleEdge // tv.nomercy.player.video.subtitles/NO_EDGE.<get-NO_EDGE>|<get-NO_EDGE>(){}[0]
 
 final fun (tv.nomercy.player.video.item/WatchProgress).tv.nomercy.player.video.item/isLegacy(): kotlin/Boolean // tv.nomercy.player.video.item/isLegacy|isLegacy@tv.nomercy.player.video.item.WatchProgress(){}[0]
 final fun <#A: kotlin/Any?> tv.nomercy.player.video.menu/navigableRows(kotlin.collections/List<#A>, kotlin/Function1<#A, kotlin/Boolean>): kotlin.collections/List<#A> // tv.nomercy.player.video.menu/navigableRows|navigableRows(kotlin.collections.List<0:0>;kotlin.Function1<0:0,kotlin.Boolean>){0§<kotlin.Any?>}[0]
@@ -1861,6 +1941,10 @@ final fun tv.nomercy.player.video.menu/nextMenuRow(kotlin/Int, kotlin/Int, kotli
 final fun tv.nomercy.player.video.subtitles/anchorFor(kotlin/Double): tv.nomercy.player.video.subtitles/CueAnchor // tv.nomercy.player.video.subtitles/anchorFor|anchorFor(kotlin.Double){}[0]
 final fun tv.nomercy.player.video.subtitles/layOutCues(kotlin.collections/List<tv.nomercy.player.video.subtitles/SubtitleCue>, kotlin/Double, kotlin/Double = ...): kotlin.collections/List<tv.nomercy.player.video.subtitles/CueBox> // tv.nomercy.player.video.subtitles/layOutCues|layOutCues(kotlin.collections.List<tv.nomercy.player.video.subtitles.SubtitleCue>;kotlin.Double;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.subtitles/layOutHorizontally(tv.nomercy.player.video.subtitles/SubtitleCue): kotlin/Pair<kotlin/Double, kotlin/Double> // tv.nomercy.player.video.subtitles/layOutHorizontally|layOutHorizontally(tv.nomercy.player.video.subtitles.SubtitleCue){}[0]
+final fun tv.nomercy.player.video.subtitles/normalizeHex(kotlin/String, kotlin/Double): kotlin/String // tv.nomercy.player.video.subtitles/normalizeHex|normalizeHex(kotlin.String;kotlin.Double){}[0]
+final fun tv.nomercy.player.video.subtitles/parseColorToHex(kotlin/String, kotlin/Double): kotlin/String // tv.nomercy.player.video.subtitles/parseColorToHex|parseColorToHex(kotlin.String;kotlin.Double){}[0]
+final fun tv.nomercy.player.video.subtitles/rgbToHex(kotlin/String, kotlin/Double): kotlin/String // tv.nomercy.player.video.subtitles/rgbToHex|rgbToHex(kotlin.String;kotlin.Double){}[0]
+final fun tv.nomercy.player.video.subtitles/subtitleEdgeOf(kotlin/String): tv.nomercy.player.video.subtitles/SubtitleEdge // tv.nomercy.player.video.subtitles/subtitleEdgeOf|subtitleEdgeOf(kotlin.String){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): tv.nomercy.player.core.cues/SpriteCue? // tv.nomercy.player.video.thumbnails/frameAt|frameAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/frameIndexAt(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>, kotlin/Double): kotlin/Int? // tv.nomercy.player.video.thumbnails/frameIndexAt|frameIndexAt(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>;kotlin.Double){}[0]
 final fun tv.nomercy.player.video.thumbnails/spriteFrameAspect(kotlin.collections/List<tv.nomercy.player.core.cues/SpriteCue>): kotlin/Float // tv.nomercy.player.video.thumbnails/spriteFrameAspect|spriteFrameAspect(kotlin.collections.List<tv.nomercy.player.core.cues.SpriteCue>){}[0]
