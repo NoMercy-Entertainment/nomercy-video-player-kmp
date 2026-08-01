@@ -107,6 +107,21 @@ public data class VideoUiOptions(
     /** `portraitHidden` — dropped at any width in portrait. His site replaces it. */
     val portraitHidden: Set<ChromeControl> = CHROME_PORTRAIT_HIDDEN,
 
+    /**
+     * `buttonOrder` — the visual override, distinct from [buttonPriority].
+     *
+     * Controls named here move to the END of the row in this sequence; anything
+     * unnamed stays where the web's builder put it. Priority decides what is
+     * DROPPED as the row narrows and this decides what sits where, which the web
+     * keeps apart and a port that conflated them would get wrong in both
+     * directions.
+     *
+     * His site passes one, and until now it could not be expressed: the option
+     * was named in a comment on this class and was not a field, so a consumer
+     * moving the same configuration across silently got the default order.
+     */
+    val buttonOrder: List<ChromeControl> = emptyList(),
+
     /** `hideTitle`. A player embedded under its own heading does not repeat it. */
     val hideTitle: Boolean = false,
 
@@ -188,6 +203,7 @@ public open class VideoUiPlugin(
                 portraitHidden = resolved.portraitHidden,
                 hideTitle = resolved.hideTitle,
                 volumeSlider = resolved.volumeSlider,
+                buttonOrder = resolved.buttonOrder,
             ),
             onClose = onBack,
         )

@@ -63,6 +63,19 @@ public fun TransportBar(
     portraitHidden: Set<ChromeControl> = CHROME_PORTRAIT_HIDDEN,
     /** `volumeSlider` — whether the level is set on a track or in a popup. */
     volumeSlider: VolumeSliderMode = VolumeSliderMode.Auto,
+    /**
+     * `buttonOrder` — a consumer's visual override.
+     *
+     * Every control named here is re-anchored to the END of the row in the given
+     * sequence, and anything unnamed keeps its natural position. That is the
+     * web's rule exactly: `applyButtonOrder` appends each named button to the
+     * row, so a named control crosses the divider and lands after fullscreen.
+     *
+     * Independent of [priority], which decides what is DROPPED as the row
+     * narrows. Reordering the bar and changing what survives a phone are
+     * different decisions and the web keeps them apart.
+     */
+    buttonOrder: List<ChromeControl> = emptyList(),
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val widthDp: Int = boundedWidthDp(maxWidth)
@@ -86,11 +99,32 @@ public fun TransportBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(metrics.gap),
         ) {
-            TransportButtons(state, commands, strings, fits)
-            VolumeCluster(state, commands, fits, volumeSpecFor(state, strings, volumeSlider, widthDp))
+            // What the consumer moved, and what is left where the web puts it.
+            //
+            // Filtered by [fits] first: a control the row has no room for is not
+            // drawn because it was named in an order, and the web agrees — its
+            // resize pass runs over whatever the DOM holds, whatever order it is
+            // in.
+            val moved: List<ChromeControl> = buttonOrder.filter { it in fits }.distinct()
+            val natural: Set<ChromeControl> = fits - moved.toSet()
+            val spec: VolumeSpec = volumeSpecFor(state, strings, volumeSlider, widthDp)
+
+            TransportButtons(state, commands, strings, natural)
+            VolumeCluster(state, commands, natural, spec)
             TimeReadout(state, commands, buttons)
-            ViewButtons(state, commands, strings, fits)
-            MenuButtons(state, commands, strings, fits)
+            ViewButtons(state, commands, strings, natural)
+
+            // The tail, in the sequence the consumer asked for.
+            moved.forEach { control ->
+                if (control == ChromeControl.MUTE) {
+                    // The cluster rather than the button: the level has to travel
+                    // with the thing that mutes it, or a reordered bar mutes in
+                    // one place and sets the volume in another.
+                    VolumeCluster(state, commands, setOf(ChromeControl.MUTE), spec)
+                } else {
+                    ControlButton(control, state, commands, strings)
+                }
+            }
         }
     }
 }
@@ -106,137 +140,139 @@ private fun TransportButtons(
     strings: TvChromeStrings,
     fits: Set<ChromeControl>,
 ) {
-    PlayPauseAndPrevious(state, commands, strings, fits)
-    SeekButtons(commands, strings, fits)
-    ChapterButtons(state, commands, strings, fits)
-    NextButton(state, commands, strings, fits)
+    TRANSPORT_ORDER.forEach { control ->
+        if (control in fits) TransportControlButton(control, state, commands, strings)
+    }
 }
 
-// Play leads the row, previous follows it.
+// Web order 1-7: play, previous, the two ten-second steps, the two chapter
+// jumps, next.
+private val TRANSPORT_ORDER: List<ChromeControl> = listOf(
+    ChromeControl.PLAY,
+    ChromeControl.PREVIOUS,
+    ChromeControl.SEEK_BACK,
+    ChromeControl.SEEK_FORWARD,
+    ChromeControl.CHAPTER_PREV,
+    ChromeControl.CHAPTER_NEXT,
+    ChromeControl.NEXT,
+)
+
+// One control, drawn.
+//
+// A `when` rather than a run of composables that each re-test the same set,
+// because buttonOrder needs a control drawn OUT of its group — and the
+// alternative, a second copy of these eighteen blocks for the reordered tail,
+// is the duplicate-declaration defect this codebase keeps finding.
+//
+// The branches are in draw order and that is load-bearing:
+// check-chrome-parity.py reads every glyph reference in this file top to bottom
+// and compares the sequence to the web's builder, so a branch out of order
+// reports as a bar in the wrong order. Split in two around the volume glyphs,
+// which volumeIconFor names between the transport group and the view group.
+//
+// Naming a glyph in prose here counts as drawing one, because that reader is a
+// regex over the whole file — which is how this comment reddened the gate the
+// first time it was written.
 @Composable
-private fun PlayPauseAndPrevious(
+private fun TransportControlButton(
+    control: ChromeControl,
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    fits: Set<ChromeControl>,
 ) {
-    if (ChromeControl.PLAY in fits) {
+    val starts: List<Double> = state.chapters.map { it.startSeconds }
+
+    when (control) {
         // The glyph and the label are one decision rather than two conditions
         // that happen to read the same state. Written apart, an edit to one is
         // an edit to half of it — a pause glyph announcing itself as Play, which
         // is invisible to anyone looking at the screen and wrong for everyone
         // who is not.
-        val control: TransportControl = if (state.playing) {
-            TransportControl(FluentIcons.Pause, strings.pause)
-        } else {
-            TransportControl(FluentIcons.Play, strings.play)
+        ChromeControl.PLAY -> {
+            val transport: TransportControl = if (state.playing) {
+                TransportControl(FluentIcons.Pause, strings.pause)
+            } else {
+                TransportControl(FluentIcons.Play, strings.play)
+            }
+
+            PlayerIconButton(
+                icon = transport.icon,
+                description = transport.description,
+                onClick = { commands.setPlaying(!state.playing) },
+                modifier = Modifier.testTag(PLAY_PAUSE_TAG),
+            )
         }
 
-        PlayerIconButton(
-            icon = control.icon,
-            description = control.description,
-            onClick = { commands.setPlaying(!state.playing) },
-            modifier = Modifier.testTag(PLAY_PAUSE_TAG),
-        )
-    }
-
-    // Drawn on the first item, disabled — the web's setDisabled(prevBtn,
-    // onFirst). It used to be hidden there, on the reasoning that a control
-    // which does nothing should not be shown; that reads well and it makes the
-    // bar jump every time a queue reaches either end.
-    if (ChromeControl.PREVIOUS in fits) {
-        PlayerIconButton(
+        // Drawn on the first item, disabled — the web's setDisabled(prevBtn,
+        // onFirst). It used to be hidden there, on the reasoning that a control
+        // which does nothing should not be shown; that reads well and it makes
+        // the bar jump every time a queue reaches either end.
+        ChromeControl.PREVIOUS -> PlayerIconButton(
             icon = FluentIcons.Previous,
             description = strings.previous,
             enabled = state.hasPrevious,
             onClick = { commands.previous() },
         )
-    }
 
+        else -> StepControlButton(control, state, commands, strings)
+    }
 }
 
-// The two ten-second steps.
+// The steps and the jumps, split from the two above only because detekt measures
+// a `when` by its length. The seam is the web's own — dom.ts builds the play
+// pair, then the seek pair, then the chapter pair — so it is where a group would
+// have been split anyway.
 @Composable
-private fun SeekButtons(
+private fun StepControlButton(
+    control: ChromeControl,
+    state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    fits: Set<ChromeControl>,
 ) {
-    if (ChromeControl.SEEK_BACK in fits) {
-        PlayerIconButton(
+    val starts: List<Double> = state.chapters.map { it.startSeconds }
+
+    when (control) {
+        ChromeControl.SEEK_BACK -> PlayerIconButton(
             icon = FluentIcons.SeekBack,
             description = strings.seekBack,
             onClick = { commands.seekBy(-SEEK_STEP_SECONDS) },
             modifier = Modifier.testTag(SEEK_BACK_TAG),
         )
-    }
 
-    if (ChromeControl.SEEK_FORWARD in fits) {
-        PlayerIconButton(
+        ChromeControl.SEEK_FORWARD -> PlayerIconButton(
             icon = FluentIcons.SeekForward,
             description = strings.seekForward,
             onClick = { commands.seekBy(SEEK_STEP_SECONDS) },
             modifier = Modifier.testTag(SEEK_FORWARD_TAG),
         )
-    }
 
-}
-
-// Only where the item has chapters. An item with none is not a player missing a
-// feature, and two dead buttons say otherwise.
-@Composable
-private fun ChapterButtons(
-    state: ChromeState,
-    commands: ChromeCommands,
-    strings: TvChromeStrings,
-    fits: Set<ChromeControl>,
-) {
-    val starts: List<Double> = state.chapters.map { it.startSeconds }
-
-    // Ranked separately by the web, so gated separately here. Drawn as a pair
-    // they would appear and disappear together at whichever of the two widths
-    // came first, which is one control's rule applied to two controls.
-    if (ChromeControl.CHAPTER_PREV in fits) {
-        PlayerIconButton(
+        // Ranked separately by the web, so gated separately here. Drawn as a
+        // pair they would appear and disappear together at whichever of the two
+        // widths came first, which is one control's rule applied to two.
+        ChromeControl.CHAPTER_PREV -> PlayerIconButton(
             icon = FluentIcons.ChapterBack,
             description = strings.chapterBack,
             onClick = { commands.seekTo(previousChapterStart(starts, state.timeSeconds)) },
             modifier = Modifier.testTag(CHAPTER_BACK_TAG),
         )
-    }
 
-    if (ChromeControl.CHAPTER_NEXT in fits) {
-        PlayerIconButton(
+        ChromeControl.CHAPTER_NEXT -> PlayerIconButton(
             icon = FluentIcons.ChapterForward,
             description = strings.chapterForward,
             onClick = { nextChapterStart(starts, state.timeSeconds)?.let(commands::seekTo) },
             modifier = Modifier.testTag(CHAPTER_FORWARD_TAG),
         )
-    }
-}
 
-// Next closes the transport group, after the chapter jumps.
-//
-// Declared in the order it is drawn, like dom.ts is. That is not tidiness:
-// check-chrome-parity.py reads this file top to bottom and compares the glyph
-// sequence to the web's builder, so a helper declared out of order reports as a
-// bar in the wrong order. Keep declaration order and draw order the same.
-@Composable
-private fun NextButton(
-    state: ChromeState,
-    commands: ChromeCommands,
-    strings: TvChromeStrings,
-    fits: Set<ChromeControl>,
-) {
-    // Drawn at the end of a queue, disabled. Hiding it there reflows the bar
-    // and moves every other control under the viewer's finger.
-    if (ChromeControl.NEXT in fits) {
-        PlayerIconButton(
+        // Drawn at the end of a queue, disabled. Hiding it there reflows the bar
+        // and moves every other control under the viewer's finger.
+        ChromeControl.NEXT -> PlayerIconButton(
             icon = FluentIcons.Next,
             description = strings.next,
             enabled = state.hasNext,
             onClick = { commands.next() },
         )
+
+        else -> Unit
     }
 }
 
@@ -326,35 +362,57 @@ private fun ViewButtons(
     strings: TvChromeStrings,
     fits: Set<ChromeControl>,
 ) {
-    if (ChromeControl.ASPECT_RATIO in fits) {
-        PlayerIconButton(
+    RIGHT_ORDER.forEach { control ->
+        if (control in fits) RightControlButton(control, state, commands, strings)
+    }
+}
+
+// Web order 9-20: the view toggles, then the menus, then fullscreen.
+private val RIGHT_ORDER: List<ChromeControl> = listOf(
+    ChromeControl.ASPECT_RATIO,
+    ChromeControl.THEATER,
+    ChromeControl.PIP,
+    ChromeControl.SPEED,
+    ChromeControl.SUBTITLES,
+    ChromeControl.AUDIO,
+    ChromeControl.QUALITY,
+    ChromeControl.PLAYLIST,
+    ChromeControl.SETTINGS,
+    ChromeControl.FULLSCREEN,
+)
+
+// The other half of the dispatcher, after the volume glyphs, so the sequence
+// check-chrome-parity.py reads out of this file is still the web's.
+@Composable
+private fun RightControlButton(
+    control: ChromeControl,
+    state: ChromeState,
+    commands: ChromeCommands,
+    strings: TvChromeStrings,
+) {
+    when (control) {
+        ChromeControl.ASPECT_RATIO -> PlayerIconButton(
             icon = FluentIcons.AspectFit,
             description = strings.aspectRatio,
             onClick = { commands.cycleAspectRatio() },
             modifier = Modifier.testTag(ASPECT_RATIO_TAG),
         )
-    }
 
-    if (ChromeControl.THEATER in fits) {
-        PlayerIconButton(
+        ChromeControl.THEATER -> PlayerIconButton(
             icon = if (state.theater) FluentIcons.TheaterExit else FluentIcons.Theater,
             description = strings.theater,
             onClick = { commands.setTheater(!state.theater) },
             modifier = Modifier.testTag(THEATER_TAG),
         )
-    }
 
-    if (ChromeControl.PIP in fits) {
-        PlayerIconButton(
+        ChromeControl.PIP -> PlayerIconButton(
             icon = if (state.pip) FluentIcons.PipExit else FluentIcons.PipEnter,
             description = strings.pictureInPicture,
             onClick = { commands.setPip(!state.pip) },
             modifier = Modifier.testTag(PIP_TAG),
         )
-    }
 
-    if (ChromeControl.SPEED in fits) {
-        MenuTriggerButton(
+        ChromeControl.SPEED -> MenuTriggerButton(
             MenuTriggerSpec(
                 icon = FluentIcons.Speed,
                 // The rate, when it is not 1. applyRate puts it in the aria-label and
@@ -367,21 +425,25 @@ private fun ViewButtons(
             ),
             close = commands::closeMenu,
         )
+
+        else -> MenuControlButton(control, state, commands, strings)
     }
 }
 
-// Web order 16-20: subtitles, audio, quality, playlist, settings.
+// The five that open something, and fullscreen after them. Split from the view
+// toggles at the web's own seam: dom.ts builds the toggles, then the menu
+// triggers, then the fullscreen button last.
 @Composable
-private fun MenuButtons(
+private fun MenuControlButton(
+    control: ChromeControl,
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    fits: Set<ChromeControl>,
 ) {
-    if (ChromeControl.SUBTITLES in fits) {
+    when (control) {
         // subtitlesOff when none is on, which is how the web says the difference
         // without a viewer opening the menu to find out.
-        MenuTriggerButton(
+        ChromeControl.SUBTITLES -> MenuTriggerButton(
             MenuTriggerSpec(
                 icon = if (state.activeSubtitle == null) FluentIcons.SubtitlesOff else FluentIcons.Subtitles,
                 description = strings.subtitles,
@@ -390,12 +452,10 @@ private fun MenuButtons(
             ),
             close = commands::closeMenu,
         )
-    }
 
-    // Offered only where there is a choice. One audio track is not a menu, it is
-    // a row that opens onto itself.
-    if (ChromeControl.AUDIO in fits) {
-        MenuTriggerButton(
+        // Offered only where there is a choice. One audio track is not a menu,
+        // it is a row that opens onto itself.
+        ChromeControl.AUDIO -> MenuTriggerButton(
             MenuTriggerSpec(
                 icon = FluentIcons.Language,
                 description = strings.language,
@@ -404,22 +464,23 @@ private fun MenuButtons(
             ),
             close = commands::closeMenu,
         )
-    }
 
-    ListMenuButtons(state, commands, strings, fits)
+        else -> ListControlButton(control, state, commands, strings)
+    }
 }
 
-// Quality, playlist and settings — the three that open a list rather than pick
-// a track.
+// Quality, playlist and settings — the three that open a list rather than pick a
+// track — and fullscreen last. The same seam the file had before the dispatcher,
+// when these were ListMenuButtons and FullscreenButton.
 @Composable
-private fun ListMenuButtons(
+private fun ListControlButton(
+    control: ChromeControl,
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    fits: Set<ChromeControl>,
 ) {
-    if (ChromeControl.QUALITY in fits) {
-        MenuTriggerButton(
+    when (control) {
+        ChromeControl.QUALITY -> MenuTriggerButton(
             MenuTriggerSpec(
                 icon = FluentIcons.Quality,
                 // What is PLAYING, not what was selected. On an adaptive ladder those
@@ -431,10 +492,8 @@ private fun ListMenuButtons(
             ),
             close = commands::closeMenu,
         )
-    }
 
-    if (ChromeControl.PLAYLIST in fits) {
-        MenuTriggerButton(
+        ChromeControl.PLAYLIST -> MenuTriggerButton(
             MenuTriggerSpec(
                 icon = FluentIcons.Playlist,
                 description = strings.playlist,
@@ -444,13 +503,11 @@ private fun ListMenuButtons(
             ),
             close = commands::closeMenu,
         )
-    }
 
-    if (ChromeControl.SETTINGS in fits) {
         // Expanded for the MAIN pane — `setMenuTriggerExpanded(null, …)` maps the
         // settings button to the top-level list, and each sub-pane to its own
         // trigger above.
-        MenuTriggerButton(
+        ChromeControl.SETTINGS -> MenuTriggerButton(
             MenuTriggerSpec(
                 icon = FluentIcons.Settings,
                 description = strings.settings,
@@ -460,34 +517,46 @@ private fun ListMenuButtons(
             ),
             close = commands::closeMenu,
         )
-    }
 
-    FullscreenButton(state, commands, strings, fits)
+        else -> FullscreenControlButton(control, state, commands, strings)
+    }
 }
 
-// Last in the row, after settings, which is where the web puts it.
+// Last in the row, after settings, which is where the web puts it. It was
+// missing entirely once: ChromeButtons carried the flag, ChromeState the state
+// and ChromeCommands setFullscreen, and nothing drew the button.
 //
-// It was missing entirely: ChromeButtons carried the flag, ChromeState
-// carried the state and ChromeCommands carried setFullscreen, and nothing
-// ever drew the button. Everything was wired except the one part a viewer
-// touches.
-//
-// The glyph swaps rather than a second button appearing, so the control
-// stays in one place whether or not the player is fullscreen.
+// The glyph swaps rather than a second button appearing, so the control stays in
+// one place whether or not the player is fullscreen.
 @Composable
-private fun FullscreenButton(
+private fun FullscreenControlButton(
+    control: ChromeControl,
     state: ChromeState,
     commands: ChromeCommands,
     strings: TvChromeStrings,
-    fits: Set<ChromeControl>,
 ) {
-    if (ChromeControl.FULLSCREEN in fits) {
-        PlayerIconButton(
-            icon = if (state.fullscreen) FluentIcons.ExitFullscreen else FluentIcons.Fullscreen,
-            description = if (state.fullscreen) strings.exitFullscreen else strings.fullscreen,
-            onClick = { commands.setFullscreen(!state.fullscreen) },
-            modifier = Modifier.testTag(FULLSCREEN_TAG),
-        )
+    if (control != ChromeControl.FULLSCREEN) return
+
+    PlayerIconButton(
+        icon = if (state.fullscreen) FluentIcons.ExitFullscreen else FluentIcons.Fullscreen,
+        description = if (state.fullscreen) strings.exitFullscreen else strings.fullscreen,
+        onClick = { commands.setFullscreen(!state.fullscreen) },
+        modifier = Modifier.testTag(FULLSCREEN_TAG),
+    )
+}
+
+// Either half, for a control the consumer moved out of its group.
+@Composable
+private fun ControlButton(
+    control: ChromeControl,
+    state: ChromeState,
+    commands: ChromeCommands,
+    strings: TvChromeStrings,
+) {
+    if (control in TRANSPORT_ORDER) {
+        TransportControlButton(control, state, commands, strings)
+    } else {
+        RightControlButton(control, state, commands, strings)
     }
 }
 

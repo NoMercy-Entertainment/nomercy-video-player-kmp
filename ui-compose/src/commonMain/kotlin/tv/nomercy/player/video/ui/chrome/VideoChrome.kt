@@ -217,6 +217,15 @@ public data class ChromeLayout(
      * cannot be what a touch device is given.
      */
     val volumeSlider: VolumeSliderMode = VolumeSliderMode.Auto,
+    /**
+     * `buttonOrder` on DesktopUiOptions: controls named here are re-anchored to
+     * the end of the row in this sequence, and anything unnamed keeps its
+     * natural position.
+     *
+     * Empty by default, which is the web's own default — an absent buttonOrder
+     * leaves the bar in the order the builder made it.
+     */
+    val buttonOrder: List<ChromeControl> = emptyList(),
 )
 
 // The root, and whichever input this form factor has.
@@ -460,6 +469,7 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
                 priority = scene.layout.priority,
                 portraitHidden = scene.layout.portraitHidden,
                 volumeSlider = scene.layout.volumeSlider,
+                buttonOrder = scene.layout.buttonOrder,
             )
         }
     }
