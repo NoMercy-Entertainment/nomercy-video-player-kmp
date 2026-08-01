@@ -84,18 +84,27 @@ internal fun PlaylistPane(
     // Unset draws no picture, which is the case for every host that has not
     // furnished the slot — see ChromeSlots.artwork.
     artwork: ChromeArtwork? = null,
+    // The `data-orientation='portrait'` layout: the rails stack instead of
+    // sitting side by side, and the cards change shape. See PlaylistPortrait.kt.
+    portrait: Boolean = false,
 ) {
     val seasons: List<Int> = sidebarSeasons(state.queue)
-    val picks = PlaylistPicks(state.queue, state.queueIndex, strings, artwork) { item ->
+    val picks = PlaylistPicks(state.queue, state.queueIndex, strings, artwork, playlistCards(portrait)) { item ->
         item.id?.let(commands::playQueueItem)
         onMenuChange(MenuState.Hidden)
     }
 
-    if (seasons.isEmpty()) {
-        EpisodeRail(picks, state.queue.indices.toList(), Modifier.fillMaxWidth())
-        return
+    when {
+        portrait -> PortraitPlaylist(picks, seasons, state)
+        seasons.isEmpty() -> EpisodeRail(picks, state.queue.indices.toList(), Modifier.fillMaxWidth())
+        else -> SeasonedRails(picks, seasons, state)
     }
+}
 
+// The landscape two-column layout: seasons beside episodes, split by the
+// hairline `.seasons-pane` carries as its right border.
+@Composable
+private fun SeasonedRails(picks: PlaylistPicks, seasons: List<Int>, state: ChromeState) {
     // Seeded from what is playing, which is what the web does: the pane opens on
     // the season somebody is already watching rather than on the first one.
     var chosen: Int by remember(seasons, state.queueIndex) {
@@ -129,6 +138,7 @@ internal data class PlaylistPicks(
     val currentIndex: Int,
     val strings: MenuStrings,
     val artwork: ChromeArtwork?,
+    val cards: CardLayout = LANDSCAPE_CARDS,
     val onPick: (TvChromeItem) -> Unit,
 )
 
@@ -137,13 +147,13 @@ internal data class PlaylistPicks(
 // `seasons` is sorted and already excludes specials, so `first()` is the web's
 // `seasons[0] ?? 1` without a fallback that cannot happen — the rail is only
 // drawn when the rule found two of them.
-private fun openingSeason(state: ChromeState, seasons: List<Int>): Int =
+internal fun openingSeason(state: ChromeState, seasons: List<Int>): Int =
     state.queue.getOrNull(state.queueIndex)?.season?.takeIf { it in seasons } ?: seasons.first()
 
 // `renderSeasonEpisodes` — the items of one season, by their position in the
 // WHOLE queue. The position is what a row's tag keys on, so a row keeps its name
 // when the season filter changes what is on screen.
-private fun episodeRows(queue: List<TvChromeItem>, season: Int): List<Int> =
+internal fun episodeRows(queue: List<TvChromeItem>, season: Int): List<Int> =
     queue.indices.filter { queue[it].season == season }
 
 // The left rail. Season buttons, the current one marked, and choosing one filters
@@ -156,7 +166,7 @@ private fun SeasonsRail(
     modifier: Modifier = Modifier,
     onChoose: (Int) -> Unit,
 ) {
-    ScrollingRail(modifier.testTag(SEASONS_RAIL_TAG), seasons) { season ->
+    ScrollingRail(modifier.testTag(SEASONS_RAIL_TAG), seasons, SEASONS_RAIL_STYLE) { season ->
         MenuRow(seasonLabel(picks.strings, season), isCurrent = season == chosen, tag = "$ROW_SEASON$season") {
             onChoose(season)
         }
@@ -164,8 +174,10 @@ private fun SeasonsRail(
 }
 
 @Composable
-private fun EpisodeRail(picks: PlaylistPicks, rows: List<Int>, modifier: Modifier) {
-    ScrollingRail(modifier.testTag(EPISODES_RAIL_TAG), rows) { index -> PlaylistCard(picks, index) }
+internal fun EpisodeRail(picks: PlaylistPicks, rows: List<Int>, modifier: Modifier) {
+    ScrollingRail(modifier.testTag(EPISODES_RAIL_TAG), rows, picks.cards.rail) { index ->
+        PlaylistCard(picks, index)
+    }
 }
 
 /**
@@ -179,14 +191,22 @@ private fun EpisodeRail(picks: PlaylistPicks, rows: List<Int>, modifier: Modifie
  * is not, which is the guard `MenuRows` already uses one level up.
  */
 @Composable
-private fun ScrollingRail(modifier: Modifier, values: List<Int>, row: @Composable (Int) -> Unit) {
+private fun ScrollingRail(
+    modifier: Modifier,
+    values: List<Int>,
+    rail: RailStyle,
+    row: @Composable (Int) -> Unit,
+) {
     BoxWithConstraints(modifier = modifier) {
         if (maxHeight == Dp.Infinity) {
-            Column(modifier = Modifier.padding(RAIL_PADDING)) {
+            Column(
+                modifier = Modifier.padding(rail.padding),
+                verticalArrangement = Arrangement.spacedBy(rail.gap),
+            ) {
                 values.forEach { row(it) }
             }
         } else {
-            LazyColumn(contentPadding = RAIL_PADDING) {
+            LazyColumn(contentPadding = rail.padding, verticalArrangement = Arrangement.spacedBy(rail.gap)) {
                 items(values) { row(it) }
             }
         }
@@ -218,13 +238,16 @@ private fun PlaylistCard(picks: PlaylistPicks, index: Int) {
             .testTag("$ROW_EPISODE$index")
             .clip(RoundedCornerShape(CARD_RADIUS))
             .background(cardBackground(index == picks.currentIndex, focused))
+            .menuNavEntry(LocalMenuNav.current)
             .onFocusChanged { focused = it.isFocused }
             .clickable(interactionSource = interaction, indication = null) { picks.onPick(item) }
             .padding(CARD_PADDING),
-        horizontalArrangement = Arrangement.spacedBy(CARD_GAP),
+        // `gap: 8px`, and 10px in portrait — the one place the two card rules
+        // differ about spacing.
+        horizontalArrangement = Arrangement.spacedBy(picks.cards.gap),
     ) {
         CardThumbnail(picks, item, index)
-        CardText(item, index)
+        CardText(picks.cards, item, index)
     }
 }
 
@@ -253,11 +276,15 @@ private fun cardBackground(active: Boolean, focused: Boolean): Color = when {
 private fun RowScope.CardThumbnail(picks: PlaylistPicks, item: TvChromeItem, index: Int) {
     Box(
         modifier = Modifier
-            .align(Alignment.CenterVertically)
-            .fillMaxWidth(THUMBNAIL_SHARE)
+            // `align-self: center`, and `flex-start` in portrait — a taller text
+            // block hangs below a top-aligned thumbnail there.
+            .align(if (picks.cards.thumbAlignTop) Alignment.Top else Alignment.CenterVertically)
+            // Portrait caps the share at 180px; landscape has no cap.
+            .rowShare(picks.cards.thumbShare, picks.cards.thumbMaxWidth)
             .aspectRatio(THUMBNAIL_ASPECT)
             .clip(RoundedCornerShape(THUMBNAIL_RADIUS))
-            .background(THUMBNAIL_BACKGROUND),
+            .background(THUMBNAIL_BACKGROUND)
+            .testTag("$EPISODE_THUMB_TAG$index"),
     ) {
         item.image?.let { url -> picks.artwork?.invoke(url, Modifier.fillMaxSize()) }
 
@@ -356,22 +383,26 @@ private fun ProgressTrack(percent: Int) {
  * such a card is the height of its title instead of carrying a gap under it.
  */
 @Composable
-private fun RowScope.CardText(item: TvChromeItem, index: Int) {
+private fun RowScope.CardText(cards: CardLayout, item: TvChromeItem, index: Int) {
     Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(TEXT_GAP)) {
         BasicText(
             // `item.title ?? \`Item ${index + 1}\`` — a row with no name is still
             // a row somebody has to be able to aim at.
             text = item.title?.takeIf { it.isNotBlank() } ?: "${index + 1}",
-            style = TITLE_TEXT,
+            // The inherited 13px, and portrait's own `font-size: 0.95rem` with
+            // its extra `margin-bottom: 4px` under the flex gap.
+            style = TITLE_TEXT.copy(fontSize = cards.titleSize, lineHeight = cards.titleLineHeight),
             maxLines = TITLE_LINES,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(bottom = cards.titleBottomPad),
         )
 
         item.description?.takeIf { it.isNotBlank() }?.let { overview ->
             BasicText(
                 text = overview,
                 style = OVERVIEW_TEXT,
-                maxLines = OVERVIEW_LINES,
+                // `-webkit-line-clamp: 4`, and 3 in portrait.
+                maxLines = cards.overviewLines,
                 overflow = TextOverflow.Ellipsis,
             )
         }
@@ -397,15 +428,20 @@ private fun durationText(item: TvChromeItem): String {
 internal val SEASONS_MIN_WIDTH = 256.dp
 internal val EPISODES_MIN_WIDTH = 576.dp
 
-// `.seasons-pane { border-right: 2px solid rgba(107, 114, 128, 0.2) }`.
-private val RAIL_BORDER = 2.dp
-private val RAIL_BORDER_COLOR = Color(red = 107, green = 114, blue = 128, alpha = 51)
+// `.seasons-pane { border-right: 2px solid rgba(107, 114, 128, 0.2) }` — and in
+// portrait the same two pixels turn under the rail as `border-bottom`.
+internal val RAIL_BORDER = 2.dp
+internal val RAIL_BORDER_COLOR = Color(red = 107, green = 114, blue = 128, alpha = 51)
 
 // `.scroll-container { padding: 8px 0 8px 8px }`.
-private val RAIL_PADDING = PaddingValues(start = 8.dp, top = 8.dp, end = 0.dp, bottom = 8.dp)
+internal val RAIL_PADDING = PaddingValues(start = 8.dp, top = 8.dp, end = 0.dp, bottom = 8.dp)
 
-// `.playlist-menu-button { gap: 8px; padding: 8px; border-radius: 8px }`.
-private val CARD_GAP = 8.dp
+// The seasons rail keeps the base scroll-container rule in both orientations —
+// the portrait override targets `.episode-menu .scroll-container` alone.
+private val SEASONS_RAIL_STYLE = RailStyle(padding = RAIL_PADDING, gap = 0.dp)
+
+// `.playlist-menu-button { padding: 8px; border-radius: 8px }`. The gap moved
+// onto CardLayout — it is the one spacing portrait rewrites.
 private val CARD_PADDING = 8.dp
 private val CARD_RADIUS = 8.dp
 
@@ -413,9 +449,9 @@ private val CARD_RADIUS = 8.dp
 private val CARD_HOVER = Color(red = 115, green = 115, blue = 115, alpha = 51)
 private val CARD_ACTIVE = Color(red = 255, green = 255, blue = 255, alpha = 26)
 
-// `.episode-menu-button-left { width: 37.5%; aspect-ratio: 16 / 9;
-//  border-radius: 6px; background: rgba(255, 255, 255, 0.05) }`.
-private const val THUMBNAIL_SHARE = 0.375f
+// `.episode-menu-button-left { aspect-ratio: 16 / 9; border-radius: 6px;
+//  background: rgba(255, 255, 255, 0.05) }`. The width share lives on
+// CardLayout: 37.5% here, 38% capped at 180px in portrait.
 private const val THUMBNAIL_ASPECT = 16f / 9f
 private val THUMBNAIL_RADIUS = 6.dp
 private val THUMBNAIL_BACKGROUND = Color(red = 255, green = 255, blue = 255, alpha = 13)
@@ -464,21 +500,20 @@ private val OVERLAY_TEXT = TextStyle(
     fontSize = 11.2.sp,
 )
 
-// `.playlist-menu-button-title { font-weight: 700; line-height: 1.25 }` at the
-// inherited 13px, clamped to two lines.
+// `.playlist-menu-button-title { font-weight: 700; line-height: 1.25 }`, clamped
+// to two lines. The size comes off CardLayout: the inherited 13px, or portrait's
+// own 0.95rem.
 private val TITLE_TEXT = TextStyle(
     color = Color.White,
-    fontSize = 13.sp,
     fontWeight = FontWeight.Bold,
-    lineHeight = 16.25.sp,
 )
 private const val TITLE_LINES = 2
 
 // `.playlist-menu-button-overview { font-size: 0.7rem; line-height: 1rem;
-//  color: rgba(255, 255, 255, 0.8) }`, clamped to four lines.
+//  color: rgba(255, 255, 255, 0.8) }`. The clamp is CardLayout's: four lines,
+// three in portrait.
 private val OVERVIEW_TEXT = TextStyle(
     color = Color.White.copy(alpha = 0.8f),
     fontSize = 11.2.sp,
     lineHeight = 16.sp,
 )
-private const val OVERVIEW_LINES = 4

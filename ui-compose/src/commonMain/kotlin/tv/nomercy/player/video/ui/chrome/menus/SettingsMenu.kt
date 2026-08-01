@@ -16,26 +16,28 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.video.tv.TvChromeItem
-import tv.nomercy.player.video.tv.sidebarSeasons
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.video.ui.chrome.ChromeSlots
@@ -106,17 +108,14 @@ public fun SettingsMenu(
     // start inset is what enforces it: the card is right-aligned, so it can grow
     // leftwards until 16px from the far edge and no further.
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        val panel: PanelBox = panelBoxOf(menu, state.queue, maxWidth, maxHeight)
+        // The web reads `(orientation: portrait)` off the window and writes it
+        // onto the container as `data-orientation`; the player's own box is the
+        // nearest thing this composable can measure.
+        val portrait: Boolean = isPortrait(maxWidth, maxHeight)
+        val panel: PanelBox = panelBoxOf(menu, state.queue, maxWidth, maxHeight, portrait)
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = FRAME_INSET,
-                    top = FRAME_INSET,
-                    end = FRAME_INSET,
-                    bottom = FRAME_BOTTOM_INSET,
-                ),
+            modifier = Modifier.fillMaxWidth().padding(panelInsets(panel)),
             contentAlignment = Alignment.BottomEnd,
         ) {
             SettingsPanel(panel, MenuHeaderSpec(strings, menu, onMenuChange, state.queue)) {
@@ -126,7 +125,8 @@ public fun SettingsMenu(
                     MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
                     MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
                     MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
-                    MenuState.Playlist -> PlaylistPane(state, commands, strings, onMenuChange, slots.artwork)
+                    MenuState.Playlist ->
+                        PlaylistPane(state, commands, strings, onMenuChange, slots.artwork, portrait)
                     MenuState.AspectRatio -> AspectRatioMenu(state, commands, strings, onMenuChange)
                     MenuState.SubtitleSettings -> SubtitleSettingsMenu(state, commands, strings)
                     MenuState.AutoSkip -> AutoSkipMenu(state, commands, strings, onMenuChange)
@@ -152,66 +152,6 @@ internal data class MenuHeaderSpec(
 )
 
 /**
- * How wide and how tall the card may be, given the player it is drawn in.
- *
- * The port had `PANEL_WIDTH = 256.dp` — a constant, on a 4K television and in a
- * 400px sidebar alike. 256 is the web's `min-width: 16rem`, which is the FLOOR of
- * a `width: min-content` card, and reading a floor as the whole rule is why the
- * playlist pane had 256px to fit a 16rem seasons rail beside a 36rem episode rail
- * in. Both were drawn; the second one had no width left.
- *
- *     .menu-frame { width: min-content;
- *                   max-width: min(52rem, calc(100% - 2rem));
- *                   max-height: calc(100% - 2rem) }
- *     .main-menu  { min-width: 16rem; max-height: 60vh }
- *
- * So: what the pane needs, clamped by what the player has, floored at 16rem —
- * and the floor wins over the clamp, which is CSS's own precedence between
- * `min-width` and `max-width`.
- *
- * A null ceiling is no ceiling, which is the honest answer for a chrome measured
- * with an unbounded height: `room * 0.6` on an infinity is an infinity, and a
- * scrolling pane handed one does not degrade, it throws.
- */
-internal fun panelBoxOf(
-    menu: MenuState,
-    queue: List<TvChromeItem>,
-    roomWidth: Dp,
-    roomHeight: Dp,
-): PanelBox {
-    val widest: Dp = (roomWidth - FRAME_INSET * 2).coerceAtMost(FRAME_MAX_WIDTH)
-
-    return PanelBox(
-        width = contentWidthOf(menu, queue).coerceAtMost(widest).coerceAtLeast(PANEL_MIN_WIDTH),
-        maxHeight = if (roomHeight.value.isFinite()) {
-            (roomHeight * PANEL_MAX_HEIGHT_SHARE).coerceAtMost(roomHeight - FRAME_INSET * 2)
-        } else {
-            null
-        },
-    )
-}
-
-internal data class PanelBox(val width: Dp, val maxHeight: Dp?)
-
-/**
- * `width: min-content` — what the open pane cannot be drawn narrower than.
- *
- * Every pane but the playlist is a single column of rows with nothing that
- * demands width, so `.main-menu`'s own `min-width: 16rem` is its content width.
- * The playlist is two flex children with floors of their own — 16rem of seasons
- * and 36rem of episodes — and their sum is 52rem, which is exactly the frame's
- * `max-width` and not a coincidence.
- *
- * The rail is only there when `sidebarSeasons` says so, so the flat case asks for
- * the episode rail's floor alone rather than for room it will not use.
- */
-private fun contentWidthOf(menu: MenuState, queue: List<TvChromeItem>): Dp = when {
-    menu != MenuState.Playlist -> PANEL_MIN_WIDTH
-    sidebarSeasons(queue).isNotEmpty() -> SEASONS_MIN_WIDTH + EPISODES_MIN_WIDTH
-    else -> EPISODES_MIN_WIDTH
-}
-
-/**
  * The card itself, and the header the port did not have.
  *
  * `.menu-header` is a real element on the web — 2.5rem tall with a hairline under
@@ -229,6 +169,21 @@ private fun SettingsPanel(
     header: MenuHeaderSpec,
     rows: @Composable ColumnScope.() -> Unit,
 ) {
+    // One walk per pane. Rebuilt on a pane switch so the rows of the last pane
+    // cannot linger on it, which is `querySelectorAll` run fresh per press.
+    val nav: MenuNav = remember(header.menu) { MenuNav() }
+    val keyboard: Boolean = LocalMenuKeyboard.current
+    val returnFocus: MenuReturnFocus = LocalMenuReturnFocus.current
+
+    // `dialog.show()` — focus lands on the pane's first button, and again on a
+    // pane switch, where the browser drops focus on the floor when the pane a
+    // row lived in disappears. Landing it on the header keeps the arrows alive.
+    LaunchedEffect(nav, keyboard) { if (keyboard) nav.focusHeader() }
+
+    // `dialog.close()` — focus goes back to whoever opened the menu, however the
+    // menu went: Escape, the close cross, or a row that picked something.
+    DisposableEffect(returnFocus) { onDispose { returnFocus.restore() } }
+
     Column(
         modifier = Modifier
             // A resolved width, not a minimum.
@@ -240,35 +195,33 @@ private fun SettingsPanel(
             // whose rows do not stretch. So the width is computed once, from the
             // pane's content and the player's room, and applied — see panelBoxOf.
             .width(panel.width)
-            // `height: auto; max-height: 60vh` — a ceiling, not a height.
-            //
-            // fillMaxHeight(0.6f) made the card 60% tall always, so two rows sat
-            // in a panel with a third of a player of empty space under them.
-            //
-            // Absent when there is no height to take a share OF: a chrome measured
-            // unbounded — any test harness, any parent that scrolls — has no 60%
-            // to compute, and a scrolling pane handed an infinite ceiling does not
-            // degrade, it throws. Unbounded means the card wraps its rows, which
-            // is what `height: auto` does when nothing constrains it.
-            .then(panel.maxHeight?.let { Modifier.heightIn(max = it) } ?: Modifier)
-            .clip(RoundedCornerShape(PANEL_RADIUS))
+            .then(panelHeight(panel))
+            .clip(RoundedCornerShape(panel.radius))
             .background(PANEL_BACKGROUND)
+            // Preview rather than bubble, so an open menu answers Up, Down and
+            // Escape before the player's own bindings do — the web stops
+            // propagation on the frame for exactly this.
+            .onPreviewKeyEvent { event ->
+                nav.onMenuKey(event) { header.onMenuChange(MenuState.Hidden) }
+            }
             .testTag(SETTINGS_MENU_TAG),
         verticalArrangement = Arrangement.spacedBy(PANEL_GAP),
     ) {
-        MenuHeader(header)
+        CompositionLocalProvider(LocalMenuNav provides nav) {
+            MenuHeader(header)
 
-        // No scroller here, and that is not a shortcut.
-        //
-        // Several panes are LazyColumns already — the subtitle list, the episode
-        // rail — and a LazyColumn inside a Column(verticalScroll) is the nested
-        // scroll Compose refuses outright. Wrapping the rows took the whole menu
-        // down with it.
-        //
-        // So the card carries the ceiling and each pane scrolls its own list,
-        // which is also the web's shape: `max-height: 60vh` with `overflow:
-        // hidden` on `.main-menu`, and the list inside doing the scrolling.
-        rows()
+            // No scroller here, and that is not a shortcut.
+            //
+            // Several panes are LazyColumns already — the subtitle list, the episode
+            // rail — and a LazyColumn inside a Column(verticalScroll) is the nested
+            // scroll Compose refuses outright. Wrapping the rows took the whole menu
+            // down with it.
+            //
+            // So the card carries the ceiling and each pane scrolls its own list,
+            // which is also the web's shape: `max-height: 60vh` with `overflow:
+            // hidden` on `.main-menu`, and the list inside doing the scrolling.
+            rows()
+        }
     }
 }
 
@@ -448,29 +401,8 @@ private val ASPECT_RATIOS = listOf(
 )
 internal const val ROW_AUTO = "nm-row-auto"
 
-// Read off .menu-frame, .main-menu and .menu-header on the running player.
-//
-// The card used to be a full-width black sheet: SCRIM was black at 0.9 and the
-// only geometry was 16dp of padding, so the settings list covered the picture and
-// its rows landed on the transport.
-private val FRAME_INSET = 16.dp
-
-// The bar's own height. `bottom: 52px` is what lifts the card clear of it.
-private val FRAME_BOTTOM_INSET = 52.dp
-
-// `.main-menu { min-width: 16rem }` — the FLOOR of the card, which the port used
-// as its whole width. See panelBoxOf for what the rest of the rule is.
-private val PANEL_MIN_WIDTH = 256.dp
-
-// `.menu-frame { max-width: min(52rem, calc(100% - 2rem)) }`. 52rem is not an
-// arbitrary ceiling: it is exactly 16rem of seasons plus 36rem of episodes, so
-// the widest pane the player has fits it and nothing is allowed past it.
-private val FRAME_MAX_WIDTH = 832.dp
-
-// `max-height: 60vh`, of the player rather than of the window.
-private const val PANEL_MAX_HEIGHT_SHARE = 0.6f
-
-private val PANEL_RADIUS = 8.dp
+// The frame and card geometry — FRAME_INSET, PANEL_MIN_WIDTH and the rest —
+// lives in PanelBox.kt beside the rule that spends it.
 
 // `rgba(20, 20, 25, 0.95)`.
 private val PANEL_BACKGROUND = Color(red = 20, green = 20, blue = 25, alpha = 242)
@@ -481,3 +413,4 @@ internal const val SEASONS_RAIL_TAG = "nm-seasons-rail"
 internal const val EPISODES_RAIL_TAG = "nm-episodes-rail"
 internal const val ROW_SEASON = "nm-season-"
 internal const val ROW_EPISODE = "nm-episode-"
+internal const val EPISODE_THUMB_TAG = "nm-episode-thumb-"

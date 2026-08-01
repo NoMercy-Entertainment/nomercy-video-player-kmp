@@ -270,6 +270,48 @@ public val CHROME_DEFAULT_ON: Set<ChromeControl> = setOf(
     ChromeControl.CHAPTER_NEXT,
 )
 
+/**
+ * Rule 1: whether the consumer asked for this control at all.
+ *
+ * MUTE and VOLUME both answer to [ChromeButtons.volume] because the web's button
+ * map points `mute` at the volume element and `volume` at nothing — the slider
+ * is what rank 3 stands for, and a bar that has one has both.
+ */
+internal fun ChromeButtons.allows(control: ChromeControl): Boolean = when (control) {
+    ChromeControl.PLAY -> playPause
+    ChromeControl.MUTE, ChromeControl.VOLUME -> volume
+    ChromeControl.FULLSCREEN -> fullscreen
+    ChromeControl.SETTINGS -> settings
+    ChromeControl.NEXT, ChromeControl.PREVIOUS -> previousNext
+    ChromeControl.CHAPTER_PREV, ChromeControl.CHAPTER_NEXT -> chapters
+    ChromeControl.SEEK_BACK -> seekBack
+    ChromeControl.SEEK_FORWARD -> seekForward
+    ChromeControl.THEATER -> theater
+    ChromeControl.PIP -> pictureInPicture
+    ChromeControl.SPEED -> speed
+    ChromeControl.QUALITY -> quality
+    ChromeControl.SUBTITLES -> subtitles
+    ChromeControl.AUDIO -> audio
+    ChromeControl.ASPECT_RATIO -> aspectRatio
+    ChromeControl.PLAYLIST -> playlist
+}
+
+/**
+ * Rule 2: whether the item can offer this control.
+ *
+ * One audio track is not a menu, an item with no chapters is not a player
+ * missing a feature, and a queue of one has nothing to list. These cost no width
+ * in the accumulation, which is the part that matters — a control nobody can see
+ * must not push a later one off the end of the bar.
+ */
+internal fun ChromeState.lacksContentFor(control: ChromeControl): Boolean = when (control) {
+    ChromeControl.CHAPTER_PREV, ChromeControl.CHAPTER_NEXT -> chapters.isEmpty()
+    ChromeControl.AUDIO -> audioTracks.size <= 1
+    ChromeControl.QUALITY -> qualityLevels.isEmpty()
+    ChromeControl.PLAYLIST -> queueSize <= 1
+    else -> false
+}
+
 /** BUTTON_WIDTH from responsive.ts. */
 public const val CHROME_BUTTON_WIDTH: Int = 40
 

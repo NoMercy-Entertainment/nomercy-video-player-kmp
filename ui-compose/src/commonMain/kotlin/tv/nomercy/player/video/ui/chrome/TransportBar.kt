@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import tv.nomercy.player.video.tv.formatTime
 import tv.nomercy.player.video.tv.nextChapterStart
 import tv.nomercy.player.video.tv.previousChapterStart
+import tv.nomercy.player.video.ui.chrome.menus.MenuState
 import tv.nomercy.player.video.ui.tv.FluentIcons
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
@@ -353,14 +354,18 @@ private fun ViewButtons(
     }
 
     if (ChromeControl.SPEED in fits) {
-        PlayerIconButton(
-            icon = FluentIcons.Speed,
-            // The rate, when it is not 1. applyRate puts it in the aria-label and
-            // this said only "Speed" at every rate — invisible as an a11y gap until
-            // tooltips landed and started reading the same string.
-            description = speedButtonLabel(strings.speed, state.rate),
-            onClick = { commands.openSpeedMenu() },
-            modifier = Modifier.testTag(SPEED_TAG),
+        MenuTriggerButton(
+            MenuTriggerSpec(
+                icon = FluentIcons.Speed,
+                // The rate, when it is not 1. applyRate puts it in the aria-label and
+                // this said only "Speed" at every rate — invisible as an a11y gap until
+                // tooltips landed and started reading the same string.
+                description = speedButtonLabel(strings.speed, state.rate),
+                expanded = state.menu == MenuState.Speed,
+                open = commands::openSpeedMenu,
+                tag = SPEED_TAG,
+            ),
+            close = commands::closeMenu,
         )
     }
 }
@@ -376,20 +381,28 @@ private fun MenuButtons(
     if (ChromeControl.SUBTITLES in fits) {
         // subtitlesOff when none is on, which is how the web says the difference
         // without a viewer opening the menu to find out.
-        PlayerIconButton(
-            icon = if (state.activeSubtitle == null) FluentIcons.SubtitlesOff else FluentIcons.Subtitles,
-            description = strings.subtitles,
-            onClick = { commands.openSubtitleMenu() },
+        MenuTriggerButton(
+            MenuTriggerSpec(
+                icon = if (state.activeSubtitle == null) FluentIcons.SubtitlesOff else FluentIcons.Subtitles,
+                description = strings.subtitles,
+                expanded = state.menu == MenuState.Subtitle,
+                open = commands::openSubtitleMenu,
+            ),
+            close = commands::closeMenu,
         )
     }
 
     // Offered only where there is a choice. One audio track is not a menu, it is
     // a row that opens onto itself.
     if (ChromeControl.AUDIO in fits) {
-        PlayerIconButton(
-            icon = FluentIcons.Language,
-            description = strings.language,
-            onClick = { commands.openAudioMenu() },
+        MenuTriggerButton(
+            MenuTriggerSpec(
+                icon = FluentIcons.Language,
+                description = strings.language,
+                expanded = state.menu == MenuState.Audio,
+                open = commands::openAudioMenu,
+            ),
+            close = commands::closeMenu,
         )
     }
 
@@ -406,43 +419,68 @@ private fun ListMenuButtons(
     fits: Set<ChromeControl>,
 ) {
     if (ChromeControl.QUALITY in fits) {
-        PlayerIconButton(
-            icon = FluentIcons.Quality,
-            // What is PLAYING, not what was selected. On an adaptive ladder those
-            // differ constantly, and announcing the selection says "Auto" forever.
-            description = qualityButtonLabel(strings.quality, state.activeQuality?.describe()),
-            onClick = { commands.openQualityMenu() },
-            modifier = Modifier.testTag(QUALITY_TAG),
+        MenuTriggerButton(
+            MenuTriggerSpec(
+                icon = FluentIcons.Quality,
+                // What is PLAYING, not what was selected. On an adaptive ladder those
+                // differ constantly, and announcing the selection says "Auto" forever.
+                description = qualityButtonLabel(strings.quality, state.activeQuality?.describe()),
+                expanded = state.menu == MenuState.Quality,
+                open = commands::openQualityMenu,
+                tag = QUALITY_TAG,
+            ),
+            close = commands::closeMenu,
         )
     }
 
     if (ChromeControl.PLAYLIST in fits) {
-        PlayerIconButton(
-            icon = FluentIcons.Playlist,
-            description = strings.playlist,
-            onClick = { commands.openPlaylistMenu() },
-            modifier = Modifier.testTag(PLAYLIST_TAG),
+        MenuTriggerButton(
+            MenuTriggerSpec(
+                icon = FluentIcons.Playlist,
+                description = strings.playlist,
+                expanded = state.menu == MenuState.Playlist,
+                open = commands::openPlaylistMenu,
+                tag = PLAYLIST_TAG,
+            ),
+            close = commands::closeMenu,
         )
     }
 
     if (ChromeControl.SETTINGS in fits) {
-        PlayerIconButton(
-            icon = FluentIcons.Settings,
-            description = strings.settings,
-            onClick = { commands.openSettingsMenu() },
-            modifier = Modifier.testTag(SETTINGS_TAG),
+        // Expanded for the MAIN pane — `setMenuTriggerExpanded(null, …)` maps the
+        // settings button to the top-level list, and each sub-pane to its own
+        // trigger above.
+        MenuTriggerButton(
+            MenuTriggerSpec(
+                icon = FluentIcons.Settings,
+                description = strings.settings,
+                expanded = state.menu == MenuState.Main,
+                open = commands::openSettingsMenu,
+                tag = SETTINGS_TAG,
+            ),
+            close = commands::closeMenu,
         )
     }
 
-    // Last in the row, after settings, which is where the web puts it.
-    //
-    // It was missing entirely: ChromeButtons carried the flag, ChromeState
-    // carried the state and ChromeCommands carried setFullscreen, and nothing
-    // ever drew the button. Everything was wired except the one part a viewer
-    // touches.
-    //
-    // The glyph swaps rather than a second button appearing, so the control
-    // stays in one place whether or not the player is fullscreen.
+    FullscreenButton(state, commands, strings, fits)
+}
+
+// Last in the row, after settings, which is where the web puts it.
+//
+// It was missing entirely: ChromeButtons carried the flag, ChromeState
+// carried the state and ChromeCommands carried setFullscreen, and nothing
+// ever drew the button. Everything was wired except the one part a viewer
+// touches.
+//
+// The glyph swaps rather than a second button appearing, so the control
+// stays in one place whether or not the player is fullscreen.
+@Composable
+private fun FullscreenButton(
+    state: ChromeState,
+    commands: ChromeCommands,
+    strings: TvChromeStrings,
+    fits: Set<ChromeControl>,
+) {
     if (ChromeControl.FULLSCREEN in fits) {
         PlayerIconButton(
             icon = if (state.fullscreen) FluentIcons.ExitFullscreen else FluentIcons.Fullscreen,
@@ -456,47 +494,8 @@ private fun ListMenuButtons(
 // A glyph and what it announces itself as, which are the same choice.
 private data class TransportControl(val icon: ImageVector, val description: String)
 
-/**
- * Rule 1: whether the consumer asked for this control at all.
- *
- * MUTE and VOLUME both answer to [ChromeButtons.volume] because the web's button
- * map points `mute` at the volume element and `volume` at nothing — the slider
- * is what rank 3 stands for, and a bar that has one has both.
- */
-internal fun ChromeButtons.allows(control: ChromeControl): Boolean = when (control) {
-    ChromeControl.PLAY -> playPause
-    ChromeControl.MUTE, ChromeControl.VOLUME -> volume
-    ChromeControl.FULLSCREEN -> fullscreen
-    ChromeControl.SETTINGS -> settings
-    ChromeControl.NEXT, ChromeControl.PREVIOUS -> previousNext
-    ChromeControl.CHAPTER_PREV, ChromeControl.CHAPTER_NEXT -> chapters
-    ChromeControl.SEEK_BACK -> seekBack
-    ChromeControl.SEEK_FORWARD -> seekForward
-    ChromeControl.THEATER -> theater
-    ChromeControl.PIP -> pictureInPicture
-    ChromeControl.SPEED -> speed
-    ChromeControl.QUALITY -> quality
-    ChromeControl.SUBTITLES -> subtitles
-    ChromeControl.AUDIO -> audio
-    ChromeControl.ASPECT_RATIO -> aspectRatio
-    ChromeControl.PLAYLIST -> playlist
-}
-
-/**
- * Rule 2: whether the item can offer this control.
- *
- * One audio track is not a menu, an item with no chapters is not a player
- * missing a feature, and a queue of one has nothing to list. These cost no width
- * in the accumulation, which is the part that matters — a control nobody can see
- * must not push a later one off the end of the bar.
- */
-internal fun ChromeState.lacksContentFor(control: ChromeControl): Boolean = when (control) {
-    ChromeControl.CHAPTER_PREV, ChromeControl.CHAPTER_NEXT -> chapters.isEmpty()
-    ChromeControl.AUDIO -> audioTracks.size <= 1
-    ChromeControl.QUALITY -> qualityLevels.isEmpty()
-    ChromeControl.PLAYLIST -> queueSize <= 1
-    else -> false
-}
+// Rules 1 and 2 of the visibility composition — `allows` and `lacksContentFor`
+// — live in ChromeResponsive.kt with the rest of the rules they compose with.
 
 /**
  * The width to choose a breakpoint from, when there may not be one.

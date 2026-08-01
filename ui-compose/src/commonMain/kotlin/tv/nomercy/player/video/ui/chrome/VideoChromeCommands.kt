@@ -8,6 +8,9 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.video.Stretching
 import kotlinx.coroutines.CoroutineScope
@@ -85,6 +88,8 @@ internal class VideoChromeCommands(
 
     override fun openSettingsMenu(): Unit = onMenu(MenuState.Main)
 
+    override fun closeMenu(): Unit = onMenu(MenuState.Hidden)
+
     // Autoplay, because the web's card passes `{ source: 'user', autoplay: true }`
     // and somebody who picked an episode is not asking to have it cued up.
     override fun playQueueItem(id: String) {
@@ -135,4 +140,28 @@ internal class VideoChromeCommands(
     override fun setFullscreen(fullscreen: Boolean): Unit = player.fullscreen(fullscreen)
 
     override fun dismissMessage(): Unit = player.clearMessage()
+}
+
+// The command seam, with the coroutine scope it launches on.
+//
+// Its own function so the assembly reads as a list of parts — and so the scope
+// lives exactly as long as the commands that use it.
+@Composable
+internal fun rememberVideoCommands(
+    player: NMVideoPlayer,
+    autoSkip: AutoSkipPreference,
+    clock: ClockPreference,
+    onMenu: (MenuState) -> Unit,
+): ChromeCommands {
+    val scope: CoroutineScope = rememberCoroutineScope()
+
+    return remember(player, scope) {
+        VideoChromeCommands(
+            player,
+            scope,
+            onMenu = onMenu,
+            onAutoSkipChange = autoSkip.onChange,
+            onShowRemainingChange = clock.onChange,
+        )
+    }
 }

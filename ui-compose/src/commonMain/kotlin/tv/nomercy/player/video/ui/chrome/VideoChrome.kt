@@ -126,48 +126,44 @@ public fun VideoChrome(
     slots: ChromeSlots = LocalChromeSlots.current,
     surface: @Composable () -> Unit = {},
 ) {
-    val scope: CoroutineScope = rememberCoroutineScope()
     val scheduler: Scheduler = rememberChromeScheduler()
 
     var menu: MenuState by remember { mutableStateOf(MenuState.Hidden) }
     val panel: ShortcutsPanel = rememberShortcutsPanel()
     val message: String? = rememberChromeMessage(player, strings)?.text
     val error: ChromeError? = rememberPlayerError(player)
+    // `menu` rides along so the bar's trigger buttons can carry the web's
+    // aria-expanded state — see MenuTriggers.kt.
     val state: ChromeState = rememberChromeState(player, message, error)
-        .copy(autoSkipChapters = autoSkip.enabled, showRemaining = clock.showRemaining)
+        .copy(autoSkipChapters = autoSkip.enabled, showRemaining = clock.showRemaining, menu = menu)
 
     val controller: ChromeController = rememberChromeController(player, scheduler, inactivityMs)
-    val commands: ChromeCommands = remember(player, scope) {
-        VideoChromeCommands(
-            player,
-            scope,
-            onMenu = { menu = it },
-            onAutoSkipChange = autoSkip.onChange,
-            onShowRemainingChange = clock.onChange,
-        )
-    }
+    val commands: ChromeCommands = rememberVideoCommands(player, autoSkip, clock) { menu = it }
 
     ChromeBindings(controller, state.playing, menu)
 
     AutoSkipBinding(state, commands)
 
-    ChromeFrame(
-        input = ChromeInput(rememberVideoKeys(player, formFactor), controller, commands, player::now, gestures, panel),
-        modifier = modifier,
-        surface = surface,
-    ) {
-        ChromeLayers(
-            scene = ChromeScene(
-                state, commands, controller, strings, rememberMenuStrings(), buttons, layout,
-            ),
-            host = ChromeHost(sprite, previewSprite, onClose, onBack, onCast, slots),
-            menu = menu,
-            onMenuChange = { menu = it },
-        )
+    val input = ChromeInput(rememberVideoKeys(player, formFactor), controller, commands, player::now, gestures, panel)
 
-        ShortcutsLayer(panel)
+    ChromeFrame(input = input, modifier = modifier, surface = surface) {
+        ChromeMenuScope(keyboard = input.pointerDriven) {
+            ChromeLayers(
+                scene = ChromeScene(
+                    state, commands, controller, strings, rememberMenuStrings(), buttons, layout,
+                ),
+                host = ChromeHost(sprite, previewSprite, onClose, onBack, onCast, slots),
+                menu = menu,
+                onMenuChange = { menu = it },
+            )
+
+            ShortcutsLayer(panel)
+        }
     }
 }
+
+// rememberVideoCommands lives in VideoChromeCommands.kt beside the class it
+// builds; ChromeMenuScope in MenuTriggers.kt beside the locals it provides.
 
 // The auto-hide state machine, kept across recompositions.
 //

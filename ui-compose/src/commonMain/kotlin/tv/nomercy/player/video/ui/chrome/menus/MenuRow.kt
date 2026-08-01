@@ -76,6 +76,9 @@ internal fun MenuRow(
             .fillMaxWidth()
             .background(if (focused) Color.White else Color.Transparent)
             .then(tag?.let { Modifier.testTag(it) } ?: Modifier)
+            // On the arrow walk wherever a menu is up — the web's nav finds every
+            // `button` in the open pane, and a settings row is one of them.
+            .menuNavEntry(LocalMenuNav.current)
             .onFocusChanged { focused = it.isFocused }
             .clickable(interactionSource = interaction, indication = null, onClick = onSelect)
             .padding(ROW_PADDING)

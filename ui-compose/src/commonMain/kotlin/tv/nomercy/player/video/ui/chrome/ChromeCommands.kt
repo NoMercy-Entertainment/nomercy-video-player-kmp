@@ -99,6 +99,16 @@ public interface ChromeTransportCommands {
     public fun openSettingsMenu()
 
     /**
+     * The other half of every open above — what a trigger's `collapse` semantics
+     * action does, mirroring the web's `aria-expanded` pair on the same buttons.
+     * Defaulted to nothing for the same reason [playQueueItem] is: a host that
+     * implements this seam itself keeps compiling, and the chrome's own
+     * implementation overrides it.
+     */
+    public fun closeMenu() {
+    }
+
+    /**
      * Play a queue item outright, which is what choosing a playlist card means.
      *
      * By id rather than by position, like every other selection on this seam: a

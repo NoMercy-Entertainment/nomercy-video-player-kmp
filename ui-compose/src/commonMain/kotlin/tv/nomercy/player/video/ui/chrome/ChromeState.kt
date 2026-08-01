@@ -15,6 +15,7 @@ import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.video.tv.TvChapter
 import tv.nomercy.player.video.tv.TvChromeItem
+import tv.nomercy.player.video.ui.chrome.menus.MenuState
 
 // Everything the chrome draws from, in one value.
 //
@@ -100,6 +101,11 @@ public data class ChromeState(
     // and remembers the choice; this drew what-is-left with no way to reach the
     // other. Not persisted here — the host owns that, as with [autoSkipChapters].
     val showRemaining: Boolean = true,
+
+    // Which menu pane is up, so the bar's trigger buttons can say so — the web
+    // writes `aria-expanded` onto whichever trigger owns the open pane and
+    // clears the rest, and a bar that cannot see the pane cannot say either.
+    val menu: MenuState = MenuState.Hidden,
 ) {
 
     // Drawn by the bar and by the scrubber, so it is computed once here. Zero

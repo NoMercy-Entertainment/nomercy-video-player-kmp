@@ -39,6 +39,14 @@ import tv.nomercy.player.video.ui.tv.PlayerIconButton
 @Composable
 internal fun MenuHeader(spec: MenuHeaderSpec) {
     val title: String = menuTitle(spec.strings, spec.menu, spec.queue)
+    // Both buttons are on the arrow walk — the web's nav takes every `button` in
+    // the pane and the header's two are the first it finds. The FIRST of them
+    // also carries the pane-open focus: `dialog.show()` lands on the first
+    // focusable in the dialog, which is the back arrow where there is one and
+    // the close cross on the main list.
+    val nav: MenuNav? = LocalMenuNav.current
+    val sub: Boolean = spec.menu != MenuState.Main
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -48,15 +56,8 @@ internal fun MenuHeader(spec: MenuHeaderSpec) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PANEL_GAP),
     ) {
-        if (spec.menu != MenuState.Main) {
-            PlayerIconButton(
-                icon = FluentIcons.Back,
-                description = spec.strings.back,
-                onClick = { spec.onMenuChange(MenuState.Main) },
-                buttonSize = HEADER_BUTTON,
-                iconSize = HEADER_ICON,
-                modifier = Modifier.testTag(MENU_BACK_TAG),
-            )
+        if (sub) {
+            HeaderBack(spec, nav)
         }
 
         BasicText(
@@ -71,12 +72,27 @@ internal fun MenuHeader(spec: MenuHeaderSpec) {
             onClick = { spec.onMenuChange(MenuState.Hidden) },
             buttonSize = HEADER_BUTTON,
             iconSize = HEADER_ICON,
-            modifier = Modifier.testTag(MENU_CLOSE_TAG),
+            focusRequester = if (sub) null else nav?.header,
+            modifier = Modifier.testTag(MENU_CLOSE_TAG).menuNavEntry(nav),
         )
     }
 
     // `border-bottom: 1px solid rgba(209, 213, 219, 0.2)`.
     Box(modifier = Modifier.fillMaxWidth().height(HEADER_RULE).background(HEADER_RULE_COLOR))
+}
+
+// The way back to the main list, drawn on every pane that is not it.
+@Composable
+private fun HeaderBack(spec: MenuHeaderSpec, nav: MenuNav?) {
+    PlayerIconButton(
+        icon = FluentIcons.Back,
+        description = spec.strings.back,
+        onClick = { spec.onMenuChange(MenuState.Main) },
+        buttonSize = HEADER_BUTTON,
+        iconSize = HEADER_ICON,
+        focusRequester = nav?.header,
+        modifier = Modifier.testTag(MENU_BACK_TAG).menuNavEntry(nav),
+    )
 }
 
 // Which pane a viewer is looking at. The web writes the name into the header, and

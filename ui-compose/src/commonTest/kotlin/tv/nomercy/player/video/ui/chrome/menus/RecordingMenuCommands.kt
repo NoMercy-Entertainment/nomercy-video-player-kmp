@@ -54,6 +54,8 @@ internal open class RecordingMenuCommands : ChromeCommands {
 
     override fun openSettingsMenu() { calls += "openSettingsMenu" }
 
+    override fun closeMenu() { calls += "closeMenu" }
+
     override fun setVolume(percent: Int) { calls += "setVolume" }
 
     override fun setMuted(muted: Boolean) { calls += "setMuted" }

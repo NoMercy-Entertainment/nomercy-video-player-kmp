@@ -115,6 +115,47 @@ class PanelBoxTest {
         assertEquals(18.dp, panelBoxOf(MenuState.Main, listOf(movie), 1920.dp, 50.dp).maxHeight)
     }
 
+    @Test
+    fun thePortraitPlaylistFillsThePlayerEdgeToEdge() {
+        // `[data-orientation='portrait'] .menu-frame:has(.playlist-menu.is-open)`
+        // — inset 0, width 100%, height 100%, border-radius 0.
+        val panel: PanelBox =
+            panelBoxOf(MenuState.Playlist, listOf(seasonOne, seasonTwo), 360.dp, 740.dp, portrait = true)
+
+        assertEquals(360.dp, panel.width)
+        assertEquals(740.dp, panel.maxHeight)
+        assertEquals(true, panel.fullBleed)
+        assertEquals(0.dp, panel.radius)
+    }
+
+    @Test
+    fun portraitLeavesEveryOtherPaneThePopoverCard() {
+        // The stylesheet's own comment: "Subtitle / audio / quality / speed /
+        // aspect sub-menus keep their default popover sizing — they were fine."
+        val panel: PanelBox = panelBoxOf(MenuState.Main, listOf(movie), 360.dp, 740.dp, portrait = true)
+
+        assertEquals(256.dp, panel.width)
+        assertEquals(false, panel.fullBleed)
+    }
+
+    @Test
+    fun landscapeNeverTakesTheFullBleedBranch() {
+        val panel: PanelBox =
+            panelBoxOf(MenuState.Playlist, listOf(seasonOne, seasonTwo), 1920.dp, 1080.dp, portrait = false)
+
+        assertEquals(false, panel.fullBleed)
+        assertEquals(832.dp, panel.width)
+    }
+
+    @Test
+    fun portraitIsHeightMeetingWidthAndNeverAnInfinity() {
+        // The media query's own definition, and the unbounded-harness guard.
+        assertEquals(true, isPortrait(360.dp, 740.dp))
+        assertEquals(true, isPortrait(500.dp, 500.dp))
+        assertEquals(false, isPortrait(1280.dp, 720.dp))
+        assertEquals(false, isPortrait(360.dp, Dp.Infinity))
+    }
+
     private fun widthOf(menu: MenuState, queue: List<TvChromeItem>, room: Dp): Dp =
         panelBoxOf(menu, queue, room, BOUNDED_HEIGHT).width
 
