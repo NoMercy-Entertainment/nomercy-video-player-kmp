@@ -16,6 +16,7 @@ import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.core.events.SubtitlesPayload
 import tv.nomercy.player.core.events.Subscription
 import tv.nomercy.player.core.media.PlaylistItem
+import tv.nomercy.player.core.media.normalizeLanguage
 import tv.nomercy.player.core.player.ActionOptions
 import tv.nomercy.player.core.player.AudioTrackState
 import tv.nomercy.player.core.player.PlayerConfig
@@ -50,6 +51,26 @@ internal fun matchLanguage(candidates: List<String?>, target: String): Int? {
 // "en-GB" should fall back to a plain "en".
 private fun sharesPrefix(language: String, wanted: String): Boolean =
     language.startsWith("$wanted-") || wanted.startsWith("$language-")
+
+// How two tracks from different sources are told apart, the reference's
+// `_subtitleTrackKey`.
+//
+// Deliberately not [matchLanguage], which is how a track is CHOSEN and answers
+// on a prefix walk over a list. Displacement is a different question and the
+// reference answers it with an equality on a canonical form, which is what
+// closes the gap: "ger" and "de" share no prefix in either direction, so a
+// container that wrote the bibliographic code kept its track and the viewer got
+// two rows of German. Normalised, they are one language.
+//
+// The primary subtag is all that survives, so an "en-GB" file displaces a plain
+// "en" track. That is the reference's call, not a simplification of it.
+//
+// Language alone, where the reference keys on language and kind. Its
+// SubtitleTrack separates subtitles from captions and this one does not, so
+// there is no second half to key on, and adding a field to carry it would be
+// inventing a distinction no engine here reports.
+private fun subtitleTrackKey(track: SubtitleTrack): String =
+    normalizeLanguage(track.language).orEmpty()
 
 // A video player.
 //
@@ -381,8 +402,8 @@ public open class NMVideoPlayer(
         val sidecars: List<SubtitleTrack> = externalSubtitles
         if (sidecars.isEmpty()) return super.subtitles()
 
-        val covered: List<String?> = sidecars.map { it.language }
-        return super.subtitles().filter { matchLanguage(covered, it.language) == null } + sidecars
+        val covered: Set<String> = sidecars.mapTo(mutableSetOf()) { subtitleTrackKey(it) }
+        return super.subtitles().filter { subtitleTrackKey(it) !in covered } + sidecars
     }
 
     // The sidecar being played, when one is, because the engine cannot answer

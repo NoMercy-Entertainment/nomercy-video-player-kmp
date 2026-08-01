@@ -187,6 +187,41 @@ class SidecarSubtitleCuesTest {
         assertEquals(listOf(DUTCH.id), player.subtitles().map { it.id })
     }
 
+    // The same language, spelled the two ways ISO 639-2 allows. A muxer writes
+    // the bibliographic "dut" and the file beside it is named "nl", and comparing
+    // the raw strings makes them two languages: the menu grows a Dutch row and a
+    // second Dutch row, and the sidecar never displaces what it duplicates.
+    @Test
+    fun aSidecarDisplacesTheEnginesTrackSpelledInTheOtherIsoForm() = runTest {
+        val backend = FakeVideoBackend()
+        backend.subtitleTracks = listOf(SubtitleTrack(id = "text:0", language = "dut", label = "Nederlands"))
+        val player = playerWith(FakeFetcher(), backend)
+        player.setup()
+
+        player.queue(listOf<PlaylistItem>(Film(subtitles = listOf(DUTCH))))
+
+        assertEquals(listOf(DUTCH.id), player.subtitles().map { it.id })
+    }
+
+    // A regional sidecar displaces the plain track, because the key keeps only
+    // the primary subtag: a viewer who wanted English is not offered English
+    // twice because one of the two files happened to say en-GB.
+    //
+    // Asserted because it is a judgement call that could plausibly have gone the
+    // other way, and the reference already made it — normalizeLanguage splits on
+    // the hyphen before it looks anything up.
+    @Test
+    fun aRegionalSidecarDisplacesThePlainLanguageTrack() = runTest {
+        val backend = FakeVideoBackend()
+        backend.subtitleTracks = listOf(SubtitleTrack(id = "text:0", language = "en", label = "English"))
+        val player = playerWith(FakeFetcher(), backend)
+        player.setup()
+
+        player.queue(listOf<PlaylistItem>(Film(subtitles = listOf(BRITISH))))
+
+        assertEquals(listOf(BRITISH.id), player.subtitles().map { it.id })
+    }
+
     private companion object {
         const val FIRST_LINE = "Wat is er met je hand gebeurd?"
         const val SIGN = "— SINTEL —"
@@ -203,6 +238,13 @@ class SidecarSubtitleCuesTest {
             language = "en",
             label = "English",
             url = "https://films.test/sintel.eng.vtt",
+        )
+
+        val BRITISH = SubtitleTrack(
+            id = "sub-en-gb",
+            language = "en-GB",
+            label = "English (UK)",
+            url = "https://films.test/sintel.en-GB.vtt",
         )
 
         val VTT = """
