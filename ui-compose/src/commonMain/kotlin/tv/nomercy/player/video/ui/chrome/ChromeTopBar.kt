@@ -83,7 +83,7 @@ public fun ChromeTopBar(
             .fillMaxWidth()
             .background(Brush.verticalGradient(GRADIENT))
             .padding(start = BAR_PADDING, top = BAR_PADDING, end = BAR_PADDING, bottom = BAR_BOTTOM_PADDING)
-            .testTag(TOP_BAR_TAG),
+            .testTag(CHROME_TOP_BAR_TAG),
     ) {
         val width: Int = maxWidth.value.toInt()
 
@@ -247,7 +247,7 @@ private fun TopBarButton(
     }
 }
 
-internal const val TOP_BAR_TAG = "nm-chrome-top-bar"
+internal const val CHROME_TOP_BAR_TAG = "nm-chrome-top-bar"
 internal const val BACK_TAG = "nm-chrome-back"
 internal const val CAST_TAG = "nm-chrome-cast"
 internal const val CLOSE_TAG = "nm-chrome-close"

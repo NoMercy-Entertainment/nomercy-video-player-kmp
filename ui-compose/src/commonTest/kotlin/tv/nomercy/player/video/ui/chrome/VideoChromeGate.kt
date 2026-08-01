@@ -29,7 +29,7 @@ import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.ui.chrome.menus.SETTINGS_MENU_TAG
-import tv.nomercy.player.video.ui.tv.PROGRESS_TAG
+import tv.nomercy.player.video.ui.tv.TV_PROGRESS_TAG
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -172,7 +172,7 @@ abstract class VideoChromeGate {
         mount(player())
 
         onNodeWithTag(CHAPTER_BAR_TAG).assertExists()
-        onNodeWithTag(PROGRESS_TAG).assertDoesNotExist()
+        onNodeWithTag(TV_PROGRESS_TAG).assertDoesNotExist()
     }
 
     @Test

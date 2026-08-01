@@ -104,7 +104,7 @@ class NMTvPlayerViewTest {
         press(Key.DirectionUp)
 
         compose.onNodeWithTag(BOTTOM_BAR_TAG).assertIsDisplayed()
-        compose.onNodeWithTag(TOP_BAR_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(TV_TOP_BAR_TAG).assertIsDisplayed()
     }
 
     @Test

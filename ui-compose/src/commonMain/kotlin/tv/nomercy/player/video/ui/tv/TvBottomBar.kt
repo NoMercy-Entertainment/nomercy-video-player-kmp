@@ -41,7 +41,7 @@ public fun TvBottomBar(
     playFocusRequester: FocusRequester? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth().padding(BAR_PADDING).testTag(BOTTOM_BAR_TAG)) {
-        ChapterProgressBar(
+        TvChapterProgressBar(
             timeSeconds = state.timeSeconds,
             durationSeconds = state.durationSeconds,
             chapters = state.chapters,

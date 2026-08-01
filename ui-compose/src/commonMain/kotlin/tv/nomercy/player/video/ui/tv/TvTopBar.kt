@@ -41,7 +41,7 @@ public fun TvTopBar(
     onFocusChanged: (Boolean) -> Unit = {},
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(BAR_PADDING).testTag(TOP_BAR_TAG),
+        modifier = modifier.fillMaxWidth().padding(BAR_PADDING).testTag(TV_TOP_BAR_TAG),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -76,7 +76,7 @@ public fun TvTopBar(
     }
 }
 
-internal const val TOP_BAR_TAG = "tv-top-bar"
+internal const val TV_TOP_BAR_TAG = "tv-top-bar"
 
 private val BAR_PADDING = 24.dp
 private val BUTTON_GAP = 8.dp

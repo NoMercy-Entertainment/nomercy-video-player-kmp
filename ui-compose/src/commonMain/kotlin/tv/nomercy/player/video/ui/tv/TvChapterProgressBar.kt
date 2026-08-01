@@ -28,7 +28,7 @@ import tv.nomercy.player.video.tv.TvChapter
 // scrubbing with a remote is aiming at a chapter, and a plain bar gives them
 // nothing to aim at.
 @Composable
-public fun ChapterProgressBar(
+public fun TvChapterProgressBar(
     timeSeconds: Double,
     durationSeconds: Double,
     chapters: List<TvChapter>,
@@ -39,7 +39,7 @@ public fun ChapterProgressBar(
     Canvas(
         modifier = modifier
             .height(BAR_HEIGHT)
-            .testTag(PROGRESS_TAG)
+            .testTag(TV_PROGRESS_TAG)
             // Reported rather than only drawn, so a test can ask where the bar
             // is and a screen reader can say it.
             .semantics {
@@ -69,7 +69,7 @@ public fun ChapterProgressBar(
 private fun progressOf(seconds: Double, duration: Double): Float =
     if (duration <= 0.0) 0f else (seconds / duration).coerceIn(0.0, 1.0).toFloat()
 
-internal const val PROGRESS_TAG = "tv-progress-bar"
+internal const val TV_PROGRESS_TAG = "tv-progress-bar"
 
 private val BAR_HEIGHT = 6.dp
 private const val MARKER_WIDTH_PX = 2f
