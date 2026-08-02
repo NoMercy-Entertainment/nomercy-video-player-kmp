@@ -506,11 +506,21 @@ private fun rememberPlayerError(player: NMVideoPlayer): ChromeError? {
                 fatal = event.severity == Severity.FATAL,
             )
         }
+        // Cleared when the player moves on, and again when new media is ready.
+        //
+        // `item` alone was not enough: a consumer that swaps the queue rather
+        // than stepping through it never fires one, so Sintel's decode failure
+        // stayed on screen over Big Buck Bunny playing underneath it — the
+        // metrics were ticking behind a card saying the item could not be
+        // played. `mediaReady` is the engine saying it has something, which is
+        // exactly when a previous item's failure stops being true.
         val moved: Subscription = player.on(CoreEvents.Item) { error = null }
+        val ready: Subscription = player.on(CoreEvents.MediaReady) { error = null }
 
         onDispose {
             failed.dispose()
             moved.dispose()
+            ready.dispose()
         }
     }
 
