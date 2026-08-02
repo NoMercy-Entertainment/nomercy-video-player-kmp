@@ -192,33 +192,46 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
             )
         )
 
-        return VStack(spacing: 8) {
-            HStack {
-                Text(model.elapsed)
-                Spacer()
-                Text(model.remaining)
-            }
-            .font(.caption)
-            .foregroundColor(tint)
+        // ONE row, as `.bottom-row` is.
+        //
+        // The clocks sat on a line of their own above the controls, which put
+        // the elapsed time at the far left of the picture and the remaining time
+        // at the far right with nothing between them. The browser threads both
+        // through the SAME row — transport, volume, elapsed, the flex divider,
+        // remaining, then the view toggles — and it is the divider that pushes
+        // the right-hand group to the edge. A separate row is a different bar.
+        //
+        // The order below is the web's own builder: play, previous, the chapter
+        // jumps, next, volume, then the menus. Order and survival stay separate
+        // decisions exactly as they are in the Compose bar — this array says
+        // WHERE a control goes, `fits` says WHETHER it is drawn.
+        let drawn: [ChromeControl] = layoutOrder.filter(fits.contains)
 
-            // The web's order, from its own builder: play, previous, the chapter
-            // jumps, next, volume, then the menus. Not the order they were
-            // thought of, and not four of eighteen — every one this protocol can
-            // drive is here, each gated on the same question the browser asks.
-            //
-            // Order and survival are separate decisions, exactly as they are in
-            // the Compose bar: this array says WHERE a control goes, `fits` says
-            // WHETHER it is drawn, and the priority list inside the rule decides
-            // which one goes first when the row runs out of room.
-            HStack(spacing: 24) {
-                ForEach(layoutOrder.filter(fits.contains), id: \.self) { control in
-                    button(for: control)
-                }
+        return HStack(spacing: WebBar.controlGap) {
+            ForEach(drawn, id: \.self) { control in
+                button(for: control)
             }
-            .foregroundColor(tint)
+
+            Text(model.elapsed)
+                .font(.system(size: WebBar.clockSize, design: .monospaced))
+                .foregroundColor(WebBar.clockTint)
+                .padding(.leading, WebBar.clockMargin)
+
+            // `.divider { flex: 1 }` — the element that splits the bar. Without
+            // it every control clumps against one edge.
+            Spacer(minLength: WebBar.dividerMinWidth)
+
+            Text(model.remaining)
+                .font(.system(size: WebBar.clockSize, design: .monospaced))
+                .foregroundColor(WebBar.clockTint)
+                .padding(.trailing, WebBar.clockMargin)
         }
-        .padding()
+        .foregroundColor(tint)
+        .frame(height: WebBar.rowHeight)
+        .padding(.vertical, WebBar.rowPaddingVertical)
+        .padding(.horizontal, WebBar.rowPaddingHorizontal)
     }
+
 
     // Audio wears the globe rather than a waveform because that is the glyph the
     // browser's audio button carries.
@@ -408,4 +421,25 @@ public enum VideoChromeKind {
             return [.play, .mute, .subtitles, .fullscreen]
         }
     }
+}
+
+/// The browser's own bottom row, in numbers.
+///
+/// `.bottom-row { height: 40px; gap: 2px; padding: 4px 16px }`, `.divider
+/// { min-width: 16px }`, `.time { font-size: 0.82rem; color: rgb(221,221,221) }`
+/// — measured off the running player rather than read off the stylesheet, and
+/// the same values `scripts/check-render-paint.py` grades the Compose bar
+/// against.
+///
+/// File-level because the view is generic and Swift has no static stored
+/// properties on a generic type.
+private enum WebBar {
+    static let rowHeight: CGFloat = 40
+    static let controlGap: CGFloat = 2
+    static let rowPaddingVertical: CGFloat = 4
+    static let rowPaddingHorizontal: CGFloat = 16
+    static let dividerMinWidth: CGFloat = 16
+    static let clockMargin: CGFloat = 8
+    static let clockSize: CGFloat = 13.12
+    static let clockTint = Color(white: 221.0 / 255.0)
 }
