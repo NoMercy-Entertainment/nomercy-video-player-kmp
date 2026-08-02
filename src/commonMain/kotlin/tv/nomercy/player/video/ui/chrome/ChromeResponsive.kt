@@ -8,9 +8,16 @@
 
 package tv.nomercy.player.video.ui.chrome
 
-import androidx.compose.ui.unit.Dp
-
 // Which controls survive a narrow window, and in what order they go.
+//
+// In this module rather than in ui-compose, and the package name is unchanged so
+// that move cost no call site anything. ui-compose is Android and JVM only —
+// Apple gets SwiftUI — so a rule living there is a rule the iOS bar cannot call.
+// It did live there, and the iPhone drew all eighteen controls at once: the row's
+// intrinsic width came out around 930pt on a 393pt screen, which widened the view
+// above it and then the host above that, until the whole testbed was laid out
+// wider than the phone and centred, clipping its title at one edge and its
+// content at the other. A rule two toolkits both need is not a toolkit's.
 //
 // Ported from desktop-ui/helpers/responsive.ts rather than decided here. It is
 // the one place a phone legitimately shows less than a desktop, and the whole
@@ -235,6 +242,36 @@ public fun visibleControls(
     return visible
 }
 
+/**
+ * The same answer, in a shape that survives the Apple bridge.
+ *
+ * Kotlin/Native drops default arguments and exports a lambda as an ObjC block,
+ * so [visibleControls] arrives in Swift as a seven-argument call taking two
+ * blocks — something a SwiftUI body would be rebuilding on every layout pass.
+ * Two sets carry the same two answers and cross as sets.
+ *
+ * It is not a second rule. It calls the first one, because the SwiftUI bar must
+ * not be able to disagree with the Compose bar about what fits, and a copy is
+ * how that starts: `ControlsVisibility.swift` is already a hand-kept Swift twin
+ * of a Kotlin controller, and it is a twin only because the original was locked
+ * inside a Compose-only module. This one is not.
+ */
+public fun visibleControlsIn(
+    widthDp: Int,
+    /** Rule 1: what the consumer asked for at all. */
+    enabled: Set<ChromeControl>,
+    /** Rule 2: what this item cannot offer — no chapters, one audio track. */
+    unavailable: Set<ChromeControl> = emptySet(),
+    portrait: Boolean = false,
+    noHover: Boolean = false,
+): List<ChromeControl> = visibleControls(
+    widthDp = widthDp,
+    portrait = portrait,
+    noHover = noHover,
+    contentHidden = { control: ChromeControl -> control in unavailable },
+    enabled = { control: ChromeControl -> control in enabled },
+)
+
 // Rule 2 (the item cannot offer it) and rule 3 (portrait), which the web
 // checks in different places and which mean the same thing to the bar.
 // Null when the bar is not portrait, which is the same statement as "no control
@@ -270,48 +307,6 @@ public val CHROME_DEFAULT_ON: Set<ChromeControl> = setOf(
     ChromeControl.CHAPTER_NEXT,
 )
 
-/**
- * Rule 1: whether the consumer asked for this control at all.
- *
- * MUTE and VOLUME both answer to [ChromeButtons.volume] because the web's button
- * map points `mute` at the volume element and `volume` at nothing — the slider
- * is what rank 3 stands for, and a bar that has one has both.
- */
-internal fun ChromeButtons.allows(control: ChromeControl): Boolean = when (control) {
-    ChromeControl.PLAY -> playPause
-    ChromeControl.MUTE, ChromeControl.VOLUME -> volume
-    ChromeControl.FULLSCREEN -> fullscreen
-    ChromeControl.SETTINGS -> settings
-    ChromeControl.NEXT, ChromeControl.PREVIOUS -> previousNext
-    ChromeControl.CHAPTER_PREV, ChromeControl.CHAPTER_NEXT -> chapters
-    ChromeControl.SEEK_BACK -> seekBack
-    ChromeControl.SEEK_FORWARD -> seekForward
-    ChromeControl.THEATER -> theater
-    ChromeControl.PIP -> pictureInPicture
-    ChromeControl.SPEED -> speed
-    ChromeControl.QUALITY -> quality
-    ChromeControl.SUBTITLES -> subtitles
-    ChromeControl.AUDIO -> audio
-    ChromeControl.ASPECT_RATIO -> aspectRatio
-    ChromeControl.PLAYLIST -> playlist
-}
-
-/**
- * Rule 2: whether the item can offer this control.
- *
- * One audio track is not a menu, an item with no chapters is not a player
- * missing a feature, and a queue of one has nothing to list. These cost no width
- * in the accumulation, which is the part that matters — a control nobody can see
- * must not push a later one off the end of the bar.
- */
-internal fun ChromeState.lacksContentFor(control: ChromeControl): Boolean = when (control) {
-    ChromeControl.CHAPTER_PREV, ChromeControl.CHAPTER_NEXT -> chapters.isEmpty()
-    ChromeControl.AUDIO -> audioTracks.size <= 1
-    ChromeControl.QUALITY -> qualityLevels.isEmpty()
-    ChromeControl.PLAYLIST -> queueSize <= 1
-    else -> false
-}
-
 /** BUTTON_WIDTH from responsive.ts. */
 public const val CHROME_BUTTON_WIDTH: Int = 40
 
@@ -323,14 +318,3 @@ public const val CHROME_VOLUME_SLIDER_WIDTH: Int = 96
  * remaining time and the row's padding. Not buttons, same row.
  */
 public const val CHROME_RESERVED_WIDTH: Int = 148
-
-internal fun boundedWidthDp(width: Dp): Int {
-    val value: Float = width.value
-
-    return if (value.isFinite()) value.toInt() else UNBOUNDED_WIDTH_DP
-}
-
-// Past every ceiling in CHROME_BREAKPOINTS, so it selects the last band the same
-// way any wide screen does. Not Int.MAX_VALUE: a number that large invites an
-// overflow the first time somebody adds an offset to it.
-private const val UNBOUNDED_WIDTH_DP = 100_000

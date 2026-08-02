@@ -22,6 +22,7 @@ import kotlin.test.assertTrue
 private const val W = 4
 private const val H = 4
 
+
 // The frame conversion on its own, with a buffer this test wrote.
 //
 // libVLC hands over BGRA bytes and Compose wants an ImageBitmap; everything that
@@ -66,21 +67,26 @@ class ComposeFrameSinkTest {
         assertEquals(0f, pixels[1, 0].red, "a black pixel came back red")
     }
 
-    // The bitmap is the SAME one, frame after frame, and this is the invariant the
-    // desktop player's frame rate rests on.
+    // Each frame is published as its own immutable bitmap, and the one before it
+    // is still readable.
     //
-    // It replaces a test that asserted the opposite — that a frame already handed
-    // to Compose kept its pixels when the next one arrived. That was true, and it
-    // was true for an expensive reason: every frame allocated a fresh bitmap and
-    // blitted the picture into it, three native buffers and two rasterisations
-    // per frame at 1080p, none of it freed until a cleaner ran. Delivery started
-    // at 24 frames a second and collapsed to 8, and the picture repainted well
-    // under once a second. That guarantee was the cost, so it is gone on purpose.
+    // This asserted the opposite until 2026-08-02 — one bitmap for the whole
+    // playback, refilled in place — and it was written to protect the desktop's
+    // frame rate, which is a real thing to protect: an earlier version allocated
+    // three native buffers and rasterised the picture twice per frame at 1080p,
+    // and delivery collapsed from 24 frames a second to 8.
     //
-    // What replaces it is below: a frame is complete before it is visible, which
-    // is the property the old one was standing in for.
+    // It was written on the wrong noun. Skia's `setImmutable` is one way, and it
+    // is what lets the render thread share a frame's pixels instead of copying
+    // them — so a bitmap that has been shown can never be refilled. Refilling one
+    // anyway gave the render thread `Failed to Image::makeFromBitmap` on a pixel
+    // store being replaced underneath it, and before that a picture that simply
+    // stopped moving while every counter in this file read 23.9 frames a second.
+    //
+    // What replaces the guarantee is the test below: the cost was never the
+    // bitmap object, it was native memory nobody freed.
     @Test
-    fun everyFrameIsWrittenIntoTheSameBitmap() {
+    fun eachFrameIsPublishedAsItsOwnImmutableBitmap() {
         val sink = ComposeFrameSink()
         sink.format(W, H)
 
@@ -90,9 +96,11 @@ class ComposeFrameSinkTest {
         sink.accept(greenFrame())
         val second: ImageBitmap = assertNotNull(sink.frame.value)
 
-        assertSame(first, second, "the sink allocated a second bitmap instead of reusing one")
+        assertTrue(first !== second, "the wrapper was reused, so Compose draws the image it cached")
+        assertTrue(second.asSkiaBitmap().isImmutable, "a mutable frame is copied on every draw")
         assertEquals(1f, second.toPixelMap()[0, 0].green, "the second frame never landed")
         assertEquals(0f, second.toPixelMap()[0, 0].red, "the first frame is still showing")
+        assertEquals(1f, first.toPixelMap()[0, 0].red, "the frame before it was overwritten in place")
     }
 
     // And because the bitmap no longer changes identity, something else has to

@@ -32,26 +32,53 @@ import androidx.compose.ui.layout.onSizeChanged
  */
 @Composable
 public actual fun PlayerSurface(surface: VideoSurface, modifier: Modifier) {
-    // Black, because the alternative is the window's background showing through
-    // between the moment the view mounts and the first decoded frame.
-    //
     // The measured size goes to the engine on every layout pass. It is what caps
     // the ladder: a 3840-wide rendition into a pane 372 device-pixels tall was
     // holding delivery at a sixth of the clip's rate, and the engine cannot ask
     // because it renders into a buffer rather than into this box. Device pixels
     // already — Compose reports layout in pixels, so there is no density factor to
     // apply here the way the web multiplies by devicePixelRatio.
-    Box(
-        modifier = modifier
-            .onSizeChanged { size -> surface.backend?.surfaceSize(size.width, size.height) }
-            .background(Color.Black),
-    ) {
-        val current: ImageBitmap? = surface.sink.frame.value
+    FrameCanvas(
+        sink = surface.sink,
+        modifier = modifier.onSizeChanged { size ->
+            surface.backend?.surfaceSize(size.width, size.height)
+        },
+    )
+}
+
+/**
+ * The sink's latest frame, drawn.
+ *
+ * Split out from [PlayerSurface] so it can be rendered without libVLC. What the
+ * picture does over successive frames is the one thing about this file that has
+ * gone wrong invisibly — the counters said 24 frames a second while the screen
+ * held one image — and a gate for that cannot need a decoder.
+ */
+@Composable
+internal fun FrameCanvas(sink: ComposeFrameSink, modifier: Modifier) {
+    // Black, because the alternative is the window's background showing through
+    // between the moment the view mounts and the first decoded frame.
+    Box(modifier = modifier.background(Color.Black)) {
+        // Read in the composition, so a frame arriving publishes a NEW wrapper
+        // and Compose derives a new Skia image from it.
+        //
+        // The wrapper is what changes, not the pixels. Compose caches the skia
+        // Image it derives from an ImageBitmap against that instance, and
+        // installPixels hands the bitmap a different native pixel store every
+        // frame — so a wrapper held across frames draws the store it was
+        // derived from, forever, while delivered/drawn both read 23.9/s and the
+        // picture on screen never moves. That is what a black player after a
+        // seek is: the old store, still being drawn.
+        //
+        // asComposeImageBitmap WRAPS rather than copies, so this costs one small
+        // object per frame. toComposeImageBitmap is the one that allocates and
+        // blits, and using it here is what once made the desktop a slideshow.
+        val current: ImageBitmap? = sink.frame.value
         if (current != null) {
             Image(
                 bitmap = current,
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize().repaintOnEachFrame(surface.sink.version),
+                modifier = Modifier.fillMaxSize().repaintOnEachFrame(sink.version),
                 contentScale = ContentScale.Fit,
             )
         }

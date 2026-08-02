@@ -210,6 +210,34 @@ final enum class tv.nomercy.player.video.tv/TvDialog : kotlin/Enum<tv.nomercy.pl
     final fun values(): kotlin/Array<tv.nomercy.player.video.tv/TvDialog> // tv.nomercy.player.video.tv/TvDialog.values|values#static(){}[0]
 }
 
+final enum class tv.nomercy.player.video.ui.chrome/ChromeControl : kotlin/Enum<tv.nomercy.player.video.ui.chrome/ChromeControl> { // tv.nomercy.player.video.ui.chrome/ChromeControl|null[0]
+    enum entry ASPECT_RATIO // tv.nomercy.player.video.ui.chrome/ChromeControl.ASPECT_RATIO|null[0]
+    enum entry AUDIO // tv.nomercy.player.video.ui.chrome/ChromeControl.AUDIO|null[0]
+    enum entry CHAPTER_NEXT // tv.nomercy.player.video.ui.chrome/ChromeControl.CHAPTER_NEXT|null[0]
+    enum entry CHAPTER_PREV // tv.nomercy.player.video.ui.chrome/ChromeControl.CHAPTER_PREV|null[0]
+    enum entry FULLSCREEN // tv.nomercy.player.video.ui.chrome/ChromeControl.FULLSCREEN|null[0]
+    enum entry MUTE // tv.nomercy.player.video.ui.chrome/ChromeControl.MUTE|null[0]
+    enum entry NEXT // tv.nomercy.player.video.ui.chrome/ChromeControl.NEXT|null[0]
+    enum entry PIP // tv.nomercy.player.video.ui.chrome/ChromeControl.PIP|null[0]
+    enum entry PLAY // tv.nomercy.player.video.ui.chrome/ChromeControl.PLAY|null[0]
+    enum entry PLAYLIST // tv.nomercy.player.video.ui.chrome/ChromeControl.PLAYLIST|null[0]
+    enum entry PREVIOUS // tv.nomercy.player.video.ui.chrome/ChromeControl.PREVIOUS|null[0]
+    enum entry QUALITY // tv.nomercy.player.video.ui.chrome/ChromeControl.QUALITY|null[0]
+    enum entry SEEK_BACK // tv.nomercy.player.video.ui.chrome/ChromeControl.SEEK_BACK|null[0]
+    enum entry SEEK_FORWARD // tv.nomercy.player.video.ui.chrome/ChromeControl.SEEK_FORWARD|null[0]
+    enum entry SETTINGS // tv.nomercy.player.video.ui.chrome/ChromeControl.SETTINGS|null[0]
+    enum entry SPEED // tv.nomercy.player.video.ui.chrome/ChromeControl.SPEED|null[0]
+    enum entry SUBTITLES // tv.nomercy.player.video.ui.chrome/ChromeControl.SUBTITLES|null[0]
+    enum entry THEATER // tv.nomercy.player.video.ui.chrome/ChromeControl.THEATER|null[0]
+    enum entry VOLUME // tv.nomercy.player.video.ui.chrome/ChromeControl.VOLUME|null[0]
+
+    final val entries // tv.nomercy.player.video.ui.chrome/ChromeControl.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<tv.nomercy.player.video.ui.chrome/ChromeControl> // tv.nomercy.player.video.ui.chrome/ChromeControl.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): tv.nomercy.player.video.ui.chrome/ChromeControl // tv.nomercy.player.video.ui.chrome/ChromeControl.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<tv.nomercy.player.video.ui.chrome/ChromeControl> // tv.nomercy.player.video.ui.chrome/ChromeControl.values|values#static(){}[0]
+}
+
 final enum class tv.nomercy.player.video/SegmentEndBehaviour : kotlin/Enum<tv.nomercy.player.video/SegmentEndBehaviour> { // tv.nomercy.player.video/SegmentEndBehaviour|null[0]
     enum entry Advance // tv.nomercy.player.video/SegmentEndBehaviour.Advance|null[0]
     enum entry Hold // tv.nomercy.player.video/SegmentEndBehaviour.Hold|null[0]
@@ -1362,6 +1390,25 @@ final class tv.nomercy.player.video.tv/TvTransportState { // tv.nomercy.player.v
     final fun toString(): kotlin/String // tv.nomercy.player.video.tv/TvTransportState.toString|toString(){}[0]
 }
 
+final class tv.nomercy.player.video.ui.chrome/ChromeBreakpoint { // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint|null[0]
+    constructor <init>(kotlin/String, kotlin/Int?, kotlin/Int) // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.<init>|<init>(kotlin.String;kotlin.Int?;kotlin.Int){}[0]
+
+    final val hideAfterRank // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.hideAfterRank|{}hideAfterRank[0]
+        final fun <get-hideAfterRank>(): kotlin/Int // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.hideAfterRank.<get-hideAfterRank>|<get-hideAfterRank>(){}[0]
+    final val maxWidth // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.maxWidth|{}maxWidth[0]
+        final fun <get-maxWidth>(): kotlin/Int? // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.maxWidth.<get-maxWidth>|<get-maxWidth>(){}[0]
+    final val name // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.name|{}name[0]
+        final fun <get-name>(): kotlin/String // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.name.<get-name>|<get-name>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.component1|component1(){}[0]
+    final fun component2(): kotlin/Int? // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/Int? = ..., kotlin/Int = ...): tv.nomercy.player.video.ui.chrome/ChromeBreakpoint // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.copy|copy(kotlin.String;kotlin.Int?;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.ui.chrome/ChromeBreakpoint.toString|toString(){}[0]
+}
+
 final class tv.nomercy.player.video/AspectRatioChange { // tv.nomercy.player.video/AspectRatioChange|null[0]
     constructor <init>(tv.nomercy.player.video/Stretching) // tv.nomercy.player.video/AspectRatioChange.<init>|<init>(tv.nomercy.player.video.Stretching){}[0]
 
@@ -1894,6 +1941,12 @@ final const val tv.nomercy.player.video.tv/AUTO_HIDE_MS // tv.nomercy.player.vid
     final fun <get-AUTO_HIDE_MS>(): kotlin/Long // tv.nomercy.player.video.tv/AUTO_HIDE_MS.<get-AUTO_HIDE_MS>|<get-AUTO_HIDE_MS>(){}[0]
 final const val tv.nomercy.player.video.tv/CHAPTER_GRACE_SECONDS // tv.nomercy.player.video.tv/CHAPTER_GRACE_SECONDS|{}CHAPTER_GRACE_SECONDS[0]
     final fun <get-CHAPTER_GRACE_SECONDS>(): kotlin/Double // tv.nomercy.player.video.tv/CHAPTER_GRACE_SECONDS.<get-CHAPTER_GRACE_SECONDS>|<get-CHAPTER_GRACE_SECONDS>(){}[0]
+final const val tv.nomercy.player.video.ui.chrome/CHROME_BUTTON_WIDTH // tv.nomercy.player.video.ui.chrome/CHROME_BUTTON_WIDTH|{}CHROME_BUTTON_WIDTH[0]
+    final fun <get-CHROME_BUTTON_WIDTH>(): kotlin/Int // tv.nomercy.player.video.ui.chrome/CHROME_BUTTON_WIDTH.<get-CHROME_BUTTON_WIDTH>|<get-CHROME_BUTTON_WIDTH>(){}[0]
+final const val tv.nomercy.player.video.ui.chrome/CHROME_RESERVED_WIDTH // tv.nomercy.player.video.ui.chrome/CHROME_RESERVED_WIDTH|{}CHROME_RESERVED_WIDTH[0]
+    final fun <get-CHROME_RESERVED_WIDTH>(): kotlin/Int // tv.nomercy.player.video.ui.chrome/CHROME_RESERVED_WIDTH.<get-CHROME_RESERVED_WIDTH>|<get-CHROME_RESERVED_WIDTH>(){}[0]
+final const val tv.nomercy.player.video.ui.chrome/CHROME_VOLUME_SLIDER_WIDTH // tv.nomercy.player.video.ui.chrome/CHROME_VOLUME_SLIDER_WIDTH|{}CHROME_VOLUME_SLIDER_WIDTH[0]
+    final fun <get-CHROME_VOLUME_SLIDER_WIDTH>(): kotlin/Int // tv.nomercy.player.video.ui.chrome/CHROME_VOLUME_SLIDER_WIDTH.<get-CHROME_VOLUME_SLIDER_WIDTH>|<get-CHROME_VOLUME_SLIDER_WIDTH>(){}[0]
 
 final val tv.nomercy.player.video.input/WEB_KEY_BINDINGS // tv.nomercy.player.video.input/WEB_KEY_BINDINGS|{}WEB_KEY_BINDINGS[0]
     final fun <get-WEB_KEY_BINDINGS>(): kotlin.collections/List<tv.nomercy.player.video.input/WebKeyBinding> // tv.nomercy.player.video.input/WEB_KEY_BINDINGS.<get-WEB_KEY_BINDINGS>|<get-WEB_KEY_BINDINGS>(){}[0]
@@ -1903,6 +1956,14 @@ final val tv.nomercy.player.video.subtitles/NAMED_SUBTITLE_COLORS // tv.nomercy.
     final fun <get-NAMED_SUBTITLE_COLORS>(): kotlin.collections/Map<kotlin/String, kotlin/String> // tv.nomercy.player.video.subtitles/NAMED_SUBTITLE_COLORS.<get-NAMED_SUBTITLE_COLORS>|<get-NAMED_SUBTITLE_COLORS>(){}[0]
 final val tv.nomercy.player.video.subtitles/NO_EDGE // tv.nomercy.player.video.subtitles/NO_EDGE|{}NO_EDGE[0]
     final fun <get-NO_EDGE>(): tv.nomercy.player.video.subtitles/SubtitleEdge // tv.nomercy.player.video.subtitles/NO_EDGE.<get-NO_EDGE>|<get-NO_EDGE>(){}[0]
+final val tv.nomercy.player.video.ui.chrome/CHROME_BREAKPOINTS // tv.nomercy.player.video.ui.chrome/CHROME_BREAKPOINTS|{}CHROME_BREAKPOINTS[0]
+    final fun <get-CHROME_BREAKPOINTS>(): kotlin.collections/List<tv.nomercy.player.video.ui.chrome/ChromeBreakpoint> // tv.nomercy.player.video.ui.chrome/CHROME_BREAKPOINTS.<get-CHROME_BREAKPOINTS>|<get-CHROME_BREAKPOINTS>(){}[0]
+final val tv.nomercy.player.video.ui.chrome/CHROME_DEFAULT_ON // tv.nomercy.player.video.ui.chrome/CHROME_DEFAULT_ON|{}CHROME_DEFAULT_ON[0]
+    final fun <get-CHROME_DEFAULT_ON>(): kotlin.collections/Set<tv.nomercy.player.video.ui.chrome/ChromeControl> // tv.nomercy.player.video.ui.chrome/CHROME_DEFAULT_ON.<get-CHROME_DEFAULT_ON>|<get-CHROME_DEFAULT_ON>(){}[0]
+final val tv.nomercy.player.video.ui.chrome/CHROME_PORTRAIT_HIDDEN // tv.nomercy.player.video.ui.chrome/CHROME_PORTRAIT_HIDDEN|{}CHROME_PORTRAIT_HIDDEN[0]
+    final fun <get-CHROME_PORTRAIT_HIDDEN>(): kotlin.collections/Set<tv.nomercy.player.video.ui.chrome/ChromeControl> // tv.nomercy.player.video.ui.chrome/CHROME_PORTRAIT_HIDDEN.<get-CHROME_PORTRAIT_HIDDEN>|<get-CHROME_PORTRAIT_HIDDEN>(){}[0]
+final val tv.nomercy.player.video.ui.chrome/CHROME_PRIORITY // tv.nomercy.player.video.ui.chrome/CHROME_PRIORITY|{}CHROME_PRIORITY[0]
+    final fun <get-CHROME_PRIORITY>(): kotlin.collections/List<tv.nomercy.player.video.ui.chrome/ChromeControl> // tv.nomercy.player.video.ui.chrome/CHROME_PRIORITY.<get-CHROME_PRIORITY>|<get-CHROME_PRIORITY>(){}[0]
 
 final fun (tv.nomercy.player.video.item/WatchProgress).tv.nomercy.player.video.item/isLegacy(): kotlin/Boolean // tv.nomercy.player.video.item/isLegacy|isLegacy@tv.nomercy.player.video.item.WatchProgress(){}[0]
 final fun <#A: kotlin/Any?> tv.nomercy.player.video.menu/navigableRows(kotlin.collections/List<#A>, kotlin/Function1<#A, kotlin/Boolean>): kotlin.collections/List<#A> // tv.nomercy.player.video.menu/navigableRows|navigableRows(kotlin.collections.List<0:0>;kotlin.Function1<0:0,kotlin.Boolean>){0§<kotlin.Any?>}[0]
@@ -1943,3 +2004,8 @@ final fun tv.nomercy.player.video.tv/shouldShowSeasonSidebar(kotlin.collections/
 final fun tv.nomercy.player.video.tv/showTitle(tv.nomercy.player.video.tv/TvChromeItem?, kotlin/String): kotlin/String // tv.nomercy.player.video.tv/showTitle|showTitle(tv.nomercy.player.video.tv.TvChromeItem?;kotlin.String){}[0]
 final fun tv.nomercy.player.video.tv/sidebarSeasons(kotlin.collections/List<tv.nomercy.player.video.tv/TvChromeItem>): kotlin.collections/List<kotlin/Int> // tv.nomercy.player.video.tv/sidebarSeasons|sidebarSeasons(kotlin.collections.List<tv.nomercy.player.video.tv.TvChromeItem>){}[0]
 final fun tv.nomercy.player.video.tv/titleBarText(tv.nomercy.player.video.tv/TvChromeItem?, kotlin/Function1<kotlin/Int, kotlin/String>, kotlin/Function1<kotlin/Int, kotlin/String>, kotlin/Function0<kotlin/String>): tv.nomercy.player.video.tv/TitleBarText // tv.nomercy.player.video.tv/titleBarText|titleBarText(tv.nomercy.player.video.tv.TvChromeItem?;kotlin.Function1<kotlin.Int,kotlin.String>;kotlin.Function1<kotlin.Int,kotlin.String>;kotlin.Function0<kotlin.String>){}[0]
+final fun tv.nomercy.player.video.ui.chrome/breakpointFor(kotlin/Int): tv.nomercy.player.video.ui.chrome/ChromeBreakpoint // tv.nomercy.player.video.ui.chrome/breakpointFor|breakpointFor(kotlin.Int){}[0]
+final fun tv.nomercy.player.video.ui.chrome/controlFootprint(tv.nomercy.player.video.ui.chrome/ChromeControl, kotlin/Boolean): kotlin/Int // tv.nomercy.player.video.ui.chrome/controlFootprint|controlFootprint(tv.nomercy.player.video.ui.chrome.ChromeControl;kotlin.Boolean){}[0]
+final fun tv.nomercy.player.video.ui.chrome/isControlVisible(tv.nomercy.player.video.ui.chrome/ChromeControl, kotlin/Int, kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Function1<tv.nomercy.player.video.ui.chrome/ChromeControl, kotlin/Boolean> = ..., kotlin/Function1<tv.nomercy.player.video.ui.chrome/ChromeControl, kotlin/Boolean> = ...): kotlin/Boolean // tv.nomercy.player.video.ui.chrome/isControlVisible|isControlVisible(tv.nomercy.player.video.ui.chrome.ChromeControl;kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Function1<tv.nomercy.player.video.ui.chrome.ChromeControl,kotlin.Boolean>;kotlin.Function1<tv.nomercy.player.video.ui.chrome.ChromeControl,kotlin.Boolean>){}[0]
+final fun tv.nomercy.player.video.ui.chrome/visibleControls(kotlin/Int, kotlin/Boolean = ..., kotlin/Boolean = ..., kotlin/Function1<tv.nomercy.player.video.ui.chrome/ChromeControl, kotlin/Boolean> = ..., kotlin/Function1<tv.nomercy.player.video.ui.chrome/ChromeControl, kotlin/Boolean> = ..., kotlin.collections/List<tv.nomercy.player.video.ui.chrome/ChromeControl> = ..., kotlin.collections/Set<tv.nomercy.player.video.ui.chrome/ChromeControl> = ...): kotlin.collections/List<tv.nomercy.player.video.ui.chrome/ChromeControl> // tv.nomercy.player.video.ui.chrome/visibleControls|visibleControls(kotlin.Int;kotlin.Boolean;kotlin.Boolean;kotlin.Function1<tv.nomercy.player.video.ui.chrome.ChromeControl,kotlin.Boolean>;kotlin.Function1<tv.nomercy.player.video.ui.chrome.ChromeControl,kotlin.Boolean>;kotlin.collections.List<tv.nomercy.player.video.ui.chrome.ChromeControl>;kotlin.collections.Set<tv.nomercy.player.video.ui.chrome.ChromeControl>){}[0]
+final fun tv.nomercy.player.video.ui.chrome/visibleControlsIn(kotlin/Int, kotlin.collections/Set<tv.nomercy.player.video.ui.chrome/ChromeControl>, kotlin.collections/Set<tv.nomercy.player.video.ui.chrome/ChromeControl> = ..., kotlin/Boolean = ..., kotlin/Boolean = ...): kotlin.collections/List<tv.nomercy.player.video.ui.chrome/ChromeControl> // tv.nomercy.player.video.ui.chrome/visibleControlsIn|visibleControlsIn(kotlin.Int;kotlin.collections.Set<tv.nomercy.player.video.ui.chrome.ChromeControl>;kotlin.collections.Set<tv.nomercy.player.video.ui.chrome.ChromeControl>;kotlin.Boolean;kotlin.Boolean){}[0]

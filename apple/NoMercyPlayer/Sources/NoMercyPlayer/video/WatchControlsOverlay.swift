@@ -6,6 +6,7 @@
 //  SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
 
+import NoMercyVideoPlayer
 import SwiftUI
 
 /// The chrome over the picture, on a screen somebody touches.
@@ -80,10 +81,24 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
             #endif
 
             if visibility.isActive {
-                VStack {
-                    topBar
-                    Spacer()
-                    bottomBar
+                // Measured, because what the bar draws depends on how much room
+                // it has and SwiftUI will not tell a view its width any other
+                // way. Without this the row asked for the width of eighteen
+                // buttons — about 930 points — on a 393 point phone, and a
+                // SwiftUI parent does not clip an oversized child: it sizes
+                // itself to fit it. So the picture, the pane and finally the
+                // host application all came out wider than the screen and were
+                // centred in it, clipping their own titles at one edge and
+                // their content at the other.
+                GeometryReader { geometry in
+                    VStack {
+                        topBar
+                        Spacer()
+                        bottomBar(
+                            width: Int(geometry.size.width),
+                            portrait: geometry.size.height >= geometry.size.width
+                        )
+                    }
                 }
                 .transition(.opacity)
             }
@@ -137,8 +152,43 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
         .padding()
     }
 
-    private var bottomBar: some View {
-        VStack(spacing: 8) {
+    /// What this item cannot offer, which is the web's rule 2.
+    ///
+    /// Answered once, here, instead of at each button. A control the item cannot
+    /// offer is not on the bar and costs the row no width — so a film without
+    /// chapters must not push the fullscreen button off the end.
+    private var unavailable: Set<ChromeControl> {
+        var absent: Set<ChromeControl> = []
+        if player.chapters.isEmpty { absent.formUnion([.chapterPrev, .chapterNext]) }
+        if !model.offersSubtitleMenu { absent.insert(.subtitles) }
+        if !model.offersAudioMenu { absent.insert(.audio) }
+        if !model.offersQualityMenu { absent.insert(.quality) }
+        if !player.hasPlaylist { absent.insert(.playlist) }
+        return absent
+    }
+
+    private func bottomBar(width: Int, portrait: Bool) -> some View {
+        // The shared rule, not a Swift copy of it. `visibleControlsIn` calls the
+        // same `visibleControls` the Compose bar calls, so a viewer moving
+        // between an iPhone and a desktop finds the same control disappearing at
+        // the same width — which is the entire promise of one player across
+        // three toolkits.
+        //
+        // noHover is true because nothing here has a pointer. It is not a
+        // shortcut: on the web the volume slider expands beside mute when there
+        // IS one, and the bar has to hold room for that expansion before it
+        // happens. With no pointer, mute costs what any other button costs.
+        let fits = Set(
+            ChromeResponsiveKt.visibleControlsIn(
+                widthDp: Int32(width),
+                enabled: drawable,
+                unavailable: unavailable,
+                portrait: portrait,
+                noHover: true
+            )
+        )
+
+        return VStack(spacing: 8) {
             HStack {
                 Text(model.elapsed)
                 Spacer()
@@ -152,127 +202,178 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
             // thought of, and not four of eighteen — every one this protocol can
             // drive is here, each gated on the same question the browser asks.
             //
-            // Audio wears the globe rather than a waveform because that is the
-            // glyph the browser's audio button carries.
+            // Order and survival are separate decisions, exactly as they are in
+            // the Compose bar: this array says WHERE a control goes, `fits` says
+            // WHETHER it is drawn, and the priority list inside the rule decides
+            // which one goes first when the row runs out of room.
             HStack(spacing: 24) {
-                Button(action: intents.togglePlayPause) {
-                    PlayerGlyph(model.transport.icon)
+                ForEach(layoutOrder.filter(fits.contains), id: \.self) { control in
+                    button(for: control)
                 }
-                .accessibilityLabel(model.transport.label)
-                .accessibilityIdentifier("nmPlayPause")
-
-                // Dimmed and unpressable at the ends of a playlist rather than
-                // removed. The web disables rather than hides, and the
-                // difference is not cosmetic: a control that vanishes on the
-                // first item and returns on the second reflows the whole bar,
-                // so every other control moves under the finger reaching for one.
-                Button(action: player.previous) {
-                    PlayerGlyph(FluentIcons.previous)
-                }
-                .disabled(!player.hasPrevious)
-                .accessibilityLabel(strings.previous)
-
-                Button(action: player.seekBack) {
-                    PlayerGlyph(FluentIcons.seekBack)
-                }
-                .accessibilityLabel(strings.seekBack)
-
-                Button(action: player.seekForward) {
-                    PlayerGlyph(FluentIcons.seekForward)
-                }
-                .accessibilityLabel(strings.seekForward)
-
-                if !player.chapters.isEmpty {
-                    Button(action: player.chapterBack) {
-                        PlayerGlyph(FluentIcons.chapterBack)
-                    }
-                    .accessibilityLabel(strings.chapterBack)
-
-                    Button(action: player.chapterForward) {
-                        PlayerGlyph(FluentIcons.chapterForward)
-                    }
-                    .accessibilityLabel(strings.chapterForward)
-                }
-
-                Button(action: player.next) {
-                    PlayerGlyph(FluentIcons.next)
-                }
-                .disabled(!player.hasNext)
-                .accessibilityLabel(strings.next)
-
-                Button { player.setMuted(!player.isMuted) } label: {
-                    PlayerGlyph(model.volumeIcon)
-                }
-                .accessibilityLabel(strings.mute)
-
-                Button { player.setAspectRatio(model.nextAspect) } label: {
-                    PlayerGlyph(model.aspectIcon)
-                }
-                .accessibilityLabel(strings.aspectRatio)
-
-                Button { player.setTheater(!player.isTheater) } label: {
-                    PlayerGlyph(player.isTheater ? FluentIcons.theaterExit : FluentIcons.theater)
-                }
-                .accessibilityLabel(strings.theater)
-
-                Button { player.setPictureInPicture(!player.isPictureInPicture) } label: {
-                    PlayerGlyph(player.isPictureInPicture ? FluentIcons.pipExit : FluentIcons.pipEnter)
-                }
-                .accessibilityLabel(strings.pictureInPicture)
-
-                Button { intents.setMenuOpen(true) } label: {
-                    PlayerGlyph(FluentIcons.speed)
-                }
-                .accessibilityLabel(strings.speed)
-
-                if model.offersSubtitleMenu {
-                    Button {
-                        intents.setMenuOpen(true)
-                    } label: {
-                        PlayerGlyph(FluentIcons.subtitles)
-                    }
-                    .accessibilityLabel(strings.subtitles)
-                }
-
-                if model.offersAudioMenu {
-                    Button {
-                        intents.setMenuOpen(true)
-                    } label: {
-                        PlayerGlyph(FluentIcons.language)
-                    }
-                    .accessibilityLabel(strings.audio)
-                }
-
-                if model.offersQualityMenu {
-                    Button {
-                        intents.setMenuOpen(true)
-                    } label: {
-                        PlayerGlyph(FluentIcons.quality)
-                    }
-                    .accessibilityLabel(strings.quality)
-                }
-
-                if player.hasPlaylist {
-                    Button { intents.setMenuOpen(true) } label: {
-                        PlayerGlyph(FluentIcons.playlist)
-                    }
-                    .accessibilityLabel(strings.playlist)
-                }
-
-                Button { intents.setMenuOpen(true) } label: {
-                    PlayerGlyph(FluentIcons.settings)
-                }
-                .accessibilityLabel(strings.settings)
-
-                // Last on the row, as it is in the browser, and drawing the exit
-                // glyph while fullscreen rather than the same one both ways.
-                Button { player.setFullscreen(!player.isFullscreen) } label: {
-                    PlayerGlyph(player.isFullscreen ? FluentIcons.exitFullscreen : FluentIcons.fullscreen)
-                }
-                .accessibilityLabel(player.isFullscreen ? strings.exitFullscreen : strings.fullscreen)
             }
             .foregroundColor(tint)
         }
         .padding()
     }
+
+    // Audio wears the globe rather than a waveform because that is the glyph the
+    // browser's audio button carries.
+    @ViewBuilder
+    private func button(for control: ChromeControl) -> some View {
+        switch control {
+        case .play:
+            Button(action: intents.togglePlayPause) {
+                PlayerGlyph(model.transport.icon)
+            }
+            .accessibilityLabel(model.transport.label)
+            .accessibilityIdentifier("nmPlayPause")
+
+        // Dimmed and unpressable at the ends of a playlist rather than removed.
+        // The web disables rather than hides, and the difference is not
+        // cosmetic: a control that vanishes on the first item and returns on the
+        // second reflows the whole bar, so every other control moves under the
+        // finger reaching for one.
+        case .previous:
+            Button(action: player.previous) {
+                PlayerGlyph(FluentIcons.previous)
+            }
+            .disabled(!player.hasPrevious)
+            .accessibilityLabel(strings.previous)
+
+        case .seekBack:
+            Button(action: player.seekBack) {
+                PlayerGlyph(FluentIcons.seekBack)
+            }
+            .accessibilityLabel(strings.seekBack)
+
+        case .seekForward:
+            Button(action: player.seekForward) {
+                PlayerGlyph(FluentIcons.seekForward)
+            }
+            .accessibilityLabel(strings.seekForward)
+
+        case .chapterPrev:
+            Button(action: player.chapterBack) {
+                PlayerGlyph(FluentIcons.chapterBack)
+            }
+            .accessibilityLabel(strings.chapterBack)
+
+        case .chapterNext:
+            Button(action: player.chapterForward) {
+                PlayerGlyph(FluentIcons.chapterForward)
+            }
+            .accessibilityLabel(strings.chapterForward)
+
+        case .next:
+            Button(action: player.next) {
+                PlayerGlyph(FluentIcons.next)
+            }
+            .disabled(!player.hasNext)
+            .accessibilityLabel(strings.next)
+
+        case .mute:
+            Button { player.setMuted(!player.isMuted) } label: {
+                PlayerGlyph(model.volumeIcon)
+            }
+            .accessibilityLabel(strings.mute)
+
+        case .aspectRatio:
+            Button { player.setAspectRatio(model.nextAspect) } label: {
+                PlayerGlyph(model.aspectIcon)
+            }
+            .accessibilityLabel(strings.aspectRatio)
+
+        case .theater:
+            Button { player.setTheater(!player.isTheater) } label: {
+                PlayerGlyph(player.isTheater ? FluentIcons.theaterExit : FluentIcons.theater)
+            }
+            .accessibilityLabel(strings.theater)
+
+        case .pip:
+            Button { player.setPictureInPicture(!player.isPictureInPicture) } label: {
+                PlayerGlyph(player.isPictureInPicture ? FluentIcons.pipExit : FluentIcons.pipEnter)
+            }
+            .accessibilityLabel(strings.pictureInPicture)
+
+        case .speed:
+            Button { intents.setMenuOpen(true) } label: {
+                PlayerGlyph(FluentIcons.speed)
+            }
+            .accessibilityLabel(strings.speed)
+
+        case .subtitles:
+            Button { intents.setMenuOpen(true) } label: {
+                PlayerGlyph(FluentIcons.subtitles)
+            }
+            .accessibilityLabel(strings.subtitles)
+
+        case .audio:
+            Button { intents.setMenuOpen(true) } label: {
+                PlayerGlyph(FluentIcons.language)
+            }
+            .accessibilityLabel(strings.audio)
+
+        case .quality:
+            Button { intents.setMenuOpen(true) } label: {
+                PlayerGlyph(FluentIcons.quality)
+            }
+            .accessibilityLabel(strings.quality)
+
+        case .playlist:
+            Button { intents.setMenuOpen(true) } label: {
+                PlayerGlyph(FluentIcons.playlist)
+            }
+            .accessibilityLabel(strings.playlist)
+
+        case .settings:
+            Button { intents.setMenuOpen(true) } label: {
+                PlayerGlyph(FluentIcons.settings)
+            }
+            .accessibilityLabel(strings.settings)
+
+        // Last on the row, as it is in the browser, and drawing the exit glyph
+        // while fullscreen rather than the same one both ways.
+        case .fullscreen:
+            Button { player.setFullscreen(!player.isFullscreen) } label: {
+                PlayerGlyph(player.isFullscreen ? FluentIcons.exitFullscreen : FluentIcons.fullscreen)
+            }
+            .accessibilityLabel(player.isFullscreen ? strings.exitFullscreen : strings.fullscreen)
+
+        // The level itself, which on the web is a slider that expands beside
+        // mute. There is no slider on a touch bar — the volume rocker is the
+        // device's — so this bar has no control to draw for it.
+        case .volume:
+            EmptyView()
+        }
+    }
 }
+
+/// Where a control goes, in the browser's own layout order.
+private let layoutOrder: [ChromeControl] = [
+    .play,
+    .previous,
+    .seekBack,
+    .seekForward,
+    .chapterPrev,
+    .chapterNext,
+    .next,
+    .mute,
+    .aspectRatio,
+    .theater,
+    .pip,
+    .speed,
+    .subtitles,
+    .audio,
+    .quality,
+    .playlist,
+    .settings,
+    .fullscreen,
+]
+
+/// Rule 1: what this bar can draw at all.
+///
+/// Everything in [layoutOrder], which is every ranked control except the
+/// volume slider. Passed rather than assumed, because the rule charges width
+/// for what a bar declares it can show, and declaring a control it cannot
+/// draw would take room from one it can.
+private let drawable: Set<ChromeControl> = Set(layoutOrder)

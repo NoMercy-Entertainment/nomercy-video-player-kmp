@@ -42,6 +42,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
         title: String = "",
         subtitle: String = "",
         strings: VideoChromeStrings = VideoChromeStrings(),
+        autohide: Bool = true,
         onCast: (() -> Void)? = nil,
         onClose: (() -> Void)? = nil
     ) {
@@ -57,7 +58,9 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
         // than something rebuilt each time the player publishes. Rebuilt, the
         // autohide timer would restart on every frame of playback and the
         // controls would never go away.
-        _visibility = StateObject(wrappedValue: ControlsVisibility(isPlaying: { player.isPlaying }))
+        _visibility = StateObject(
+            wrappedValue: ControlsVisibility(isPlaying: { player.isPlaying }, autohide: autohide)
+        )
     }
 
     /// The ordinary case: a player and nothing else.
@@ -67,6 +70,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
         title: String = "",
         subtitle: String = "",
         strings: VideoChromeStrings = VideoChromeStrings(),
+        autohide: Bool = true,
         onCast: (() -> Void)? = nil,
         onClose: (() -> Void)? = nil
     ) {
@@ -76,6 +80,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
             title: title,
             subtitle: subtitle,
             strings: strings,
+            autohide: autohide,
             onCast: onCast,
             onClose: onClose
         )

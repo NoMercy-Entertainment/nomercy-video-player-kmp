@@ -37,22 +37,25 @@ import java.nio.ByteBuffer
 internal class ComposeFrameSink : VlcVideoFrameSink {
 
     /**
-     * The bitmap Compose draws, which is the SAME object for as long as the
-     * picture stays one size.
+     * The frame Compose draws, republished on every one.
      *
-     * It used to be a new ImageBitmap per frame, and that is what made the
-     * desktop a slideshow. `Image.toComposeImageBitmap()` does not wrap — it
-     * allocates a second bitmap, opens a raster canvas over it and blits the
-     * whole picture across. With the copy out of libVLC's buffer and the Data
-     * that `makeRaster` takes, one frame at 1080p allocated three ~8 MB native
-     * buffers and rasterised the picture twice, and none of it was freed until
-     * the JVM happened to run a cleaner — which it has no reason to do, because
-     * native memory is invisible to the heap it decides on.
+     * A new Bitmap each time, and it has to be: Skia's `setImmutable` is one way,
+     * and immutability is what lets the render thread share a frame's pixels
+     * instead of copying them — so a bitmap that has been shown can never be
+     * refilled. Refilling one anyway is what this did until 2026-08-02, and it
+     * cost the desktop its picture twice over: first as a still that never moved
+     * while every counter here read 23.9 frames a second, then as
+     * `Failed to Image::makeFromBitmap` thrown on the render thread, deriving an
+     * image from a pixel store being replaced underneath it.
      *
-     * The measurement: 24 delivered frames per second for the first eight
-     * seconds and conversion at 6.5 ms, then delivery collapsing to 8/s with the
-     * same conversion taking 25-33 ms. Identical work getting four times slower
-     * is not a cost, it is pressure.
+     * `Bitmap.asComposeImageBitmap()` WRAPS, so the wrapper costs an object.
+     * `Image.toComposeImageBitmap()` does not: it allocates a second bitmap,
+     * opens a raster canvas over it and blits the whole picture across — three
+     * ~8 MB native buffers per 1080p frame and two rasterisations, none freed
+     * until a cleaner happened to run. Measured on the first version of this
+     * file: 24 frames a second at 6.5 ms conversion for eight seconds, then
+     * delivery collapsing to 8/s with the same conversion taking 25-33 ms. That
+     * is why [pixels] is reused and why nothing here rasterises.
      */
     val frame: MutableState<ImageBitmap?> = mutableStateOf(null)
 
@@ -69,7 +72,6 @@ internal class ComposeFrameSink : VlcVideoFrameSink {
     val version: MutableIntState = mutableIntStateOf(0)
 
     private var pixels: ByteArray = ByteArray(0)
-    private var bitmap: Bitmap = Bitmap()
     private var info: ImageInfo = ImageInfo(0, 0, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
     private var rowBytes: Int = 0
 
@@ -77,16 +79,13 @@ internal class ComposeFrameSink : VlcVideoFrameSink {
     // machine and exactly what Skia calls BGRA_8888 — so the frame lands with no
     // conversion, only a copy.
     //
-    // A NEW Bitmap rather than a reallocated one, because the bitmap already
-    // handed to Compose is on screen: reusing it here would blank the live
-    // picture between this call and the first frame of the new size.
+    // The picture on screen is left alone. Whatever was last published stays up
+    // until the first frame of the new size arrives; blanking here would put a
+    // black flash into every resize.
     override fun format(width: Int, height: Int) {
         rowBytes = width * BYTES_PER_PIXEL
         pixels = ByteArray(rowBytes * height)
         info = ImageInfo(width, height, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
-        bitmap = Bitmap()
-        bitmap.allocPixels(info)
-        frame.value = bitmap.asComposeImageBitmap()
         FrameStats.format(width, height)
     }
 
@@ -129,18 +128,21 @@ internal class ComposeFrameSink : VlcVideoFrameSink {
     }
 
     private fun handOver() {
-        // installPixels replaces the bitmap's pixel store outright with one it
-        // has already filled, so a draw racing this call sees either the whole
-        // previous frame or the whole new one — never half of each. Writing over
-        // pixels the compositor is reading is what would tear.
+        // The whole frame installed at once, so a draw racing this call sees a
+        // complete picture and never the top of one over the bottom of another.
         //
-        // setImmutable on every frame, not once: the flag lives on the pixel
-        // store, so a new store arrives unmarked. It is what lets the draw share
-        // those pixels instead of copying them — Skia's makeFromBitmap copies a
-        // MUTABLE bitmap, which would put a full-frame allocation back, this
-        // time on the render thread.
-        bitmap.installPixels(info, pixels, rowBytes)
-        bitmap.setImmutable()
+        // setImmutable before it is published, and it is what lets the draw
+        // share these pixels instead of copying them: Skia's makeFromBitmap
+        // copies a MUTABLE bitmap, which would put a full-frame allocation back,
+        // this time on the render thread.
+        val next = Bitmap()
+        next.installPixels(info, pixels, rowBytes)
+        next.setImmutable()
+
+        // asComposeImageBitmap WRAPS. toComposeImageBitmap is the one that
+        // allocates a second bitmap and blits the picture into it, and using it
+        // here is what once made the desktop a slideshow.
+        frame.value = next.asComposeImageBitmap()
     }
 
     private companion object {

@@ -37,6 +37,14 @@ public final class ControlsVisibility: ObservableObject {
 
     private let isPlaying: () -> Bool
     private let inactivity: TimeInterval
+
+    /// Whether the bar retreats at all.
+    ///
+    /// Rule 2 turned off. A person reading the transport while the picture runs
+    /// is the case this is for, and a host that draws its own overlay above the
+    /// player is the other — both want the bar pinned, and neither should have to
+    /// fake it by claiming a menu is open.
+    private let autohide: Bool
     private var hideWork: DispatchWorkItem?
 
     /// What was on screen when a finger landed, captured before anything woke.
@@ -46,9 +54,15 @@ public final class ControlsVisibility: ObservableObject {
     /// visible and a naive toggle hides them again — the show-then-hide flicker.
     private var tapFoundThemUp: Bool?
 
-    public init(isPlaying: @escaping () -> Bool, inactivity: TimeInterval = 3.5) {
+    public init(
+        isPlaying: @escaping () -> Bool,
+        inactivity: TimeInterval = 3.5,
+        autohide: Bool = true
+    ) {
         self.isPlaying = isPlaying
         self.inactivity = inactivity
+        self.autohide = autohide
+        self.isActive = !autohide
     }
 
     public func bumpActivity() {
@@ -107,7 +121,7 @@ public final class ControlsVisibility: ObservableObject {
     }
 
     private func heldOpen() -> Bool {
-        !isPlaying() || isMenuOpen || isScrubbing
+        !autohide || !isPlaying() || isMenuOpen || isScrubbing
     }
 
     private func reconcile() {

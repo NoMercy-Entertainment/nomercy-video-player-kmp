@@ -106,7 +106,20 @@ public class AppleVideoEngine(
     // hop is where a frame goes missing.
     private val scope = CoroutineScope(Dispatchers.Main)
 
-    private var collecting: Job? = null
+    // One per observer, because an application legitimately has more than one.
+    //
+    // This was a single Job and every call cancelled the one before it, which is
+    // a wall rather than guidance: the caller is told nothing, the view that
+    // registered first simply stops updating, and what a person sees is a clock
+    // stuck at 0:00 over a picture that is plainly playing. The Apple testbed hit
+    // it the first time it drew a chrome and a television model from one engine —
+    // two honest readers of one state — and only a screenshot caught it.
+    //
+    // The cost the old rule was protecting against is real: two collectors is two
+    // SwiftUI updates per frame. It is also the caller's to spend. A library that
+    // silently drops a subscription to save a consumer money is deciding
+    // something that was never its decision.
+    private val collectors: MutableList<Job> = mutableListOf()
 
     /**
      * Set up with the defaults.
@@ -160,13 +173,12 @@ public class AppleVideoEngine(
     /**
      * Report the state now and on every change.
      *
-     * Called once. Calling it again replaces the previous collector rather than
-     * running two, because two collectors is two SwiftUI updates per frame and
-     * the second one is invisible until something is slow.
+     * Every caller gets its own collector and they all run. Registering in a
+     * SwiftUI body would therefore accumulate one per redraw — register where the
+     * thing that owns the engine is built, and let [dispose] end them.
      */
     public fun observe(onState: (AppleVideoSnapshot) -> Unit) {
-        collecting?.cancel()
-        collecting = scope.launch {
+        collectors += scope.launch {
             player.stateFlow.collect { snapshot: PlayerState ->
                 onState(snapshotOf(snapshot))
             }
@@ -204,8 +216,8 @@ public class AppleVideoEngine(
     public val tracks: AppleVideoTracks = AppleVideoTracks(player)
 
     public fun dispose() {
-        collecting?.cancel()
-        collecting = null
+        collectors.forEach(Job::cancel)
+        collectors.clear()
         scope.launch { player.dispose() }
     }
 
