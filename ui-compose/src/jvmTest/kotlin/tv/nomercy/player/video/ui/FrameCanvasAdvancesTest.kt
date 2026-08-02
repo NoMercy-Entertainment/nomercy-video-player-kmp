@@ -44,22 +44,29 @@ class FrameCanvasAdvancesTest {
 
         try {
             sink.accept(solidFrame(GREEN))
-            assertEquals(GREEN, scene.centrePixel(), "the first frame never reached the screen")
+            assertEquals(GREEN, scene.centrePixel(1), "the first frame never reached the screen")
 
             sink.accept(solidFrame(RED))
-            assertEquals(RED, scene.centrePixel(), "the picture froze on the frame before it")
+            assertEquals(RED, scene.centrePixel(2), "the picture froze on the frame before it")
         } finally {
             scene.close()
         }
     }
 
-    // The colour in the middle of the rendered scene, as an ARGB int.
+    // The colour in the middle of the rendered scene at [frame], as an ARGB int.
     //
     // The middle, because ContentScale.Fit letterboxes and the bars are black
     // whatever the frame holds — a corner would read the same on a live picture
     // and a dead one.
-    private fun ImageComposeScene.centrePixel(): Int =
-        render()
+    //
+    // The clock has to move. `render()` with no argument renders at the same
+    // instant every time, and a state write that arrived between two renders is
+    // then applied on one host and not on another: this passed on Windows and
+    // failed on the Linux runner at the SECOND frame, which reads exactly like
+    // the defect it is written to catch. A real player has a frame clock that
+    // advances, so the test gives it one.
+    private fun ImageComposeScene.centrePixel(frame: Long): Int =
+        render(frame * NANOS_PER_FRAME)
             .toComposeImageBitmap()
             .toPixelMap()[CANVAS_SIDE / 2, CANVAS_SIDE / 2]
             .toArgb()
@@ -78,6 +85,10 @@ class FrameCanvasAdvancesTest {
 }
 
 private const val CANVAS_SIDE = 64
+
+// 24 frames a second, which is what the desktop's own clip runs at.
+private const val NANOS_PER_FRAME = 41_666_667L
+
 private const val PIXEL_BYTES = 4
 
 private const val GREEN = 0xFF00FF00.toInt()
