@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -99,6 +100,16 @@ public fun TransportBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                // `.bottom-row { height: 40px; padding: 4px 16px }` — forty
+                // TOTAL, with the padding inside it and the 40dp controls
+                // overflowing by four top and bottom.
+                //
+                // Compose adds padding to its content instead, so a row of 40dp
+                // buttons with 4dp of vertical padding measured 48 — eight
+                // taller than the browser's, which pushed the progress strip
+                // that much further from the controls. The height has to be
+                // stated for the padding to be absorbed rather than added.
+                .height(ROW_HEIGHT)
                 .padding(horizontal = metrics.paddingHorizontal, vertical = metrics.paddingVertical)
                 .testTag(TRANSPORT_BAR_TAG),
             verticalAlignment = Alignment.CenterVertically,
@@ -632,6 +643,11 @@ internal const val SETTINGS_TAG = "nm-settings"
 // size in the wrong colour. Proportional digits are the part that shows without
 // a browser beside it — a 1 is narrower than a 0, so the whole row twitches once
 // a second while the clock ticks.
+// `.bottom-row { height: 40px }`, which is the same forty as the buttons and a
+// different decision — a consumer shrinking the controls does not shrink the row
+// they sit in.
+private val ROW_HEIGHT: Dp = 40.dp
+
 private val TIME_COLOR: Color = Color(0xFFDDDDDD)
 
 private val READOUT = TextStyle(

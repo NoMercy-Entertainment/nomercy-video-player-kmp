@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -99,6 +100,14 @@ public fun ChapterScrubber(
     )
 
     Box(
+        // Centred, so the target is symmetrical about the thing it is a target
+        // FOR. Left to the default it was top-aligned: twenty-four units of
+        // reach below the bar and none above it, which puts the bar 12 above
+        // where the row it sits in expects it and opened a gap between the strip
+        // and the controls the browser does not have. Nothing measured it,
+        // because every control in the row was still the right size in the right
+        // place — the ROW was in the wrong place.
+        contentAlignment = Alignment.Center,
         modifier = modifier
             .fillMaxWidth()
             .height(SCRUBBER_TOUCH_HEIGHT)
