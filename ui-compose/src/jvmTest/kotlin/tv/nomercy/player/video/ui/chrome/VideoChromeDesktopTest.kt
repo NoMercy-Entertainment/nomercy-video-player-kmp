@@ -10,21 +10,31 @@ package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performMouseInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpRect
+import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.width
+import tv.nomercy.player.core.cues.SpriteCue
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.player.PlayState
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.ui.thumbnails.PreviewSprite
+import tv.nomercy.player.video.ui.thumbnails.SpriteTileSource
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // The two things only a desktop has: a pointer that comes and goes, and a
 // keyboard.
@@ -35,7 +45,7 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalTestApi::class)
 class VideoChromeDesktopTest {
 
-    private fun ComposeUiTest.mountPlaying(): NMVideoPlayer {
+    private fun ComposeUiTest.mountPlaying(sprite: PreviewSprite? = null): NMVideoPlayer {
         val player = NMVideoPlayer(RecordingVideoBackend())
 
         setContent {
@@ -48,7 +58,7 @@ class VideoChromeDesktopTest {
                 // and a test that left it paused would pass on that instead.
                 player.play()
             }
-            VideoChrome(player, FormFactor.Desktop)
+            VideoChrome(player, FormFactor.Desktop, previewSprite = sprite)
         }
         waitForIdle()
 
@@ -123,6 +133,42 @@ class VideoChromeDesktopTest {
     }
 
     @Test
+    fun andTheBubbleIsTallerThanTheEightUnitBarItHangsOver() = runComposeUiTest {
+        // The test above asserts the bubble EXISTS, and it existed the whole time
+        // it was invisible. The strip that hosts it is eight units tall — the
+        // height of the drawn bar — and a Box of a fixed height caps every child
+        // measured against it. The scrubber escapes with requiredHeight; the
+        // bubble had no such escape, so the frame, the clock and the chapter name
+        // were all coerced into an eight-unit sliver.
+        //
+        // Measured rather than asserted to exist, because that is the difference
+        // between the green light this had and a green light that can go red.
+        mountPlaying()
+
+        onNodeWithTag(SCRUBBER_TAG).performMouseInput { moveTo(center) }
+        settle()
+
+        val bubble: Dp = onNodeWithTag(SCRUB_PREVIEW_TAG).getUnclippedBoundsInRoot().height
+        assertTrue(bubble > STRIP_ROW_HEIGHT, "the bubble measured $bubble inside an 8dp row")
+    }
+
+    @Test
+    fun andTheFrameUnderTheThumbIsDrawnAtTheSizeTheSheetDeclares() = runComposeUiTest {
+        // The other half. A bubble with room in it still shows no picture if the
+        // frame is measured to nothing, and the sprite path had never been driven
+        // through the assembled chrome on this host at all — only through the
+        // loader and the tile source, each on its own.
+        mountPlaying(sprite = PreviewSprite(SPRITE_FRAMES, OneTile))
+
+        onNodeWithTag(SCRUBBER_TAG).performMouseInput { moveTo(center) }
+        settle()
+
+        val frame: DpRect = onNodeWithTag(SCRUB_FRAME_TAG).getUnclippedBoundsInRoot()
+        assertTrue(frame.height > STRIP_ROW_HEIGHT, "the frame measured ${frame.height}")
+        assertTrue(frame.width > STRIP_ROW_HEIGHT, "the frame measured ${frame.width}")
+    }
+
+    @Test
     fun spaceTogglesPlayback() = runComposeUiTest {
         // Through the key handler rather than through a binding of the view's
         // own, which is what keeps the desktop keys and the television keys the
@@ -138,3 +184,13 @@ class VideoChromeDesktopTest {
 }
 
 private const val SETTLE_MS = 500L
+
+private val SPRITE_FRAMES = listOf(
+    SpriteCue(start = 0.0, end = 60.0, url = "s.webp", x = 0, y = 0, width = 320, height = 178),
+)
+
+private object OneTile : SpriteTileSource {
+    override fun frame(index: Int): ImageBitmap = ImageBitmap(320, 178)
+
+    override fun release() = Unit
+}

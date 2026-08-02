@@ -25,13 +25,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isUnspecified
 import androidx.compose.ui.unit.sp
 import tv.nomercy.player.video.tv.formatTime
 
@@ -66,7 +69,7 @@ public fun ScrubPreview(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(POP_GAP),
         modifier = modifier
-            .centeredOn(fraction, barWidth)
+            .centeredOn(fraction, barWidth, liftedAbove = POP_LIFT)
             .background(POP_BACKGROUND, RoundedCornerShape(POP_RADIUS))
             .padding(bottom = POP_BOTTOM_PADDING)
             .testTag(SCRUB_PREVIEW_TAG),
@@ -143,14 +146,37 @@ public fun ScrubNipple(
  * A layout modifier rather than an offset because the width is not known until
  * the child has measured itself, and a bubble placed before it knows how wide it
  * is centres on the wrong point by half its own width.
+ *
+ * [liftedAbove] is `position: absolute; bottom: Npx`: the child takes no space in
+ * the row and hangs that far above it.
  */
-private fun Modifier.centeredOn(fraction: Float, barWidth: Dp): Modifier = layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+private fun Modifier.centeredOn(
+    fraction: Float,
+    barWidth: Dp,
+    liftedAbove: Dp = Dp.Unspecified,
+): Modifier = layout { measurable, constraints ->
+    // Against the bar's WIDTH and nothing else.
+    //
+    // The row this sits in is eight units tall — the height of the drawn bar —
+    // and a Box of a fixed height caps every child measured against it. Handed
+    // the row's constraints the bubble came out FOUR units tall: the frame, the
+    // clock and the chapter name all coerced into a sliver, present to every
+    // assertion that asked whether it existed and invisible to the viewer it was
+    // drawn for. The scrubber beside it escapes the same cap with
+    // `requiredHeight`; this is that escape, expressed where the overflow is.
+    val placeable: Placeable = measurable.measure(Constraints(maxWidth = constraints.maxWidth))
     val bar: Float = barWidth.toPx()
     val centre: Float = bar * fraction.coerceIn(0f, 1f)
     val left: Float = (centre - placeable.width / 2f).coerceIn(0f, (bar - placeable.width).coerceAtLeast(0f))
 
-    layout(placeable.width, placeable.height) { placeable.placeRelative(left.toInt(), 0) }
+    if (liftedAbove.isUnspecified) {
+        layout(placeable.width, placeable.height) { placeable.placeRelative(left.toInt(), 0) }
+    } else {
+        // Zero-sized, so the row keeps the height the browser gives it, and the
+        // child placed off the top of it. The origin is the bar's centre, which
+        // is where an empty child lands in a centre-aligned row.
+        layout(0, 0) { placeable.placeRelative(left.toInt(), -(placeable.height + liftedAbove.roundToPx())) }
+    }
 }
 
 internal const val SCRUB_PREVIEW_TAG = "nm-scrub-preview"
@@ -165,6 +191,10 @@ private val POP_BACKGROUND = Color(red = 20, green = 20, blue = 25, alpha = 242)
 
 // `border-radius: 6px`, `gap: 4px`, `padding-bottom: 4px`, `padding: 0 8px`.
 private val POP_RADIUS = 6.dp
+
+// `.slider-pop { bottom: 24px }`, measured from the bottom of an 8px row. The
+// origin here is the row's CENTRE, which is four of those units higher.
+private val POP_LIFT = 20.dp
 private val POP_GAP = 4.dp
 private val POP_BOTTOM_PADDING = 4.dp
 private val TEXT_INSET = 8.dp
