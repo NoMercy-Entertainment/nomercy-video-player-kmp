@@ -58,16 +58,21 @@ public final class tv/nomercy/player/video/ui/chrome/AutoSkipTracker {
 
 public final class tv/nomercy/player/video/ui/chrome/BarMetrics {
 	public static final field $stable I
-	public synthetic fun <init> (FFFLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (FFFFJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (FFFFJLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1-D9Ej5fM ()F
 	public final fun component2-D9Ej5fM ()F
 	public final fun component3-D9Ej5fM ()F
-	public final fun copy-2z7ARbQ (FFF)Ltv/nomercy/player/video/ui/chrome/BarMetrics;
-	public static synthetic fun copy-2z7ARbQ$default (Ltv/nomercy/player/video/ui/chrome/BarMetrics;FFFILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/BarMetrics;
+	public final fun component4-D9Ej5fM ()F
+	public final fun component5-XSAIIZE ()J
+	public final fun copy-ACgYLbA (FFFFJ)Ltv/nomercy/player/video/ui/chrome/BarMetrics;
+	public static synthetic fun copy-ACgYLbA$default (Ltv/nomercy/player/video/ui/chrome/BarMetrics;FFFFJILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/BarMetrics;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getGap-D9Ej5fM ()F
 	public final fun getPaddingHorizontal-D9Ej5fM ()F
 	public final fun getPaddingVertical-D9Ej5fM ()F
+	public final fun getStripPaddingHorizontal-D9Ej5fM ()F
+	public final fun getTimeFontSize-XSAIIZE ()J
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -1218,8 +1223,16 @@ public final class tv/nomercy/player/video/ui/tv/NoGamepad : tv/nomercy/player/v
 	public fun poll ()Ljava/util/List;
 }
 
+public final class tv/nomercy/player/video/ui/tv/PlayerFocusStyle : java/lang/Enum {
+	public static final field Filled Ltv/nomercy/player/video/ui/tv/PlayerFocusStyle;
+	public static final field Outline Ltv/nomercy/player/video/ui/tv/PlayerFocusStyle;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/PlayerFocusStyle;
+	public static fun values ()[Ltv/nomercy/player/video/ui/tv/PlayerFocusStyle;
+}
+
 public final class tv/nomercy/player/video/ui/tv/PlayerIconButtonKt {
-	public static final fun PlayerIconButton-HXNGIdc (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/ui/focus/FocusRequester;Lkotlin/jvm/functions/Function1;FFLandroidx/compose/runtime/Composer;II)V
+	public static final fun PlayerIconButton-KBW6s6s (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/ui/focus/FocusRequester;Lkotlin/jvm/functions/Function1;FFLtv/nomercy/player/video/ui/tv/PlayerFocusStyle;Landroidx/compose/runtime/Composer;II)V
 	public static final fun getTV_BUTTON_SIZE ()F
 	public static final fun getTV_ICON_SIZE ()F
 }
