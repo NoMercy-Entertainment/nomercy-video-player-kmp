@@ -133,6 +133,14 @@ public struct ControlsOverlayModel<Player: VideoChromePlayer> {
         player.duration <= 0 ? 0 : min(1, max(0, player.currentTime / player.duration))
     }
 
+    /// How much has been fetched, as a fraction. The browser draws this behind
+    /// the played portion at a lower alpha, so a viewer can see how far they can
+    /// seek without waiting.
+    ///
+    /// Read here rather than in a view body for the same reason everything else
+    /// on this model is: one place asks the engine, and the views ask this.
+    public var buffered: Double { min(1, max(0, player.bufferedPercent)) }
+
     /// A menu is worth offering only where there is a choice. One track is not a
     /// menu, it is a row that opens onto itself.
     public var offersAudioMenu: Bool { player.audioOptions.count > 1 }

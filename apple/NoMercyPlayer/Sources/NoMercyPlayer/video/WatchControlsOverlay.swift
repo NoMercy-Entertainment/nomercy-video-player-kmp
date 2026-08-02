@@ -98,10 +98,20 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
                     VStack {
                         topBar
                         Spacer()
-                        bottomBar(
-                            width: Int(geometry.size.width),
-                            portrait: geometry.size.height >= geometry.size.width
-                        )
+                        // The strip, then the controls, over one gradient:
+                        // `.bottom-bar` is a column of both with the shadow
+                        // behind it, not a control row on its own.
+                        VStack(spacing: WebStrip.topMargin / 2) {
+                            WebProgressStrip(progress: model.progress, buffered: model.buffered)
+                                .padding(.horizontal, WebStrip.inset)
+                                .padding(.top, WebStrip.topMargin)
+
+                            bottomBar(
+                                width: Int(geometry.size.width),
+                                portrait: geometry.size.height >= geometry.size.width
+                            )
+                        }
+                        .background(WebStrip.scrim)
                     }
                 }
                 .transition(.opacity)
