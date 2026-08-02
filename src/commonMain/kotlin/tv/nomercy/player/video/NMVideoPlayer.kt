@@ -11,16 +11,19 @@ package tv.nomercy.player.video
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import tv.nomercy.player.core.controllers.ComposedPlayer
+import tv.nomercy.player.core.cues.ChapterCues
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.core.events.SubtitlesPayload
 import tv.nomercy.player.core.events.Subscription
+import tv.nomercy.player.core.media.Chapter
 import tv.nomercy.player.core.media.PlaylistItem
 import tv.nomercy.player.core.media.normalizeLanguage
 import tv.nomercy.player.core.player.ActionOptions
 import tv.nomercy.player.core.player.AudioTrackState
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.core.ports.AudioTrack
+import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.Fetcher
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.MediaBackend
@@ -185,6 +188,15 @@ public open class NMVideoPlayer(
         // would be data nothing read.
         context.on(CoreEvents.Item) { adoptItemSubtitles() }
 
+        // The item's own chapter markers, taken the same way its subtitles are.
+        //
+        // Without this an item could not carry chapters by any route: a host had
+        // to call chapters(list) by hand for every item it queued, and one that
+        // did not had a chapter bar with no segments and a next-chapter button
+        // that moved nothing — which is how chapter skip can look broken while
+        // every chapter unit test passes.
+        context.on(CoreEvents.Item) { adoptItemChapters() }
+
         // Launched rather than called: next() suspends, and an event listener
         // that could suspend would make every emitter on this bus suspending.
         // The scope is the player's own, so a dispose cancels an advance that is
@@ -205,6 +217,33 @@ public open class NMVideoPlayer(
     // pair — and collapsing them would silently drop every variant after the
     // first. The web deduplicates the item's own list on exactly this field and
     // says so.
+    private fun adoptItemChapters() {
+        val current = item() as? VideoPlaylistItem ?: return
+
+        val inline: List<Chapter> = current.chapters
+        if (inline.isNotEmpty()) {
+            chapters(inline)
+            return
+        }
+
+        val file: String = current.chapterFile ?: return
+
+        // Fetched off the player's own scope: the item event is synchronous and
+        // a listener that suspended would make every emitter on the bus
+        // suspending. The item is re-read after the fetch because a viewer can
+        // skip on while it is in flight, and publishing a previous item's
+        // chapters over the current one is worse than publishing none.
+        playerScope.launch {
+            val parsed: List<Chapter> = runCatching {
+                ChapterCues.parse(fetch(file, FetchOptions()).body)
+            }.getOrElse { emptyList() }
+
+            if (parsed.isNotEmpty() && (item() as? VideoPlaylistItem)?.id == current.id) {
+                chapters(parsed)
+            }
+        }
+    }
+
     private fun adoptItemSubtitles() {
         externalSubtitles = (item() as? VideoPlaylistItem)
             ?.subtitles

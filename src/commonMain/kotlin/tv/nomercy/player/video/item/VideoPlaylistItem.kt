@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.item
 
+import tv.nomercy.player.core.media.Chapter
 import tv.nomercy.player.core.media.PlaylistItem
 import tv.nomercy.player.core.ports.SubtitleTrack
 
@@ -23,6 +24,14 @@ import tv.nomercy.player.core.ports.SubtitleTrack
 // Implemented by a host's own item rather than constructed here. There is no
 // data class: the point is that an episode from whatever server the host talks to
 // can BE one of these without being copied into a shape this library invented.
+// Ten members, which is the ComplexInterface threshold, and the width is the
+// point rather than a smell. Every one is a field a video chrome reads off the
+// item a host already has — three image names because the reference accepts all
+// three, subtitles and chapters because that is what the server sends and the
+// player is what acts on it. Splitting it would give a host two interfaces to
+// implement for one episode; a host implements only what it has, because every
+// member past the first two has a default.
+@Suppress("ComplexInterface")
 public interface VideoPlaylistItem : PlaylistItem {
     /**
      * The item's length in seconds, when the host knows it before playback.
@@ -66,6 +75,28 @@ public interface VideoPlaylistItem : PlaylistItem {
      * without is a menu row that cannot be played and is skipped.
      */
     public val subtitles: List<SubtitleTrack> get() = emptyList()
+
+    /**
+     * The item's own chapter markers.
+     *
+     * The comment on [subtitles] says these are declared "for the same reason
+     * chapters is" and they were not declared at all — an item could not carry
+     * chapters by any route, so a host had to call `chapters(list)` by hand for
+     * every item it queued, and one that did not had a chapter bar with no
+     * segments and a next-chapter button that moved nothing. The reference reads
+     * them off the item.
+     */
+    public val chapters: List<Chapter> get() = emptyList()
+
+    /**
+     * A WebVTT file of chapter markers sitting beside the item, for a library
+     * that stores them next to the captions instead of inlining them.
+     *
+     * Read only when [chapters] is empty: an item that states its markers
+     * outright has already answered, and fetching a file to disagree with it
+     * would make which one wins depend on which arrived first.
+     */
+    public val chapterFile: String? get() = null
 
     /** Series title, when the item is an episode. The lock screen's artist line. */
     public val show: String? get() = null
