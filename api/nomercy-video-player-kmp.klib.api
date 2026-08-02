@@ -524,6 +524,12 @@ sealed interface tv.nomercy.player.video.tv/FeedbackEvent { // tv.nomercy.player
         final fun toString(): kotlin/String // tv.nomercy.player.video.tv/FeedbackEvent.Display.toString|toString(){}[0]
     }
 
+    final object CanPlay : tv.nomercy.player.video.tv/FeedbackEvent { // tv.nomercy.player.video.tv/FeedbackEvent.CanPlay|null[0]
+        final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/FeedbackEvent.CanPlay.equals|equals(kotlin.Any?){}[0]
+        final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/FeedbackEvent.CanPlay.hashCode|hashCode(){}[0]
+        final fun toString(): kotlin/String // tv.nomercy.player.video.tv/FeedbackEvent.CanPlay.toString|toString(){}[0]
+    }
+
     final object Failed : tv.nomercy.player.video.tv/FeedbackEvent { // tv.nomercy.player.video.tv/FeedbackEvent.Failed|null[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.tv/FeedbackEvent.Failed.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // tv.nomercy.player.video.tv/FeedbackEvent.Failed.hashCode|hashCode(){}[0]

@@ -58,6 +58,14 @@ public sealed interface FeedbackEvent {
 
     public data object Playing : FeedbackEvent
 
+    /**
+     * Enough data to play. This is what ends a load, and it arrives whether or
+     * not anybody pressed play — which [Playing] and [Progressed] do not. Left
+     * out, a player that becomes ready while paused keeps "Loading" over a
+     * fully buffered frame that already knows its own duration.
+     */
+    public data object CanPlay : FeedbackEvent
+
     /** A time update. Clears feedback the same way `playing` does. */
     public data object Progressed : FeedbackEvent
 
@@ -93,7 +101,7 @@ public fun nextFeedbackState(
 
     // The spinner always stops. The text only clears if the player is the one
     // who put it there — a caller's message outlives playback resuming.
-    FeedbackEvent.Playing, FeedbackEvent.Progressed ->
+    FeedbackEvent.CanPlay, FeedbackEvent.Playing, FeedbackEvent.Progressed ->
         if (current.kind == FeedbackKind.Feedback) {
             FeedbackState()
         } else {

@@ -56,6 +56,27 @@ class FeedbackOverlayTest {
         assertFalse(after(FeedbackEvent.Waiting, FeedbackEvent.Progressed).visible)
     }
 
+    // Reported from the web testbed: an episode sat on its poster showing
+    // "Loading" with its own duration already on the scrubber. Playing and
+    // Progressed were the only clear signals, and neither arrives for a player
+    // that finished loading and is waiting on a click.
+    @Test
+    fun becomingPlayableClearsItWithoutAnybodyPressingPlay() {
+        val state = after(FeedbackEvent.Mounted, FeedbackEvent.CanPlay)
+
+        assertFalse(state.visible)
+        assertFalse(state.buffering)
+    }
+
+    @Test
+    fun becomingPlayableDoesNotClearSomebodyElsesMessage() {
+        val state = after(FeedbackEvent.Display("Skipping intro"), FeedbackEvent.CanPlay)
+
+        assertEquals("Skipping intro", state.text)
+        assertTrue(state.visible)
+        assertFalse(state.buffering)
+    }
+
     // The rule that gets lost. Without it a caller's message is wiped by the
     // next time update, which lands within a second of it being raised.
     @Test

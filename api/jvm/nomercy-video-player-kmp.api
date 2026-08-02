@@ -1506,6 +1506,13 @@ public final class tv/nomercy/player/video/tv/EpisodeLabels {
 public abstract interface class tv/nomercy/player/video/tv/FeedbackEvent {
 }
 
+public final class tv/nomercy/player/video/tv/FeedbackEvent$CanPlay : tv/nomercy/player/video/tv/FeedbackEvent {
+	public static final field INSTANCE Ltv/nomercy/player/video/tv/FeedbackEvent$CanPlay;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class tv/nomercy/player/video/tv/FeedbackEvent$Display : tv/nomercy/player/video/tv/FeedbackEvent {
 	public fun <init> (Ljava/lang/String;Ljava/lang/Long;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
