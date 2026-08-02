@@ -130,6 +130,21 @@ public open class NMVideoPlayer(
      * Null keeps the platform's own store.
      */
     storage: Storage? = null,
+    /**
+     * Whether an item reaching its end moves to the next one.
+     *
+     * On here and off in music, which is a deliberate asymmetry in the reference
+     * rather than an oversight: an episode ending should roll into the next one,
+     * and a track ending should not start the album again unless somebody asked
+     * for it — music advances only when its AutoAdvancePlugin is mounted.
+     *
+     * This was not wired at all. Nothing subscribed to `ended` except the media
+     * session, which pushes STOPPED, so a queued item played to its end and the
+     * player sat there with the next item still in the queue. Every source gate
+     * in the campaign stayed green over it, because the queue surface it would
+     * have called is fully present — nothing was ever going to call it.
+     */
+    autoAdvance: Boolean = true,
 ) : ComposedPlayer(backend, video = video, scope = scope, fetcher = fetcher, storage = storage) {
 
     // A video backend is both, so a caller with one says so once.
@@ -140,6 +155,10 @@ public open class NMVideoPlayer(
     private var theaterActive: Boolean = false
     private var stretching: Stretching = Stretching.Uniform
     private var rect: VideoRect? = null
+
+    // Held rather than read from the constructor parameter inside the listener,
+    // so the field is initialised before init subscribes.
+    private val advanceOnEnd: Boolean = autoAdvance
 
     // The video half of what the engine reports. Core's bridge handles the
     // transport events; these are the ones only a video player has a name for.
@@ -165,6 +184,14 @@ public open class NMVideoPlayer(
         // for every film it queues, and the fields the server already sends
         // would be data nothing read.
         context.on(CoreEvents.Item) { adoptItemSubtitles() }
+
+        // Launched rather than called: next() suspends, and an event listener
+        // that could suspend would make every emitter on this bus suspending.
+        // The scope is the player's own, so a dispose cancels an advance that is
+        // still in flight instead of loading an item into a disposed player.
+        context.on(CoreEvents.Ended) {
+            if (advanceOnEnd) playerScope.launch { next() }
+        }
     }
 
     // The item's own subtitle files, taken as this player's external tracks.

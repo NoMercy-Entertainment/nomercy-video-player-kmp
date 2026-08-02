@@ -8,7 +8,10 @@
 
 package tv.nomercy.player.video.conformance
 
+import kotlinx.coroutines.CoroutineScope
+
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import tv.nomercy.player.core.events.LevelSwitchedPayload
@@ -20,6 +23,7 @@ import tv.nomercy.player.conformance.scenarioItems
 import tv.nomercy.player.core.events.BeforeEvent
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.EventKey
+import tv.nomercy.player.core.media.Chapter
 import tv.nomercy.player.testing.FakeVideoBackend
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoItem
@@ -103,6 +107,8 @@ class VideoBehavioralConformanceTest {
             "time" -> player.time(action.args.firstOrNull()?.toString()?.trim('"')?.toDouble() ?: 0.0)
             "volume" -> player.volume(action.args.firstOrNull()?.toString()?.trim('"')?.toDouble()?.toInt() ?: 0)
             "mute" -> player.mute()
+            "nextChapter" -> player.nextChapter()
+            "previousChapter" -> player.previousChapter()
             "playbackRate" -> player.playbackRate(action.args.firstOrNull()?.toString()?.trim('"')?.toDouble() ?: 1.0)
             // Re-queued, not ignored. The scenario is about replacing what is
             // loaded, and a driver that treated it as already-done would assert
@@ -134,16 +140,35 @@ class VideoBehavioralConformanceTest {
         }
     }
 
-    private suspend fun run(scenario: Scenario): List<String> {
+    private suspend fun run(scenario: Scenario, host: CoroutineScope): List<String> {
         current = scenario
 
         val backend = FakeVideoBackend()
-        val player = NMVideoPlayer(backend, backend)
+
+        // On the test's own scheduler, not the player's default one.
+        //
+        // Without this the player's internal scope is Dispatchers.Default, so
+        // anything it LAUNCHES rather than awaits lands on another thread after
+        // the assertion has already read the log — and every asynchronous
+        // behaviour in the player is invisible to this suite while every
+        // scenario still passes. Auto-advance is exactly that shape: `ended`
+        // arrives, the advance is launched, and the comparison saw a run that
+        // stopped at `ended`.
+        val player = NMVideoPlayer(backend, backend, scope = host)
         player.setup()
         player.ready().await()
 
-        val items = scenarioItems(scenario).map { VideoItem(id = it.id, url = it.url, title = it.title) }
+        val entries = scenarioItems(scenario)
+        val items = entries.map { VideoItem(id = it.id, url = it.url, title = it.title) }
         if (items.isNotEmpty()) player.queue(items)
+
+        // The web carries chapters on the playlist item; here they are published.
+        // Translating in the driver keeps one fixture driving both ecosystems
+        // rather than a scenario per route — and a scenario that named chapters
+        // and got none would fail for the driver's reason, not the port's.
+        val chapters: List<Chapter> = entries.firstOrNull()?.chapters.orEmpty()
+            .map { Chapter(startTime = it.start, title = it.title) }
+        if (chapters.isNotEmpty()) player.chapters(chapters)
 
         // After the queue, exactly as core does it. Subscribing earlier would
         // record the setup traffic every scenario shares and none of them names,
@@ -154,6 +179,12 @@ class VideoBehavioralConformanceTest {
             drive(player, backend, action)
         }
 
+        // Let anything the last action launched finish before the log is read.
+        // A scenario whose final event is produced by a coroutine — an advance
+        // after `ended` — would otherwise be compared against a run that had not
+        // happened yet.
+        yield()
+
         return capture.seen()
     }
 
@@ -162,7 +193,7 @@ class VideoBehavioralConformanceTest {
         val failures: MutableList<String> = mutableListOf()
 
         for (scenario in relevant()) {
-            val observed = run(scenario)
+            val observed = run(scenario, backgroundScope)
             val at = firstUnmatched(scenario.expect, observed)
             if (at != -1) {
                 failures += "${scenario.id}: expected '${scenario.expect[at]}' after " +
