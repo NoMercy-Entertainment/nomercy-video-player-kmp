@@ -56,7 +56,36 @@ run_tests() {
     exit 1
   fi
   echo "testing on $2 ($udid)"
-  xcodebuild test -scheme NoMercyVideoPlayer-Package -destination "id=$udid" -quiet
+
+  # Not -quiet, and the count is checked.
+  #
+  # A run that executes NOTHING exits zero. `xcodebuild test` on a scheme whose
+  # buildables have no supported platforms prints "Supported platforms for the
+  # buildables in the current scheme is empty", finishes in about a second, and
+  # succeeds — so this printed "behaviour gates green on both" having run no
+  # assertions at all. Proved by planting a failing one and watching it pass.
+  #
+  # -quiet was hiding the only line that could have shown it. The count is the
+  # check now: green with zero tests is the same failure as red, and it is the
+  # one that looks like success.
+  local out
+  out="$(xcodebuild test -scheme NoMercyVideoPlayer-Package -destination "id=$udid" 2>&1)" || {
+    printf '%s
+' "$out" | grep -E "error:|failed|XCTAssert" | head -20 >&2
+    exit 1
+  }
+
+  local ran
+  ran="$(printf '%s' "$out" | grep -oE "Executed [0-9]+ test" | grep -oE "[0-9]+" | sort -rn | head -1)"
+
+  if [ -z "$ran" ] || [ "$ran" -eq 0 ]; then
+    echo "$1: xcodebuild reported no executed tests — the suite did not run" >&2
+    printf '%s
+' "$out" | grep -E "Supported platforms|Testing started|error:" | head -5 >&2
+    exit 1
+  fi
+
+  echo "$1: $ran test(s)"
 }
 
 run_tests iOS "iPhone"

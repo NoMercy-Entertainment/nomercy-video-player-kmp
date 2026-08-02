@@ -581,6 +581,7 @@ final class tv.nomercy.player.video.apple/AppleVideoEngine { // tv.nomercy.playe
     final val tracks // tv.nomercy.player.video.apple/AppleVideoEngine.tracks|{}tracks[0]
         final fun <get-tracks>(): tv.nomercy.player.video.apple/AppleVideoTracks // tv.nomercy.player.video.apple/AppleVideoEngine.tracks.<get-tracks>|<get-tracks>(){}[0]
 
+    final fun addCastSender(kotlin/String, kotlin/Int = ...) // tv.nomercy.player.video.apple/AppleVideoEngine.addCastSender|addCastSender(kotlin.String;kotlin.Int){}[0]
     final fun addPlugin(kotlin/Any) // tv.nomercy.player.video.apple/AppleVideoEngine.addPlugin|addPlugin(kotlin.Any){}[0]
     final fun dispose() // tv.nomercy.player.video.apple/AppleVideoEngine.dispose|dispose(){}[0]
     final fun load(tv.nomercy.player.core.media/PlaylistItem) // tv.nomercy.player.video.apple/AppleVideoEngine.load|load(tv.nomercy.player.core.media.PlaylistItem){}[0]

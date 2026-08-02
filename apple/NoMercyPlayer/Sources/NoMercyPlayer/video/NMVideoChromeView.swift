@@ -28,6 +28,10 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
     private let title: String
     private let subtitle: String
     private let strings: VideoChromeStrings
+
+    // Which player this is, forwarded to the bar. The full one and the
+    // trailer differ by their control set, not by their layout.
+    private let kind: VideoChromeKind
     private let onCast: (() -> Void)?
     private let onClose: (() -> Void)?
 
@@ -43,9 +47,11 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
         subtitle: String = "",
         strings: VideoChromeStrings = VideoChromeStrings(),
         autohide: Bool = true,
+        kind: VideoChromeKind = .full,
         onCast: (() -> Void)? = nil,
         onClose: (() -> Void)? = nil
     ) {
+        self.kind = kind
         self.player = player
         self.subtitles = subtitles
         self.title = title
@@ -71,6 +77,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
         subtitle: String = "",
         strings: VideoChromeStrings = VideoChromeStrings(),
         autohide: Bool = true,
+        kind: VideoChromeKind = .full,
         onCast: (() -> Void)? = nil,
         onClose: (() -> Void)? = nil
     ) {
@@ -81,6 +88,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
             subtitle: subtitle,
             strings: strings,
             autohide: autohide,
+            kind: kind,
             onCast: onCast,
             onClose: onClose
         )
@@ -107,6 +115,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
                 title: title,
                 subtitle: subtitle,
                 strings: strings,
+                kind: kind,
                 onCast: onCast,
                 onClose: onClose
             )

@@ -25,6 +25,8 @@ import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.cast.DEFAULT_TV_PORT
+import tv.nomercy.player.video.cast.videoCastPlugin
 
 /**
  * Everything the SwiftUI chrome reads, in one value.
@@ -214,6 +216,25 @@ public class AppleVideoEngine(
      * an engine that had grown a track catalogue was an engine doing two jobs.
      */
     public val tracks: AppleVideoTracks = AppleVideoTracks(player)
+
+    /**
+     * Registers the cast sender against a television at [host].
+     *
+     * A method rather than a call Swift makes itself, because `videoCastPlugin`
+     * takes a CoroutineScope and Swift has no way to build one. The engine
+     * already owns the right one — the same scope every other action runs on,
+     * so a cast handoff cannot outlive the player it handed off from.
+     *
+     * Registering it with nothing on the other end is deliberate and is what
+     * the testbed does. Apple's discovery is NoDeviceDiscovery, so there is
+     * never a television to find here; the plugin is in the registry either
+     * way, its switch works, and every transport action stays local until a
+     * controller connects. An absent row would read as a library without
+     * casting.
+     */
+    public fun addCastSender(host: String, port: Int = DEFAULT_TV_PORT) {
+        player.plugins.register(videoCastPlugin(host = host, scope = scope, port = port))
+    }
 
     public fun dispose() {
         collectors.forEach(Job::cancel)

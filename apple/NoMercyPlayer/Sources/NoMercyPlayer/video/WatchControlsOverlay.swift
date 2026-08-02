@@ -35,6 +35,8 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
 
     public let intents: ControlsIntents<Player>
 
+    private let kind: VideoChromeKind
+
     public init(
         player: Player,
         visibility: ControlsVisibility,
@@ -42,9 +44,11 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
         subtitle: String = "",
         strings: VideoChromeStrings = VideoChromeStrings(),
         tint: Color = .white,
+        kind: VideoChromeKind = .full,
         onCast: (() -> Void)? = nil,
         onClose: (() -> Void)? = nil
     ) {
+        self.kind = kind
         self.player = player
         self.visibility = visibility
         self.title = title
@@ -181,7 +185,7 @@ public struct WatchControlsOverlay<Player: VideoChromePlayer>: View {
         let fits = Set(
             ChromeResponsiveKt.visibleControlsIn(
                 widthDp: Int32(width),
-                enabled: drawable,
+                enabled: kind.controls,
                 unavailable: unavailable,
                 portrait: portrait,
                 noHover: true
@@ -377,3 +381,31 @@ private let layoutOrder: [ChromeControl] = [
 /// for what a bar declares it can show, and declaring a control it cannot
 /// draw would take room from one it can.
 private let drawable: Set<ChromeControl> = Set(layoutOrder)
+
+/// Which player this bar is, which is a smaller question than which platform.
+///
+/// The counterpart of Compose's `VideoUiKind`, and the same two members for the
+/// same reason: an application has a full player on a watch page and a trailer
+/// over a detail page, and the trailer is not a narrow full player. It is a
+/// different set of controls — no queue to step through, no chapters to jump
+/// between, no settings to open — and the responsive rule then lays out
+/// whatever it is given.
+public enum VideoChromeKind {
+    case full
+    case trailer
+
+    /// The controls this kind offers the rule.
+    ///
+    /// Read off the same list ChromeButtons uses on the Compose side, so a
+    /// trailer draws the same controls on a phone as it does on a desktop and
+    /// the difference between the two players is one set rather than two
+    /// layouts.
+    var controls: Set<ChromeControl> {
+        switch self {
+        case .full:
+            return drawable
+        case .trailer:
+            return [.play, .mute, .subtitles, .fullscreen]
+        }
+    }
+}
