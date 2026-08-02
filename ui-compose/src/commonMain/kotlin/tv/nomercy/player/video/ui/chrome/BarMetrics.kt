@@ -64,6 +64,20 @@ public data class BarMetrics(
      * because the browser's root is sixteen pixels: 0.82rem is 13.12, not 13.
      */
     val timeFontSize: TextUnit = BASE_TIME_SIZE,
+    /**
+     * Whether the right-hand clock is drawn.
+     *
+     * `@container (max-width: 480px) { .remaining-time { display: none } }`.
+     * Below that width the elapsed time stays and the remaining time goes, which
+     * is the browser choosing the reading a viewer needs over the one they can
+     * work out.
+     *
+     * A band rule rather than a control rule: the clocks are not buttons and the
+     * responsive filter never sees them, so a bar drew both on a phone while the
+     * browser drew one — measured at a 360px container, where the web's row is
+     * playback, volume, elapsed, divider and nothing else.
+     */
+    val showsRemaining: Boolean = true,
 )
 
 /**
@@ -82,6 +96,7 @@ public fun barMetricsFor(widthDp: Int): BarMetrics = when {
         paddingHorizontal = 2.dp,
         stripPaddingHorizontal = 4.dp,
         timeFontSize = NARROW_TIME_SIZE,
+        showsRemaining = false,
     )
 
     widthDp <= SM_MAX -> BarMetrics(
@@ -90,6 +105,7 @@ public fun barMetricsFor(widthDp: Int): BarMetrics = when {
         paddingHorizontal = 4.dp,
         stripPaddingHorizontal = 8.dp,
         timeFontSize = NARROW_TIME_SIZE,
+        showsRemaining = false,
     )
 
     widthDp <= MD_MAX -> BarMetrics(

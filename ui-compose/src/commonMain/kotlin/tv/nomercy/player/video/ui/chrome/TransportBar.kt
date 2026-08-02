@@ -127,7 +127,7 @@ public fun TransportBar(
 
             TransportButtons(state, commands, strings, natural)
             VolumeCluster(state, commands, natural, spec)
-            TimeReadout(state, commands, buttons, metrics.timeFontSize)
+            TimeReadout(state, commands, buttons, metrics)
             ViewButtons(state, commands, strings, natural)
 
             // The tail, in the sequence the consumer asked for.
@@ -335,9 +335,9 @@ private fun RowScope.TimeReadout(
     state: ChromeState,
     commands: ChromeCommands,
     buttons: ChromeButtons,
-    fontSize: TextUnit,
+    metrics: BarMetrics,
 ) {
-    val readout: TextStyle = remember(fontSize) { READOUT.copy(fontSize = fontSize) }
+    val readout: TextStyle = remember(metrics) { READOUT.copy(fontSize = metrics.timeFontSize) }
 
     if (!buttons.time) {
         // The spacer stays even with the clock off. It is what splits the bar,
@@ -372,6 +372,11 @@ private fun RowScope.TimeReadout(
     // and how long the item is. It drew what-is-left with no way to reach the
     // other, and drew "-0:00" for the whole of every live stream. See
     // [remainingReadout].
+    // Gone below 480, where the web hides it outright. The elapsed time stays:
+    // a viewer can work out what is left from it, and cannot work out where they
+    // are from the other one.
+    if (!metrics.showsRemaining) return
+
     // A pill rather than bare text, which is how the web says it can be pressed
     // before anyone presses it: `border-radius: 4px; padding: 0 4px`, and a
     // background that appears under the pointer.
