@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import kotlinx.coroutines.CoroutineScope
 import tv.nomercy.player.core.cues.SpriteCue
+import androidx.compose.ui.platform.LocalDensity
 import tv.nomercy.player.video.ui.thumbnails.PreviewSprite
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.DpSize
@@ -415,6 +416,7 @@ internal fun ScrubBubble(scene: ChromeScene, host: ChromeHost, scrub: Double?, b
     ) {
         val seconds: Double = held.value
         val sprite: PreviewSprite? = host.previewSprite
+        val density = LocalDensity.current
 
         ScrubPreview(
             seconds = seconds,
@@ -425,7 +427,18 @@ internal fun ScrubBubble(scene: ChromeScene, host: ChromeHost, scrub: Double?, b
             // the pixels: a box that grows when the image lands is a box that
             // jumps under the thumb dragging it.
             frame = sprite?.frameAt(seconds),
-            frameSize = sprite?.let { DpSize(it.frameWidthPx.dp, it.frameHeightPx.dp) },
+            // Converted through the display's density, not relabelled.
+            //
+            // This read `frameWidthPx.dp`, which takes a sprite sheet's PIXEL
+            // dimensions and calls them density-independent. They are equal only
+            // at 1.0, so on any scaled display — every phone, most televisions,
+            // a Windows desktop at 125% — the preview box was sized by a number
+            // that meant something else, and the comment above insists the box
+            // is sized from what the sheet DECLARES, which makes the unit the
+            // whole contract.
+            frameSize = sprite?.let {
+                with(density) { DpSize(it.frameWidthPx.toDp(), it.frameHeightPx.toDp()) }
+            },
             chapterTitle = chapterTitleAt(scene.state, seconds),
         )
     }
