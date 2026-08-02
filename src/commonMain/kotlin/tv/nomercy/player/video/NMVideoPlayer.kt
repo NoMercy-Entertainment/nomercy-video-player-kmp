@@ -25,6 +25,7 @@ import tv.nomercy.player.core.ports.Fetcher
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.MediaBackend
 import tv.nomercy.player.core.ports.QualityLevel
+import tv.nomercy.player.core.ports.Storage
 import tv.nomercy.player.core.ports.VideoBackend
 import tv.nomercy.player.video.item.VideoPlaylistItem
 import tv.nomercy.player.video.subtitles.SidecarSubtitleCues
@@ -115,7 +116,21 @@ public open class NMVideoPlayer(
     // ever built threw, and no sidecar could have been loaded whatever else was
     // right.
     fetcher: Fetcher? = null,
-) : ComposedPlayer(backend, video = video, scope = scope, fetcher = fetcher) {
+    /**
+     * Where this player's plugins keep what they remember.
+     *
+     * Forwarded rather than hidden, which it was. Core's default became a
+     * PERSISTENT store — that is the whole point of it, a subtitle language has
+     * to survive a relaunch — and a video player that did not pass this on left
+     * every consumer, and every test, sharing one file. Six preferences tests in
+     * one class then wrote over each other's keys and two of them failed on a
+     * device while passing on the JVM, which is a fixture leaking, not a bug in
+     * the plugin they were pointed at.
+     *
+     * Null keeps the platform's own store.
+     */
+    storage: Storage? = null,
+) : ComposedPlayer(backend, video = video, scope = scope, fetcher = fetcher, storage = storage) {
 
     // A video backend is both, so a caller with one says so once.
     public constructor(video: VideoBackend) : this(video, video)

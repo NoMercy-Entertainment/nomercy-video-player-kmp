@@ -1943,7 +1943,7 @@ open class tv.nomercy.player.video.transcode/LiveTranscodingPlugin : tv.nomercy.
 }
 
 open class tv.nomercy.player.video/NMVideoPlayer : tv.nomercy.player.core.controllers/ComposedPlayer { // tv.nomercy.player.video/NMVideoPlayer|null[0]
-    constructor <init>(tv.nomercy.player.core.ports/MediaBackend? = ..., tv.nomercy.player.core.ports/VideoBackend? = ..., kotlinx.coroutines/CoroutineScope? = ..., tv.nomercy.player.core.ports/Fetcher? = ...) // tv.nomercy.player.video/NMVideoPlayer.<init>|<init>(tv.nomercy.player.core.ports.MediaBackend?;tv.nomercy.player.core.ports.VideoBackend?;kotlinx.coroutines.CoroutineScope?;tv.nomercy.player.core.ports.Fetcher?){}[0]
+    constructor <init>(tv.nomercy.player.core.ports/MediaBackend? = ..., tv.nomercy.player.core.ports/VideoBackend? = ..., kotlinx.coroutines/CoroutineScope? = ..., tv.nomercy.player.core.ports/Fetcher? = ..., tv.nomercy.player.core.ports/Storage? = ...) // tv.nomercy.player.video/NMVideoPlayer.<init>|<init>(tv.nomercy.player.core.ports.MediaBackend?;tv.nomercy.player.core.ports.VideoBackend?;kotlinx.coroutines.CoroutineScope?;tv.nomercy.player.core.ports.Fetcher?;tv.nomercy.player.core.ports.Storage?){}[0]
     constructor <init>(tv.nomercy.player.core.ports/VideoBackend) // tv.nomercy.player.video/NMVideoPlayer.<init>|<init>(tv.nomercy.player.core.ports.VideoBackend){}[0]
 
     final val videoBridge // tv.nomercy.player.video/NMVideoPlayer.videoBridge|{}videoBridge[0]

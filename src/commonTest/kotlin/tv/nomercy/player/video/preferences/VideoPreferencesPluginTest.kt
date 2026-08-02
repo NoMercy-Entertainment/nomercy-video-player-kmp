@@ -14,6 +14,7 @@ import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.testing.FakeVideoBackend
+import tv.nomercy.player.core.controllers.InMemoryStorage
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoItem
 import kotlin.test.Test
@@ -45,7 +46,14 @@ class VideoPreferencesPluginTest {
     // rather than a guess at how long one takes.
     private suspend fun rig(opts: VideoPreferencesOptions = VideoPreferencesOptions()): Rig {
         val backend = FakeVideoBackend()
-        val player = NMVideoPlayer(backend = backend, video = backend)
+        // Its own store, per rig.
+        //
+        // The default is the PLATFORM's, which is the point of it — a subtitle
+        // language has to survive a relaunch. Six tests in this class then wrote
+        // over each other's keys in one SharedPreferences file, and two failed on
+        // a device while passing on the JVM: "the restore followed the old index"
+        // was a rig reading what a neighbouring test had stored.
+        val player = NMVideoPlayer(backend = backend, video = backend, storage = InMemoryStorage())
         player.setup(PlayerConfig())
         player.queue(listOf(VideoItem(id = "a", url = "https://media.example.test/a.m3u8", title = "A")))
 
