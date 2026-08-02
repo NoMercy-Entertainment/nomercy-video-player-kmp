@@ -35,11 +35,34 @@ public struct PlayerGlyph: View {
     }
 
     public var body: some View {
-        // No colour of its own. `fill()` takes the foreground style, so the bar
-        // tints every glyph in one place exactly as `color: #fff` does on the
-        // web, and a control cannot end up a different white from its neighbour.
-        icon
-            .fill()
-            .frame(width: size, height: size)
+        // No colour of its own. `fill()` and `stroke()` both take the foreground
+        // style, so the bar tints every glyph in one place exactly as
+        // `color: #fff` does on the web, and a control cannot end up a different
+        // white from its neighbour.
+        //
+        // Which of the two is the icon's own answer, because it is the web's:
+        // `svgFromIcon` reads `classes` for `fill-none` and renders those two
+        // glyphs with `stroke-width: 2` and round caps. Filled, the chapter
+        // jumps' `M14 18L8 12L14 6` is a solid triangle where the browser draws
+        // a thin chevron — which is what the Compose bar drew until the
+        // generator started carrying the flag.
+        Group {
+            if icon.stroked {
+                // Scaled with the glyph. `stroke-width: 2` is two units of the
+                // 24-unit viewBox, so a browser drawing at 22 strokes 1.83
+                // px — a flat 2pt here would be a visibly heavier chevron
+                // beside a bar of 22px icons.
+                icon.stroke(
+                    style: StrokeStyle(
+                        lineWidth: 2 * size / FluentIcon.viewport,
+                        lineCap: .round,
+                        lineJoin: .round
+                    )
+                )
+            } else {
+                icon.fill()
+            }
+        }
+        .frame(width: size, height: size)
     }
 }

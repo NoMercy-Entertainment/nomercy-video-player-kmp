@@ -14,11 +14,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.focusable
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.animation.core.tween
@@ -393,7 +401,7 @@ private fun ChromeLayers(
 // carries `opacity: var(--visibility, 0)` over a `transition: opacity 0.12s ease`,
 // so a pointer crossing the bar makes it appear rather than snap.
 @Composable
-private fun ScrubBubble(scene: ChromeScene, host: ChromeHost, scrub: Double?, barWidth: Dp) {
+internal fun ScrubBubble(scene: ChromeScene, host: ChromeHost, scrub: Double?, barWidth: Dp) {
     // The last position it was told, held so the fade OUT has somewhere to point.
     // The web's bubble keeps its place while its opacity runs down; recomputing
     // from a null would slide it to the playhead on the way out.
@@ -428,38 +436,16 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
     var scrub: Double? by remember { mutableStateOf(null) }
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        val barWidth: Dp = maxWidth
+        val rowWidth: Dp = maxWidth
 
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // Above the bar, as `.slider-pop`'s `bottom: 24px` puts it, and only
-            // while something is being hunted: a drag, or a pointer resting on the
-            // strip. The web's sits at `--visibility: 0` otherwise, and a bubble
-            // over the picture at rest answers a question nobody asked.
-            ScrubBubble(scene, host, scrub, barWidth)
-
-            Box(modifier = Modifier.fillMaxWidth()) {
-                host.slots.scrubber?.invoke(scene.state, scene.commands) ?: ChapterScrubber(
-                    state = scene.state,
-                    commands = scene.commands,
-                    sprite = host.sprite,
-                    onScrubbing = scene.controller::setScrubbing,
-                    onScrub = { scrub = it },
-                )
-
-                // The dot follows the drag while one is happening and the film
-                // otherwise, which is what makes it read as the same handle
-                // rather than two things that swap places when a finger lands.
-                //
-                // Grown on the same signal the bar is: `scrub` is non-null exactly
-                // when the web's `:hover` or `.slider-scrubbing` is true, which is
-                // the union both rules key on.
-                ScrubNipple(
-                    fraction = scrubFraction(scrub ?: scene.state.timeSeconds, scene.state.durationSeconds),
-                    barWidth = barWidth,
-                    modifier = Modifier.align(Alignment.CenterStart),
-                    grown = scrub != null,
-                )
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .bottomScrim()
+                .padding(bottom = BOTTOM_STACK_PADDING),
+            verticalArrangement = Arrangement.spacedBy(BOTTOM_STACK_GAP),
+        ) {
+            ChromeStrip(scene, host, rowWidth) { scrub = it }
 
             host.slots.transport?.invoke(scene.state, scene.commands) ?: TransportBar(
                 state = scene.state,
@@ -475,7 +461,7 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
     }
 }
 
-private fun scrubFraction(seconds: Double, duration: Double): Float =
+internal fun scrubFraction(seconds: Double, duration: Double): Float =
     if (duration <= 0.0) 0f else (seconds / duration).coerceIn(0.0, 1.0).toFloat()
 
 // The chapter a position falls in, which is what `.chapter-text` names. The last
@@ -604,5 +590,27 @@ internal fun skipTargetOf(state: ChromeState): Double? =
         .map { it.startSeconds }
         .filter { it > state.timeSeconds }
         .minOrNull()
+
+// `linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4), rgba(0,0,0,0))`,
+// listed the way Compose paints — top of the fade first. The same three stops
+// the top bar uses, reversed, and the middle one is what keeps it from reading
+// as a grey band laid over the picture.
+internal val BOTTOM_SCRIM: List<Color> = listOf(
+    Color.Transparent,
+    Color.Black.copy(alpha = 0.40f),
+    Color.Black.copy(alpha = 0.85f),
+)
+
+// `height: calc(100% + 24px)`. The fade begins above the stack, so the strip has
+// something behind it before the controls do.
+internal val SCRIM_OVERHANG: Dp = 24.dp
+
+// `.bottom-bar { gap: 8px; padding-bottom: 8px }`.
+private val BOTTOM_STACK_GAP: Dp = 8.dp
+private val BOTTOM_STACK_PADDING: Dp = 8.dp
+
+// `.top-row { margin-top: 16px; height: 8px }`.
+internal val STRIP_TOP_MARGIN: Dp = 16.dp
+internal val STRIP_ROW_HEIGHT: Dp = 8.dp
 
 

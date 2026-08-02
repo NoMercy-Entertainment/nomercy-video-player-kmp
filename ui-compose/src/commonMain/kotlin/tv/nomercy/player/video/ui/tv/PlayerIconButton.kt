@@ -8,11 +8,16 @@
 
 package tv.nomercy.player.video.ui.tv
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import tv.nomercy.player.video.ui.chrome.ControlTooltip
 import tv.nomercy.player.video.ui.chrome.rememberTooltipVisible
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.ui.draw.scale
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -78,15 +83,32 @@ public fun PlayerIconButton(
      */
     buttonSize: Dp = WEB_BUTTON_SIZE,
     iconSize: Dp = WEB_ICON_SIZE,
+    /**
+     * What taking focus looks like, which is not one answer either.
+     *
+     * The web's is `outline: rgba(255,255,255,0.5) solid 2px` at
+     * `outline-offset: -2px` — a ring inside the button's own edge, over a
+     * `border: 2px solid transparent` that reserves the room for it. This drew a
+     * FILLED white circle with the glyph flipped to black at every call site,
+     * which is the television treatment: correct across a room, and a different
+     * player to anyone tabbing through the desktop bar.
+     *
+     * A parameter rather than a form-factor flag, on the seam [buttonSize]
+     * already established — a television is not a mouse, and it says so by
+     * passing its own numbers.
+     */
+    focusStyle: PlayerFocusStyle = PlayerFocusStyle.Outline,
 ) {
     var focused: Boolean by remember { mutableStateOf(false) }
     val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
+    val filled: Boolean = focused && focusStyle == PlayerFocusStyle.Filled
+    val hovered: Boolean by interaction.collectIsHoveredAsState()
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(buttonSize)
-            .background(if (focused) Color.White else Color.Transparent, CircleShape)
+            .focusPaint(focused, focusStyle)
             .then(focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)
             .onFocusChanged {
                 focused = it.isFocused
@@ -112,20 +134,7 @@ public fun PlayerIconButton(
                 if (!enabled) disabled()
             },
     ) {
-        // Foundation rather than Material. A player library that pulled Material
-        // in would put it in every consumer's build whether or not they use it.
-        Image(
-            painter = rememberVectorPainter(icon),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(
-                when {
-                    !enabled -> DISABLED_TINT
-                    focused -> Color.Black
-                    else -> Color.White
-                },
-            ),
-            modifier = Modifier.size(iconSize),
-        )
+        Glyph(icon, iconSize, glyphTint(enabled, filled), hovered && enabled)
 
         // `wireTooltips` attaches one of these to all eighteen controls. The
         // arithmetic for placing it existed here with its own tests and no
@@ -138,10 +147,78 @@ public fun PlayerIconButton(
     }
 }
 
-// Dim enough to read as unavailable, bright enough to still read as a control.
-// A disabled button that disappears into the background is a hidden button with
-// extra steps.
-private val DISABLED_TINT = Color.White.copy(alpha = 0.35f)
+// The glyph inside a control: tinted, and grown while a pointer is on it.
+//
+// `.btn:hover svg { transform: scale(1.1) }` over `transition: transform 0.18s`.
+// Nothing here grew, so a pointer crossing the bar got no answer at all until it
+// landed on something.
+//
+// Foundation rather than Material. A player library that pulled Material in
+// would put it in every consumer's build whether or not they use it.
+@Composable
+private fun Glyph(
+    icon: ImageVector,
+    size: Dp,
+    tint: Color,
+    // Null on a surface with no pointer, which is a television: nothing there
+    // can hover, so nothing there needs to grow.
+    hovered: Boolean,
+) {
+    val scale: Float by animateFloatAsState(
+        targetValue = if (hovered) HOVER_SCALE else 1f,
+        animationSpec = tween(HOVER_MS),
+        label = "glyph",
+    )
+
+    Image(
+        painter = rememberVectorPainter(icon),
+        contentDescription = null,
+        colorFilter = ColorFilter.tint(tint),
+        modifier = Modifier.size(size).scale(scale),
+    )
+}
+
+// The two focus treatments, drawn.
+//
+// A filled circle for a remote across a room, the web's translucent ring inside
+// the button's own edge for a pointer — over the `border: 2px solid transparent`
+// the base rule already reserves the room for.
+private fun Modifier.focusPaint(focused: Boolean, style: PlayerFocusStyle): Modifier = when {
+    focused && style == PlayerFocusStyle.Filled -> background(Color.White, CircleShape)
+    focused -> border(FOCUS_RING_WIDTH, FOCUS_RING_COLOR, CircleShape)
+    else -> this
+}
+
+// Black on the filled circle, dimmed when there is nothing to press, white
+// otherwise. One decision rather than three conditions that happen to read the
+// same state.
+private fun glyphTint(enabled: Boolean, filled: Boolean): Color = when {
+    !enabled -> DISABLED_TINT
+    filled -> Color.Black
+    else -> Color.White
+}
+
+/** Which of the two focus treatments a surface wants. */
+public enum class PlayerFocusStyle {
+    /** The web's ring, inside the button's own edge. */
+    Outline,
+
+    /** A filled circle with the glyph inverted, for a remote across a room. */
+    Filled,
+}
+
+// `.btn[disabled] { opacity: 0.3 }`. This was 0.35, which is the same idea and
+// not the same picture.
+private val DISABLED_TINT = Color.White.copy(alpha = 0.3f)
+
+// `outline: rgba(255, 255, 255, 0.5) solid 2px` at `outline-offset: -2px`, which
+// is the width the base rule's transparent border already reserves.
+private val FOCUS_RING_WIDTH: Dp = 2.dp
+private val FOCUS_RING_COLOR: Color = Color.White.copy(alpha = 0.5f)
+
+// `.btn:hover svg { transform: scale(1.1) }`, `transition: transform 0.18s`.
+private const val HOVER_SCALE = 1.1f
+private const val HOVER_MS = 180
 
 // Big enough to read from a sofa. Television guidance puts the floor around this
 // and a control below it is one people lean forward to identify.

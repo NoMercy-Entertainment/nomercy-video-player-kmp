@@ -45,5 +45,9 @@ internal fun TvIconButton(
         onFocused = onFocused,
         buttonSize = TV_BUTTON_SIZE,
         iconSize = TV_ICON_SIZE,
+        // The filled circle, which every surface used to get. A 2px translucent
+        // ring is legible under a mouse and invisible from a sofa, so the
+        // television keeps what the web cannot use.
+        focusStyle = PlayerFocusStyle.Filled,
     )
 }

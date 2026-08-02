@@ -19,16 +19,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.video.tv.formatTime
 import tv.nomercy.player.video.tv.nextChapterStart
@@ -111,7 +116,7 @@ public fun TransportBar(
 
             TransportButtons(state, commands, strings, natural)
             VolumeCluster(state, commands, natural, spec)
-            TimeReadout(state, commands, buttons)
+            TimeReadout(state, commands, buttons, metrics.timeFontSize)
             ViewButtons(state, commands, strings, natural)
 
             // The tail, in the sequence the consumer asked for.
@@ -319,7 +324,10 @@ private fun RowScope.TimeReadout(
     state: ChromeState,
     commands: ChromeCommands,
     buttons: ChromeButtons,
+    fontSize: TextUnit,
 ) {
+    val readout: TextStyle = remember(fontSize) { READOUT.copy(fontSize = fontSize) }
+
     if (!buttons.time) {
         // The spacer stays even with the clock off. It is what splits the bar,
         // and a consumer hiding the time must not collapse every control into
@@ -328,7 +336,13 @@ private fun RowScope.TimeReadout(
         return
     }
 
-    BasicText(text = formatTime(state.timeSeconds), style = READOUT)
+    // `.current-time { margin-left: 8px }` — the clock does not sit hard against
+    // the volume button, and the row's 2px gap is not that space.
+    BasicText(
+        text = formatTime(state.timeSeconds),
+        style = readout,
+        modifier = Modifier.padding(start = TIME_EDGE_MARGIN),
+    )
 
     // THE element that splits this bar, and the one this port read wrong.
     //
@@ -347,10 +361,17 @@ private fun RowScope.TimeReadout(
     // and how long the item is. It drew what-is-left with no way to reach the
     // other, and drew "-0:00" for the whole of every live stream. See
     // [remainingReadout].
+    // A pill rather than bare text, which is how the web says it can be pressed
+    // before anyone presses it: `border-radius: 4px; padding: 0 4px`, and a
+    // background that appears under the pointer.
     BasicText(
         text = remainingReadout(state.timeSeconds, state.durationSeconds, state.showRemaining),
-        style = READOUT,
-        modifier = Modifier.clickable { commands.setShowRemaining(!state.showRemaining) },
+        style = readout,
+        modifier = Modifier
+            .padding(end = TIME_EDGE_MARGIN)
+            .clip(RoundedCornerShape(REMAINING_RADIUS))
+            .clickable { commands.setShowRemaining(!state.showRemaining) }
+            .padding(horizontal = REMAINING_PADDING),
     )
 }
 
@@ -604,7 +625,27 @@ internal const val FULLSCREEN_TAG: String = "nm-chrome-fullscreen"
 
 internal const val SETTINGS_TAG = "nm-settings"
 
-private val READOUT = TextStyle(color = Color.White)
+// `.time { font-family: ui-monospace…; color: rgb(221,221,221) }`, and the size
+// arrives per container band because the web shrinks it below 720.
+//
+// This was `TextStyle(color = Color.White)`: the default family at the default
+// size in the wrong colour. Proportional digits are the part that shows without
+// a browser beside it — a 1 is narrower than a 0, so the whole row twitches once
+// a second while the clock ticks.
+private val TIME_COLOR: Color = Color(0xFFDDDDDD)
+
+private val READOUT = TextStyle(
+    color = TIME_COLOR,
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Normal,
+)
+
+// `.current-time { margin-left: 8px }` and `.remaining-time { margin-right: 8px }`.
+private val TIME_EDGE_MARGIN: Dp = 8.dp
+
+// `.remaining-time { border-radius: 4px; padding: 0 4px }`.
+private val REMAINING_RADIUS: Dp = 4.dp
+private val REMAINING_PADDING: Dp = 4.dp
 
 // The gap and the padding are BarMetrics' now, because the web has four sets of
 // them and they are container queries on the player's own width. They were one

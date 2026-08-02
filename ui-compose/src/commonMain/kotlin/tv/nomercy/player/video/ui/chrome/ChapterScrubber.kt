@@ -101,7 +101,7 @@ public fun ChapterScrubber(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(TOUCH_HEIGHT)
+            .height(SCRUBBER_TOUCH_HEIGHT)
             .testTag(SCRUBBER_TAG)
             // The whole strip is the target, not the few pixels the bar is
             // drawn in. A three-pixel drag target is one nobody hits with a
@@ -268,7 +268,7 @@ internal fun secondsAt(x: Float, width: Float, durationSeconds: Double): Double 
 internal const val SCRUBBER_TAG = "nm-scrubber"
 
 // Taller than the bar it draws. Fingers are not pixels.
-private val TOUCH_HEIGHT = 32.dp
+internal val SCRUBBER_TOUCH_HEIGHT: Dp = 32.dp
 
 // `.slider-bar`'s own `transition: height 140ms ease-out`. CSS `ease-out` is
 // `cubic-bezier(0, 0, 0.58, 1)`, written out rather than approximated with one of
