@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ui
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -43,14 +44,30 @@ class FrameCanvasAdvancesTest {
         }
 
         try {
-            sink.accept(solidFrame(GREEN))
+            sink.deliver(solidFrame(GREEN))
             assertEquals(GREEN, scene.centrePixel(1), "the first frame never reached the screen")
 
-            sink.accept(solidFrame(RED))
+            sink.deliver(solidFrame(RED))
             assertEquals(RED, scene.centrePixel(2), "the picture froze on the frame before it")
         } finally {
             scene.close()
         }
+    }
+
+    // A frame arrives on libVLC's thread, and this test hands one over on its
+    // own. Either way the sink writes Compose state from outside a composition,
+    // and a write made there is not visible to the next render until the global
+    // snapshot advances — which normally happens on its own, a moment later.
+    //
+    // A moment later is fine for a player and useless for an assertion. This
+    // failed once in a full parallel suite and passed alone every time, which is
+    // that race exactly: under load the notification had not landed before the
+    // second render, so the scene drew frame one and the test read the defect it
+    // exists to catch. Advancing the snapshot here makes the handover
+    // deterministic without weakening what is being asserted.
+    private fun ComposeFrameSink.deliver(buffer: ByteBuffer) {
+        accept(buffer)
+        Snapshot.sendApplyNotifications()
     }
 
     // The colour in the middle of the rendered scene at [frame], as an ARGB int.

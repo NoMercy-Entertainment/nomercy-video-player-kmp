@@ -24,6 +24,7 @@ import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.Fetcher
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.MediaBackend
+import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.VideoBackend
 import tv.nomercy.player.video.item.VideoPlaylistItem
 import tv.nomercy.player.video.subtitles.SidecarSubtitleCues
@@ -430,6 +431,23 @@ public open class NMVideoPlayer(
     override fun subtitle(track: SubtitleTrack?) {
         val isSidecar: Boolean = sidecarCues.select(track)
         super.subtitle(if (isSidecar) null else track)
+    }
+
+    // The rung the viewer ASKED for, which is not the rung that ends up playing.
+    //
+    // `quality:requested` was declared in VideoEvents and emitted by nothing, so
+    // a consumer listening for an explicit pick heard silence and the shipped
+    // preferences plugin could never save one. It cannot be folded into the
+    // level-switch the engine already reports: adaptation switches rungs all
+    // evening without the viewer touching anything, and a listener that could
+    // not tell those apart would record every ABR decision as a choice and drag
+    // the viewer out of Auto for good.
+    //
+    // Null is Auto, here as everywhere else in the ladder API.
+    override fun quality(level: QualityLevel?) {
+        super.quality(level)
+        val chosen: Int? = level?.let { pick: QualityLevel -> qualityLevels().indexOf(pick).takeIf { it >= 0 } }
+        emit(VideoEvents.QualityRequested, QualityRequest(chosen))
     }
 
     // The seam every item passes through on the way into the queue.

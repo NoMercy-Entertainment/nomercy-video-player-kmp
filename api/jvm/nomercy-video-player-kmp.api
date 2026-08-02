@@ -90,6 +90,7 @@ public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/cont
 	public fun pip (Z)V
 	public fun playSegment (Ltv/nomercy/player/video/SegmentBoundary;Ltv/nomercy/player/video/SegmentEndBehaviour;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun playSegment$default (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/SegmentBoundary;Ltv/nomercy/player/video/SegmentEndBehaviour;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public fun quality (Ltv/nomercy/player/core/ports/QualityLevel;)V
 	public fun removeSubtitleTrack (Ljava/lang/String;)V
 	public fun subtitle ()Ltv/nomercy/player/core/ports/SubtitleTrack;
 	public fun subtitle (Ltv/nomercy/player/core/ports/SubtitleTrack;)V
@@ -1089,6 +1090,79 @@ public final class tv/nomercy/player/video/menu/MenuOpenState {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/preferences/SavedQuality {
+	public static final field Companion Ltv/nomercy/player/video/preferences/SavedQuality$Companion;
+	public fun <init> (ZI)V
+	public synthetic fun <init> (ZIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()I
+	public final fun copy (ZI)Ltv/nomercy/player/video/preferences/SavedQuality;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/preferences/SavedQuality;ZIILjava/lang/Object;)Ltv/nomercy/player/video/preferences/SavedQuality;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAuto ()Z
+	public final fun getHeight ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class tv/nomercy/player/video/preferences/SavedQuality$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ltv/nomercy/player/video/preferences/SavedQuality$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ltv/nomercy/player/video/preferences/SavedQuality;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ltv/nomercy/player/video/preferences/SavedQuality;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/preferences/SavedQuality$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/preferences/VideoPreferencesOptions {
+	public fun <init> ()V
+	public fun <init> (ZZZZZ)V
+	public synthetic fun <init> (ZZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Z
+	public final fun component3 ()Z
+	public final fun component4 ()Z
+	public final fun component5 ()Z
+	public final fun copy (ZZZZZ)Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;ZZZZZILjava/lang/Object;)Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRestoreAudio ()Z
+	public final fun getRestoreQuality ()Z
+	public final fun getRestoreSubtitle ()Z
+	public final fun getRestoreSubtitleStyle ()Z
+	public final fun getRestoreVolume ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public class tv/nomercy/player/video/preferences/VideoPreferencesPlugin : tv/nomercy/player/core/plugin/Plugin {
+	public static final field Manifest Ltv/nomercy/player/video/preferences/VideoPreferencesPlugin$Manifest;
+	public fun <init> (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
+	public synthetic fun getOptions ()Ljava/lang/Object;
+	public fun getOptions ()Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;
+	public fun restore (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun use ()V
+}
+
+public final class tv/nomercy/player/video/preferences/VideoPreferencesPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
+	public fun getContributions ()Ljava/util/List;
+	public fun getId ()Ljava/lang/String;
+	public fun getMinCoreVersion ()Ljava/lang/String;
+	public fun getPriority ()I
+	public fun getReplaces ()Ljava/util/List;
+	public fun getRequires ()Ljava/util/List;
+	public fun getTranslations ()Ljava/util/Map;
+	public fun getVersion ()Ljava/lang/String;
+}
+
 public final class tv/nomercy/player/video/session/MediaSessionTranslations {
 	public static final field FALLBACK Ljava/lang/String;
 	public static final field INSTANCE Ltv/nomercy/player/video/session/MediaSessionTranslations;
@@ -1314,6 +1388,88 @@ public final class tv/nomercy/player/video/touch/TouchZonesPlugin$Manifest : tv/
 	public fun getRequires ()Ljava/util/List;
 	public fun getTranslations ()Ljava/util/Map;
 	public fun getVersion ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/transcode/LiveTranscodingOptions {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;JDLjava/lang/Integer;)V
+	public synthetic fun <init> (Ljava/lang/String;JDLjava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()J
+	public final fun component3 ()D
+	public final fun component4 ()Ljava/lang/Integer;
+	public final fun copy (Ljava/lang/String;JDLjava/lang/Integer;)Ltv/nomercy/player/video/transcode/LiveTranscodingOptions;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/transcode/LiveTranscodingOptions;Ljava/lang/String;JDLjava/lang/Integer;ILjava/lang/Object;)Ltv/nomercy/player/video/transcode/LiveTranscodingOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getControlUrl ()Ljava/lang/String;
+	public final fun getPreferredHeight ()Ljava/lang/Integer;
+	public final fun getResumeAheadSeconds ()D
+	public final fun getSeekTimeoutMs ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public class tv/nomercy/player/video/transcode/LiveTranscodingPlugin : tv/nomercy/player/core/plugin/Plugin {
+	public static final field Manifest Ltv/nomercy/player/video/transcode/LiveTranscodingPlugin$Manifest;
+	public fun <init> ()V
+	public fun <init> (Ltv/nomercy/player/video/transcode/LiveTranscodingOptions;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/transcode/LiveTranscodingOptions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun dispose ()V
+	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
+	public synthetic fun getOptions ()Ljava/lang/Object;
+	public fun getOptions ()Ltv/nomercy/player/video/transcode/LiveTranscodingOptions;
+	public final fun getTranscodedTo ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun use ()V
+}
+
+public final class tv/nomercy/player/video/transcode/LiveTranscodingPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
+	public fun getContributions ()Ljava/util/List;
+	public fun getId ()Ljava/lang/String;
+	public fun getMinCoreVersion ()Ljava/lang/String;
+	public fun getPriority ()I
+	public fun getReplaces ()Ljava/util/List;
+	public fun getRequires ()Ljava/util/List;
+	public fun getTranslations ()Ljava/util/Map;
+	public fun getVersion ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/transcode/LiveTranscodingPluginKt {
+	public static final fun getJobComplete ()Ltv/nomercy/player/core/events/EventKey;
+	public static final fun getJobProgress ()Ltv/nomercy/player/core/events/EventKey;
+	public static final fun getJobReadyToPlay ()Ltv/nomercy/player/core/events/EventKey;
+	public static final fun getJobStarted ()Ltv/nomercy/player/core/events/EventKey;
+}
+
+public final class tv/nomercy/player/video/transcode/TranscodeJob {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/transcode/TranscodeJob;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/transcode/TranscodeJob;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/transcode/TranscodeJob;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getJobId ()Ljava/lang/String;
+	public final fun getSourceUrl ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/transcode/TranscodeProgress {
+	public fun <init> (Ljava/lang/String;DLjava/lang/Double;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;DLjava/lang/Double;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()D
+	public final fun component3 ()Ljava/lang/Double;
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;DLjava/lang/Double;Ljava/util/List;)Ltv/nomercy/player/video/transcode/TranscodeProgress;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/transcode/TranscodeProgress;Ljava/lang/String;DLjava/lang/Double;Ljava/util/List;ILjava/lang/Object;)Ltv/nomercy/player/video/transcode/TranscodeProgress;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getJobId ()Ljava/lang/String;
+	public final fun getTotalSeconds ()Ljava/lang/Double;
+	public final fun getTranscodedSeconds ()D
+	public final fun getVariantsReady ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class tv/nomercy/player/video/tv/Cancellable {
