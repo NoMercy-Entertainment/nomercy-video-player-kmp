@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -86,6 +88,12 @@ internal fun MenuRow(
     var focused: Boolean by remember { mutableStateOf(false) }
     val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
 
+    // `.language-button:hover`. The row built an interaction source, passed it to
+    // clickable with `indication = null`, and then read nothing off it — so a
+    // pointer resting on a menu row on the desktop changed nothing at all, while
+    // the same row in a browser fills.
+    val hovered: Boolean by interaction.collectIsHoveredAsState()
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -95,7 +103,8 @@ internal fun MenuRow(
             // browser shows the lot.
             .height(ROW_HEIGHT)
             .clip(RoundedCornerShape(ROW_RADIUS))
-            .background(rowFill(isCurrent))
+            .background(rowFill(isCurrent, hovered))
+            .hoverable(interaction)
             .focusOutline(focused)
             .then(tag?.let { Modifier.testTag(it) } ?: Modifier)
             // On the arrow walk wherever a menu is up — the web's nav finds every
@@ -160,8 +169,15 @@ private fun RowTail(subLabel: String?, current: Boolean, tint: Color) {
 // it read as a row with an extra character rather than as the row you are on.
 // Only the chosen row is filled. Focus is drawn as an edge, not as a fill —
 // see [focusOutline].
-private fun rowFill(current: Boolean): Color =
-    if (current) Color.White.copy(alpha = 0.2f) else Color.Transparent
+private fun rowFill(current: Boolean, hovered: Boolean): Color = when {
+    current -> Color.White.copy(alpha = CURRENT_FILL_ALPHA)
+    // `.language-button:hover { background: rgba(115, 115, 115, 0.5) }`.
+    hovered -> HOVER_FILL
+    else -> Color.Transparent
+}
+
+private const val CURRENT_FILL_ALPHA = 0.2f
+private val HOVER_FILL: Color = Color(red = 115, green = 115, blue = 115, alpha = 128)
 
 /**
  * `.language-button:focus-visible { outline: 2px solid #fff; outline-offset: -2px }`.
