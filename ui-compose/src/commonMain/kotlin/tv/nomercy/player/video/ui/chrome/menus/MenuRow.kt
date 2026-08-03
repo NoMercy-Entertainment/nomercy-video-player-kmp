@@ -10,6 +10,7 @@ package tv.nomercy.player.video.ui.chrome.menus
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -85,7 +86,8 @@ internal fun MenuRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(rowFill(focused, isCurrent))
+            .background(rowFill(isCurrent))
+            .focusOutline(focused)
             .then(tag?.let { Modifier.testTag(it) } ?: Modifier)
             // On the arrow walk wherever a menu is up — the web's nav finds every
             // `button` in the open pane, and a settings row is one of them.
@@ -102,7 +104,9 @@ internal fun MenuRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(ICON_GAP),
     ) {
-        val tint: Color = if (focused) Color.Black else Color.White
+        // One colour, because the row is never filled light. It flipped to black
+        // on focus to stay legible against the white fill that is now an edge.
+        val tint: Color = Color.White
 
         icon?.let { RowGlyph(it, tint) }
 
@@ -114,7 +118,7 @@ internal fun MenuRow(
                 .then(tag?.let { Modifier.testTag("$it$LABEL_TAG_SUFFIX") } ?: Modifier),
         )
 
-        RowTail(subLabel, isCurrent, tint, focused)
+        RowTail(subLabel, isCurrent, tint)
 
         if (opensSubMenu) {
             RowGlyph(FluentIcons.ChevronR, tint)
@@ -132,9 +136,9 @@ internal fun MenuRow(
 // A mark as well as a colour, because colour alone is the distinction a viewer
 // with no colour vision cannot make.
 @Composable
-private fun RowTail(subLabel: String?, current: Boolean, tint: Color, focused: Boolean) {
+private fun RowTail(subLabel: String?, current: Boolean, tint: Color) {
     subLabel?.takeIf { it.isNotBlank() }?.let { note ->
-        BasicText(text = note, style = SUB_TEXT.copy(color = subTint(focused)))
+        BasicText(text = note, style = SUB_TEXT.copy(color = subTint()))
     }
 
     if (current) {
@@ -142,19 +146,36 @@ private fun RowTail(subLabel: String?, current: Boolean, tint: Color, focused: B
     }
 }
 
-// `.language-button.is-active { background: rgba(255,255,255,0.2) }`, under the
+// `.language-button.is-active { background: rgba(255,255,255,0.2) }`, inside the
 // focus fill which is stronger. The chosen row was marked by a glyph alone, so
 // it read as a row with an extra character rather than as the row you are on.
-private fun rowFill(focused: Boolean, current: Boolean): Color = when {
-    focused -> Color.White
-    current -> Color.White.copy(alpha = 0.2f)
-    else -> Color.Transparent
-}
+// Only the chosen row is filled. Focus is drawn as an edge, not as a fill —
+// see [focusOutline].
+private fun rowFill(current: Boolean): Color =
+    if (current) Color.White.copy(alpha = 0.2f) else Color.Transparent
 
-// The subtext against the two row backgrounds: 60% white normally, and the same
-// weight of black once the row is filled white by focus.
-private fun subTint(focused: Boolean): Color =
-    if (focused) Color.Black.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.6f)
+/**
+ * `.language-button:focus-visible { outline: 2px solid #fff; outline-offset: -2px }`.
+ *
+ * An edge inside the row's own bounds, which is what `outline-offset: -2px`
+ * means and what Compose's border already does. This filled the whole row solid
+ * white instead and flipped every glyph and both labels to black, so the row
+ * under the arrow key looked like the CHOSEN row — and the actually-chosen row,
+ * a 20% white wash, looked like the one merely focused. Two states drawn as each
+ * other is worse than one of them missing.
+ *
+ * The filled treatment is real, but it belongs to a remote across a room:
+ * [PlayerFocusStyle.Filled] is where it lives, and these rows are the pointer and
+ * touch chrome's.
+ */
+private fun Modifier.focusOutline(focused: Boolean): Modifier =
+    if (focused) border(FOCUS_RING_WIDTH, Color.White) else this
+
+// 60% white, against a row that is never filled light enough to need anything
+// else.
+private fun subTint(): Color = Color.White.copy(alpha = 0.6f)
+
+private val FOCUS_RING_WIDTH: Dp = 2.dp
 
 // Never described to a reader. Both of a row's glyphs repeat what its label
 // already says, and a screen reader announcing "Audio, audio, chevron right" is
