@@ -187,6 +187,13 @@ public fun chromeItemOf(item: PlaylistItem?): TvChromeItem? {
         id = item.id,
         durationSeconds = video?.durationSeconds,
         progressPercent = progress?.percentage?.roundToInt(),
+        // `readItemImage`: image, then poster, then thumbnail, first one present.
+        //
+        // All three fields are on [VideoPlaylistItem] with that precedence
+        // written down beside them, and this read none of them — so every
+        // playlist card drew an empty grey rectangle where the episode still
+        // belongs, on a player whose items were carrying the URL the whole time.
+        image = video?.image ?: video?.poster ?: video?.thumbnail,
     )
 }
 
