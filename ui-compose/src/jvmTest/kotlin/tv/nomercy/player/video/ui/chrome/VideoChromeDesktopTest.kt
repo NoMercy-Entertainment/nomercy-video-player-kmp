@@ -10,8 +10,16 @@ package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PixelMap
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
@@ -166,6 +174,12 @@ class VideoChromeDesktopTest {
         val frame: DpRect = onNodeWithTag(SCRUB_FRAME_TAG).getUnclippedBoundsInRoot()
         assertTrue(frame.height > STRIP_ROW_HEIGHT, "the frame measured ${frame.height}")
         assertTrue(frame.width > STRIP_ROW_HEIGHT, "the frame measured ${frame.width}")
+
+        // And the pixels, off the renderer that actually draws them. A box of
+        // the right size still shows nothing if the bitmap never reaches the
+        // canvas, and every other assertion here is about layout.
+        val pixels: PixelMap = onNodeWithTag(SCRUB_FRAME_TAG).captureToImage().toPixelMap()
+        assertEquals(TILE_COLOUR, pixels[pixels.width / 2, pixels.height / 2])
     }
 
     @Test
@@ -189,8 +203,17 @@ private val SPRITE_FRAMES = listOf(
     SpriteCue(start = 0.0, end = 60.0, url = "s.webp", x = 0, y = 0, width = 320, height = 178),
 )
 
+// A tile of one flat colour, so a pixel read off the middle of the drawn frame
+// is either that tile or it is not the tile.
+private val TILE_COLOUR = Color(red = 0.2f, green = 0.7f, blue = 0.4f)
+
 private object OneTile : SpriteTileSource {
-    override fun frame(index: Int): ImageBitmap = ImageBitmap(320, 178)
+    override fun frame(index: Int): ImageBitmap = ImageBitmap(320, 178).also { sheet ->
+        Canvas(sheet).drawRect(
+            Rect(Offset.Zero, Size(sheet.width.toFloat(), sheet.height.toFloat())),
+            Paint().apply { color = TILE_COLOUR },
+        )
+    }
 
     override fun release() = Unit
 }
