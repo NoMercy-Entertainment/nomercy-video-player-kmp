@@ -19,7 +19,9 @@ import kotlinx.coroutines.launch
 import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.cues.SpriteCue
 import tv.nomercy.player.video.ui.thumbnails.PreviewSprite
+import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.video.ui.chrome.ChromeLayout
+import tv.nomercy.player.video.ui.chrome.rememberChromeState
 import tv.nomercy.player.core.device.DeviceCapabilities
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.player.PlayState
@@ -92,7 +94,15 @@ public fun NMVideoPlayerView(
     slots: ChromeSlots = LocalChromeSlots.current,
     surface: VideoSurface? = null,
 ) {
-    val picture: @Composable () -> Unit = { surface?.let { PlayerSurface(it, Modifier.fillMaxSize()) } }
+    // The player's own aspect choice, read the way the chrome reads it — through
+    // the projection, so the surface redraws when the ratio is cycled. Passing
+    // nothing here is what made setAspectRatio a setter with no effect: it
+    // recorded the choice, emitted the event, and the picture never moved.
+    val stretching: Stretching = rememberChromeState(player).aspectRatio
+
+    val picture: @Composable () -> Unit = {
+        surface?.let { PlayerSurface(it, Modifier.fillMaxSize(), stretching) }
+    }
 
     when (capabilities.formFactor) {
         // Forwarded here for the same reason `layout` had to be: a parameter this

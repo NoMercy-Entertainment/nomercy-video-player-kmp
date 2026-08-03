@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import tv.nomercy.player.video.Stretching
 import androidx.compose.ui.layout.onSizeChanged
 
 /**
@@ -31,7 +32,11 @@ import androidx.compose.ui.layout.onSizeChanged
  * was always a race — and it was always losing.
  */
 @Composable
-public actual fun PlayerSurface(surface: VideoSurface, modifier: Modifier) {
+public actual fun PlayerSurface(
+    surface: VideoSurface,
+    modifier: Modifier,
+    stretching: Stretching,
+) {
     // The measured size goes to the engine on every layout pass. It is what caps
     // the ladder: a 3840-wide rendition into a pane 372 device-pixels tall was
     // holding delivery at a sixth of the clip's rate, and the engine cannot ask
@@ -43,6 +48,7 @@ public actual fun PlayerSurface(surface: VideoSurface, modifier: Modifier) {
         modifier = modifier.onSizeChanged { size ->
             surface.backend?.surfaceSize(size.width, size.height)
         },
+        scale = contentScaleOf(stretching),
     )
 }
 
@@ -55,7 +61,11 @@ public actual fun PlayerSurface(surface: VideoSurface, modifier: Modifier) {
  * held one image — and a gate for that cannot need a decoder.
  */
 @Composable
-internal fun FrameCanvas(sink: ComposeFrameSink, modifier: Modifier) {
+internal fun FrameCanvas(
+    sink: ComposeFrameSink,
+    modifier: Modifier,
+    scale: ContentScale = ContentScale.Fit,
+) {
     // Black, because the alternative is the window's background showing through
     // between the moment the view mounts and the first decoded frame.
     Box(modifier = modifier.background(Color.Black)) {
@@ -79,7 +89,7 @@ internal fun FrameCanvas(sink: ComposeFrameSink, modifier: Modifier) {
                 bitmap = current,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize().repaintOnEachFrame(sink.version),
-                contentScale = ContentScale.Fit,
+                contentScale = scale,
             )
         }
     }
@@ -104,3 +114,16 @@ private fun Modifier.repaintOnEachFrame(version: IntState): Modifier =
         FrameStats.painted(version.intValue)
         drawContent()
     }
+
+// The web's object-fit values, as Compose spells them.
+//
+// This was ContentScale.Fit, written down and never a variable, so a viewer
+// cycling the aspect ratio changed a field, raised an event and watched the same
+// letterboxed picture. `none` is Compose's None, which draws the frame at its own
+// size rather than scaling it at all.
+private fun contentScaleOf(stretching: Stretching): ContentScale = when (stretching) {
+    Stretching.Uniform -> ContentScale.Fit
+    Stretching.Fill -> ContentScale.FillBounds
+    Stretching.ExactFit -> ContentScale.Crop
+    Stretching.None -> ContentScale.None
+}

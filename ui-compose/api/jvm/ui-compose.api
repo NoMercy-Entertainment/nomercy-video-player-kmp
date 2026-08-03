@@ -10,7 +10,7 @@ public final class tv/nomercy/player/video/ui/PlayPauseControlKt {
 }
 
 public final class tv/nomercy/player/video/ui/PlayerSurface_jvmKt {
-	public static final fun PlayerSurface (Ltv/nomercy/player/video/ui/VideoSurface;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;I)V
+	public static final fun PlayerSurface (Ltv/nomercy/player/video/ui/VideoSurface;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/Stretching;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/RememberDeviceCapabilitiesKt {

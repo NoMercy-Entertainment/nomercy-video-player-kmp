@@ -10,11 +10,17 @@ package tv.nomercy.player.video.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.media3.ui.AspectRatioFrameLayout
+import tv.nomercy.player.video.Stretching
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.ui.PlayerView
 
 @Composable
-public actual fun PlayerSurface(surface: VideoSurface, modifier: Modifier) {
+public actual fun PlayerSurface(
+    surface: VideoSurface,
+    modifier: Modifier,
+    stretching: Stretching,
+) {
     AndroidView(
         modifier = modifier,
         factory = { context ->
@@ -24,12 +30,27 @@ public actual fun PlayerSurface(surface: VideoSurface, modifier: Modifier) {
                 // one above it, and an app replacing this view's chrome would
                 // have to find and disable it.
                 useController = false
+                resizeMode = resizeModeOf(stretching)
                 player = surface.exoPlayer
             }
         },
         // Re-attached rather than rebuilt: a recomposition that dropped the
         // view would tear down the output and restart the video.
-        update = { view -> view.player = surface.exoPlayer },
+        update = { view ->
+            view.player = surface.exoPlayer
+            view.resizeMode = resizeModeOf(stretching)
+        },
         onRelease = { view -> view.player = null },
     )
+}
+
+// The web's object-fit values, as Media3 spells them.
+//
+// FIT is contain, FILL is fill, ZOOM is cover. `none` has no counterpart — a
+// PlayerView always scales — so it lands on FIT, which is the value that alters
+// the picture least.
+private fun resizeModeOf(stretching: Stretching): Int = when (stretching) {
+    Stretching.Uniform, Stretching.None -> AspectRatioFrameLayout.RESIZE_MODE_FIT
+    Stretching.Fill -> AspectRatioFrameLayout.RESIZE_MODE_FILL
+    Stretching.ExactFit -> AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 }
