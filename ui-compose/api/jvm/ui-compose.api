@@ -1235,7 +1235,7 @@ public final class tv/nomercy/player/video/ui/tv/PlayerFocusStyle : java/lang/En
 }
 
 public final class tv/nomercy/player/video/ui/tv/PlayerIconButtonKt {
-	public static final fun PlayerIconButton-BXK5RNM (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/ui/focus/FocusRequester;Lkotlin/jvm/functions/Function1;FFLtv/nomercy/player/video/ui/tv/PlayerFocusStyle;ZLandroidx/compose/runtime/Composer;III)V
+	public static final fun PlayerIconButton-tr7WU3Q (Landroidx/compose/ui/graphics/vector/ImageVector;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;ZLandroidx/compose/ui/focus/FocusRequester;Lkotlin/jvm/functions/Function1;FFLtv/nomercy/player/video/ui/tv/PlayerFocusStyle;ZLandroidx/compose/ui/graphics/Shape;JLandroidx/compose/runtime/Composer;III)V
 	public static final fun getTV_BUTTON_SIZE ()F
 	public static final fun getTV_ICON_SIZE ()F
 }

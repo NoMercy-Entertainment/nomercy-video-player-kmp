@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -37,6 +38,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -98,10 +100,24 @@ internal fun MenuRow(
         // A mark as well as a colour. Colour alone is the distinction a viewer
         // with no colour vision cannot make, and this is the row telling them
         // what they are already watching with.
+        //
+        // The web's mark is the checkmark GLYPH at 18 units in its own
+        // `.menu-button-check` span, and the span is a column the row reserves
+        // whether or not it is the chosen one. This wrote a bullet into the
+        // label STRING, so the chosen row's text began one character further
+        // right than every row above and below it.
+        //
+        // Reserved only where a row can be chosen. A pane whose rows carry a
+        // leading icon is the main list, which marks nothing, and there the
+        // column would be a gap in front of every row.
+        CheckColumn(reserved = icon == null, checked = isCurrent, tint = tint)
+
         BasicText(
-            text = if (isCurrent) "$CURRENT_MARK $label" else label,
+            text = label,
             style = TextStyle(color = tint, fontSize = LABEL_SIZE, fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .then(tag?.let { Modifier.testTag("$it$LABEL_TAG_SUFFIX") } ?: Modifier),
         )
 
         if (opensSubMenu) {
@@ -110,20 +126,40 @@ internal fun MenuRow(
     }
 }
 
+// The column the web reserves as `.menu-button-check`, drawn or merely held
+// open. Its own composable because MenuRow is at its length limit and this is
+// the part that is a rule rather than a layout.
+@Composable
+private fun CheckColumn(reserved: Boolean, checked: Boolean, tint: Color) {
+    if (!reserved) return
+
+    Box(modifier = Modifier.size(CHECK_SIZE)) {
+        if (checked) {
+            RowGlyph(FluentIcons.Checkmark, tint, CHECK_SIZE)
+        }
+    }
+}
+
 // Never described to a reader. Both of a row's glyphs repeat what its label
 // already says, and a screen reader announcing "Audio, audio, chevron right" is
 // reading the decoration out loud.
 @Composable
-private fun RowGlyph(icon: ImageVector, tint: Color) {
+private fun RowGlyph(icon: ImageVector, tint: Color, size: Dp = ICON_SIZE) {
     Image(
         painter = rememberVectorPainter(icon),
         contentDescription = null,
         colorFilter = ColorFilter.tint(tint),
-        modifier = Modifier.size(ICON_SIZE),
+        modifier = Modifier.size(size),
     )
 }
 
-private const val CURRENT_MARK = "•"
+// `svgFromIcon(fluentIcons.checkmark, 18)`.
+private val CHECK_SIZE = 18.dp
+
+// So a test can measure where a row's TEXT starts. Measuring the row says
+// nothing: every row in a list has the same left edge whatever is drawn inside
+// it, which is how a ragged label column passed unnoticed.
+internal const val LABEL_TAG_SUFFIX = "-label"
 // Read off the running player, where `.menu-button-text` is 13px at weight 600
 // and the row's own padding is 16px on the leading edge.
 //

@@ -33,6 +33,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -107,6 +108,21 @@ public fun PlayerIconButton(
      * untoggled one.
      */
     active: Boolean = false,
+    /**
+     * Round for a transport control, `border-radius: 6px` for a menu header's.
+     *
+     * `.btn` and `.menu-header-back` / `.menu-header-close` are two different
+     * rules in the stylesheet and were one control here, so a pane's back arrow
+     * and close cross were drawn as round transport buttons — the shape a viewer
+     * reads as "this plays something".
+     */
+    shape: Shape = CircleShape,
+    /**
+     * `background: rgba(255, 255, 255, 0.08)` on a header button's hover, which
+     * is the only hover fill in the chrome: `.btn:hover` is explicitly
+     * `background: transparent`.
+     */
+    hoverFill: Color = Color.Transparent,
 ) {
     var focused: Boolean by remember { mutableStateOf(false) }
     val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
@@ -117,7 +133,8 @@ public fun PlayerIconButton(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(buttonSize)
-            .focusPaint(focused, focusStyle)
+            .hoverPaint(hovered && enabled, hoverFill, shape)
+            .focusPaint(focused, focusStyle, shape)
             .then(focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)
             .onFocusChanged {
                 focused = it.isFocused
@@ -211,9 +228,15 @@ private fun Glyph(
 // A filled circle for a remote across a room, the web's translucent ring inside
 // the button's own edge for a pointer — over the `border: 2px solid transparent`
 // the base rule already reserves the room for.
-private fun Modifier.focusPaint(focused: Boolean, style: PlayerFocusStyle): Modifier = when {
-    focused && style == PlayerFocusStyle.Filled -> background(Color.White, CircleShape)
-    focused -> border(FOCUS_RING_WIDTH, FOCUS_RING_COLOR, CircleShape)
+// `background: rgba(255, 255, 255, 0.08)` while a pointer is on a header
+// button, and nothing at all on a transport one - `.btn:hover` sets
+// `background: transparent` explicitly.
+private fun Modifier.hoverPaint(hovered: Boolean, fill: Color, shape: Shape): Modifier =
+    if (hovered) background(fill, shape) else this
+
+private fun Modifier.focusPaint(focused: Boolean, style: PlayerFocusStyle, shape: Shape): Modifier = when {
+    focused && style == PlayerFocusStyle.Filled -> background(Color.White, shape)
+    focused -> border(FOCUS_RING_WIDTH, FOCUS_RING_COLOR, shape)
     else -> this
 }
 

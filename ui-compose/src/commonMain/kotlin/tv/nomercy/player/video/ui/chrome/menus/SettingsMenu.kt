@@ -335,7 +335,7 @@ private fun SpeedMenu(
 ) {
     LazyColumn {
         items(SPEEDS) { speed ->
-            MenuRow(speedLabel(speed, strings), isCurrent = speed == state.rate) {
+            MenuRow(speedLabel(speed, strings), isCurrent = speed == state.rate, tag = "$ROW_SPEED_VALUE$speed") {
                 commands.setRate(speed)
                 onMenuChange(MenuState.Hidden)
             }
@@ -379,6 +379,7 @@ internal const val ROW_AUDIO = "nm-row-audio"
 internal const val ROW_SUBTITLE = "nm-row-subtitle"
 internal const val ROW_SUBTITLE_OFF = "nm-row-subtitle-off"
 internal const val ROW_SPEED = "nm-row-speed"
+internal const val ROW_SPEED_VALUE = "nm-speed-"
 internal const val ROW_PLAYLIST = "nm-row-playlist"
 internal const val ROW_ASPECT_RATIO = "nm-row-aspect-ratio"
 internal const val ROW_ASPECT = "nm-aspect-"

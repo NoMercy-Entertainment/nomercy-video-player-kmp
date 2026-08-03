@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -73,6 +74,8 @@ internal fun MenuHeader(spec: MenuHeaderSpec) {
             buttonSize = HEADER_BUTTON,
             iconSize = HEADER_ICON,
             focusRequester = if (sub) null else nav?.header,
+            shape = HEADER_BUTTON_SHAPE,
+            hoverFill = HEADER_BUTTON_HOVER,
             modifier = Modifier.testTag(MENU_CLOSE_TAG).menuNavEntry(nav),
         )
     }
@@ -91,6 +94,8 @@ private fun HeaderBack(spec: MenuHeaderSpec, nav: MenuNav?) {
         buttonSize = HEADER_BUTTON,
         iconSize = HEADER_ICON,
         focusRequester = nav?.header,
+        shape = HEADER_BUTTON_SHAPE,
+        hoverFill = HEADER_BUTTON_HOVER,
         modifier = Modifier.testTag(MENU_BACK_TAG).menuNavEntry(nav),
     )
 }
@@ -124,3 +129,12 @@ private val HEADER_ICON = 16.dp
 private val HEADER_RULE = 1.dp
 private val HEADER_RULE_COLOR = Color(red = 209, green = 213, blue = 219, alpha = 51)
 internal val PANEL_GAP = 4.dp
+
+// `.menu-header-back` and `.menu-header-close` are their own rule: 32 by 32 at
+// `border-radius: 6px` over a transparent background, filling to 8% white on
+// hover. Both were drawn with the transport control's ROUND treatment, which is
+// the shape a viewer reads as "this plays something" - and the pane's first
+// focusable took a circular focus ring, so the two header buttons of two panes
+// looked like three different controls.
+private val HEADER_BUTTON_SHAPE = RoundedCornerShape(6.dp)
+private val HEADER_BUTTON_HOVER = Color.White.copy(alpha = 0.08f)
