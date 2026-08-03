@@ -170,6 +170,13 @@ public fun chromeStateOf(
     queueSize = snapshot.queueLength,
     queueIndex = snapshot.index,
     fullscreen = player.fullscreen(),
+    // The two the comment above already promised and this did not read. Left
+    // out, both sat at their `false` default for the life of the composition:
+    // the icons never swapped to their exit glyphs, and `setTheater(!theater)`
+    // passed `true` on every press — so theater and picture-in-picture could be
+    // entered and never left.
+    theater = player.theater(),
+    pip = player.pip(),
     aspectRatio = player.aspectRatio(),
     subtitleStyle = player.subtitleStyle(),
     message = message,
