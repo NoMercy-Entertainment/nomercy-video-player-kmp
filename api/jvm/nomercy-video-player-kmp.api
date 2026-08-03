@@ -248,6 +248,14 @@ public final class tv/nomercy/player/video/cast/CastPlatform_jvmKt {
 	public static final fun defaultDeviceDiscovery ()Ltv/nomercy/player/video/cast/DeviceDiscovery;
 }
 
+public final class tv/nomercy/player/video/cast/CastTranslations {
+	public static final field FALLBACK Ljava/lang/String;
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/CastTranslations;
+	public final fun get (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+	public final fun getAvailable ()Ljava/util/Set;
+	public final fun of (Ljava/lang/String;)Ljava/util/Map;
+}
+
 public final class tv/nomercy/player/video/cast/CastVideoKt {
 	public static final field DEFAULT_TV_PORT I
 	public static final fun defaultCastHttpClient ()Lio/ktor/client/HttpClient;
@@ -770,6 +778,14 @@ public final class tv/nomercy/player/video/chapters/ChapterMarker {
 public final class tv/nomercy/player/video/chapters/ChapterMarkerMathKt {
 	public static final fun chapterFill (Ltv/nomercy/player/video/chapters/ChapterMarker;D)D
 	public static final fun chapterMarkers (Ljava/util/List;D)Ljava/util/List;
+}
+
+public final class tv/nomercy/player/video/input/InputTranslations {
+	public static final field INSTANCE Ltv/nomercy/player/video/input/InputTranslations;
+	public static final field SEEK_BACK Ljava/lang/String;
+	public static final field SEEK_FORWARD Ljava/lang/String;
+	public static final field SPEED Ljava/lang/String;
+	public final fun getALL ()Ljava/util/Map;
 }
 
 public final class tv/nomercy/player/video/input/KeyAction : java/lang/Enum {

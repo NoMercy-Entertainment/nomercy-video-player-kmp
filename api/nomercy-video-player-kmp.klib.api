@@ -2015,6 +2015,29 @@ open class tv.nomercy.player.video/NMVideoPlayer : tv.nomercy.player.core.contro
     }
 }
 
+final object tv.nomercy.player.video.cast/CastTranslations { // tv.nomercy.player.video.cast/CastTranslations|null[0]
+    final const val FALLBACK // tv.nomercy.player.video.cast/CastTranslations.FALLBACK|{}FALLBACK[0]
+        final fun <get-FALLBACK>(): kotlin/String // tv.nomercy.player.video.cast/CastTranslations.FALLBACK.<get-FALLBACK>|<get-FALLBACK>(){}[0]
+
+    final val available // tv.nomercy.player.video.cast/CastTranslations.available|{}available[0]
+        final fun <get-available>(): kotlin.collections/Set<kotlin/String> // tv.nomercy.player.video.cast/CastTranslations.available.<get-available>|<get-available>(){}[0]
+
+    final fun get(kotlin/String, kotlin/String): kotlin/String // tv.nomercy.player.video.cast/CastTranslations.get|get(kotlin.String;kotlin.String){}[0]
+    final fun of(kotlin/String): kotlin.collections/Map<kotlin/String, kotlin/String> // tv.nomercy.player.video.cast/CastTranslations.of|of(kotlin.String){}[0]
+}
+
+final object tv.nomercy.player.video.input/InputTranslations { // tv.nomercy.player.video.input/InputTranslations|null[0]
+    final const val SEEK_BACK // tv.nomercy.player.video.input/InputTranslations.SEEK_BACK|{}SEEK_BACK[0]
+        final fun <get-SEEK_BACK>(): kotlin/String // tv.nomercy.player.video.input/InputTranslations.SEEK_BACK.<get-SEEK_BACK>|<get-SEEK_BACK>(){}[0]
+    final const val SEEK_FORWARD // tv.nomercy.player.video.input/InputTranslations.SEEK_FORWARD|{}SEEK_FORWARD[0]
+        final fun <get-SEEK_FORWARD>(): kotlin/String // tv.nomercy.player.video.input/InputTranslations.SEEK_FORWARD.<get-SEEK_FORWARD>|<get-SEEK_FORWARD>(){}[0]
+    final const val SPEED // tv.nomercy.player.video.input/InputTranslations.SPEED|{}SPEED[0]
+        final fun <get-SPEED>(): kotlin/String // tv.nomercy.player.video.input/InputTranslations.SPEED.<get-SPEED>|<get-SPEED>(){}[0]
+
+    final val ALL // tv.nomercy.player.video.input/InputTranslations.ALL|{}ALL[0]
+        final fun <get-ALL>(): kotlin.collections/Map<kotlin/String, kotlin/String> // tv.nomercy.player.video.input/InputTranslations.ALL.<get-ALL>|<get-ALL>(){}[0]
+}
+
 final object tv.nomercy.player.video.input/TvKeyEvents { // tv.nomercy.player.video.input/TvKeyEvents|null[0]
     final val Bookmark // tv.nomercy.player.video.input/TvKeyEvents.Bookmark|{}Bookmark[0]
         final fun <get-Bookmark>(): tv.nomercy.player.core.events/EventKey<tv.nomercy.player.video.input/TvBookmark> // tv.nomercy.player.video.input/TvKeyEvents.Bookmark.<get-Bookmark>|<get-Bookmark>(){}[0]
