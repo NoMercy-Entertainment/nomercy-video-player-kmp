@@ -94,6 +94,10 @@ internal fun MenuTriggerButton(spec: MenuTriggerSpec, close: () -> Unit) {
         description = spec.description,
         onClick = trigger.open,
         focusRequester = trigger.requester,
+        // `.btn.is-active` — a trigger whose pane is open is drawn the way a
+        // trigger under the pointer is, which is what tells a viewer which of
+        // the eighteen controls opened the card in front of them.
+        active = spec.expanded,
         modifier = (spec.tag?.let { Modifier.testTag(it) } ?: Modifier)
             .menuTriggerSemantics(spec.expanded, trigger.open, close),
     )

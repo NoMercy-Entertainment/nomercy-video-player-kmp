@@ -98,6 +98,15 @@ public fun PlayerIconButton(
      * passing its own numbers.
      */
     focusStyle: PlayerFocusStyle = PlayerFocusStyle.Outline,
+    /**
+     * `.btn.is-active` — the control's own state is on, not merely pointed at.
+     *
+     * The web puts this on the same rule as `:hover`, so a muted volume or an
+     * open menu reads exactly like a control under the pointer. There was no
+     * active treatment here at all: a toggled control looked identical to an
+     * untoggled one.
+     */
+    active: Boolean = false,
 ) {
     var focused: Boolean by remember { mutableStateOf(false) }
     val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
@@ -134,7 +143,12 @@ public fun PlayerIconButton(
                 if (!enabled) disabled()
             },
     ) {
-        Glyph(icon, iconSize, glyphTint(enabled, filled), hovered && enabled)
+        Glyph(
+            glyphFor(icon, (hovered || active) && enabled),
+            iconSize,
+            glyphTint(enabled, filled),
+            hovered && enabled,
+        )
 
         // `wireTooltips` attaches one of these to all eighteen controls. The
         // arithmetic for placing it existed here with its own tests and no
@@ -146,6 +160,20 @@ public fun PlayerIconButton(
         ControlTooltip(text = description, visible = rememberTooltipVisible(interaction))
     }
 }
+
+// Which of the two drawings of a control is on screen.
+//
+// `.btn:hover .icon-normal { display: none }` with `.btn.is-active` on the same
+// rule — the bar's whole visual language is outlined at rest and filled once a
+// pointer is on it or the control is on. Every hover variant was generated and
+// none was drawn, so the port answered a pointer with a 1.1 scale and nothing
+// else, and an active control was indistinguishable from an idle one.
+//
+// Falls back to the normal drawing rather than failing: an icon a consumer
+// supplied has no variant in the table, and a control with one drawing is a
+// control that does not invert.
+internal fun glyphFor(icon: ImageVector, inverted: Boolean): ImageVector =
+    if (inverted) FluentIcons.hoverFor(icon) ?: icon else icon
 
 // The glyph inside a control: tinted, and grown while a pointer is on it.
 //
