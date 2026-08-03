@@ -8,8 +8,11 @@
 
 package tv.nomercy.player.video.input
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import tv.nomercy.player.core.device.DeviceCapabilities
 import tv.nomercy.player.core.device.FormFactor
+import tv.nomercy.player.core.input.KeyCombo
 import tv.nomercy.player.core.input.KeyHandlerPlugin
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.core.input.keyCombo
@@ -58,6 +61,37 @@ public open class VideoKeyHandlerPlugin(
         addSubtitleSizeKeys()
         addAspectRatioKeys()
         addStopKey()
+        addHelpKey()
+    }
+
+    // Whether the shortcut sheet is up. A chrome draws it; the handler owns
+    // whether it should be drawn, because the key that toggles it is here.
+    public open val shortcutsVisible: StateFlow<Boolean> get() = shortcuts
+
+    private val shortcuts: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+    // What to print in that sheet, read off the live table rather than restated.
+    //
+    // This is why KeyBindingTable gained bound(): a sheet built from a hand
+    // written list is a sheet that drifts, and the constant above already
+    // records one round of exactly that, where the panel promised five seconds
+    // and the player moved ten.
+    public open fun shortcuts(): List<KeyCombo> = bindings.bound()
+
+    public open fun toggleShortcuts() {
+        shortcuts.value = !shortcuts.value
+    }
+
+    /**
+     * Bound as `shift+?` rather than `?`.
+     *
+     * On a standard keyboard the question mark arrives with shift held, and the
+     * combo canonicaliser folds modifier state into the key, so a binding on a
+     * bare `?` is a miss every time. The reference says the same thing about its
+     * own binding, which is how this one avoided repeating the mistake.
+     */
+    protected open fun addHelpKey() {
+        bindings.bind(keyCombo("?", shift = true)) { toggleShortcuts() }
     }
 
     protected open fun addPlaybackKeys() {
