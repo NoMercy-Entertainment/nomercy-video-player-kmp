@@ -12,13 +12,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import tv.nomercy.player.core.events.BeforeEvent
+import tv.nomercy.player.core.events.CastTarget
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.EventKey
 import tv.nomercy.player.core.events.SeekPosition
+import tv.nomercy.player.core.media.PlaylistItem
 import tv.nomercy.player.core.player.ActionOptions
 import tv.nomercy.player.core.player.ActionSource
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
+import tv.nomercy.player.core.ports.CastSender
 
 // While casting, this phone is a remote control and not a second renderer.
 //
@@ -37,7 +40,7 @@ public open class VideoCastPlugin(
     private val controller: RemoteVideoController,
     private val scope: CoroutineScope,
     private val waker: CastWaker = UnsupportedCastWaker(),
-) : Plugin<Unit>() {
+) : Plugin<Unit>(), CastSender {
 
     public companion object Manifest : PluginManifest {
         // "cast-sender", the web's id, not "video-cast".
@@ -76,6 +79,63 @@ public open class VideoCastPlugin(
                 scope.launch { controller.seek(seconds) }
             }
         }
+
+        // Volume and mute are forwarded rather than intercepted, which is the
+        // opposite of the transport above and deliberate. There is no second
+        // renderer to silence — nothing is decoding here — and the slider a
+        // viewer is dragging is bound to the local state, so preventing the
+        // local change would freeze the control they are holding while the
+        // television obeyed it.
+        on(CoreEvents.Volume) { change ->
+            if (casting) scope.launch { controller.presentation.setVolumePercent(change.level) }
+        }
+
+        on(CoreEvents.Mute) { change ->
+            if (casting) scope.launch { controller.presentation.setMuted(change.muted) }
+        }
+
+        // Picking an item, which is the half of queue movement next() and
+        // previous() do not cover.
+        //
+        // The television owns the queue, so this moves ITS cursor rather than
+        // sending it a url: choosing episode five in the app and having the set
+        // stay on episode one is what happened without it.
+        on(CoreEvents.Item) { change ->
+            if (casting) scope.launch { controller.setPlaylistActive(change.index) }
+        }
+    }
+
+    // ── CastSender ───────────────────────────────────────────────────────────
+
+    // Hand this item to the television at the position the viewer is at.
+    //
+    // The player has already paused locally by the time this runs — that order
+    // is core's and it is what stops two devices playing the same thing a second
+    // apart. What is left here is the launch, and its answer is the set's:
+    // false when it refused, so a chrome does not draw a casting state over a
+    // television that never started.
+    override suspend fun transfer(target: CastTarget, item: PlaylistItem?, position: Double): Boolean {
+        val url: String = item?.url ?: return false
+
+        if (waker.wake(target.id) == WakeOutcome.NO_ROUTE) return false
+
+        controller.connect()
+        return controller.launch(url, positionSeconds = position)
+    }
+
+    // Take it back, and say where the set had got to.
+    //
+    // Read before disconnecting, because the state flow is what the SSE stream
+    // was filling and disconnecting stops it. Null when the set never said,
+    // which core treats as "do not seek" rather than seeking to zero — a
+    // reclaim that restarted the film would be worse than one that resumed
+    // where this device left off.
+    override suspend fun reclaim(): Double? {
+        val positionMs: Long? = controller.state.value?.positionMs
+
+        controller.disconnect()
+
+        return positionMs?.takeIf { it > 0 }?.let { it / MILLIS_PER_SECOND.toDouble() }
     }
 
     // Put an item on a television and start following it.
@@ -88,6 +148,9 @@ public open class VideoCastPlugin(
         if (outcome == WakeOutcome.NO_ROUTE) return outcome
 
         controller.connect()
+        // The url was accepted here and thrown away, so a viewer who started a
+        // cast got a connected session showing whatever the set had been on.
+        controller.launch(url)
         return outcome
     }
 
@@ -115,3 +178,5 @@ public open class VideoCastPlugin(
     private fun shouldRoute(source: String?): Boolean =
         casting && source != ActionSource.REMOTE
 }
+
+private const val MILLIS_PER_SECOND = 1_000

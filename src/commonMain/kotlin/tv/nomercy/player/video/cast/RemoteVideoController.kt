@@ -111,6 +111,25 @@ public open class RemoteVideoController(
         }
     }
 
+    // Tell the set what to play, and where in it to start.
+    //
+    // The wire has no start-position field, so the position is a seek after the
+    // set accepted the url rather than part of the launch. Only when there is
+    // one: seeking to zero on a fresh launch is a round trip that asks a
+    // television to go where it already is.
+    //
+    // This existed on the client, was implemented against the real endpoint,
+    // was faked for the tests, and nothing called it: startCast took a url and
+    // dropped it, so beginning a cast connected to the set and never told it
+    // what to show.
+    public open suspend fun launch(url: String, positionSeconds: Double = 0.0): Boolean {
+        val accepted: Boolean = client.launch(url)
+
+        if (accepted && positionSeconds > 0.0) seek(positionSeconds)
+
+        return accepted
+    }
+
     public open suspend fun play() {
         client.play()
     }

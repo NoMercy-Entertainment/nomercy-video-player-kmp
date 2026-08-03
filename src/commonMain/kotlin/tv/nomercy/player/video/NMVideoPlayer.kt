@@ -14,6 +14,7 @@ import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.cues.ChapterCues
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitleStyle
+import tv.nomercy.player.core.ports.CastSender
 import tv.nomercy.player.core.events.SubtitlesPayload
 import tv.nomercy.player.core.events.Subscription
 import tv.nomercy.player.core.media.Chapter
@@ -148,7 +149,28 @@ public open class NMVideoPlayer(
      * have called is fully present — nothing was ever going to call it.
      */
     autoAdvance: Boolean = true,
-) : ComposedPlayer(backend, video = video, scope = scope, fetcher = fetcher, storage = storage) {
+    /**
+     * Whatever owns a remote session, which for this library is
+     * [tv.nomercy.player.video.cast.VideoCastPlugin].
+     *
+     * Core took one and this did not forward it, so a video consumer had no way
+     * to supply one at all: `transferTo` found nothing, emitted
+     * TransferPrevented("no cast sender") and returned false, and handing
+     * playback to a television or taking it back was unreachable from the only
+     * player that has a cast plugin.
+     *
+     * The plugin is both this and a plugin, so it is passed here and added:
+     * `NMVideoPlayer(backend, castSender = plugin).addPlugin(plugin)`.
+     */
+    castSender: CastSender? = null,
+) : ComposedPlayer(
+    backend,
+    video = video,
+    scope = scope,
+    fetcher = fetcher,
+    storage = storage,
+    castSender = castSender,
+) {
 
     // A video backend is both, so a caller with one says so once.
     public constructor(video: VideoBackend) : this(video, video)

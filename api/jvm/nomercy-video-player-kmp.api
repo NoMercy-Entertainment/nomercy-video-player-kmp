@@ -68,8 +68,8 @@ public final class tv/nomercy/player/video/LevelsChange {
 public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/controllers/ComposedPlayer {
 	public static final field Companion Ltv/nomercy/player/video/NMVideoPlayer$Companion;
 	public fun <init> ()V
-	public fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/core/ports/Fetcher;Ltv/nomercy/player/core/ports/Storage;Z)V
-	public synthetic fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/core/ports/Fetcher;Ltv/nomercy/player/core/ports/Storage;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/core/ports/Fetcher;Ltv/nomercy/player/core/ports/Storage;ZLtv/nomercy/player/core/ports/CastSender;)V
+	public synthetic fun <init> (Ltv/nomercy/player/core/ports/MediaBackend;Ltv/nomercy/player/core/ports/VideoBackend;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/core/ports/Fetcher;Ltv/nomercy/player/core/ports/Storage;ZLtv/nomercy/player/core/ports/CastSender;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Ltv/nomercy/player/core/ports/VideoBackend;)V
 	public fun addSubtitleTrack (Ltv/nomercy/player/core/ports/SubtitleTrack;)V
 	public fun aspectRatio ()Ltv/nomercy/player/video/Stretching;
@@ -643,6 +643,8 @@ public class tv/nomercy/player/video/cast/RemoteVideoController {
 	public fun getPresentation ()Ltv/nomercy/player/video/cast/RemotePresentation;
 	public final fun getState ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun getStatus ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun launch (Ljava/lang/String;DLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun launch$default (Ltv/nomercy/player/video/cast/RemoteVideoController;Ljava/lang/String;DLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun next (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun pause (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun play (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -708,7 +710,7 @@ public class tv/nomercy/player/video/cast/UnsupportedCastWaker : tv/nomercy/play
 	public fun warmUp (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public class tv/nomercy/player/video/cast/VideoCastPlugin : tv/nomercy/player/core/plugin/Plugin {
+public class tv/nomercy/player/video/cast/VideoCastPlugin : tv/nomercy/player/core/plugin/Plugin, tv/nomercy/player/core/ports/CastSender {
 	public static final field Manifest Ltv/nomercy/player/video/cast/VideoCastPlugin$Manifest;
 	public fun <init> (Ltv/nomercy/player/video/cast/RemoteVideoController;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/video/cast/CastWaker;)V
 	public synthetic fun <init> (Ltv/nomercy/player/video/cast/RemoteVideoController;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/video/cast/CastWaker;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -717,8 +719,10 @@ public class tv/nomercy/player/video/cast/VideoCastPlugin : tv/nomercy/player/co
 	public fun getCasting ()Z
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public fun getStatus ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun reclaim (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun startCast (Ltv/nomercy/player/video/cast/RemoteDevice;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun stopCast (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun transfer (Ltv/nomercy/player/core/events/CastTarget;Ltv/nomercy/player/core/media/PlaylistItem;DLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun use ()V
 }
 

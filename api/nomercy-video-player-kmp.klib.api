@@ -1762,6 +1762,7 @@ open class tv.nomercy.player.video.cast/RemoteVideoController { // tv.nomercy.pl
     open fun apply(tv.nomercy.player.video.cast/RemoteEvent) // tv.nomercy.player.video.cast/RemoteVideoController.apply|apply(tv.nomercy.player.video.cast.RemoteEvent){}[0]
     open fun disconnect() // tv.nomercy.player.video.cast/RemoteVideoController.disconnect|disconnect(){}[0]
     open suspend fun connect() // tv.nomercy.player.video.cast/RemoteVideoController.connect|connect(){}[0]
+    open suspend fun launch(kotlin/String, kotlin/Double = ...): kotlin/Boolean // tv.nomercy.player.video.cast/RemoteVideoController.launch|launch(kotlin.String;kotlin.Double){}[0]
     open suspend fun next() // tv.nomercy.player.video.cast/RemoteVideoController.next|next(){}[0]
     open suspend fun pause() // tv.nomercy.player.video.cast/RemoteVideoController.pause|pause(){}[0]
     open suspend fun play() // tv.nomercy.player.video.cast/RemoteVideoController.play|play(){}[0]
@@ -1784,7 +1785,7 @@ open class tv.nomercy.player.video.cast/UnsupportedCastWaker : tv.nomercy.player
     open suspend fun warmUp() // tv.nomercy.player.video.cast/UnsupportedCastWaker.warmUp|warmUp(){}[0]
 }
 
-open class tv.nomercy.player.video.cast/VideoCastPlugin : tv.nomercy.player.core.plugin/Plugin<kotlin/Unit> { // tv.nomercy.player.video.cast/VideoCastPlugin|null[0]
+open class tv.nomercy.player.video.cast/VideoCastPlugin : tv.nomercy.player.core.plugin/Plugin<kotlin/Unit>, tv.nomercy.player.core.ports/CastSender { // tv.nomercy.player.video.cast/VideoCastPlugin|null[0]
     constructor <init>(tv.nomercy.player.video.cast/RemoteVideoController, kotlinx.coroutines/CoroutineScope, tv.nomercy.player.video.cast/CastWaker = ...) // tv.nomercy.player.video.cast/VideoCastPlugin.<init>|<init>(tv.nomercy.player.video.cast.RemoteVideoController;kotlinx.coroutines.CoroutineScope;tv.nomercy.player.video.cast.CastWaker){}[0]
 
     open val castState // tv.nomercy.player.video.cast/VideoCastPlugin.castState|{}castState[0]
@@ -1798,8 +1799,10 @@ open class tv.nomercy.player.video.cast/VideoCastPlugin : tv.nomercy.player.core
 
     open fun dispose() // tv.nomercy.player.video.cast/VideoCastPlugin.dispose|dispose(){}[0]
     open fun use() // tv.nomercy.player.video.cast/VideoCastPlugin.use|use(){}[0]
+    open suspend fun reclaim(): kotlin/Double? // tv.nomercy.player.video.cast/VideoCastPlugin.reclaim|reclaim(){}[0]
     open suspend fun startCast(tv.nomercy.player.video.cast/RemoteDevice, kotlin/String): tv.nomercy.player.video.cast/WakeOutcome // tv.nomercy.player.video.cast/VideoCastPlugin.startCast|startCast(tv.nomercy.player.video.cast.RemoteDevice;kotlin.String){}[0]
     open suspend fun stopCast() // tv.nomercy.player.video.cast/VideoCastPlugin.stopCast|stopCast(){}[0]
+    open suspend fun transfer(tv.nomercy.player.core.events/CastTarget, tv.nomercy.player.core.media/PlaylistItem?, kotlin/Double): kotlin/Boolean // tv.nomercy.player.video.cast/VideoCastPlugin.transfer|transfer(tv.nomercy.player.core.events.CastTarget;tv.nomercy.player.core.media.PlaylistItem?;kotlin.Double){}[0]
 
     final object Manifest : tv.nomercy.player.core.plugin/PluginManifest { // tv.nomercy.player.video.cast/VideoCastPlugin.Manifest|null[0]
         final val id // tv.nomercy.player.video.cast/VideoCastPlugin.Manifest.id|{}id[0]
@@ -1953,7 +1956,7 @@ open class tv.nomercy.player.video.transcode/LiveTranscodingPlugin : tv.nomercy.
 }
 
 open class tv.nomercy.player.video/NMVideoPlayer : tv.nomercy.player.core.controllers/ComposedPlayer { // tv.nomercy.player.video/NMVideoPlayer|null[0]
-    constructor <init>(tv.nomercy.player.core.ports/MediaBackend? = ..., tv.nomercy.player.core.ports/VideoBackend? = ..., kotlinx.coroutines/CoroutineScope? = ..., tv.nomercy.player.core.ports/Fetcher? = ..., tv.nomercy.player.core.ports/Storage? = ..., kotlin/Boolean = ...) // tv.nomercy.player.video/NMVideoPlayer.<init>|<init>(tv.nomercy.player.core.ports.MediaBackend?;tv.nomercy.player.core.ports.VideoBackend?;kotlinx.coroutines.CoroutineScope?;tv.nomercy.player.core.ports.Fetcher?;tv.nomercy.player.core.ports.Storage?;kotlin.Boolean){}[0]
+    constructor <init>(tv.nomercy.player.core.ports/MediaBackend? = ..., tv.nomercy.player.core.ports/VideoBackend? = ..., kotlinx.coroutines/CoroutineScope? = ..., tv.nomercy.player.core.ports/Fetcher? = ..., tv.nomercy.player.core.ports/Storage? = ..., kotlin/Boolean = ..., tv.nomercy.player.core.ports/CastSender? = ...) // tv.nomercy.player.video/NMVideoPlayer.<init>|<init>(tv.nomercy.player.core.ports.MediaBackend?;tv.nomercy.player.core.ports.VideoBackend?;kotlinx.coroutines.CoroutineScope?;tv.nomercy.player.core.ports.Fetcher?;tv.nomercy.player.core.ports.Storage?;kotlin.Boolean;tv.nomercy.player.core.ports.CastSender?){}[0]
     constructor <init>(tv.nomercy.player.core.ports/VideoBackend) // tv.nomercy.player.video/NMVideoPlayer.<init>|<init>(tv.nomercy.player.core.ports.VideoBackend){}[0]
 
     final val videoBridge // tv.nomercy.player.video/NMVideoPlayer.videoBridge|{}videoBridge[0]

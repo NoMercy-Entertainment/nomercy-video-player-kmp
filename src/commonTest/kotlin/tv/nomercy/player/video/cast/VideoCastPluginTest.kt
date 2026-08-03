@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import tv.nomercy.player.core.events.CastTarget
 import tv.nomercy.player.core.player.ActionOptions
 import tv.nomercy.player.core.player.ActionSource
 import tv.nomercy.player.core.player.PlayerConfig
@@ -47,7 +48,10 @@ class VideoCastPluginTest {
         val scope: CoroutineScope = eager()
         val controller = RemoteVideoController(client, scope)
         val plugin = VideoCastPlugin(controller, scope, waker)
-        val player = NMVideoPlayer(backend = backend, video = backend)
+        // Both, which is the wiring a consumer does: the plugin routes what the
+        // viewer does here to the set, and is also the thing transferTo hands
+        // the session to.
+        val player = NMVideoPlayer(backend = backend, video = backend, castSender = plugin)
 
         player.setup(PlayerConfig())
         player.queue(listOf(VideoItem(id = "a", url = "https://media.example.test/a.mkv", title = "A")))
@@ -99,6 +103,74 @@ class VideoCastPluginTest {
     }
 
     @Test
+    fun startingACastTellsTheSetWhatToPlay() = runTest {
+        // The url was taken and dropped: a cast connected to the television and
+        // left it showing whatever it had been on.
+        val rig: Rig = rig()
+
+        rig.plugin.startCast(device(), "https://media.example.test/a.mkv")
+
+        assertTrue(
+            rig.client.commands.any { it.startsWith("launch:https://media.example.test/a.mkv") },
+            "the set was connected to but never told what to show: ${rig.client.commands}",
+        )
+    }
+
+    @Test
+    fun whileCastingAVolumeChangeReachesTheSetAndTheLocalSliderStillMoves() = runTest {
+        // Forwarded rather than intercepted, unlike the transport verbs. There
+        // is no second renderer to silence, and preventing the local change
+        // would freeze the control the viewer is dragging.
+        val rig: Rig = rig()
+        rig.plugin.startCast(device(), "https://media.example.test/a.mkv")
+
+        rig.player.volume(50)
+
+        assertTrue(rig.client.commands.contains("volume:0.5:null:null"), "got ${rig.client.commands}")
+        assertEquals(50, rig.player.volume(), "the local slider stopped following the viewer")
+    }
+
+    @Test
+    fun whileCastingMuteReachesTheSet() = runTest {
+        val rig: Rig = rig()
+        rig.plugin.startCast(device(), "https://media.example.test/a.mkv")
+
+        rig.player.mute()
+
+        assertTrue(rig.client.commands.contains("volume:null:null:true"), "got ${rig.client.commands}")
+    }
+
+    @Test
+    fun withNothingBeingCastVolumeGoesNowhereNearTheSet() = runTest {
+        // The control for the two above: without it both pass on a plugin that
+        // forwards volume whether or not a session exists.
+        val rig: Rig = rig()
+
+        rig.player.volume(50)
+
+        assertEquals(emptyList(), rig.client.commands.filter { it.startsWith("volume:") })
+    }
+
+    @Test
+    fun whileCastingPickingAnItemMovesTheSetsCursorRatherThanThisOne() = runTest {
+        // next() and previous() were routed and choosing an item was not, so
+        // picking episode five in the app left the set on episode one.
+        val rig: Rig = rig()
+        rig.player.queue(
+            listOf(
+                VideoItem(id = "a", url = "https://media.example.test/a.mkv", title = "A"),
+                VideoItem(id = "b", url = "https://media.example.test/b.mkv", title = "B"),
+                VideoItem(id = "c", url = "https://media.example.test/c.mkv", title = "C"),
+            ),
+        )
+        rig.plugin.startCast(device(), "https://media.example.test/a.mkv")
+
+        rig.player.item("c")
+
+        assertTrue(rig.client.commands.contains("playlistActive:2"), "got ${rig.client.commands}")
+    }
+
+    @Test
     fun everyTransportVerbIsRoutedRatherThanJustPlay() = runTest {
         // A plugin that intercepted only play would leave a viewer able to
         // pause the phone and not the television.
@@ -135,6 +207,39 @@ class VideoCastPluginTest {
         rig.player.pause(ActionOptions(source = ActionSource.REMOTE))
 
         assertEquals(before, rig.client.commands.count { it == "pause" }, "an action from the set was echoed back")
+    }
+
+    @Test
+    fun handingPlaybackOverGoesThroughThePlayerAndReachesTheSetAtThePosition() = runTest {
+        // transferTo is core's choreography — pause here first, then hand over
+        // the item AND the position — and the only implementer of CastSender
+        // anywhere was a test fake, so in a real build it answered
+        // TransferPrevented("no cast sender") and did nothing.
+        val rig: Rig = rig()
+        rig.player.time(120.0)
+
+        val accepted: Boolean = rig.player.transferTo(CastTarget(id = "dev-a", name = "Living Room"))
+
+        assertTrue(accepted, "the handoff was refused: ${rig.client.commands}")
+        assertTrue(
+            rig.client.commands.any { it.startsWith("launch:https://media.example.test/a.mkv") },
+            "the set was never given the item: ${rig.client.commands}",
+        )
+        assertTrue(rig.client.commands.contains("seek:120000"), "the set started from the top: ${rig.client.commands}")
+    }
+
+    @Test
+    fun takingPlaybackBackResumesWhereTheSetGotToRatherThanWhereThisDeviceLeftOff() = runTest {
+        // The viewer walked out of the living room forty minutes in. Resuming at
+        // the position this phone was paused at when the session STARTED is the
+        // failure this exists to prevent.
+        val rig: Rig = rig()
+        rig.client.session = RemotePlayerState(positionMs = 2_400_000)
+        rig.plugin.startCast(device(), "https://media.example.test/a.mkv")
+
+        rig.player.transferTo(null)
+
+        assertEquals(2400.0, rig.player.time(), "playback came back to the wrong place")
     }
 
     @Test
