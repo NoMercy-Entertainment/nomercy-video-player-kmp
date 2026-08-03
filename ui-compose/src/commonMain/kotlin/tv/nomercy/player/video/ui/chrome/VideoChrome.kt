@@ -472,10 +472,12 @@ internal fun ScrubBubble(scene: ChromeScene, host: ChromeHost, scrub: Double?, b
             // exist, and floored so it stays readable on a narrow phone.
             frameSize = sprite?.let {
                 with(density) {
-                    val native: Dp = it.frameWidthPx.toDp()
-                    val width: Dp = (barWidth * PREVIEW_BAR_SHARE).coerceIn(PREVIEW_MIN_WIDTH, native)
-                    val aspect: Float = it.frameHeightPx.toFloat() / it.frameWidthPx.toFloat()
-                    DpSize(width, width * aspect)
+                    previewFrameSize(
+                        barWidth = barWidth,
+                        share = PREVIEW_BAR_SHARE,
+                        minWidth = PREVIEW_MIN_WIDTH,
+                        tile = DpSize(it.frameWidthPx.toDp(), it.frameHeightPx.toDp()),
+                    )
                 }
             },
             chapterTitle = chapterTitleAt(scene.state, seconds),
