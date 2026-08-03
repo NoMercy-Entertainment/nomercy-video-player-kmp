@@ -45,6 +45,8 @@ import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.video.ui.chrome.ChromeSlots
 import tv.nomercy.player.video.ui.chrome.ChromeState
 import tv.nomercy.player.video.ui.chrome.LocalChromeSlots
+import tv.nomercy.player.video.ui.rememberDeviceCapabilities
+import tv.nomercy.player.core.ports.DynamicRange
 
 // Which list is open, if any.
 //
@@ -266,6 +268,9 @@ private fun QualityMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
+    val offerable: List<QualityLevel> =
+        offerableRungs(state.qualityLevels, rememberDeviceCapabilities().hasHdrDisplay)
+
     LazyColumn {
         // Automatic first, because it is what most viewers should stay on and
         // the list below it exists for the ones who know they want otherwise.
@@ -281,7 +286,7 @@ private fun QualityMenu(
             }
         }
 
-        items(state.qualityLevels) { level ->
+        items(offerable) { level ->
             MenuRow(qualityLabel(level), isCurrent = !state.qualityAuto && level == state.activeQuality) {
                 commands.selectQuality(level)
                 onMenuChange(MenuState.Hidden)
@@ -356,23 +361,6 @@ private fun SpeedMenu(
 // The rung the engine settled on, shown beside Auto as `.menu-button-subtext`.
 // Nothing named it, so a viewer in Auto had no way to see what they were
 // actually watching.
-internal fun autoQualitySubLabel(state: ChromeState): String? =
-    state.activeQuality.takeIf { state.qualityAuto }?.let { qualityLabel(it) }
-
-internal fun qualityLabel(level: QualityLevel): String {
-    // `1280x536 SDR`, which is what the browser puts in the row - both
-    // dimensions and the range, always, in capitals.
-    //
-    // This wrote `${height}p` and hid the range on SDR, so a ladder read
-    // "108p / 178p / 268p" beside a browser reading "256x108 SDR / 426x178 SDR
-    // / 640x268 SDR". A height alone is not a rung a viewer recognises: 536p is
-    // not a number anyone has seen, and it is the same stream the browser calls
-    // 1280x536.
-    val size: String = level.width?.let { width -> "${width}x${level.height}" } ?: "${level.height}p"
-
-    return "$size ${level.dynamicRange.wire.uppercase()}"
-}
-
 // The label the stream gave, because "English" and "English (Commentary)" are
 // different tracks somebody chooses between and the language alone hides that.
 /**
