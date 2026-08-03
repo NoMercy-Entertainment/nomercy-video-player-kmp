@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -206,9 +208,21 @@ private fun ScrollingRail(
                 values.forEach { row(it) }
             }
         } else {
-            LazyColumn(contentPadding = rail.padding, verticalArrangement = Arrangement.spacedBy(rail.gap)) {
+            val scroll: LazyListState = rememberLazyListState()
+
+            LazyColumn(
+                state = scroll,
+                contentPadding = rail.padding,
+                verticalArrangement = Arrangement.spacedBy(rail.gap),
+            ) {
                 items(values) { row(it) }
             }
+
+            // The trailing edge is clear because `padding: 8px 0 8px 8px` leaves
+            // it clear for this. Without it the list ran past the bottom of the
+            // card with nothing to say there was more, and the reserved strip
+            // read as a missing margin.
+            ScrollRailIndicator(scroll)
         }
     }
 }
