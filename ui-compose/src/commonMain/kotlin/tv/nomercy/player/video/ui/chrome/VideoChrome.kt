@@ -436,8 +436,23 @@ internal fun ScrubBubble(scene: ChromeScene, host: ChromeHost, scrub: Double?, b
             // that meant something else, and the comment above insists the box
             // is sized from what the sheet DECLARES, which makes the unit the
             // whole contract.
+            //
+            // Correct as a unit and still the wrong SIZE, which is the half this
+            // missed: a sheet's native tile is 320x178, so the bubble came out
+            // 113dp on a phone at 2.84 density and 320dp on a desktop at 1.0 —
+            // fixed to the sheet's resolution and indifferent to how big the
+            // player is. A browser's scales with the bar.
+            //
+            // A share of the bar, then, keeping the sheet's own aspect. Capped
+            // at the native tile so it is never upscaled past the pixels that
+            // exist, and floored so it stays readable on a narrow phone.
             frameSize = sprite?.let {
-                with(density) { DpSize(it.frameWidthPx.toDp(), it.frameHeightPx.toDp()) }
+                with(density) {
+                    val native: Dp = it.frameWidthPx.toDp()
+                    val width: Dp = (barWidth * PREVIEW_BAR_SHARE).coerceIn(PREVIEW_MIN_WIDTH, native)
+                    val aspect: Float = it.frameHeightPx.toFloat() / it.frameWidthPx.toFloat()
+                    DpSize(width, width * aspect)
+                }
             },
             chapterTitle = chapterTitleAt(scene.state, seconds),
         )
@@ -562,6 +577,17 @@ internal fun rememberVideoKeys(player: NMVideoPlayer, formFactor: FormFactor): V
 
 internal const val TOUCH_CHROME_TAG = "nm-touch-chrome"
 internal const val DESKTOP_CHROME_TAG = "nm-desktop-chrome"
+// How much of the bar the scrub bubble takes.
+//
+// A fraction rather than a size, so the preview grows with the player the way
+// the browser's does instead of staying at whatever the sprite sheet happened
+// to be encoded at.
+private const val PREVIEW_BAR_SHARE = 0.22f
+
+// Below this the frame stops being readable, which on a narrow phone is the
+// binding constraint rather than the sheet's resolution.
+private val PREVIEW_MIN_WIDTH: Dp = 128.dp
+
 internal const val BUFFERING_TAG = "nm-chrome-buffering"
 internal const val MESSAGE_TAG = "nm-chrome-message"
 
