@@ -370,6 +370,16 @@ private fun ChromeLayers(
     Box(modifier = Modifier.fillMaxSize()) {
         ChromeBackdropLayer(scene, host)
 
+        // Under the bars, not over them.
+        //
+        // The web closes on a document click outside `.menu-frame`, and a
+        // document listener does not consume the click — the button the pointer
+        // was actually over still receives it, so pressing a second trigger
+        // swaps panes in one press. Drawn last, this full-size box sat on top of
+        // the transport bar and ate that press: the open menu closed and the
+        // trigger never heard anything, which is one press wasted every time.
+        MenuDismissLayer(menu, onMenuChange)
+
         ChromeStatusText(scene)
 
         AnimatedVisibility(visible = ui.active, enter = fadeIn(), exit = fadeOut()) {
@@ -388,8 +398,6 @@ private fun ChromeLayers(
                 ChromeBottom(scene, host, Modifier.align(Alignment.BottomCenter))
             }
         }
-
-        MenuDismissLayer(menu, onMenuChange)
 
         SettingsMenu(
             scene.state,
