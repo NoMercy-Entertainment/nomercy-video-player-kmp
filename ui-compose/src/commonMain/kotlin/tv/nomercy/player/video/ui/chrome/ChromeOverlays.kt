@@ -115,9 +115,19 @@ internal fun BoxScope.ChromeOverlays(scene: ChromeScene) {
             // because the boundary is already known here and asking the
             // player to find it again is a second answer that can differ.
             onSkip = { skipTargetOf(scene.state)?.let(scene.commands::seekTo) },
-            modifier = Modifier.align(
-                if (offer == SkipKind.Intro) Alignment.BottomStart else Alignment.BottomEnd,
-            ),
+            // Above the time bar, not on it.
+            //
+            // This aligned to the chrome's bottom edge, which is the edge the
+            // strip and the transport row already occupy — so the prompt landed
+            // on top of the controls and covered them. Lifted by the stack's own
+            // height, summed from the constants that draw it.
+            //
+            // Padding rather than a move into the control column: the prompt is
+            // drawn outside the visibility gate on purpose, and a viewer with the
+            // controls hidden still needs the offer to skip.
+            modifier = Modifier
+                .align(if (offer == SkipKind.Intro) Alignment.BottomStart else Alignment.BottomEnd)
+                .padding(bottom = BOTTOM_STACK_HEIGHT),
         )
     }
 

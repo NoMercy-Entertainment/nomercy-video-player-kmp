@@ -140,7 +140,7 @@ public fun TransportBar(
                 // taller than the browser's, which pushed the progress strip
                 // that much further from the controls. The height has to be
                 // stated for the padding to be absorbed rather than added.
-                .height(ROW_HEIGHT)
+                .height(TRANSPORT_ROW_HEIGHT)
                 .padding(horizontal = metrics.paddingHorizontal, vertical = metrics.paddingVertical)
                 .testTag(TRANSPORT_BAR_TAG),
             verticalAlignment = Alignment.CenterVertically,
@@ -682,7 +682,7 @@ internal const val SETTINGS_TAG = "nm-settings"
 // `.bottom-row { height: 40px }`, which is the same forty as the buttons and a
 // different decision — a consumer shrinking the controls does not shrink the row
 // they sit in.
-private val ROW_HEIGHT: Dp = 40.dp
+
 
 private val TIME_COLOR: Color = Color(0xFFDDDDDD)
 

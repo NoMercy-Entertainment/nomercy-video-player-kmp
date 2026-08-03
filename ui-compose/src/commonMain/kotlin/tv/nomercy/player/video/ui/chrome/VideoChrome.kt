@@ -662,11 +662,22 @@ internal val BOTTOM_SCRIM: List<Color> = listOf(
 internal val SCRIM_OVERHANG: Dp = 24.dp
 
 // `.bottom-bar { gap: 8px; padding-bottom: 8px }`.
-private val BOTTOM_STACK_GAP: Dp = 8.dp
-private val BOTTOM_STACK_PADDING: Dp = 8.dp
+internal val BOTTOM_STACK_GAP: Dp = 8.dp
+internal val BOTTOM_STACK_PADDING: Dp = 8.dp
 
 // `.top-row { margin-top: 16px; height: 8px }`.
+// `.bottom-row { height: 40px }`, shared so the skip prompt can clear it.
+internal val TRANSPORT_ROW_HEIGHT: Dp = 40.dp
 internal val STRIP_TOP_MARGIN: Dp = 16.dp
 internal val STRIP_ROW_HEIGHT: Dp = 8.dp
 
-
+// How tall the whole bottom stack is: its own bottom padding, the transport row,
+// the gap, and the strip with its top margin.
+//
+// Summed from the four constants that draw it rather than written as 80, so a
+// change to any of them moves whatever clears the stack with it. The skip prompt
+// is what needs clearing: it aligned to the chrome's bottom edge — the same edge
+// the strip and the transport row sit on — so it was drawn ON the controls
+// instead of above the time bar.
+internal val BOTTOM_STACK_HEIGHT: Dp =
+    BOTTOM_STACK_PADDING + TRANSPORT_ROW_HEIGHT + BOTTOM_STACK_GAP + STRIP_TOP_MARGIN + STRIP_ROW_HEIGHT
