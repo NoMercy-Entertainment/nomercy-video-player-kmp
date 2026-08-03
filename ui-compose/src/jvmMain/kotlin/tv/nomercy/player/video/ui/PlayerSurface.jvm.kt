@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.ContentScale
 import tv.nomercy.player.video.Stretching
 import androidx.compose.ui.layout.onSizeChanged
@@ -68,7 +69,13 @@ internal fun FrameCanvas(
 ) {
     // Black, because the alternative is the window's background showing through
     // between the moment the view mounts and the first decoded frame.
-    Box(modifier = modifier.background(Color.Black)) {
+    // Clipped, which Crop and FillBounds make load-bearing rather than tidy.
+    //
+    // A scale that draws wider than its box paints straight over whatever is
+    // beside it: cycling the aspect ratio pushed the picture out of the player
+    // and across the rest of the page. The browser never had this because a
+    // video element's object-fit is clipped by the element itself.
+    Box(modifier = modifier.clipToBounds().background(Color.Black)) {
         // Read in the composition, so a frame arriving publishes a NEW wrapper
         // and Compose derives a new Skia image from it.
         //
