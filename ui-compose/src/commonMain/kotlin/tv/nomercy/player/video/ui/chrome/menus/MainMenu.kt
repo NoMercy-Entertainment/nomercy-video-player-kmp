@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
@@ -143,6 +144,13 @@ private fun MenuRows(rows: @Composable () -> Unit) {
         val scrollable: Boolean = maxHeight != Dp.Infinity
 
         Column(
+            // `.main-menu { max-height: 60vh }`, which is the SETTINGS LIST's own
+            // ceiling and not the frame's.
+            //
+            // The port applied it to the frame instead, so the whole card — the
+            // playlist pane included — was forty per cent shorter than the web's
+            // on every platform, while the settings list it was meant for had no
+            // ceiling of its own at all.
             // `.scroll-container { padding: 8px 0 8px 8px; gap: 4px }`.
             //
             // Asymmetric on purpose: the right side carries no padding because
@@ -152,6 +160,7 @@ private fun MenuRows(rows: @Composable () -> Unit) {
             // to sit against.
             verticalArrangement = Arrangement.spacedBy(ROWS_GAP),
             modifier = Modifier
+                .then(if (scrollable) Modifier.heightIn(max = maxHeight * ROWS_MAX_HEIGHT_SHARE) else Modifier)
                 .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
                 .padding(start = ROWS_INSET, top = ROWS_INSET, bottom = ROWS_INSET),
         ) {
@@ -163,3 +172,7 @@ private fun MenuRows(rows: @Composable () -> Unit) {
 // `.scroll-container { padding: 8px 0 8px 8px; gap: 4px }`.
 private val ROWS_INSET = 8.dp
 private val ROWS_GAP = 4.dp
+
+// `.main-menu { max-height: 60vh }` — the settings list, inside a frame the
+// stylesheet caps separately at `calc(100% - 2rem)`.
+private const val ROWS_MAX_HEIGHT_SHARE = 0.6f

@@ -100,18 +100,21 @@ class PanelBoxTest {
     }
 
     @Test
-    fun aBoundedHeightGetsSixtyPercentOfThePlayer() {
-        // `max-height: 60vh` on `.main-menu`, of the player rather than of what
-        // is left below the insets: the old rule took its share AFTER the 16 and
-        // 52 came off, so the card was 40dp shorter than the browser's at every
-        // size.
-        assertEquals(600.dp, panelBoxOf(MenuState.Main, listOf(movie), 1920.dp, 1000.dp).maxHeight)
+    fun aBoundedHeightIsTheFramesOwnRuleAndNotTheListsShare() {
+        // `.menu-frame { max-height: calc(100% - 2rem) }`.
+        //
+        // This asserted 60% of the player, citing `.main-menu` — which is a
+        // different selector with a different rule. Applying the inner list's
+        // share to the frame made every card, the playlist pane included, forty
+        // per cent shorter than the browser's. The share lives in MainMenu.kt
+        // now, on the list it belongs to.
+        assertEquals(968.dp, panelBoxOf(MenuState.Main, listOf(movie), 1920.dp, 1000.dp).maxHeight)
     }
 
     @Test
-    fun theFramesOwnCeilingWinsOnAPlayerTooShortForTheShare() {
-        // `.menu-frame { max-height: calc(100% - 2rem) }` bounds the 60% as well.
-        // At 50dp the share is 30 and the frame allows 18.
+    fun theFrameGivesUpItsInsetsEvenOnAPlayerTooShortForThem() {
+        // 50dp of player, 32 of inset, 18 left. The frame does not go negative
+        // and does not refuse to draw.
         assertEquals(18.dp, panelBoxOf(MenuState.Main, listOf(movie), 1920.dp, 50.dp).maxHeight)
     }
 

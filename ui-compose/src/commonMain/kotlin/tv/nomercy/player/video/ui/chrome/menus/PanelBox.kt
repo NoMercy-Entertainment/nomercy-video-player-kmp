@@ -71,11 +71,13 @@ internal fun panelBoxOf(
 
     return PanelBox(
         width = contentWidthOf(menu, queue).coerceAtMost(widest).coerceAtLeast(PANEL_MIN_WIDTH),
-        maxHeight = if (roomHeight.value.isFinite()) {
-            (roomHeight * PANEL_MAX_HEIGHT_SHARE).coerceAtMost(roomHeight - FRAME_INSET * 2)
-        } else {
-            null
-        },
+        // `.menu-frame { max-height: calc(100% - 2rem) }`, and nothing else.
+        //
+        // This took sixty per cent of the player as well, which is `.main-menu`'s
+        // rule and not the frame's — so every card, the playlist pane included,
+        // was forty per cent shorter than the browser's, while the settings list
+        // the share belongs to had no ceiling of its own. See MainMenu.kt.
+        maxHeight = if (roomHeight.value.isFinite()) roomHeight - FRAME_INSET * 2 else null,
     )
 }
 
@@ -162,8 +164,5 @@ internal val PANEL_MIN_WIDTH = 256.dp
 // arbitrary ceiling: it is exactly 16rem of seasons plus 36rem of episodes, so
 // the widest pane the player has fits it and nothing is allowed past it.
 internal val FRAME_MAX_WIDTH = 832.dp
-
-// `max-height: 60vh`, of the player rather than of the window.
-private const val PANEL_MAX_HEIGHT_SHARE = 0.6f
 
 internal val PANEL_RADIUS = 8.dp
