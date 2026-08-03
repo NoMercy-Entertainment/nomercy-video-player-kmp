@@ -78,8 +78,14 @@ public val CHROME_PRIORITY: List<ChromeControl> = listOf(
     ChromeControl.PREVIOUS,
     ChromeControl.CHAPTER_PREV,
     ChromeControl.CHAPTER_NEXT,
-    ChromeControl.SEEK_BACK,
+    // Forward above back, which is not the order responsive.ts shipped.
+    //
+    // They were the other way round, and the two are a PAIR: the bar dropped
+    // forward first and left a lone rewind button on it, which reads as a player
+    // that can only go backwards. Forward is also the one that earns the place —
+    // skipping an intro is what the gesture is for.
     ChromeControl.SEEK_FORWARD,
+    ChromeControl.SEEK_BACK,
     ChromeControl.THEATER,
     ChromeControl.PIP,
     ChromeControl.SPEED,
