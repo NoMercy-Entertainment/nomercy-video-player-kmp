@@ -27,6 +27,19 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,11 +66,7 @@ import androidx.compose.ui.text.TextStyle
 @Composable
 internal fun BoxScope.ChromeStatusText(scene: ChromeScene) {
     if (scene.state.buffering) {
-        BasicText(
-            text = scene.strings.loading,
-            style = TextStyle(color = Color.White),
-            modifier = Modifier.align(Alignment.Center).testTag(BUFFERING_TAG),
-        )
+        BufferingSpinner(Modifier.align(Alignment.Center))
     }
 
     scene.state.message?.let { text -> PlayerMessage(text) }
@@ -174,3 +183,60 @@ internal fun BoxScope.MenuDismissLayer(menu: MenuState, onMenuChange: (MenuState
 }
 
 internal const val MENU_DISMISS_TAG = "nm-menu-dismiss"
+
+/**
+ * The buffering ring, which is what the web draws and this drew as a word.
+ *
+ * `<svg viewBox="0 0 50 50"><circle r="20" stroke="#fff" stroke-width="4"
+ * stroke-linecap="round" stroke-dasharray="100 28"/></svg>` in a 72px box,
+ * turning once every 0.9s. The dash leaves a gap of 28 against a circumference
+ * of about 126, so a little over four fifths of the ring is drawn — the gap is
+ * what makes the rotation readable.
+ *
+ * A centred line of text was neither the web's control nor a good one: it landed
+ * in the middle of the picture and repeated whatever the message pill above it
+ * already said, so a viewer waiting for a stream saw the same word twice in two
+ * different places.
+ */
+@Composable
+private fun BufferingSpinner(modifier: Modifier = Modifier) {
+    val turn = rememberInfiniteTransition(label = "buffering")
+    val angle: Float by turn.animateFloat(
+        initialValue = 0f,
+        targetValue = FULL_TURN,
+        animationSpec = infiniteRepeatable(tween(SPIN_MS, easing = LinearEasing)),
+        label = "angle",
+    )
+
+    Canvas(modifier = modifier.size(SPINNER_SIZE).testTag(BUFFERING_TAG)) {
+        val stroke: Float = SPINNER_STROKE_SHARE * size.minDimension
+        val inset: Float = stroke / 2 + (size.minDimension - SPINNER_RING_SHARE * size.minDimension) / 2
+
+        rotate(angle) {
+            drawArc(
+                color = Color.White,
+                startAngle = 0f,
+                sweepAngle = SPINNER_SWEEP,
+                useCenter = false,
+                topLeft = Offset(inset, inset),
+                size = Size(size.width - inset * 2, size.height - inset * 2),
+                style = Stroke(width = stroke, cap = StrokeCap.Round),
+            )
+        }
+    }
+}
+
+// `width: 72px; height: 72px`, and the circle's own geometry inside a 50-unit
+// viewBox: `stroke-width: 4` and `r: 20` of 25, so the ring is four fifths of
+// the box across.
+private val SPINNER_SIZE: Dp = 72.dp
+private const val SPINNER_STROKE_SHARE = 4f / 50f
+private const val SPINNER_RING_SHARE = 40f / 50f
+
+// `stroke-dasharray: 100 28` against a circumference of 2 pi r — a hundred units
+// of a hundred and twenty-six, as an angle.
+private const val SPINNER_SWEEP = 286.5f
+
+// `animation: nm-spin 0.9s linear infinite`.
+private const val SPIN_MS = 900
+private const val FULL_TURN = 360f
