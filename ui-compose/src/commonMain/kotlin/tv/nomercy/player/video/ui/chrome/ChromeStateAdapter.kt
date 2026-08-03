@@ -23,6 +23,7 @@ import tv.nomercy.player.video.item.normalizeWatchProgress
 import tv.nomercy.player.video.tv.TvChapter
 import tv.nomercy.player.video.tv.TvChromeItem
 import kotlin.math.roundToInt
+import tv.nomercy.player.core.ports.QualityMode
 
 // The player, as the chrome reads it.
 //
@@ -92,6 +93,7 @@ public fun chromeStateOf(
     chapters = player.chapters().map { TvChapter(it.startTime, it.title) },
     qualityLevels = player.qualityLevels(),
     activeQuality = player.quality(),
+    qualityAuto = player.qualityMode() == QualityMode.AUTO,
     audioTracks = player.audioTracks(),
     activeAudio = player.audioTrack(),
     subtitleTracks = player.subtitles(),

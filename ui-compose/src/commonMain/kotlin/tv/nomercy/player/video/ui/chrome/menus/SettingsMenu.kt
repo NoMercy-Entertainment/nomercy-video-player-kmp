@@ -270,14 +270,18 @@ private fun QualityMenu(
         // Automatic first, because it is what most viewers should stay on and
         // the list below it exists for the ones who know they want otherwise.
         item {
-            MenuRow(strings.automatic, isCurrent = state.activeQuality == null, tag = ROW_AUTO) {
+            MenuRow(
+                autoQualityLabel(state, strings),
+                isCurrent = state.qualityAuto,
+                tag = ROW_AUTO,
+            ) {
                 commands.selectQuality(null)
                 onMenuChange(MenuState.Hidden)
             }
         }
 
         items(state.qualityLevels) { level ->
-            MenuRow(qualityLabel(level), isCurrent = level == state.activeQuality) {
+            MenuRow(qualityLabel(level), isCurrent = !state.qualityAuto && level == state.activeQuality) {
                 commands.selectQuality(level)
                 onMenuChange(MenuState.Hidden)
             }
@@ -348,6 +352,15 @@ private fun SpeedMenu(
 // Height and dynamic range, because the same height in HDR is a different stream
 // a device may not be able to play, and a list showing two identical rows is one
 // a viewer cannot choose between.
+// "Automatisch  1280x536 SDR" - the mode, and under it the rung the engine
+// settled on. Nothing named the second half, so a viewer in Auto had no way to
+// see what they were actually watching.
+internal fun autoQualityLabel(state: ChromeState, strings: MenuStrings): String {
+    val playing: QualityLevel? = state.activeQuality.takeIf { state.qualityAuto }
+
+    return playing?.let { "${strings.automatic}  ${qualityLabel(it)}" } ?: strings.automatic
+}
+
 internal fun qualityLabel(level: QualityLevel): String {
     // `1280x536 SDR`, which is what the browser puts in the row - both
     // dimensions and the range, always, in capitals.

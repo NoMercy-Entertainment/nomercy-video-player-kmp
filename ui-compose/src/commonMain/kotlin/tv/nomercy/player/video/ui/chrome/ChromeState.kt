@@ -46,6 +46,18 @@ public data class ChromeState(
     // the wrong track shown as current.
     val qualityLevels: List<QualityLevel> = emptyList(),
     val activeQuality: QualityLevel? = null,
+    /**
+     * Whether the engine is choosing the rung, which is not the same question as
+     * which rung is on screen.
+     *
+     * The menu checked the row matching [activeQuality], and an adaptive engine
+     * always reports one - so Auto was never the checked row and the lowest rung
+     * the ladder happened to open on wore the mark instead. The web keys the
+     * check on `qualityIdx === 'auto'` and shows the decoding rung as Auto's
+     * SUBLABEL, so a viewer keeps the "I am in Auto" signal and still sees what
+     * is actually playing.
+     */
+    val qualityAuto: Boolean = true,
     val audioTracks: List<AudioTrack> = emptyList(),
     val activeAudio: AudioTrack? = null,
     val subtitleTracks: List<SubtitleTrack> = emptyList(),
