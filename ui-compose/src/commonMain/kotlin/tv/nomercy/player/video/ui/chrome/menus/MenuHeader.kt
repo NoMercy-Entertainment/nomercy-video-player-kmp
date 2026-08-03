@@ -64,7 +64,17 @@ internal fun MenuHeader(spec: MenuHeaderSpec) {
         BasicText(
             text = title,
             style = TextStyle(color = Color.White, fontSize = HEADER_SIZE, fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.weight(1f),
+            // `.menu-header > .menu-button-text:first-child { padding-left: 16px }`.
+            // The header pads 6px all round and the TITLE takes another sixteen,
+            // which is what sets it off the card edge and lines it up with the
+            // labels below. It was not drawn, so the title sat six pixels in and
+            // read as jammed against the corner.
+            // `:first-child` in the web's selector, which is why the inset goes
+            // only when there is no back button: with one present the title is
+            // not the first child and the browser gives it nothing.
+            modifier = Modifier
+                .padding(start = if (sub) 0.dp else TITLE_INSET)
+                .weight(1f),
         )
 
         PlayerIconButton(
@@ -118,6 +128,9 @@ private fun menuTitle(strings: MenuStrings, menu: MenuState, queue: List<TvChrom
         MenuState.AutoSkip -> strings.autoSkipChapters
         MenuState.Main, MenuState.Hidden -> strings.settings
     }
+
+// `.menu-header > .menu-button-text:first-child { padding-left: 16px }`.
+private val TITLE_INSET = 16.dp
 
 // `min-height: 2.5rem`, `padding: 6px`.
 private val HEADER_MIN_HEIGHT = 40.dp

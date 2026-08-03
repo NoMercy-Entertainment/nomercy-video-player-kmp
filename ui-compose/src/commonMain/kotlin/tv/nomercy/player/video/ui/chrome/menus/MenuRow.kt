@@ -11,6 +11,9 @@ package tv.nomercy.player.video.ui.chrome.menus
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -86,6 +89,12 @@ internal fun MenuRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            // `height: 32px` with `border-radius: 4px`. The row was 16dp of
+            // padding on every side around a 22dp glyph — about 54dp tall, so a
+            // list of five options filled a phone and the card scrolled where the
+            // browser shows the lot.
+            .height(ROW_HEIGHT)
+            .clip(RoundedCornerShape(ROW_RADIUS))
             .background(rowFill(isCurrent))
             .focusOutline(focused)
             .then(tag?.let { Modifier.testTag(it) } ?: Modifier)
@@ -94,7 +103,7 @@ internal fun MenuRow(
             .menuNavEntry(LocalMenuNav.current)
             .onFocusChanged { focused = it.isFocused }
             .clickable(interactionSource = interaction, indication = null, onClick = onSelect)
-            .padding(ROW_PADDING)
+            .padding(horizontal = ROW_PADDING_H, vertical = ROW_PADDING_V)
             // Both, because a reader announces which is chosen and a test finds
             // the row by what it says.
             .semantics {
@@ -207,10 +216,14 @@ internal const val LABEL_TAG_SUFFIX = "-label"
 // rows were tall enough that six of them filled a 600px player. On screen beside
 // the browser it did not read as a menu with big text; it read as a different
 // component.
-private val ROW_PADDING = 16.dp
+// `.language-button { height: 32px; padding: 4px 8px; border-radius: 4px }`.
+private val ROW_HEIGHT = 32.dp
+private val ROW_RADIUS = 4.dp
+private val ROW_PADDING_H = 8.dp
+private val ROW_PADDING_V = 4.dp
 private val LABEL_SIZE = 13.sp
 
 // The web renders its menu glyphs through the same svgFromIcon default the bar
 // uses, and spaces them with the gap either side of `menu-button-text`.
-private val ICON_SIZE = 22.dp
-private val ICON_GAP = 12.dp
+private val ICON_SIZE = 20.dp
+private val ICON_GAP = 8.dp

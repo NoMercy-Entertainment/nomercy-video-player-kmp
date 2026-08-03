@@ -11,9 +11,12 @@ package tv.nomercy.player.video.ui.chrome.menus
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.ChromeState
@@ -140,9 +143,23 @@ private fun MenuRows(rows: @Composable () -> Unit) {
         val scrollable: Boolean = maxHeight != Dp.Infinity
 
         Column(
-            modifier = if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier,
+            // `.scroll-container { padding: 8px 0 8px 8px; gap: 4px }`.
+            //
+            // Asymmetric on purpose: the right side carries no padding because
+            // `scrollbar-gutter: stable` reserves it for the scrollbar. None of
+            // it was here, so every row ran edge to edge into a card with an 8px
+            // radius and the rounded corners of the rows themselves had nothing
+            // to sit against.
+            verticalArrangement = Arrangement.spacedBy(ROWS_GAP),
+            modifier = Modifier
+                .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
+                .padding(start = ROWS_INSET, top = ROWS_INSET, bottom = ROWS_INSET),
         ) {
             rows()
         }
     }
 }
+
+// `.scroll-container { padding: 8px 0 8px 8px; gap: 4px }`.
+private val ROWS_INSET = 8.dp
+private val ROWS_GAP = 4.dp
