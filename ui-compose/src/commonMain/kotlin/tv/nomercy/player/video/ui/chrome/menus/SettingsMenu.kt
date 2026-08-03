@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
+import tv.nomercy.player.core.ports.displayLanguage
 import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.video.tv.TvChromeItem
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
@@ -290,8 +292,8 @@ private fun AudioMenu(
     onMenuChange: (MenuState) -> Unit,
 ) {
     LazyColumn {
-        items(state.audioTracks) { track ->
-            MenuRow(audioLabel(track), isCurrent = track == state.activeAudio) {
+        itemsIndexed(state.audioTracks) { index, track ->
+            MenuRow(audioLabel(track, index), isCurrent = track == state.activeAudio) {
                 commands.selectAudioTrack(track)
                 onMenuChange(MenuState.Hidden)
             }
@@ -317,8 +319,8 @@ private fun SubtitleMenu(
             }
         }
 
-        items(state.subtitleTracks) { track ->
-            MenuRow(track.label, isCurrent = track == state.activeSubtitle) {
+        itemsIndexed(state.subtitleTracks) { index, track ->
+            MenuRow(subtitleLabel(track, index), isCurrent = track == state.activeSubtitle) {
                 commands.selectSubtitleTrack(track)
                 onMenuChange(MenuState.Hidden)
             }
@@ -351,7 +353,43 @@ internal fun qualityLabel(level: QualityLevel): String =
 
 // The label the stream gave, because "English" and "English (Commentary)" are
 // different tracks somebody chooses between and the language alone hides that.
-internal fun audioLabel(track: AudioTrack): String = track.label
+/**
+ * What a language row is called, which is four answers deep in the web:
+ *
+ *     audioTrack.label
+ *       ?? languageDisplayName(audioTrack.language, uiLanguage)
+ *       ?? audioTrack.language
+ *       ?? `Track ${i + 1}`
+ *
+ * This was `track.label` and stopped at the first, which cannot reach the other
+ * three - and the desktop backend already collapses them, defaulting a label to
+ * the language CODE and an unlabelled track to the literal "und". So a viewer
+ * chose between rows called "und" where the browser offers "Nederlands" and
+ * "Track 2".
+ */
+internal fun audioLabel(track: AudioTrack, index: Int): String =
+    trackLabel(track.label, track.language, index)
+
+internal fun subtitleLabel(track: SubtitleTrack, index: Int): String =
+    trackLabel(track.label, track.language, index)
+
+// The chain itself, shared because a subtitle row and an audio row are the same
+// question about two track types - and because the two panes had drifted, one
+// reading `label` through a helper and the other reading it directly.
+private fun trackLabel(label: String?, language: String?, index: Int): String {
+    val named: String? = label?.takeIf { it.isNotBlank() && !it.equals(UNKNOWN_LANGUAGE, ignoreCase = true) }
+    if (named != null && !named.equals(language, ignoreCase = true)) return named
+
+    val tag: String? = language?.takeIf { it.isNotBlank() && !it.equals(UNKNOWN_LANGUAGE, ignoreCase = true) }
+    val spelled: String? = tag?.let { displayLanguage(it).takeIf { name -> name.isNotBlank() } }
+
+    return spelled ?: tag ?: "Track ${index + 1}"
+}
+
+// libVLC's answer for a track that declares no language, and the value the
+// desktop mapper substitutes for a blank one. A row titled "und" is a row a
+// viewer cannot choose between two of.
+private const val UNKNOWN_LANGUAGE = "und"
 
 // `rate === 1 ? t('menu.normal') : `${rate}×`` — the multiplication sign, and a whole
 // rate without its decimal. This wrote the letter x and rendered 2f as "2.0x", so the
