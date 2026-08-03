@@ -10,8 +10,14 @@ package tv.nomercy.player.video.ui.chrome
 
 import tv.nomercy.player.video.Stretching
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import tv.nomercy.player.core.events.Subscription
+import tv.nomercy.player.video.VideoEvents
 import tv.nomercy.player.core.media.PlaylistItem
 import tv.nomercy.player.core.player.BufferState
 import tv.nomercy.player.core.player.PlayState
@@ -40,21 +46,64 @@ public fun rememberChromeState(
 ): ChromeState {
     val snapshot: PlayerState by player.stateFlow.collectAsState()
 
-    return chromeStateOf(
-        player,
-        snapshot,
-        itemOf(snapshot.item),
-        message,
-        error,
-        // Through the SAME hook the playing item goes through, so the queue and
-        // the title bar cannot disagree about what an item is called.
-        //
-        // This was not passed at all, so `ChromeState.queue` was empty on every
-        // real player and the playlist pane drew nothing — a pane with a button
-        // that opened it, a row in the settings list that opened it, and no
-        // content either way.
-        player.queue().mapNotNull(itemOf),
-    )
+    // Fullscreen, theater, picture-in-picture and the aspect ratio are read off
+    // the player below and live in none of them: [PlayerState] has no field for
+    // any of them, so nothing about changing one produces a new snapshot and
+    // this composable had no reason to run again.
+    //
+    // The projection was therefore right exactly once, at the composition that
+    // built it. A fullscreen button drawn from it never changed its icon, and a
+    // gesture that toggles ran every time against `fullscreen = false`.
+    // Read here so the composition depends on it. That read IS the subscription:
+    // the value itself says nothing, and dropping it would take the recomposition
+    // with it.
+    val viewMode: Int = rememberViewModeRevision(player)
+
+    return remember(player, snapshot, viewMode, message, error) {
+        chromeStateOf(
+            player,
+            snapshot,
+            itemOf(snapshot.item),
+            message,
+            error,
+            // Through the SAME hook the playing item goes through, so the queue and
+            // the title bar cannot disagree about what an item is called.
+            //
+            // This was not passed at all, so `ChromeState.queue` was empty on every
+            // real player and the playlist pane drew nothing — a pane with a button
+            // that opened it, a row in the settings list that opened it, and no
+            // content either way.
+            player.queue().mapNotNull(itemOf),
+        )
+    }
+}
+
+// A counter that moves whenever the player changes something the projection
+// reads and [PlayerState] does not carry.
+//
+// A count rather than the values themselves, because what it is for is being a
+// recomposition key: the projection below already knows how to read each one off
+// the player, and mirroring four of them here would be a second copy to keep in
+// step with the first.
+@Composable
+private fun rememberViewModeRevision(player: NMVideoPlayer): Int {
+    var revision: Int by remember(player) { mutableStateOf(0) }
+
+    // Named one at a time rather than looped over a list of keys: the key's type
+    // parameter is what makes the payload safe, and a `List<EventKey<*>>` gives
+    // that away for four lines of brevity.
+    DisposableEffect(player) {
+        val subscriptions: List<Subscription> = listOf(
+            player.on(VideoEvents.Fullscreen) { revision += 1 },
+            player.on(VideoEvents.Theater) { revision += 1 },
+            player.on(VideoEvents.Pip) { revision += 1 },
+            player.on(VideoEvents.AspectRatio) { revision += 1 },
+        )
+
+        onDispose { subscriptions.forEach { it.dispose() } }
+    }
+
+    return revision
 }
 
 // Split from the composable so it can be driven from a fixture.

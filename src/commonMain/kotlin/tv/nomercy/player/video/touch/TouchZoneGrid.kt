@@ -131,6 +131,15 @@ public const val DOUBLE_TAP_THRESHOLD_MS: Long = 300
 /** The web's `seekSeconds` default, and the step its indicator counts in. */
 public const val TOUCH_SEEK_SECONDS: Double = 10.0
 
+/**
+ * How much one volume double-tap moves, as a percentage.
+ *
+ * The default step of `volumeUp` and `volumeDown` in both the web core and this
+ * one, so a tap on the picture and a press of the volume key move by the same
+ * amount.
+ */
+public const val TOUCH_VOLUME_STEP: Int = 5
+
 private const val COLUMNS = 3
 private const val ROWS = 6
 private const val VOLUME_UP_ROWS = 2

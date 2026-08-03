@@ -1391,6 +1391,7 @@ public final class tv/nomercy/player/video/touch/TouchZone : java/lang/Enum {
 public final class tv/nomercy/player/video/touch/TouchZoneGridKt {
 	public static final field DOUBLE_TAP_THRESHOLD_MS J
 	public static final field TOUCH_SEEK_SECONDS D
+	public static final field TOUCH_VOLUME_STEP I
 	public static final fun doubleTapAction (Ltv/nomercy/player/video/touch/TouchZone;)Ltv/nomercy/player/video/touch/TouchAction;
 	public static final fun singleTapAction (Ltv/nomercy/player/video/touch/TouchZone;)Ltv/nomercy/player/video/touch/TouchAction;
 	public static final fun zoneAt (FFZ)Ltv/nomercy/player/video/touch/TouchZone;

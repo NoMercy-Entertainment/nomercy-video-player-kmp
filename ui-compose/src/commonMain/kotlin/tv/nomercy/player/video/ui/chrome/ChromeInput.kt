@@ -41,11 +41,23 @@ internal fun rememberShortcutsPanel(): ShortcutsPanel {
     return ShortcutsPanel(open = open, onToggle = { open = !open }, onDismiss = { open = false })
 }
 
+/**
+ * What the tap zones need, which is nothing the rest of this class uses.
+ *
+ * One value because it travels as one: the zones toggle rather than set —
+ * playback, fullscreen, volume — so they read the state, write through the
+ * commands, and stamp the seek run off the same clock.
+ */
+internal class TouchZoneInput(
+    val state: ChromeState,
+    val commands: ChromeCommands,
+    val nowMs: () -> Long,
+)
+
 internal class ChromeInput(
     val keys: VideoKeyHandlerPlugin?,
     val controller: ChromeController,
-    val commands: ChromeCommands,
-    val nowMs: () -> Long,
+    val zones: TouchZoneInput,
     val gestures: ChromeGestures?,
     /**
      * `?` — the web's `shortcuts.help`, and Escape to close it again.

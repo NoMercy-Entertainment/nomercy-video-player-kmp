@@ -2145,6 +2145,8 @@ final const val tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS // tv.nome
     final fun <get-DOUBLE_TAP_THRESHOLD_MS>(): kotlin/Long // tv.nomercy.player.video.touch/DOUBLE_TAP_THRESHOLD_MS.<get-DOUBLE_TAP_THRESHOLD_MS>|<get-DOUBLE_TAP_THRESHOLD_MS>(){}[0]
 final const val tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS // tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS|{}TOUCH_SEEK_SECONDS[0]
     final fun <get-TOUCH_SEEK_SECONDS>(): kotlin/Double // tv.nomercy.player.video.touch/TOUCH_SEEK_SECONDS.<get-TOUCH_SEEK_SECONDS>|<get-TOUCH_SEEK_SECONDS>(){}[0]
+final const val tv.nomercy.player.video.touch/TOUCH_VOLUME_STEP // tv.nomercy.player.video.touch/TOUCH_VOLUME_STEP|{}TOUCH_VOLUME_STEP[0]
+    final fun <get-TOUCH_VOLUME_STEP>(): kotlin/Int // tv.nomercy.player.video.touch/TOUCH_VOLUME_STEP.<get-TOUCH_VOLUME_STEP>|<get-TOUCH_VOLUME_STEP>(){}[0]
 final const val tv.nomercy.player.video.tv/AUTO_HIDE_MS // tv.nomercy.player.video.tv/AUTO_HIDE_MS|{}AUTO_HIDE_MS[0]
     final fun <get-AUTO_HIDE_MS>(): kotlin/Long // tv.nomercy.player.video.tv/AUTO_HIDE_MS.<get-AUTO_HIDE_MS>|<get-AUTO_HIDE_MS>(){}[0]
 final const val tv.nomercy.player.video.tv/CHAPTER_GRACE_SECONDS // tv.nomercy.player.video.tv/CHAPTER_GRACE_SECONDS|{}CHAPTER_GRACE_SECONDS[0]

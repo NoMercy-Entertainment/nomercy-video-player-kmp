@@ -156,7 +156,13 @@ public fun VideoChrome(
 
     AutoSkipBinding(state, commands)
 
-    val input = ChromeInput(rememberVideoKeys(player, formFactor), controller, commands, player::now, gestures, panel)
+    val input = ChromeInput(
+        rememberVideoKeys(player, formFactor),
+        controller,
+        TouchZoneInput(state, commands, player::now),
+        gestures,
+        panel,
+    )
 
     // The picture and the words on it, as one layer.
     //
@@ -266,9 +272,10 @@ private fun ChromeFrame(
 
         if (!input.pointerDriven) {
             TouchZonesOverlay(
+                state = input.zones.state,
                 controller = input.controller,
-                commands = input.commands,
-                nowMs = input.nowMs,
+                commands = input.zones.commands,
+                nowMs = input.zones.nowMs,
                 modifier = Modifier.fillMaxSize(),
             )
 

@@ -33,6 +33,7 @@ internal open class RecordingChromeCommands : ChromeCommands {
 
     var playing: Boolean? = null
     var fullscreen: Boolean? = null
+    var volume: Int? = null
     var lastQuality: QualityLevel? = null
     var qualityWasSet: Boolean = false
     var lastAudio: AudioTrack? = null
@@ -77,7 +78,10 @@ internal open class RecordingChromeCommands : ChromeCommands {
         lastPlayedItem = id
     }
 
-    override fun setVolume(percent: Int) { calls += "setVolume" }
+    override fun setVolume(percent: Int) {
+        calls += "setVolume"
+        volume = percent
+    }
 
     override fun setMuted(muted: Boolean) { calls += "setMuted" }
 

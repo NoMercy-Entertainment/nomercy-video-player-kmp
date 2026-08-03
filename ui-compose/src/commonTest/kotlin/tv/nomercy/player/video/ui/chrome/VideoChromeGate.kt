@@ -17,6 +17,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.doubleClick
+import androidx.compose.ui.test.percentOffset
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -228,7 +230,55 @@ abstract class VideoChromeGate {
     fun aTouchBuildGetsTheTapZones() = runComposeUiTest {
         mount(player(), FormFactor.Phone)
 
-        onNodeWithTag(ZONE_CENTRE).assertExists()
+        onNodeWithTag(TOUCH_ZONES_TAG).assertExists()
+    }
+
+    // A double tap at a fraction of the picture, which is how the zones are
+    // addressed now that the grid is arithmetic rather than five boxes.
+    private fun ComposeUiTest.doubleTapZone(x: Float, y: Float) {
+        onNodeWithTag(TOUCH_ZONES_TAG).performTouchInput {
+            doubleClick(percentOffset(x, y))
+        }
+        settle()
+    }
+
+    @Test
+    fun aDoubleTapInTheMiddleTogglesFullscreenBothWays() = runComposeUiTest {
+        // It called setFullscreen(true). Going in worked and the gesture every
+        // viewer uses to come back out did nothing, on every touch build.
+        val player: NMVideoPlayer = player()
+        mount(player, FormFactor.Phone)
+
+        doubleTapZone(CENTRE_X, MIDDLE_Y)
+        assertEquals(true, player.fullscreen())
+
+        doubleTapZone(CENTRE_X, MIDDLE_Y)
+        assertEquals(false, player.fullscreen())
+    }
+
+    @Test
+    fun aDoubleTapUnderTheTopOfTheMiddleTurnsTheVolumeDown() = runComposeUiTest {
+        // The zone the web adds on a touch device and this had nowhere to put:
+        // a finger has no scroll wheel. The whole centre column was play/pause,
+        // so this gesture changed nothing at all.
+        val player: NMVideoPlayer = player()
+        mount(player, FormFactor.Phone)
+
+        doubleTapZone(CENTRE_X, BOTTOM_Y)
+
+        assertEquals(VOLUME_AFTER_ONE_STEP_DOWN, player.volume())
+    }
+
+    @Test
+    fun theSeekColumnsOwnTheirFullHeight() = runComposeUiTest {
+        // Reading the row before the column would spread the volume zones across
+        // the top of the picture, where the corner is the seek column.
+        val player: NMVideoPlayer = player()
+        mount(player, FormFactor.Phone)
+
+        doubleTapZone(LEFT_X, TOP_Y)
+
+        assertEquals(FULL_VOLUME, player.volume())
     }
 
     @Test
@@ -238,7 +288,7 @@ abstract class VideoChromeGate {
         // whatever the host drew underneath.
         mount(player(), FormFactor.Desktop)
 
-        onNodeWithTag(ZONE_CENTRE).assertDoesNotExist()
+        onNodeWithTag(TOUCH_ZONES_TAG).assertDoesNotExist()
     }
 
     @Test
@@ -293,3 +343,15 @@ private const val OFF_THE_STRIP = 4f
 // a menu is about that menu.
 private const val MOUNT_WIDTH = 1280
 private const val MOUNT_HEIGHT = 720
+
+// Fractions of the picture, matching the three columns and the six rows of the
+// tap grid. The corners are deliberate: they are where a column rule and a row
+// rule disagree, and where reading them in the wrong order shows.
+private const val LEFT_X = 0.1f
+private const val CENTRE_X = 0.5f
+private const val TOP_Y = 0.05f
+private const val MIDDLE_Y = 0.5f
+private const val BOTTOM_Y = 0.95f
+
+private const val FULL_VOLUME = 100
+private const val VOLUME_AFTER_ONE_STEP_DOWN = 95
