@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.video.ui.rememberDeviceCapabilities
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,42 @@ import tv.nomercy.player.video.ui.chrome.menus.MenuState
 import tv.nomercy.player.video.ui.tv.FluentIcons
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
+
+// What still fits on the row, with the one input the web reads and this never did.
+//
+// `state.isNoHover` there comes from `matchMedia('(hover: none)')`. Here it was
+// never passed at all, so it took its `false` default on every surface and the
+// row reserved 96dp beside mute for a volume slider that expands on hover — on a
+// phone, where nothing can hover and it never expands. At 396dp that is exactly
+// the room fullscreen and settings needed: two default-ON controls, ranked third
+// and fourth, missing from every touch build.
+@Composable
+private fun rememberFittingControls(
+    widthDp: Int,
+    buttons: ChromeButtons,
+    state: ChromeState,
+    drop: DropOrder,
+): Set<ChromeControl> {
+    val noHover: Boolean = rememberDeviceCapabilities().hasTouch
+
+    return remember(widthDp, buttons, state, drop, noHover) {
+        visibleControls(
+            widthDp = widthDp,
+            noHover = noHover,
+            contentHidden = { state.lacksContentFor(it) },
+            enabled = { buttons.allows(it) },
+            priority = drop.priority,
+            portraitHidden = drop.portraitHidden,
+        ).toSet()
+    }
+}
+
+// What goes first when the row runs out of room, and what never survives
+// portrait. One value because they are one decision and they travel together.
+private data class DropOrder(
+    val priority: List<ChromeControl>,
+    val portraitHidden: Set<ChromeControl>,
+)
 
 // The transport row, for a pointer or a finger rather than a remote.
 //
@@ -87,15 +124,9 @@ public fun TransportBar(
         val widthDp: Int = boundedWidthDp(maxWidth)
         val metrics: BarMetrics = remember(widthDp) { barMetricsFor(widthDp) }
 
-        val fits: Set<ChromeControl> = remember(maxWidth, buttons, state, priority) {
-            visibleControls(
-                widthDp = widthDp,
-                contentHidden = { state.lacksContentFor(it) },
-                enabled = { buttons.allows(it) },
-                priority = priority,
-                portraitHidden = portraitHidden,
-            ).toSet()
-        }
+        val fits: Set<ChromeControl> = rememberFittingControls(
+            widthDp, buttons, state, DropOrder(priority, portraitHidden),
+        )
 
         Row(
             modifier = Modifier

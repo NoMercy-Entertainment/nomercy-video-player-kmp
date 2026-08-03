@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.Placeable
@@ -70,6 +72,10 @@ public fun ScrubPreview(
         verticalArrangement = Arrangement.spacedBy(POP_GAP),
         modifier = modifier
             .centeredOn(fraction, barWidth, liftedAbove = POP_LIFT)
+            // `min-width: 60px`, so a bubble on an item with no sprite sheet is
+            // still a card with a clock in it rather than a strip the width of
+            // four digits.
+            .widthIn(min = POP_MIN_WIDTH)
             .background(POP_BACKGROUND, RoundedCornerShape(POP_RADIUS))
             .padding(bottom = POP_BOTTOM_PADDING)
             .testTag(SCRUB_PREVIEW_TAG),
@@ -77,17 +83,7 @@ public fun ScrubPreview(
         // Sized before the pixels arrive, from what the sheet says a frame
         // measures. A box that grows when the image lands is a box that jumps
         // under the thumb that is dragging it.
-        frameSize?.let { declared ->
-            Box(modifier = Modifier.size(declared)) {
-                frame?.let {
-                    Image(
-                        bitmap = it,
-                        contentDescription = null,
-                        modifier = Modifier.size(declared).testTag(SCRUB_FRAME_TAG),
-                    )
-                }
-            }
-        }
+        frameSize?.let { declared -> PopFrame(declared, frame) }
 
         // Monospace, as the web sets it. A clock in a proportional face shifts
         // its own width as the digits change, so the bubble twitches while a
@@ -105,6 +101,36 @@ public fun ScrubPreview(
                 text = title,
                 style = CHAPTER_TEXT,
                 modifier = Modifier.padding(horizontal = TEXT_INSET).testTag(SCRUB_CHAPTER_TAG),
+            )
+        }
+    }
+}
+
+/**
+ * The still, inset in the card.
+ *
+ * `margin: 6px 6px 0` with `border-radius: 3px` — the frame sits INSIDE the card
+ * with a band of it showing on three sides, and its own corners are rounded half
+ * as much as the card's.
+ *
+ * Neither was drawn. The image went edge to edge and square into a rounded card,
+ * so its top corners were clipped square by the card's radius and there was no
+ * border at all — which is the whole reason the bubble reads as a framed still in
+ * a browser and read as a bare tile here.
+ */
+@Composable
+private fun PopFrame(declared: androidx.compose.ui.unit.DpSize, frame: ImageBitmap?) {
+    Box(
+        modifier = Modifier
+            .padding(start = FRAME_INSET, top = FRAME_INSET, end = FRAME_INSET)
+            .clip(RoundedCornerShape(FRAME_RADIUS))
+            .size(declared),
+    ) {
+        frame?.let {
+            Image(
+                bitmap = it,
+                contentDescription = null,
+                modifier = Modifier.size(declared).testTag(SCRUB_FRAME_TAG),
             )
         }
     }
@@ -198,6 +224,13 @@ private val POP_LIFT = 20.dp
 private val POP_GAP = 4.dp
 private val POP_BOTTOM_PADDING = 4.dp
 private val TEXT_INSET = 8.dp
+
+// `.slider-pop { min-width: 60px }`.
+private val POP_MIN_WIDTH = 60.dp
+
+// `.slider-pop-image[style*='background-image'] { margin: 6px 6px 0; border-radius: 3px }`.
+private val FRAME_INSET = 6.dp
+private val FRAME_RADIUS = 3.dp
 
 // `width: 16px; height: 16px`, and `24px` once a pointer is on the bar or a drag
 // is under way.
