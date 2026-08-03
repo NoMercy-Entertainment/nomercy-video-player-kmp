@@ -68,6 +68,15 @@ internal fun MenuRow(
      * reads before pressing: one of these goes somewhere and the other one ends.
      */
     opensSubMenu: Boolean = false,
+    /**
+     * `.menu-button-subtext` — a dimmer, smaller note at the row's trailing
+     * edge, which is where Auto names the rung the engine settled on.
+     *
+     * Its own span in the web rather than more characters in the label: it is
+     * 10px at 60% white against the label's 13 at full, so folding it into the
+     * label string draws it in the wrong size and the wrong colour.
+     */
+    subLabel: String? = null,
     onSelect: () -> Unit,
 ) {
     var focused: Boolean by remember { mutableStateOf(false) }
@@ -76,7 +85,7 @@ internal fun MenuRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(if (focused) Color.White else Color.Transparent)
+            .background(rowFill(focused, isCurrent))
             .then(tag?.let { Modifier.testTag(it) } ?: Modifier)
             // On the arrow walk wherever a menu is up — the web's nav finds every
             // `button` in the open pane, and a settings row is one of them.
@@ -97,21 +106,6 @@ internal fun MenuRow(
 
         icon?.let { RowGlyph(it, tint) }
 
-        // A mark as well as a colour. Colour alone is the distinction a viewer
-        // with no colour vision cannot make, and this is the row telling them
-        // what they are already watching with.
-        //
-        // The web's mark is the checkmark GLYPH at 18 units in its own
-        // `.menu-button-check` span, and the span is a column the row reserves
-        // whether or not it is the chosen one. This wrote a bullet into the
-        // label STRING, so the chosen row's text began one character further
-        // right than every row above and below it.
-        //
-        // Reserved only where a row can be chosen. A pane whose rows carry a
-        // leading icon is the main list, which marks nothing, and there the
-        // column would be a gap in front of every row.
-        CheckColumn(reserved = icon == null, checked = isCurrent, tint = tint)
-
         BasicText(
             text = label,
             style = TextStyle(color = tint, fontSize = LABEL_SIZE, fontWeight = FontWeight.SemiBold),
@@ -120,25 +114,47 @@ internal fun MenuRow(
                 .then(tag?.let { Modifier.testTag("$it$LABEL_TAG_SUFFIX") } ?: Modifier),
         )
 
+        RowTail(subLabel, isCurrent, tint, focused)
+
         if (opensSubMenu) {
             RowGlyph(FluentIcons.ChevronR, tint)
         }
     }
 }
 
-// The column the web reserves as `.menu-button-check`, drawn or merely held
-// open. Its own composable because MenuRow is at its length limit and this is
-// the part that is a rule rather than a layout.
+// What sits after the label: the dimmer note, then the mark.
+//
+// `margin-left: auto` on both — the mark is the row's LAST element, not its
+// first. Drawn in front of the label it pushed the chosen row's text a glyph
+// right of every other row in the list, and no column reserved here puts that
+// back without inventing an indent the web has not got.
+//
+// A mark as well as a colour, because colour alone is the distinction a viewer
+// with no colour vision cannot make.
 @Composable
-private fun CheckColumn(reserved: Boolean, checked: Boolean, tint: Color) {
-    if (!reserved) return
+private fun RowTail(subLabel: String?, current: Boolean, tint: Color, focused: Boolean) {
+    subLabel?.takeIf { it.isNotBlank() }?.let { note ->
+        BasicText(text = note, style = SUB_TEXT.copy(color = subTint(focused)))
+    }
 
-    Box(modifier = Modifier.size(CHECK_SIZE)) {
-        if (checked) {
-            RowGlyph(FluentIcons.Checkmark, tint, CHECK_SIZE)
-        }
+    if (current) {
+        RowGlyph(FluentIcons.Checkmark, tint, CHECK_SIZE)
     }
 }
+
+// `.language-button.is-active { background: rgba(255,255,255,0.2) }`, under the
+// focus fill which is stronger. The chosen row was marked by a glyph alone, so
+// it read as a row with an extra character rather than as the row you are on.
+private fun rowFill(focused: Boolean, current: Boolean): Color = when {
+    focused -> Color.White
+    current -> Color.White.copy(alpha = 0.2f)
+    else -> Color.Transparent
+}
+
+// The subtext against the two row backgrounds: 60% white normally, and the same
+// weight of black once the row is filled white by focus.
+private fun subTint(focused: Boolean): Color =
+    if (focused) Color.Black.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.6f)
 
 // Never described to a reader. Both of a row's glyphs repeat what its label
 // already says, and a screen reader announcing "Audio, audio, chevron right" is
@@ -153,8 +169,11 @@ private fun RowGlyph(icon: ImageVector, tint: Color, size: Dp = ICON_SIZE) {
     )
 }
 
-// `svgFromIcon(fluentIcons.checkmark, 18)`.
-private val CHECK_SIZE = 18.dp
+// `.menu-button-check { width: 20px; height: 20px }`.
+private val CHECK_SIZE = 20.dp
+
+// `font-size: 10px; font-weight: 600; color: rgba(255, 255, 255, 0.6)`.
+private val SUB_TEXT = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
 
 // So a test can measure where a row's TEXT starts. Measuring the row says
 // nothing: every row in a list has the same left edge whatever is drawn inside

@@ -32,20 +32,18 @@ class AutoQualityRowTest {
         width = 1280,
     )
 
-    private val strings = menuStrings("nl")
-
     @Test
     fun autoNamesTheRungTheEngineSettledOn() {
         val state = ChromeState(activeQuality = playing, qualityAuto = true)
 
-        assertEquals("${strings.automatic}  1280x536 SDR", autoQualityLabel(state, strings))
+        assertEquals("1280x536 SDR", autoQualitySubLabel(state))
     }
 
     @Test
     fun andSaysNothingExtraWhenNoRungIsDecodingYet() {
         val state = ChromeState(activeQuality = null, qualityAuto = true)
 
-        assertEquals(strings.automatic, autoQualityLabel(state, strings))
+        assertEquals(null, autoQualitySubLabel(state))
     }
 
     @Test
@@ -53,7 +51,7 @@ class AutoQualityRowTest {
         // Out of Auto the row is the mode again, and the rung wears its own mark.
         val state = ChromeState(activeQuality = playing, qualityAuto = false)
 
-        assertEquals(strings.automatic, autoQualityLabel(state, strings))
+        assertEquals(null, autoQualitySubLabel(state))
         assertTrue(!state.qualityAuto)
     }
 }
