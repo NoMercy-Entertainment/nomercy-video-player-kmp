@@ -374,6 +374,8 @@ private fun ChromeLayers(
             }
         }
 
+        MenuDismissLayer(menu, onMenuChange)
+
         SettingsMenu(
             scene.state,
             scene.commands,

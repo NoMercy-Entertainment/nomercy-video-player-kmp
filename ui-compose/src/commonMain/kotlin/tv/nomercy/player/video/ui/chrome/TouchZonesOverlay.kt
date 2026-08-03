@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -119,7 +121,26 @@ private fun BoxScope.SeekIndicatorLayer(
     nowMs: () -> Long,
     options: TouchZonesOptions,
 ) {
-    val phase: SeekIndicatorPhase = seekIndicatorPhase(run, nowMs(), options)
+    // The clock has to be READ again for the disc to go away.
+    //
+    // [seekIndicatorPhase] is a pure function of the run and the time, and the
+    // time was sampled once during composition. The run stops changing the moment
+    // the last tap lands, so nothing ever recomposed again and the phase stayed
+    // whatever it was at that instant: Shown, permanently. A viewer got a `-10s`
+    // disc welded to the side of the picture.
+    //
+    // Ticked rather than replaced with a timer that owns the phase itself, so the
+    // rule stays in the one function that is tested.
+    var tick: Int by remember { mutableStateOf(0) }
+
+    LaunchedEffect(run) {
+        while (seekIndicatorPhase(run, nowMs(), options) != SeekIndicatorPhase.Gone) {
+            delay(INDICATOR_TICK_MS)
+            tick += 1
+        }
+    }
+
+    val phase: SeekIndicatorPhase = remember(run, tick) { seekIndicatorPhase(run, nowMs(), options) }
     if (phase == SeekIndicatorPhase.Gone) return
 
     SeekIndicator(
@@ -230,3 +251,8 @@ internal const val INDICATOR_FORWARD = "nm-seek-indicator-forward"
 private val EDGE_INSET: Dp = 16.dp
 
 private const val MAX_VOLUME = 100
+
+// How often the disc re-asks where it is in its life. Fast enough that the fade
+// starts and ends on time, slow enough that a gesture does not drive a frame
+// loop for the second it lasts.
+private const val INDICATOR_TICK_MS: Long = 50

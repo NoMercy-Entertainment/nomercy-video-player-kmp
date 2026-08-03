@@ -19,6 +19,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import tv.nomercy.player.video.ui.chrome.menus.MenuState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -140,3 +143,25 @@ internal fun BoxScope.ChromeOverlays(scene: ChromeScene) {
         ChromeErrorOverlay(failure, Modifier.align(Alignment.Center))
     }
 }
+
+// `.menu-frame-dialog` — inset 0 over the whole player, with pointer events only
+// while a menu is open.
+//
+// The web closes on any document click whose target is not inside `.menu-frame`.
+// There was nothing here at all: a menu opened and the only way out was the close
+// button in its own header, so a tap on the picture went to the tap zones
+// underneath and seeked the film while the menu the viewer was trying to dismiss
+// stayed up.
+@Composable
+internal fun BoxScope.MenuDismissLayer(menu: MenuState, onMenuChange: (MenuState) -> Unit) {
+    if (menu == MenuState.Hidden) return
+
+    Box(
+        modifier = Modifier
+            .matchParentSize()
+            .testTag(MENU_DISMISS_TAG)
+            .pointerInput(Unit) { detectTapGestures { onMenuChange(MenuState.Hidden) } },
+    )
+}
+
+internal const val MENU_DISMISS_TAG = "nm-menu-dismiss"
