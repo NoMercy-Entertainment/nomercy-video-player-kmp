@@ -34,6 +34,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -260,56 +264,61 @@ private fun ChromeFrame(
     picture: @Composable BoxScope.() -> Unit,
     content: @Composable () -> Unit,
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .testTag(if (input.pointerDriven) DESKTOP_CHROME_TAG else TOUCH_CHROME_TAG)
-            // Keys before focus, deliberately. A handler placed after the focus
-            // target sits inside it and never sees the press that reached it.
-            .then(input.keyModifier())
-            .then(input.pointerModifier()),
-    ) {
-        // The surface and the cues on it, under everything else — which is
-        // where `.subtitle-overlay` sits at `z-index: 0`. Above the tap zones
-        // would put a cue in front of the control a finger is reaching for;
-        // inside the visibility gate below would fade the dialogue with the bar.
-        picture()
+    var bounds: Rect by remember { mutableStateOf(Rect.Zero) }
 
-        if (!input.pointerDriven) {
-            TouchZonesOverlay(
-                state = input.zones.state,
-                controller = input.controller,
-                commands = input.zones.commands,
-                nowMs = input.zones.nowMs,
-                modifier = Modifier.fillMaxSize(),
-            )
+    CompositionLocalProvider(LocalPlayerBounds provides bounds) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .onGloballyPositioned { bounds = it.boundsInWindow() }
+                .testTag(if (input.pointerDriven) DESKTOP_CHROME_TAG else TOUCH_CHROME_TAG)
+                // Keys before focus, deliberately. A handler placed after the focus
+                // target sits inside it and never sees the press that reached it.
+                .then(input.keyModifier())
+                .then(input.pointerModifier()),
+        ) {
+            // The surface and the cues on it, under everything else — which is
+            // where `.subtitle-overlay` sits at `z-index: 0`. Above the tap zones
+            // would put a cue in front of the control a finger is reaching for;
+            // inside the visibility gate below would fade the dialogue with the bar.
+            picture()
 
-            // Above the three columns, and only the rows they do not cover.
-            //
-            // TouchZonesOverlay is his middle row — skip back, play, skip on —
-            // and it stays as it is. What was missing is the other two: his grid
-            // dims down the left edge and changes volume down the right, and
-            // neither had anywhere to land here.
-            //
-            // Absent unless a host binds them, because brightness and volume are
-            // platform calls this module cannot make. A consumer that binds
-            // nothing gets the same four-corner behaviour as before: a tap
-            // anywhere wakes the controls.
-            input.gestures?.let { gestures ->
-                ChromeGestureGrid(
-                    gestures = gestures.copy(
-                        // The middle row belongs to the zones below. Binding it
-                        // here too would fire both on one double tap.
-                        onTogglePlay = null,
-                        onSeekBack = null,
-                        onSeekForward = null,
-                    ),
+            if (!input.pointerDriven) {
+                TouchZonesOverlay(
+                    state = input.zones.state,
+                    controller = input.controller,
+                    commands = input.zones.commands,
+                    nowMs = input.zones.nowMs,
                     modifier = Modifier.fillMaxSize(),
                 )
-            }
-        }
 
-        content()
+                // Above the three columns, and only the rows they do not cover.
+                //
+                // TouchZonesOverlay is his middle row — skip back, play, skip on —
+                // and it stays as it is. What was missing is the other two: his grid
+                // dims down the left edge and changes volume down the right, and
+                // neither had anywhere to land here.
+                //
+                // Absent unless a host binds them, because brightness and volume are
+                // platform calls this module cannot make. A consumer that binds
+                // nothing gets the same four-corner behaviour as before: a tap
+                // anywhere wakes the controls.
+                input.gestures?.let { gestures ->
+                    ChromeGestureGrid(
+                        gestures = gestures.copy(
+                            // The middle row belongs to the zones below. Binding it
+                            // here too would fire both on one double tap.
+                            onTogglePlay = null,
+                            onSeekBack = null,
+                            onSeekForward = null,
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+            }
+
+            content()
+        }
     }
 }
 

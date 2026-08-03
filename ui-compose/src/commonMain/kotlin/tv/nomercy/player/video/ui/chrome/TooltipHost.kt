@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,7 +92,7 @@ public fun ControlTooltip(
     // It also hands the position provider the anchor's bounds AND the window's
     // size, which is what ChromeTooltip.leftFor needs and never had. Clamping
     // against the button meant clamping into 40dp.
-    Popup(popupPositionProvider = AboveAnchorPosition(GAP)) {
+    Popup(popupPositionProvider = AboveAnchorPosition(GAP, LocalPlayerBounds.current)) {
         Box(
             modifier = modifier
                 .alpha(opacity)
@@ -179,7 +180,19 @@ internal val ARROW_SIZE: Dp = 5.dp
  * position and the window's width are both given here, where a modifier inside the
  * button only ever knew about the button.
  */
-internal class AboveAnchorPosition(private val gap: Dp) : PopupPositionProvider {
+internal class AboveAnchorPosition(
+    private val gap: Dp,
+    /**
+     * The player, when the chrome has measured it.
+     *
+     * A Popup is its own window, so without this the clamp is the WINDOW's edges
+     * and a label on a control near the player's left edge slides out across
+     * whatever sits beside the player. The browser cannot do that: the popup is
+     * a child of the player element. [Rect.Zero] falls back to the window, which
+     * is what a chrome mounted without bounds had before.
+     */
+    private val player: Rect = Rect.Zero,
+) : PopupPositionProvider {
 
     override fun calculatePosition(
         anchorBounds: IntRect,
@@ -187,11 +200,12 @@ internal class AboveAnchorPosition(private val gap: Dp) : PopupPositionProvider 
         layoutDirection: LayoutDirection,
         popupContentSize: IntSize,
     ): IntOffset {
+        val measured: Boolean = player.width > 0f
         val left: Float = ChromeTooltip.leftFor(
             buttonCenter = anchorBounds.center.x.toFloat(),
             tooltipWidth = popupContentSize.width.toFloat(),
-            boundsLeft = 0f,
-            boundsRight = windowSize.width.toFloat(),
+            boundsLeft = if (measured) player.left else 0f,
+            boundsRight = if (measured) player.right else windowSize.width.toFloat(),
         )
 
         // Above, and clamped to the top edge: a control near the top of a small

@@ -136,7 +136,7 @@ private fun VerticalVolume(
             // `position: absolute` above a 40dp button, and measured inside that
             // button it would be squeezed to 40dp wide.
             Popup(
-                popupPositionProvider = AboveAnchorPosition(POPUP_OFFSET),
+                popupPositionProvider = AboveAnchorPosition(POPUP_OFFSET, LocalPlayerBounds.current),
                 onDismissRequest = { open = false },
             ) {
             Column(

@@ -459,11 +459,21 @@ private fun RightControlButton(
     strings: TvChromeStrings,
 ) {
     when (control) {
-        ChromeControl.ASPECT_RATIO -> PlayerIconButton(
-            icon = FluentIcons.AspectFit,
-            description = strings.aspectRatio,
-            onClick = { commands.cycleAspectRatio() },
-            modifier = Modifier.testTag(ASPECT_RATIO_TAG),
+        // A menu, like the web's. dom.ts builds this button through
+        // collapseAllTriggers with the other menu triggers and menuControl.ts
+        // renders an aspectRatio PANE from it; the pane existed here too and
+        // nothing opened it, so the button cycled the four modes instead — four
+        // presses to reach the one a viewer wanted, and no way to see which was
+        // current.
+        ChromeControl.ASPECT_RATIO -> MenuTriggerButton(
+            MenuTriggerSpec(
+                icon = FluentIcons.AspectFit,
+                description = strings.aspectRatio,
+                expanded = state.menu == MenuState.AspectRatio,
+                open = commands::openAspectRatioMenu,
+                tag = ASPECT_RATIO_TAG,
+            ),
+            close = commands::closeMenu,
         )
 
         ChromeControl.THEATER -> PlayerIconButton(

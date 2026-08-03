@@ -96,6 +96,17 @@ public interface ChromeTransportCommands {
 
     public fun openPlaylistMenu()
 
+    /**
+     * The aspect-ratio pane, which the web opens from the same button.
+     *
+     * Defaulted so a host that wrote its own commands keeps compiling. The
+     * chrome's own implementation overrides it — and until it did, the button
+     * cycled through the four modes instead, which is a different control
+     * answering a different question.
+     */
+    public fun openAspectRatioMenu() {
+    }
+
     public fun openSettingsMenu()
 
     /**

@@ -192,6 +192,7 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeCommands
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeCommands$DefaultImpls {
 	public static fun closeMenu (Ltv/nomercy/player/video/ui/chrome/ChromeCommands;)V
+	public static fun openAspectRatioMenu (Ltv/nomercy/player/video/ui/chrome/ChromeCommands;)V
 	public static fun playQueueItem (Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Ljava/lang/String;)V
 }
 
@@ -555,6 +556,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeTranslations {
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTransportCommands {
 	public fun closeMenu ()V
 	public abstract fun next ()V
+	public fun openAspectRatioMenu ()V
 	public abstract fun openAudioMenu ()V
 	public abstract fun openPlaylistMenu ()V
 	public abstract fun openQualityMenu ()V
@@ -570,6 +572,7 @@ public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTranspor
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeTransportCommands$DefaultImpls {
 	public static fun closeMenu (Ltv/nomercy/player/video/ui/chrome/ChromeTransportCommands;)V
+	public static fun openAspectRatioMenu (Ltv/nomercy/player/video/ui/chrome/ChromeTransportCommands;)V
 	public static fun playQueueItem (Ltv/nomercy/player/video/ui/chrome/ChromeTransportCommands;Ljava/lang/String;)V
 }
 

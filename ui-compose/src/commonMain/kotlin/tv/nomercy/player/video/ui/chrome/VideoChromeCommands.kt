@@ -86,6 +86,8 @@ internal class VideoChromeCommands(
 
     override fun openPlaylistMenu(): Unit = onMenu(MenuState.Playlist)
 
+    override fun openAspectRatioMenu(): Unit = onMenu(MenuState.AspectRatio)
+
     override fun openSettingsMenu(): Unit = onMenu(MenuState.Main)
 
     override fun closeMenu(): Unit = onMenu(MenuState.Hidden)
