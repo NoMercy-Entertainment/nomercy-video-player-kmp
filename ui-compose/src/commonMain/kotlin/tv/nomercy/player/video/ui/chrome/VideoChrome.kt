@@ -585,12 +585,29 @@ internal fun rememberVideoKeys(player: NMVideoPlayer, formFactor: FormFactor): V
 
     val scope: CoroutineScope = rememberCoroutineScope()
 
-    return remember(player, scope) {
-        VideoKeyHandlerPlugin(
-            commands = playerCommandsOf(player, scope),
-            capabilities = ChromeCapabilities(formFactor),
-            nowMs = player::now,
-        ).also { it.use() }
+    // Re-resolved when something installs a plugin, because a host registers in
+    // an effect and effects run AFTER composition — a lookup done once while
+    // composing would always miss the handler it is looking for and always build
+    // the private one below.
+    val installed: Int = rememberPluginRevision(player)
+
+    return remember(player, scope, installed) {
+        // The host's, when there is one.
+        //
+        // This built its own and called use() on it unconditionally. A host that
+        // registers a key handler — which the plugin exists to be — then had TWO:
+        // the registry's, which the plugin tree draws and a consumer's toggle
+        // switches, and this one, which is what actually saw the key events. So
+        // disabling the plugin changed nothing, enabling it did nothing, and the
+        // row describing it was describing the wrong object.
+        player.plugins.plugins()
+            .filterIsInstance<VideoKeyHandlerPlugin>()
+            .firstOrNull()
+            ?: VideoKeyHandlerPlugin(
+                commands = playerCommandsOf(player, scope),
+                capabilities = ChromeCapabilities(formFactor),
+                nowMs = player::now,
+            ).also { it.use() }
     }
 }
 

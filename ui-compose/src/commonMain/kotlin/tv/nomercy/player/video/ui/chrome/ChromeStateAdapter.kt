@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.Subscription
 import tv.nomercy.player.video.VideoEvents
 import tv.nomercy.player.core.media.PlaylistItem
@@ -101,6 +102,22 @@ private fun rememberViewModeRevision(player: NMVideoPlayer): Int {
         )
 
         onDispose { subscriptions.forEach { it.dispose() } }
+    }
+
+    return revision
+}
+
+// A count of installations, purely as a recomposition key.
+//
+// Registering mutates the registry's own list, so Compose has no value to compare
+// and the lookup above would never run a second time.
+@Composable
+internal fun rememberPluginRevision(player: NMVideoPlayer): Int {
+    var revision: Int by remember(player) { mutableStateOf(0) }
+
+    DisposableEffect(player) {
+        val subscription: Subscription = player.on(CoreEvents.PluginInstalled) { revision += 1 }
+        onDispose { subscription.dispose() }
     }
 
     return revision
