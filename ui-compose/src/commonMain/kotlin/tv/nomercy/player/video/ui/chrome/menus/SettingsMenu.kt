@@ -348,8 +348,19 @@ private fun SpeedMenu(
 // Height and dynamic range, because the same height in HDR is a different stream
 // a device may not be able to play, and a list showing two identical rows is one
 // a viewer cannot choose between.
-internal fun qualityLabel(level: QualityLevel): String =
-    "${level.height}p" + if (level.dynamicRange.wire == SDR_WIRE) "" else " ${level.dynamicRange.wire}"
+internal fun qualityLabel(level: QualityLevel): String {
+    // `1280x536 SDR`, which is what the browser puts in the row - both
+    // dimensions and the range, always, in capitals.
+    //
+    // This wrote `${height}p` and hid the range on SDR, so a ladder read
+    // "108p / 178p / 268p" beside a browser reading "256x108 SDR / 426x178 SDR
+    // / 640x268 SDR". A height alone is not a rung a viewer recognises: 536p is
+    // not a number anyone has seen, and it is the same stream the browser calls
+    // 1280x536.
+    val size: String = level.width?.let { width -> "${width}x${level.height}" } ?: "${level.height}p"
+
+    return "$size ${level.dynamicRange.wire.uppercase()}"
+}
 
 // The label the stream gave, because "English" and "English (Commentary)" are
 // different tracks somebody chooses between and the language alone hides that.
@@ -405,7 +416,6 @@ internal fun speedLabel(speed: Float, strings: MenuStrings): String =
 // the one kind of divergence a viewer cannot report because nothing looks broken.
 private val SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
 
-private const val SDR_WIRE = "sdr"
 
 internal const val SETTINGS_MENU_TAG = "nm-settings-menu"
 internal const val MENU_HEADER_TAG = "nm-menu-header"
