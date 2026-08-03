@@ -9,6 +9,11 @@
 package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.ui.unit.Dp
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -367,6 +372,7 @@ private fun ChromeLayers(
                         buttons = scene.buttons,
                         exits = ChromeExits(host.onBack, host.onCast, host.onClose),
                         hideTitle = scene.layout.hideTitle,
+                        pip = scene.state.pip,
                     )
                 }
 
@@ -479,6 +485,10 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
             modifier = Modifier
                 .fillMaxWidth()
                 .bottomScrim()
+                // The gesture bar, for the same reason the top bar clears the
+                // cutout: the picture uses the whole screen and the controls
+                // must stay reachable. Nothing on a desktop.
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
                 .padding(bottom = BOTTOM_STACK_PADDING),
             verticalArrangement = Arrangement.spacedBy(BOTTOM_STACK_GAP),
         ) {

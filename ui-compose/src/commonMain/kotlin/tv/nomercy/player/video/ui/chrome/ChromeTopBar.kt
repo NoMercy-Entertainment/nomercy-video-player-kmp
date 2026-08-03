@@ -9,6 +9,14 @@
 package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +31,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -76,12 +86,30 @@ public fun ChromeTopBar(
     exits: ChromeExits = ChromeExits(),
     /** `hideTitle` — a player under its own heading does not repeat it. */
     hideTitle: Boolean = false,
+    /**
+     * Whether the picture is in a floating window.
+     *
+     * `this.pipActive` on the web, where it hides both ways out: the chrome is not
+     * what the viewer is looking at there, and a 40px circle over a thumbnail is
+     * most of it.
+     */
+    pip: Boolean = false,
     trailing: @Composable () -> Unit = {},
 ) {
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .background(Brush.verticalGradient(GRADIENT))
+            // The cutout, and the status bar behind it.
+            //
+            // The picture goes THROUGH the notch — that is what fullscreen means
+            // and the film should use every pixel. The controls must not: a close
+            // button under a camera hole is a button nobody can press. This adds
+            // the safe inset on a phone that has one and nothing at all on a
+            // desktop, and it cancels itself when an ancestor has already consumed
+            // the inset, so an embedded player halfway down a page does not get a
+            // status bar's worth of empty space above its title.
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
             .padding(start = BAR_PADDING, top = BAR_PADDING, end = BAR_PADDING, bottom = BAR_BOTTOM_PADDING)
             .testTag(CHROME_TOP_BAR_TAG),
     ) {
@@ -95,7 +123,15 @@ public fun ChromeTopBar(
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            TopBarControls(strings, buttons, exits, trailing)
+            // `hidden = this.pipActive || !hasListeners(...)` — one expression on the web,
+            // and one here: nulling a way out IS hiding it, because the button is
+            // drawn only for a callback that exists.
+            TopBarControls(
+                strings,
+                buttons,
+                if (pip) exits.copy(onBack = null, onClose = null) else exits,
+                trailing,
+            )
             if (!hideTitle) TopBarTitle(item, strings, labels, width)
         }
     }
@@ -156,6 +192,8 @@ private fun TopBarControls(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(BUTTON_GAP),
     ) {
+        // Registered or absent, which is the web's `hasListeners('back')`: a host
+        // that wires nothing gets no button rather than a dead one.
         exits.onBack?.let { TopBarButton(FluentIcons.Back, strings.back, it, BACK_TAG) }
 
         if (buttons.cast) {
@@ -229,12 +267,20 @@ private fun TopBarButton(
     onClick: () -> Unit,
     tag: String,
 ) {
+    val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
+    val hovered: Boolean by interaction.collectIsHoveredAsState()
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(BUTTON_SIZE)
-            .background(Color.Black.copy(alpha = BUTTON_BACKGROUND_ALPHA), CircleShape)
-            .clickable(onClick = onClick)
+            .background(if (hovered) BUTTON_HOVER_FILL else BUTTON_REST_FILL, CircleShape)
+            .hoverable(interaction)
+            // Its own indication rather than the platform's, because the web
+            // states one: these three are the only buttons in the chrome with a
+            // fill at rest, and a ripple over it is a second answer to the same
+            // question.
+            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
             .semantics { contentDescription = description }
             .testTag(tag),
     ) {
@@ -269,6 +315,14 @@ private val ICON_SIZE = 22.dp
 
 // `background: rgba(0, 0, 0, 0.35)`.
 private const val BUTTON_BACKGROUND_ALPHA = 0.35f
+
+// `background: rgba(0, 0, 0, 0.35)` at rest, and on hover
+// `color-mix(in srgb, #fff 10%, rgba(0, 0, 0, 0.35))` — which resolves to an
+// alpha of 0.1 + 0.9x0.35 and a channel of 0.1x255 over that, so a lighter grey
+// AND a less transparent one. Written as the resolved values because Compose has
+// no colour-mix and the arithmetic is the part that would drift.
+private val BUTTON_REST_FILL: Color = Color.Black.copy(alpha = BUTTON_BACKGROUND_ALPHA)
+private val BUTTON_HOVER_FILL: Color = Color(red = 61, green = 61, blue = 61, alpha = 106)
 
 // `max-width: 60%`.
 private const val RIGHT_COLUMN_SHARE = 0.60f

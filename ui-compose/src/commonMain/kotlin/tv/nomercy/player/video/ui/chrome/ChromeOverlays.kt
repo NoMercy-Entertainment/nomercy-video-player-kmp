@@ -22,6 +22,11 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import tv.nomercy.player.video.ui.chrome.menus.MenuState
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -130,6 +135,10 @@ internal fun BoxScope.ChromeOverlays(scene: ChromeScene) {
             // controls hidden still needs the offer to skip.
             modifier = Modifier
                 .align(if (offer == SkipKind.Intro) Alignment.BottomStart else Alignment.BottomEnd)
+                // The stack itself, plus whatever the stack is inset by — they
+                // move together or the prompt lands back on the controls the
+                // moment a phone has a gesture bar.
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
                 .padding(bottom = BOTTOM_STACK_HEIGHT),
         )
     }

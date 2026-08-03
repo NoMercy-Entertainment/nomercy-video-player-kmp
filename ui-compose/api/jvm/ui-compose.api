@@ -534,7 +534,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeTooltip {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeTopBarKt {
-	public static final fun ChromeTopBar (Ltv/nomercy/player/video/tv/TvChromeItem;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/tv/EpisodeLabels;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/chrome/ChromeExits;ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ChromeTopBar (Ltv/nomercy/player/video/tv/TvChromeItem;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/tv/EpisodeLabels;Ltv/nomercy/player/video/ui/chrome/ChromeButtons;Ltv/nomercy/player/video/ui/chrome/ChromeExits;ZZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeTrackCommands {
@@ -612,7 +612,7 @@ public final class tv/nomercy/player/video/ui/chrome/ClockPreference {
 public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$ChromeTopBarKt {
 	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/ComposableSingletons$ChromeTopBarKt;
 	public fun <init> ()V
-	public final fun getLambda$1235722210$ui_compose ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1907266110$ui_compose ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoChromeKt {
