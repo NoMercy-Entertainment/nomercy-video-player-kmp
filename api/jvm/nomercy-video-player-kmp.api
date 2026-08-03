@@ -946,7 +946,6 @@ public class tv/nomercy/player/video/input/VideoKeyHandlerPlugin : tv/nomercy/pl
 	protected fun addDefaults ()V
 	protected fun addFrameAdvanceKey ()V
 	protected fun addFullscreenKeys ()V
-	protected fun addHelpKey ()V
 	protected fun addMediaKeys ()V
 	protected fun addModifierSeekKeys ()V
 	protected fun addNavigationKeys ()V
@@ -961,9 +960,6 @@ public class tv/nomercy/player/video/input/VideoKeyHandlerPlugin : tv/nomercy/pl
 	protected final fun getCapabilities ()Ltv/nomercy/player/core/device/DeviceCapabilities;
 	protected final fun getCommands ()Ltv/nomercy/player/video/input/PlayerCommands;
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
-	public fun getShortcutsVisible ()Lkotlinx/coroutines/flow/StateFlow;
-	public fun shortcuts ()Ljava/util/List;
-	public fun toggleShortcuts ()V
 }
 
 public final class tv/nomercy/player/video/input/VideoKeyHandlerPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
