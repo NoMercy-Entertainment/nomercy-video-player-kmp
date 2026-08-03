@@ -275,7 +275,10 @@ private const val HOVER_MS = 180
 // and a control below it is one people lean forward to identify.
 // The web's, measured on the running player.
 internal val WEB_BUTTON_SIZE: Dp = 40.dp
-internal val WEB_ICON_SIZE: Dp = 22.dp
+// `.btn` is 40px with `border: 2px` and `padding: 8px`, so the glyph inside it is
+// twenty — not twenty-two. Two units over on a forty-unit control is the
+// difference between an icon sitting in a button and an icon filling it.
+internal val WEB_ICON_SIZE: Dp = 20.dp
 
 // A television's, which is what this file used for everything.
 public val TV_BUTTON_SIZE: Dp = 48.dp
