@@ -379,6 +379,8 @@ abstract interface tv.nomercy.player.video.item/VideoPlaylistItem : tv.nomercy.p
         open fun <get-chapterFile>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.chapterFile.<get-chapterFile>|<get-chapterFile>(){}[0]
     open val chapters // tv.nomercy.player.video.item/VideoPlaylistItem.chapters|{}chapters[0]
         open fun <get-chapters>(): kotlin.collections/List<tv.nomercy.player.core.media/Chapter> // tv.nomercy.player.video.item/VideoPlaylistItem.chapters.<get-chapters>|<get-chapters>(){}[0]
+    open val description // tv.nomercy.player.video.item/VideoPlaylistItem.description|{}description[0]
+        open fun <get-description>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.description.<get-description>|<get-description>(){}[0]
     open val image // tv.nomercy.player.video.item/VideoPlaylistItem.image|{}image[0]
         open fun <get-image>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.image.<get-image>|<get-image>(){}[0]
     open val poster // tv.nomercy.player.video.item/VideoPlaylistItem.poster|{}poster[0]

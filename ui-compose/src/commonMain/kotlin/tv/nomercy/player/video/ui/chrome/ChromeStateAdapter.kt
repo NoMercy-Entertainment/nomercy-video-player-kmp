@@ -218,6 +218,7 @@ public fun chromeItemOf(item: PlaylistItem?): TvChromeItem? {
         // playlist card drew an empty grey rectangle where the episode still
         // belongs, on a player whose items were carrying the URL the whole time.
         image = video?.image ?: video?.poster ?: video?.thumbnail,
+        description = video?.description,
     )
 }
 

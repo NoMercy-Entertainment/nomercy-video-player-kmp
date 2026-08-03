@@ -55,6 +55,16 @@ public interface VideoPlaylistItem : PlaylistItem {
      */
     public val image: String? get() = null
 
+    /**
+     * What the item is about, drawn under its title on a playlist card.
+     *
+     * `.playlist-menu-button-overview` on the web, and TvChromeItem has carried
+     * the field the whole time with nothing on either side of it: no item
+     * declared one and the projection did not read one, so every card in the
+     * pane drew a title over empty space.
+     */
+    public val description: String? get() = null
+
     /** Cover art, read when [image] is absent. */
     public val poster: String? get() = null
 

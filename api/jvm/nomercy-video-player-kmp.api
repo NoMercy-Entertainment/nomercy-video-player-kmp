@@ -1059,6 +1059,7 @@ public final class tv/nomercy/player/video/item/StartSelectionKt {
 public abstract interface class tv/nomercy/player/video/item/VideoPlaylistItem : tv/nomercy/player/core/media/PlaylistItem {
 	public fun getChapterFile ()Ljava/lang/String;
 	public fun getChapters ()Ljava/util/List;
+	public fun getDescription ()Ljava/lang/String;
 	public abstract fun getDurationSeconds ()Ljava/lang/Double;
 	public fun getImage ()Ljava/lang/String;
 	public fun getPoster ()Ljava/lang/String;
@@ -1072,6 +1073,7 @@ public abstract interface class tv/nomercy/player/video/item/VideoPlaylistItem :
 public final class tv/nomercy/player/video/item/VideoPlaylistItem$DefaultImpls {
 	public static fun getChapterFile (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getChapters (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/util/List;
+	public static fun getDescription (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getImage (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getPoster (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getSeason (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/Integer;
