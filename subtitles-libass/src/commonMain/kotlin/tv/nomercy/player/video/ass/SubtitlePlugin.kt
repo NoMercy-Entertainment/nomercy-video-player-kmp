@@ -147,7 +147,18 @@ public class SubtitlePlugin(
             // episode, so after the first one this is a disk read rather than a
             // download — and after the first play in a session, nothing at all.
             val cached: CachedFont? = fontCache?.get(fileName)
-            val bytes: ByteArray = cached?.bytes ?: get(url)?.bytes ?: continue
+            val bytes: ByteArray? = cached?.bytes ?: get(url)?.bytes
+            if (bytes == null) {
+                // Said out loud rather than skipped.
+                //
+                // This was `?: continue`, so a fetcher that answers with text
+                // and no bytes lost every face without a word: the track loaded,
+                // load() returned true, and the cue drew in a fallback typeface.
+                // A font that cannot be read is the difference between the show
+                // as authored and something that merely looks like it.
+                reportFontUnreadable(fileName, url)
+                continue
+            }
 
             // Under the family, not the filename. libass matches the family an
             // ASS script asks for against the name the font reports, and a file
@@ -194,6 +205,13 @@ public class SubtitlePlugin(
     // Throwing would take a watchable episode away over a cosmetic problem;
     // saying nothing is what makes "the subtitles look wrong" unanswerable a
     // week later.
+    private fun reportFontUnreadable(fileName: String, url: String) {
+        report(
+            code = FONT_UNREADABLE,
+            message = "no bytes for $fileName at $url; the cue will draw in a fallback face",
+        )
+    }
+
     private fun reportFontsUnavailable(manifestUrl: String) {
         report(
             code = FONTS_MANIFEST_FAILED,
@@ -218,6 +236,7 @@ public class SubtitlePlugin(
         // Namespaced the way every other player error is, so a host filtering
         // by scope catches it without knowing this plugin exists.
         const val FONTS_MANIFEST_FAILED = "plugin:subtitle/fonts-manifest-failed"
+        const val FONT_UNREADABLE = "plugin:subtitle/font-unreadable"
     }
 }
 

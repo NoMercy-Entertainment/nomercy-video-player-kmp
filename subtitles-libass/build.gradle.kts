@@ -111,11 +111,29 @@ kotlin {
         val jvmAndroidMain by creating {
             dependsOn(commonMain.get())
             dependencies {
-                implementation(libs.jna)
+                // Compile only: the binding needs the JNA API here, and each
+                // platform below brings the packaging it can actually load.
+                // Shipping the artifact from this set as well puts every
+                // com.sun.jna class into an APK twice and the merge fails.
+                compileOnly(libs.jna)
             }
         }
         androidMain.get().dependsOn(jvmAndroidMain)
         jvmMain.get().dependsOn(jvmAndroidMain)
+
+        jvmMain.dependencies {
+            implementation(libs.jna)
+        }
+
+        // The same JNA, in the packaging Android can load.
+        //
+        // The jar carries libjnidispatch for the desktop as JVM resources, which
+        // an APK cannot dlopen; the aar carries one per ABI in jniLibs. Without
+        // it Native.load throws for jnidispatch, not for libass, so the error
+        // names the wrong library and reads as though our build is missing.
+        androidMain.dependencies {
+            implementation("net.java.dev.jna:jna:${libs.versions.jna.get()}@aar")
+        }
 
         commonMain.dependencies {
             api(project(":"))
