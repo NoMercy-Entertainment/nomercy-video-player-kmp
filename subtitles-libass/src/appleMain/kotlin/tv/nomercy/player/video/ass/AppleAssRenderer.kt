@@ -8,6 +8,9 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssFrame
+import tv.nomercy.player.video.subtitles.AssImage
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.IntVar

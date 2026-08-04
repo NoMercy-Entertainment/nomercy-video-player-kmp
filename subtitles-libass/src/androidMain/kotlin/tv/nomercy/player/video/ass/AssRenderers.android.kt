@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
 import android.app.ActivityManager
 import android.content.Context
 import tv.nomercy.player.video.ass.render.MemoryTier

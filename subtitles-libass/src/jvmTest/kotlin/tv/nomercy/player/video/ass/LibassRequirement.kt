@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
 import kotlin.test.fail
 
 // Whether a missing libass is allowed to end a gate quietly.

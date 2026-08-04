@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
 import kotlinx.cinterop.ExperimentalForeignApi
 import libass.ass_library_init
 

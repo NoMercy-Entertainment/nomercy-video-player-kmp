@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssFrame
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

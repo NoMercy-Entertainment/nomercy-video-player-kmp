@@ -8,10 +8,10 @@
 
 package tv.nomercy.player.video.ass.fonts
 
+import tv.nomercy.player.video.subtitles.AssRenderer
 import okio.ByteString.Companion.toByteString
 import okio.FileSystem
 import okio.Path
-import tv.nomercy.player.video.ass.AssRenderer
 import tv.nomercy.player.video.subtitles.TtfNameParser
 
 // A font, and the name libass should be told to call it.

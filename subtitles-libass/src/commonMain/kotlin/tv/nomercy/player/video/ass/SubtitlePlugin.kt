@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
 import tv.nomercy.player.core.ports.FetchOptions

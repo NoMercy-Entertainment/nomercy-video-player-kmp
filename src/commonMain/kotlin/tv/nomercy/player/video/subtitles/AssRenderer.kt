@@ -6,7 +6,7 @@
 //  SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
 
-package tv.nomercy.player.video.ass
+package tv.nomercy.player.video.subtitles
 
 // Styled subtitles, rasterized by libass.
 //

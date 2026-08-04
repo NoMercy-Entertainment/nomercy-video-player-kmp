@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+
 // The system libass, where the machine has one. Windows does not: the only
 // builds in circulation are statically linked inside VLC and mpv.
 internal actual fun newTestRenderer(): AssRenderer? =

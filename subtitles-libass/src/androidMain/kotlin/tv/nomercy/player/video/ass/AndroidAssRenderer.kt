@@ -8,6 +8,9 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssFrame
+import tv.nomercy.player.video.subtitles.AssImage
 import android.graphics.Bitmap
 import io.github.peerless2012.ass.Ass
 import io.github.peerless2012.ass.AssRender

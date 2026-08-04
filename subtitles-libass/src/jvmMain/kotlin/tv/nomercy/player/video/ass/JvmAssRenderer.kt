@@ -8,6 +8,9 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssFrame
+import tv.nomercy.player.video.subtitles.AssImage
 import com.sun.jna.Pointer
 
 // libass on the JVM, over JNA.

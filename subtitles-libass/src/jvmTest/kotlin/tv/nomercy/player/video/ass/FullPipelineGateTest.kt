@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssFrame
 import kotlinx.coroutines.test.runTest
 import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.player.PlayerConfig

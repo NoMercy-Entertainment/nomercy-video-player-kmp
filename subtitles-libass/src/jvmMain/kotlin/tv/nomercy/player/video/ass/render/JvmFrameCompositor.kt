@@ -8,8 +8,8 @@
 
 package tv.nomercy.player.video.ass.render
 
+import tv.nomercy.player.video.subtitles.AssImage
 import java.awt.image.BufferedImage
-import tv.nomercy.player.video.ass.AssImage
 
 // Lays libass's glyph runs over each other into one desktop frame.
 //

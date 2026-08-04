@@ -8,10 +8,10 @@
 
 package tv.nomercy.player.video.ass.render
 
+import tv.nomercy.player.video.subtitles.AssImage
 import android.graphics.Bitmap
 import android.graphics.Color
 import org.junit.Test
-import tv.nomercy.player.video.ass.AssImage
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertSame

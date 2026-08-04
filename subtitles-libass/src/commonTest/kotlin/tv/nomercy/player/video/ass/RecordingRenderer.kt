@@ -8,6 +8,9 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssFrame
+
 // A renderer that records the order it was called in.
 //
 // Standing in for libass here is right rather than convenient: what the plugin

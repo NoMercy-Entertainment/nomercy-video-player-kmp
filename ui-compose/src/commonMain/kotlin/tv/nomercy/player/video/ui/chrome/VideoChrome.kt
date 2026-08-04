@@ -182,6 +182,7 @@ public fun VideoChrome(
     val picture: @Composable BoxScope.() -> Unit = {
         surface()
         SubtitleCueLayer(rememberCueBoxes(player), rememberSubtitleStyle(player))
+        slots.styledSubtitles?.invoke(state, commands)
     }
 
     ChromeFrame(input = input, modifier = modifier, picture = picture) {

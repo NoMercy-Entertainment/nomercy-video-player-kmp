@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
 import com.sun.jna.Native
 import java.io.File
 import tv.nomercy.player.core.natives.NativeRuntimeKind

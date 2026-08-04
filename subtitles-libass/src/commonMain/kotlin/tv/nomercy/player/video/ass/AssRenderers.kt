@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+
 // Whether this platform can draw styled subtitles yet, and why not when it
 // cannot.
 //

@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+
 // Statically linked through cinterop, so it is always present on iOS and tvOS.
 internal actual fun newTestRenderer(): AssRenderer? =
     AssRenderers.create(AssPlatformContext())

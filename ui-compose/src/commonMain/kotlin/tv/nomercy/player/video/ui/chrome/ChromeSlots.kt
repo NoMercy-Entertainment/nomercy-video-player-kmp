@@ -38,6 +38,12 @@ public data class ChromeSlots(
     // Over everything, and additive rather than replacing: a skip-intro button
     // and a cast banner are the host's features, not the chrome's.
     val overlays: ChromeSlot? = null,
+    // Beside the plain cues and at the same depth — over the picture, under the
+    // bar. ASS carries its own positions and arrives as images rather than as
+    // text, so it cannot go through the cue layer; drawing it in `overlays`
+    // instead would put a sign pinned to a character's shirt on top of the
+    // transport controls.
+    val styledSubtitles: ChromeSlot? = null,
     // Any single image the chrome has a URL for and a box to put it in — today
     // the playlist card's thumbnail. Same reasoning as `backdrop` one field up,
     // and the same reason it is a slot rather than a fetcher: the card knows

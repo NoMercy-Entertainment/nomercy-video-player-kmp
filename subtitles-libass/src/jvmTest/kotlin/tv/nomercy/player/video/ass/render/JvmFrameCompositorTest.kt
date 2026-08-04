@@ -8,8 +8,8 @@
 
 package tv.nomercy.player.video.ass.render
 
+import tv.nomercy.player.video.subtitles.AssImage
 import java.awt.image.BufferedImage
-import tv.nomercy.player.video.ass.AssImage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

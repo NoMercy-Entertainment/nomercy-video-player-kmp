@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+
 // None, and not for want of trying. The binding loads its native library in a
 // static initializer, which on a host JVM fails before any of it exists — the
 // libass gates for Android run on hardware, where a decoder and a font provider

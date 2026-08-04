@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
 import androidx.test.platform.app.InstrumentationRegistry
 
 // The instrumentation's own context, because libass on Android reaches the

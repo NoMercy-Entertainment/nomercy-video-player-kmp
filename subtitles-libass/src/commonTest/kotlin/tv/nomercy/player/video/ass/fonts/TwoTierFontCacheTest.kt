@@ -8,10 +8,9 @@
 
 package tv.nomercy.player.video.ass.fonts
 
-import tv.nomercy.player.video.ass.AssFrame
-import tv.nomercy.player.video.ass.AssRenderer
+import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.TtfNameParser
-
 import okio.Path.Companion.toPath
 import okio.fakefilesystem.FakeFileSystem
 import kotlin.test.Test

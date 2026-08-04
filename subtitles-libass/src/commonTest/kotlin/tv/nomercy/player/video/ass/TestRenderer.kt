@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.subtitles.AssRenderer
+
 // A real renderer for this target, or null where there cannot be one.
 //
 // The subsystem gate is shared source and has to reach the actual binding on

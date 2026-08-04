@@ -8,12 +8,12 @@
 
 package tv.nomercy.player.video.ass.render
 
+import tv.nomercy.player.video.subtitles.AssImage
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import java.nio.ByteBuffer
-import tv.nomercy.player.video.ass.AssImage
 
 // Turns libass's coverage bitmaps into one frame a surface can draw.
 //
