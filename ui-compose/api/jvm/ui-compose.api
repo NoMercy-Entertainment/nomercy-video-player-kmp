@@ -1241,6 +1241,7 @@ public final class tv/nomercy/player/video/ui/tv/NoGamepad : tv/nomercy/player/v
 
 public final class tv/nomercy/player/video/ui/tv/PlayerFocusStyle : java/lang/Enum {
 	public static final field Filled Ltv/nomercy/player/video/ui/tv/PlayerFocusStyle;
+	public static final field None Ltv/nomercy/player/video/ui/tv/PlayerFocusStyle;
 	public static final field Outline Ltv/nomercy/player/video/ui/tv/PlayerFocusStyle;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/PlayerFocusStyle;

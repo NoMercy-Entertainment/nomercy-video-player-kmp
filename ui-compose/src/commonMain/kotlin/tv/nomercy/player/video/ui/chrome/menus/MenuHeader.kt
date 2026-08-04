@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import tv.nomercy.player.video.tv.TvChromeItem
 import tv.nomercy.player.video.ui.tv.FluentIcons
+import tv.nomercy.player.video.ui.tv.PlayerFocusStyle
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
 
 // The pane's name, a hairline, and the way out.
@@ -48,6 +49,16 @@ internal fun MenuHeader(spec: MenuHeaderSpec) {
     val nav: MenuNav? = LocalMenuNav.current
     val sub: Boolean = spec.menu != MenuState.Main
 
+    // `:focus-visible`. The pane focuses its first control so a keyboard can
+    // carry on from there, and a browser paints nothing for that — only for a
+    // focus the viewer drove. Painting it regardless put a rounded-rectangle
+    // outline around the back arrow of every submenu the moment it opened.
+    // LocalMenuKeyboard is fed `input.pointerDriven` at the chrome, so it is
+    // true exactly where a pointer is driving — the case a browser paints
+    // NOTHING for. The ring belongs to the remote and the keyboard.
+    val ring: PlayerFocusStyle =
+        if (LocalMenuKeyboard.current) PlayerFocusStyle.None else PlayerFocusStyle.Outline
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -58,7 +69,7 @@ internal fun MenuHeader(spec: MenuHeaderSpec) {
         horizontalArrangement = Arrangement.spacedBy(PANEL_GAP),
     ) {
         if (sub) {
-            HeaderBack(spec, nav)
+            HeaderBack(spec, nav, ring)
         }
 
         BasicText(
@@ -86,6 +97,7 @@ internal fun MenuHeader(spec: MenuHeaderSpec) {
             focusRequester = if (sub) null else nav?.header,
             shape = HEADER_BUTTON_SHAPE,
             hoverFill = HEADER_BUTTON_HOVER,
+            focusStyle = ring,
             modifier = Modifier.testTag(MENU_CLOSE_TAG).menuNavEntry(nav),
         )
     }
@@ -96,7 +108,7 @@ internal fun MenuHeader(spec: MenuHeaderSpec) {
 
 // The way back to the main list, drawn on every pane that is not it.
 @Composable
-private fun HeaderBack(spec: MenuHeaderSpec, nav: MenuNav?) {
+private fun HeaderBack(spec: MenuHeaderSpec, nav: MenuNav?, ring: PlayerFocusStyle) {
     PlayerIconButton(
         icon = FluentIcons.Back,
         description = spec.strings.back,
@@ -106,6 +118,7 @@ private fun HeaderBack(spec: MenuHeaderSpec, nav: MenuNav?) {
         focusRequester = nav?.header,
         shape = HEADER_BUTTON_SHAPE,
         hoverFill = HEADER_BUTTON_HOVER,
+        focusStyle = ring,
         modifier = Modifier.testTag(MENU_BACK_TAG).menuNavEntry(nav),
     )
 }

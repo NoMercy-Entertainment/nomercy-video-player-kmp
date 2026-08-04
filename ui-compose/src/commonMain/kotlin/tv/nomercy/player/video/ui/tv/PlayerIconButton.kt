@@ -274,6 +274,7 @@ private fun Modifier.hoverPaint(hovered: Boolean, fill: Color, shape: Shape): Mo
     if (hovered) background(fill, shape) else this
 
 private fun Modifier.focusPaint(focused: Boolean, style: PlayerFocusStyle, shape: Shape): Modifier = when {
+    style == PlayerFocusStyle.None -> this
     focused && style == PlayerFocusStyle.Filled -> background(Color.White, shape)
     focused -> border(FOCUS_RING_WIDTH, FOCUS_RING_COLOR, shape)
     else -> this
@@ -295,6 +296,17 @@ public enum class PlayerFocusStyle {
 
     /** A filled circle with the glyph inverted, for a remote across a room. */
     Filled,
+
+    /**
+     * No visible treatment at all — the web's `:focus-visible`.
+     *
+     * A browser paints nothing when focus arrives programmatically, and a menu
+     * opening focuses its first control so a keyboard can carry on from there.
+     * Drawing the ring for that put a rounded-rectangle outline around the back
+     * arrow of every submenu the moment it opened, which reads as a border
+     * nobody asked for on one of two otherwise identical buttons.
+     */
+    None,
 }
 
 // `.btn[disabled] { opacity: 0.3 }`. This was 0.35, which is the same idea and
