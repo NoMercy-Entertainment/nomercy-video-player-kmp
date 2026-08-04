@@ -296,10 +296,18 @@ private fun StepControlButton(
         // Ranked separately by the web, so gated separately here. Drawn as a
         // pair they would appear and disappear together at whichever of the two
         // widths came first, which is one control's rule applied to two.
+        // Enabled only while there is a boundary behind the playhead, which is
+        // what the web does: walking backwards through Sintel it stays live at
+        // 745, 621, 557, 445, 338, 207, 107 and goes `aria-disabled` at 0.
+        //
+        // The target used to fall back to 0.0, so this button always had
+        // somewhere to go and was never disabled — at the very start of a film
+        // it offered a jump to where the viewer already was.
         ChromeControl.CHAPTER_PREV -> PlayerIconButton(
             icon = FluentIcons.ChapterBack,
             description = strings.chapterBack,
-            onClick = { commands.seekTo(previousChapterStart(starts, state.timeSeconds)) },
+            enabled = previousChapterStart(starts, state.timeSeconds) != null,
+            onClick = { previousChapterStart(starts, state.timeSeconds)?.let(commands::seekTo) },
             modifier = Modifier.testTag(CHAPTER_BACK_TAG),
         )
 

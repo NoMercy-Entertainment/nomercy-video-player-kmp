@@ -1575,7 +1575,7 @@ public abstract interface class tv/nomercy/player/video/tv/Cancellable {
 public final class tv/nomercy/player/video/tv/ChapterNavigationKt {
 	public static final field CHAPTER_GRACE_SECONDS D
 	public static final fun nextChapterStart (Ljava/util/List;D)Ljava/lang/Double;
-	public static final fun previousChapterStart (Ljava/util/List;D)D
+	public static final fun previousChapterStart (Ljava/util/List;D)Ljava/lang/Double;
 }
 
 public final class tv/nomercy/player/video/tv/EpisodeLabels {

@@ -10,6 +10,7 @@ package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -108,10 +109,19 @@ internal fun MenuTriggerButton(spec: MenuTriggerSpec, close: () -> Unit) {
 // when a pane closes. One instance per chrome, so two players on one screen do
 // not trade focus.
 @Composable
-internal fun ChromeMenuScope(keyboard: Boolean, content: @Composable () -> Unit) {
+internal fun ChromeMenuScope(keyboard: Boolean, menuOpen: Boolean, content: @Composable () -> Unit) {
     CompositionLocalProvider(
         LocalMenuKeyboard provides keyboard,
+        LocalMenuOpen provides menuOpen,
         LocalMenuReturnFocus provides remember { MenuReturnFocus() },
         content = content,
     )
 }
+
+// Whether a pane is in front of the picture.
+//
+// A tooltip reads it and stays quiet. The web hides every tooltip while a menu
+// is open, and this one did not: hovering the gear that opened the card painted
+// its label ON TOP of the card's own rows, which photographs as a menu drawing
+// over itself.
+internal val LocalMenuOpen = staticCompositionLocalOf { false }

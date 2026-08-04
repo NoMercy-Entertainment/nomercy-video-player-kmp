@@ -186,7 +186,7 @@ public fun VideoChrome(
     }
 
     ChromeFrame(input = input, modifier = modifier, picture = picture) {
-        ChromeMenuScope(keyboard = input.pointerDriven) {
+        ChromeMenuScope(keyboard = input.pointerDriven, menuOpen = menu != MenuState.Hidden) {
             ChromeLayers(
                 scene = ChromeScene(
                     state, commands, controller, strings, rememberMenuStrings(), buttons, layout,

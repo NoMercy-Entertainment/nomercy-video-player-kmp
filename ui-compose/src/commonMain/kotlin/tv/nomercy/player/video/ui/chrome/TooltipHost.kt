@@ -82,6 +82,10 @@ public fun ControlTooltip(
 
     if (opacity <= 0f) return
 
+    // Quiet while a pane is open, which is what the web does. A label painted
+    // over the card the same button opened is the menu drawing over itself.
+    if (LocalMenuOpen.current) return
+
     // A Popup, not a Box inside the control.
     //
     // Drawn as a child it was measured against the button's own 40dp, so

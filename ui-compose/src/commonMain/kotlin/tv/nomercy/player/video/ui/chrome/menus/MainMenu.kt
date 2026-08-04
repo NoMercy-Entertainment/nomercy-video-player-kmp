@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import tv.nomercy.player.video.ui.chrome.LocalPlayerBounds
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
@@ -147,8 +151,22 @@ private fun MainMenuPresentation(
  */
 @Composable
 private fun MenuRows(rows: @Composable () -> Unit) {
+    // 60% of the PLAYER, which is what `60vh` means, and not 60% of whatever
+    // box happens to be around these rows.
+    //
+    // The local constraint was used instead, and inside a panel that sizes to
+    // its content that constraint IS the panel: the rows took 60% of the space
+    // the panel would have had, the panel then shrank to fit them, and the last
+    // two entries of a five-entry menu fell off the bottom with a scroller
+    // nobody could see. Measured on screen at 275px of panel and 165px of rows,
+    // which is 0.6 of itself.
+    val player: Rect = LocalPlayerBounds.current
+    val density: Density = LocalDensity.current
+    val ceiling: Dp = with(density) { (player.height * ROWS_MAX_HEIGHT_SHARE).toDp() }
+
     BoxWithConstraints {
-        val scrollable: Boolean = maxHeight != Dp.Infinity
+        val scrollable: Boolean = player.height > 0f || maxHeight != Dp.Infinity
+        val cap: Dp = if (player.height > 0f) ceiling else maxHeight * ROWS_MAX_HEIGHT_SHARE
 
         Column(
             // `.main-menu { max-height: 60vh }`, which is the SETTINGS LIST's own
@@ -167,7 +185,7 @@ private fun MenuRows(rows: @Composable () -> Unit) {
             // to sit against.
             verticalArrangement = Arrangement.spacedBy(ROWS_GAP),
             modifier = Modifier
-                .then(if (scrollable) Modifier.heightIn(max = maxHeight * ROWS_MAX_HEIGHT_SHARE) else Modifier)
+                .then(if (scrollable) Modifier.heightIn(max = cap) else Modifier)
                 .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
                 .padding(start = ROWS_INSET, top = ROWS_INSET, bottom = ROWS_INSET),
         ) {

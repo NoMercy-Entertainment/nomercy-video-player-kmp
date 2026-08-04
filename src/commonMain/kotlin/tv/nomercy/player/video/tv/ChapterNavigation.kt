@@ -27,11 +27,17 @@ package tv.nomercy.player.video.tv
 
 /**
  * Where back goes: the start of the current chapter when more than a second
- * into it, the previous chapter's start when within that second, and 0 when
- * there is nothing before this position.
+ * into it, the previous chapter's start when within that second, and **null**
+ * when there is no boundary behind this position at all.
+ *
+ * Null rather than 0, which is what it used to answer. A back button with a
+ * target is a back button that is never disabled, and the web disables it —
+ * walked backwards through Sintel in a browser it stays live at 745, 621, 557,
+ * 445, 338, 207 and 107 and goes `aria-disabled="true"` at 0, and an item with
+ * no chapters at all has both directions disabled from the first frame.
  */
-public fun previousChapterStart(starts: List<Double>, timeSeconds: Double): Double =
-    starts.sorted().lastOrNull { it < timeSeconds - CHAPTER_GRACE_SECONDS } ?: 0.0
+public fun previousChapterStart(starts: List<Double>, timeSeconds: Double): Double? =
+    starts.sorted().lastOrNull { it < timeSeconds - CHAPTER_GRACE_SECONDS }
 
 /**
  * The chapter to jump forward to, or null when the position is past the last

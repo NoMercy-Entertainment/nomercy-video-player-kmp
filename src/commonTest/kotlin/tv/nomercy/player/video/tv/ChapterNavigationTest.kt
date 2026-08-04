@@ -11,6 +11,7 @@ package tv.nomercy.player.video.tv
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertNull
 
 // Both rules the first native version got wrong.
 //
@@ -34,8 +35,8 @@ class ChapterNavigationTest {
     // one. That is what the grace window is for.
     @Test
     fun pressingBackTwiceReachesThePreviousChapter() {
-        val once: Double = previousChapterStart(starts, timeSeconds = 620.0)
-        val twice: Double = previousChapterStart(starts, timeSeconds = once)
+        val once: Double? = previousChapterStart(starts, timeSeconds = 620.0)
+        val twice: Double? = once?.let { previousChapterStart(starts, timeSeconds = it) }
 
         assertEquals(600.0, once)
         assertEquals(90.0, twice)
@@ -53,8 +54,17 @@ class ChapterNavigationTest {
     }
 
     @Test
-    fun backFromTheFirstChapterGoesToZero() {
+    fun backFromTheFirstChapterGoesToItsStart() {
         assertEquals(0.0, previousChapterStart(starts, timeSeconds = 30.0))
+    }
+
+    // Sitting on the very first boundary there is nothing behind the playhead,
+    // and the answer is nothing rather than "here". Measured in a browser
+    // against the web player: walking back through Sintel it stays live at 745,
+    // 621, 557, 445, 338, 207, 107 and goes aria-disabled at 0.
+    @Test
+    fun backAtTheFirstBoundaryHasNowhereToGo() {
+        assertNull(previousChapterStart(starts, timeSeconds = 0.0))
     }
 
     // Both rules the first native version got wrong were mine, and this suite
@@ -63,9 +73,16 @@ class ChapterNavigationTest {
     // by a test failing on an expectation that was itself wrong, which is the
     // only way that one surfaces short of a finger on a remote.
 
+    // Nothing rather than 0, and this assertion used to say the opposite.
+    //
+    // It was wrong, not weakened: a target of 0 is a target, so the button was
+    // enabled for every item that has no chapters at all and offered a jump to
+    // the beginning. The web disables both directions outright for such an item
+    // — checked on an episode with no chapters, both `disabled` from the first
+    // frame.
     @Test
-    fun backWithNoChaptersGoesToZero() {
-        assertEquals(0.0, previousChapterStart(emptyList(), timeSeconds = 300.0))
+    fun backWithNoChaptersHasNowhereToGo() {
+        assertNull(previousChapterStart(emptyList(), timeSeconds = 300.0))
     }
 
     @Test
