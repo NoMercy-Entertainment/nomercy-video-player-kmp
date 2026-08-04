@@ -15,6 +15,7 @@ import tv.nomercy.player.core.player.ActionOptions
 import tv.nomercy.player.core.player.ActionSource
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
+import tv.nomercy.player.core.plugin.PluginOptionField
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
@@ -35,7 +36,7 @@ import tv.nomercy.player.video.VideoEvents
 // stored is the language, and what is restored is the track that has it.
 public open class VideoPreferencesPlugin(
     private val player: NMVideoPlayer,
-    private val opts: VideoPreferencesOptions = VideoPreferencesOptions(),
+    opts: VideoPreferencesOptions = VideoPreferencesOptions(),
 ) : Plugin<VideoPreferencesOptions>() {
 
     public companion object Manifest : PluginManifest {
@@ -45,7 +46,44 @@ public open class VideoPreferencesPlugin(
 
     override val manifest: PluginManifest get() = Manifest
 
+    // Held rather than fixed: turning a restore off has to be something the
+    // plugin reads on the next item, not a control that moves and does nothing.
+    private var opts: VideoPreferencesOptions = opts
+
     override val options: VideoPreferencesOptions get() = opts
+
+    override fun optionFields(): List<PluginOptionField> = listOf(
+        PluginOptionField.Toggle(
+            key = "restoreSubtitle",
+            label = "Restore subtitle",
+            value = opts.restoreSubtitle,
+            apply = { on -> opts = opts.copy(restoreSubtitle = on) },
+        ),
+        PluginOptionField.Toggle(
+            key = "restoreAudio",
+            label = "Restore audio track",
+            value = opts.restoreAudio,
+            apply = { on -> opts = opts.copy(restoreAudio = on) },
+        ),
+        PluginOptionField.Toggle(
+            key = "restoreQuality",
+            label = "Restore quality",
+            value = opts.restoreQuality,
+            apply = { on -> opts = opts.copy(restoreQuality = on) },
+        ),
+        PluginOptionField.Toggle(
+            key = "restoreVolume",
+            label = "Restore volume",
+            value = opts.restoreVolume,
+            apply = { on -> opts = opts.copy(restoreVolume = on) },
+        ),
+        PluginOptionField.Toggle(
+            key = "restoreSubtitleStyle",
+            label = "Restore subtitle style",
+            value = opts.restoreSubtitleStyle,
+            apply = { on -> opts = opts.copy(restoreSubtitleStyle = on) },
+        ),
+    )
 
     private val store: VideoPreferencesStore get() = VideoPreferencesStore(storage)
 

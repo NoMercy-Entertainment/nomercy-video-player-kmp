@@ -1898,6 +1898,7 @@ open class tv.nomercy.player.video.input/TvKeyHandlerPlugin : tv.nomercy.player.
     open fun addInfoKey() // tv.nomercy.player.video.input/TvKeyHandlerPlugin.addInfoKey|addInfoKey(){}[0]
     open fun addNavigationKeys() // tv.nomercy.player.video.input/TvKeyHandlerPlugin.addNavigationKeys|addNavigationKeys(){}[0]
     open fun addVolumeKeys() // tv.nomercy.player.video.input/TvKeyHandlerPlugin.addVolumeKeys|addVolumeKeys(){}[0]
+    open fun optionFields(): kotlin.collections/List<tv.nomercy.player.core.plugin/PluginOptionField> // tv.nomercy.player.video.input/TvKeyHandlerPlugin.optionFields|optionFields(){}[0]
 
     final object Manifest : tv.nomercy.player.core.plugin/PluginManifest { // tv.nomercy.player.video.input/TvKeyHandlerPlugin.Manifest|null[0]
         final val id // tv.nomercy.player.video.input/TvKeyHandlerPlugin.Manifest.id|{}id[0]
@@ -1950,6 +1951,7 @@ open class tv.nomercy.player.video.preferences/VideoPreferencesPlugin : tv.nomer
     open val options // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.options|{}options[0]
         open fun <get-options>(): tv.nomercy.player.video.preferences/VideoPreferencesOptions // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.options.<get-options>|<get-options>(){}[0]
 
+    open fun optionFields(): kotlin.collections/List<tv.nomercy.player.core.plugin/PluginOptionField> // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.optionFields|optionFields(){}[0]
     open fun use() // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.use|use(){}[0]
     open suspend fun restore() // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.restore|restore(){}[0]
 
@@ -1980,6 +1982,7 @@ open class tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin : tv.nomercy.
     final fun clear() // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.clear|clear(){}[0]
     final fun show(kotlin.collections/List<tv.nomercy.player.core.events/SubtitleCue>) // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.show|show(kotlin.collections.List<tv.nomercy.player.core.events.SubtitleCue>){}[0]
     open fun dispose() // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.dispose|dispose(){}[0]
+    open fun optionFields(): kotlin.collections/List<tv.nomercy.player.core.plugin/PluginOptionField> // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.optionFields|optionFields(){}[0]
     open fun use() // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.use|use(){}[0]
 
     final object Manifest : tv.nomercy.player.core.plugin/PluginManifest { // tv.nomercy.player.video.subtitles/SubtitleOverlayPlugin.Manifest|null[0]
@@ -1999,6 +2002,7 @@ open class tv.nomercy.player.video.touch/TouchZonesPlugin : tv.nomercy.player.co
         open fun <get-options>(): tv.nomercy.player.video.touch/TouchZoneOptions // tv.nomercy.player.video.touch/TouchZonesPlugin.options.<get-options>|<get-options>(){}[0]
 
     final fun tap(kotlin/Float, kotlin/Float, kotlin/Long): tv.nomercy.player.video.touch/TouchAction // tv.nomercy.player.video.touch/TouchZonesPlugin.tap|tap(kotlin.Float;kotlin.Float;kotlin.Long){}[0]
+    open fun optionFields(): kotlin.collections/List<tv.nomercy.player.core.plugin/PluginOptionField> // tv.nomercy.player.video.touch/TouchZonesPlugin.optionFields|optionFields(){}[0]
 
     final object Manifest : tv.nomercy.player.core.plugin/PluginManifest { // tv.nomercy.player.video.touch/TouchZonesPlugin.Manifest|null[0]
         final val id // tv.nomercy.player.video.touch/TouchZonesPlugin.Manifest.id|{}id[0]
@@ -2019,6 +2023,7 @@ open class tv.nomercy.player.video.transcode/LiveTranscodingPlugin : tv.nomercy.
         open fun <get-options>(): tv.nomercy.player.video.transcode/LiveTranscodingOptions // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.options.<get-options>|<get-options>(){}[0]
 
     open fun dispose() // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.dispose|dispose(){}[0]
+    open fun optionFields(): kotlin.collections/List<tv.nomercy.player.core.plugin/PluginOptionField> // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.optionFields|optionFields(){}[0]
     open fun use() // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.use|use(){}[0]
 
     final object Manifest : tv.nomercy.player.core.plugin/PluginManifest { // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.Manifest|null[0]

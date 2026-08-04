@@ -15,6 +15,7 @@ import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitleCue
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
+import tv.nomercy.player.core.plugin.PluginOptionField
 
 /** How tall a cue box is, as a percentage of the safe area. */
 public data class SubtitleOverlayOptions(
@@ -40,7 +41,7 @@ public data class SubtitleOverlayOptions(
  * function on every platform.
  */
 public open class SubtitleOverlayPlugin(
-    private val opts: SubtitleOverlayOptions = SubtitleOverlayOptions(),
+    opts: SubtitleOverlayOptions = SubtitleOverlayOptions(),
 ) : Plugin<SubtitleOverlayOptions>() {
 
     public companion object Manifest : PluginManifest {
@@ -52,7 +53,21 @@ public open class SubtitleOverlayPlugin(
 
     override val manifest: PluginManifest get() = Manifest
 
+    // Held rather than fixed, so moving the cue line moves it for real.
+    private var opts: SubtitleOverlayOptions = opts
+
     override val options: SubtitleOverlayOptions get() = opts
+
+    override fun optionFields(): List<PluginOptionField> = listOf(
+        PluginOptionField.Number(
+            key = "cueHeightPercent",
+            label = "Cue height (% of the picture)",
+            value = opts.cueHeightPercent,
+            min = MIN_CUE_HEIGHT,
+            max = MAX_CUE_HEIGHT,
+            apply = { chosen -> opts = opts.copy(cueHeightPercent = chosen) },
+        ),
+    )
 
     private val mutable: MutableStateFlow<List<CueBox>> = MutableStateFlow(emptyList())
 
@@ -117,3 +132,8 @@ public open class SubtitleOverlayPlugin(
  * measure text. A chrome that knows its own font passes its own.
  */
 public const val DEFAULT_CUE_HEIGHT_PERCENT: Double = 8.0
+
+// Percent of the picture, so the range is the picture. Zero would put the cue
+// on the bottom edge and past a third it is no longer a subtitle line.
+private const val MIN_CUE_HEIGHT: Double = 0.0
+private const val MAX_CUE_HEIGHT: Double = 35.0

@@ -10,6 +10,7 @@ package tv.nomercy.player.video.touch
 
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
+import tv.nomercy.player.core.plugin.PluginOptionField
 import tv.nomercy.player.video.input.PlayerCommands
 
 public data class TouchZoneOptions(
@@ -39,7 +40,7 @@ public data class TouchZoneOptions(
  */
 public open class TouchZonesPlugin(
     private val commands: PlayerCommands,
-    private val opts: TouchZoneOptions = TouchZoneOptions(),
+    opts: TouchZoneOptions = TouchZoneOptions(),
     /**
      * Whether the picture carries volume zones.
      *
@@ -58,7 +59,32 @@ public open class TouchZonesPlugin(
 
     override val manifest: PluginManifest get() = Manifest
 
+    // Held rather than fixed: an option a host can edit is one the plugin has
+    // to read again afterwards.
+    private var opts: TouchZoneOptions = opts
+
     override val options: TouchZoneOptions get() = opts
+
+    override fun optionFields(): List<PluginOptionField> = listOf(
+        PluginOptionField.Number(
+            key = "seekSeconds",
+            label = "Double-tap seek (seconds)",
+            value = opts.seekSeconds,
+            min = MIN_TOUCH_SEEK,
+            max = MAX_TOUCH_SEEK,
+            apply = { chosen -> opts = opts.copy(seekSeconds = chosen) },
+        ),
+        PluginOptionField.Number(
+            key = "doubleTapWindowMs",
+            label = "Double-tap window (ms)",
+            value = opts.doubleTapWindowMs.toDouble(),
+            min = MIN_DOUBLE_TAP_MS,
+            max = MAX_DOUBLE_TAP_MS,
+            step = TOUCH_STEP_MS,
+            apply = { chosen -> opts = opts.copy(doubleTapWindowMs = chosen.toLong()) },
+        ),
+    )
+
 
     private var lastTapAtMs: Long = 0
     private var lastZone: TouchZone? = null
@@ -105,3 +131,11 @@ public open class TouchZonesPlugin(
         }
     }
 }
+
+// The range an editor offers. A one-second double tap is a nudge and thirty is
+// a scene; below 150ms two deliberate taps stop registering as two.
+private const val MIN_TOUCH_SEEK: Double = 1.0
+private const val MAX_TOUCH_SEEK: Double = 30.0
+private const val MIN_DOUBLE_TAP_MS: Double = 150.0
+private const val MAX_DOUBLE_TAP_MS: Double = 1_000.0
+private const val TOUCH_STEP_MS: Double = 25.0

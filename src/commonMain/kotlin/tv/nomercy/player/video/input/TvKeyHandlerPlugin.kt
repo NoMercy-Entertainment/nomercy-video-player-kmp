@@ -12,6 +12,7 @@ import tv.nomercy.player.core.device.DeviceCapabilities
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.core.input.asCombo
 import tv.nomercy.player.core.plugin.PluginManifest
+import tv.nomercy.player.core.plugin.PluginOptionField
 import tv.nomercy.player.video.chapters.resolveChapterLabel
 
 // The bindings a remote needs that a keyboard does not.
@@ -31,7 +32,7 @@ public open class TvKeyHandlerPlugin(
     commands: PlayerCommands,
     capabilities: DeviceCapabilities,
     nowMs: () -> Long,
-    private val tvOptions: TvKeyHandlerOptions = TvKeyHandlerOptions(),
+    tvOptions: TvKeyHandlerOptions = TvKeyHandlerOptions(),
 ) : VideoKeyHandlerPlugin(commands, capabilities, nowMs) {
 
     public companion object Manifest : PluginManifest {
@@ -39,7 +40,31 @@ public open class TvKeyHandlerPlugin(
         override val version: String = "2.0.0"
     }
 
+    // Held rather than fixed: the arrow step is the option somebody changes
+    // while sitting in front of a television, which means it is read again.
+    private var tvOptions: TvKeyHandlerOptions = tvOptions
+
     override val manifest: PluginManifest get() = Manifest
+
+    override fun optionFields(): List<PluginOptionField> = listOf(
+        PluginOptionField.Number(
+            key = "arrowSeekSeconds",
+            label = "Arrow seek (seconds)",
+            value = tvOptions.arrowSeekSeconds.toDouble(),
+            min = MIN_ARROW_SEEK,
+            max = MAX_ARROW_SEEK,
+            apply = { chosen -> tvOptions = tvOptions.copy(arrowSeekSeconds = chosen.toInt()) },
+        ),
+        PluginOptionField.Number(
+            key = "infoDisplayMs",
+            label = "Info panel duration (ms)",
+            value = tvOptions.infoDisplayMs.toDouble(),
+            min = MIN_INFO_MS,
+            max = MAX_INFO_MS,
+            step = INFO_STEP_MS,
+            apply = { chosen -> tvOptions = tvOptions.copy(infoDisplayMs = chosen.toLong()) },
+        ),
+    )
 
     override fun addDefaults() {
         super.addDefaults()
@@ -171,3 +196,11 @@ public data class TvBookmark(val timeSeconds: Double)
 private const val KEY_CHAPTER = "plugin.tv-key-handler.info.chapter"
 private const val KEY_NO_TITLE = "plugin.tv-key-handler.info.noTitle"
 private const val KEY_ASPECT_RATIO = "plugin.tv-key-handler.aspectRatio.cycled"
+
+// What an editor offers a remote. One second is a frame-hunt and sixty is a
+// scene; an info panel under a second is a flash and past thirty it is furniture.
+private const val MIN_ARROW_SEEK: Double = 1.0
+private const val MAX_ARROW_SEEK: Double = 60.0
+private const val MIN_INFO_MS: Double = 1_000.0
+private const val MAX_INFO_MS: Double = 30_000.0
+private const val INFO_STEP_MS: Double = 500.0

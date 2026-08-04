@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
+import tv.nomercy.player.core.plugin.PluginOptionField
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
 
@@ -167,7 +168,7 @@ public data class VideoUiOptions(
  * an id, and puts it where a consumer expects to find it.
  */
 public open class VideoUiPlugin(
-    private val opts: VideoUiOptions,
+    opts: VideoUiOptions,
 ) : Plugin<VideoUiOptions>(), PlayerUiPlugin {
 
     public companion object Manifest : PluginManifest {
@@ -179,7 +180,31 @@ public open class VideoUiPlugin(
 
     override val manifest: PluginManifest get() = Manifest
 
+    // Held rather than fixed: every control below is one a testbed turns off to
+    // see what the chrome does without it, which only means anything if the
+    // chrome reads the change.
+    private var opts: VideoUiOptions = opts
+
     override val options: VideoUiOptions get() = opts
+
+    // Every button the chrome can draw, as a toggle.
+    //
+    // The form factor, the strings and the button ORDER are not here: they are
+    // structure rather than values, and a generated control cannot express
+    // "this list, in this order" without inventing an editor for it. What a
+    // testbed actually wants is to turn one control off and watch the bar
+    // reflow, which is exactly what these are.
+    //
+    // Built from a table rather than written out seventeen times, so adding a
+    // button to the chrome is one row here and not a block that gets forgotten.
+    override fun optionFields(): List<PluginOptionField> = BUTTON_FIELDS.map { field ->
+        PluginOptionField.Toggle(
+            key = "buttons.${field.key}",
+            label = field.label,
+            value = field.read(opts.buttons),
+            apply = { on -> opts = opts.copy(buttons = field.write(opts.buttons, on)) },
+        )
+    }
 
     private val preScreen: MutableState<Boolean> = mutableStateOf(false)
 
@@ -240,3 +265,42 @@ public open class VideoUiPlugin(
         backHandler = handler
     }
 }
+
+// One row per button the chrome draws. The reader and the writer are explicit
+// because a data class copy cannot be addressed by name without reflection.
+private class ButtonField(
+    val key: String,
+    val label: String,
+    val read: (ChromeButtons) -> Boolean,
+    val write: (ChromeButtons, Boolean) -> ChromeButtons,
+)
+
+private val BUTTON_FIELDS: List<ButtonField> = listOf(
+    ButtonField("playPause", "Play / pause", { it.playPause }, { b, on -> b.copy(playPause = on) }),
+    ButtonField(
+        "previousNext",
+        "Previous and next",
+        { it.previousNext },
+        { b, on -> b.copy(previousNext = on) },
+    ),
+    ButtonField("volume", "Volume", { it.volume }, { b, on -> b.copy(volume = on) }),
+    ButtonField("time", "Time", { it.time }, { b, on -> b.copy(time = on) }),
+    ButtonField("chapters", "Chapters", { it.chapters }, { b, on -> b.copy(chapters = on) }),
+    ButtonField("fullscreen", "Fullscreen", { it.fullscreen }, { b, on -> b.copy(fullscreen = on) }),
+    ButtonField("settings", "Settings", { it.settings }, { b, on -> b.copy(settings = on) }),
+    ButtonField("seekBack", "Seek back", { it.seekBack }, { b, on -> b.copy(seekBack = on) }),
+    ButtonField("seekForward", "Seek forward", { it.seekForward }, { b, on -> b.copy(seekForward = on) }),
+    ButtonField("subtitles", "Subtitles", { it.subtitles }, { b, on -> b.copy(subtitles = on) }),
+    ButtonField("audio", "Audio tracks", { it.audio }, { b, on -> b.copy(audio = on) }),
+    ButtonField("quality", "Quality", { it.quality }, { b, on -> b.copy(quality = on) }),
+    ButtonField("speed", "Playback speed", { it.speed }, { b, on -> b.copy(speed = on) }),
+    ButtonField("aspectRatio", "Aspect ratio", { it.aspectRatio }, { b, on -> b.copy(aspectRatio = on) }),
+    ButtonField("playlist", "Playlist", { it.playlist }, { b, on -> b.copy(playlist = on) }),
+    ButtonField("theater", "Theater", { it.theater }, { b, on -> b.copy(theater = on) }),
+    ButtonField(
+        "pictureInPicture",
+        "Picture in picture",
+        { it.pictureInPicture },
+        { b, on -> b.copy(pictureInPicture = on) },
+    ),
+)

@@ -895,6 +895,7 @@ public class tv/nomercy/player/video/input/TvKeyHandlerPlugin : tv/nomercy/playe
 	protected fun addNavigationKeys ()V
 	protected fun addVolumeKeys ()V
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
+	public fun optionFields ()Ljava/util/List;
 }
 
 public final class tv/nomercy/player/video/input/TvKeyHandlerPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
@@ -1192,6 +1193,7 @@ public class tv/nomercy/player/video/preferences/VideoPreferencesPlugin : tv/nom
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;
+	public fun optionFields ()Ljava/util/List;
 	public fun restore (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun use ()V
 }
@@ -1375,6 +1377,7 @@ public class tv/nomercy/player/video/subtitles/SubtitleOverlayPlugin : tv/nomerc
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Ltv/nomercy/player/video/subtitles/SubtitleOverlayOptions;
+	public fun optionFields ()Ljava/util/List;
 	public final fun show (Ljava/util/List;)V
 	public fun use ()V
 }
@@ -1472,6 +1475,7 @@ public class tv/nomercy/player/video/touch/TouchZonesPlugin : tv/nomercy/player/
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Ltv/nomercy/player/video/touch/TouchZoneOptions;
+	public fun optionFields ()Ljava/util/List;
 	public final fun tap (FFJ)Ltv/nomercy/player/video/touch/TouchAction;
 }
 
@@ -1515,6 +1519,7 @@ public class tv/nomercy/player/video/transcode/LiveTranscodingPlugin : tv/nomerc
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Ltv/nomercy/player/video/transcode/LiveTranscodingOptions;
 	public final fun getTranscodedTo ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun optionFields ()Ljava/util/List;
 	public fun use ()V
 }
 

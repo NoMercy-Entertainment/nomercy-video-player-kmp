@@ -877,6 +877,7 @@ public class tv/nomercy/player/video/ui/chrome/VideoUiPlugin : tv/nomercy/player
 	public fun hidePreScreen ()V
 	public fun isPreScreenVisible ()Z
 	public final fun onBackPressed (Lkotlin/jvm/functions/Function0;)V
+	public fun optionFields ()Ljava/util/List;
 	public fun showPreScreen ()V
 }
 

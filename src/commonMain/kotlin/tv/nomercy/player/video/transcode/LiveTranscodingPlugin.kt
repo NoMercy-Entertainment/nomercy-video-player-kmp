@@ -24,6 +24,7 @@ import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.EventKey
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
+import tv.nomercy.player.core.plugin.PluginOptionField
 import tv.nomercy.player.core.ports.RealtimeChannel
 import tv.nomercy.player.core.ports.RealtimeEvent
 
@@ -42,7 +43,7 @@ import tv.nomercy.player.core.ports.RealtimeEvent
 // play when a transcode service was unreachable would be deciding that for
 // every consumer.
 public open class LiveTranscodingPlugin(
-    private val opts: LiveTranscodingOptions = LiveTranscodingOptions(),
+    opts: LiveTranscodingOptions = LiveTranscodingOptions(),
 ) : Plugin<LiveTranscodingOptions>() {
 
     public companion object Manifest : PluginManifest {
@@ -54,7 +55,31 @@ public open class LiveTranscodingPlugin(
 
     override val manifest: PluginManifest get() = Manifest
 
+    // Held rather than fixed: the two timings below are the ones worth moving
+    // while watching an encoder keep up, which means the plugin reads them again.
+    private var opts: LiveTranscodingOptions = opts
+
     override val options: LiveTranscodingOptions get() = opts
+
+    override fun optionFields(): List<PluginOptionField> = listOf(
+        PluginOptionField.Number(
+            key = "seekTimeoutMs",
+            label = "Seek wait for the encoder (ms)",
+            value = opts.seekTimeoutMs.toDouble(),
+            min = MIN_SEEK_TIMEOUT_MS,
+            max = MAX_SEEK_TIMEOUT_MS,
+            step = SEEK_TIMEOUT_STEP_MS,
+            apply = { chosen -> opts = opts.copy(seekTimeoutMs = chosen.toLong()) },
+        ),
+        PluginOptionField.Number(
+            key = "resumeAheadSeconds",
+            label = "Stay ahead by (seconds)",
+            value = opts.resumeAheadSeconds,
+            min = MIN_RESUME_AHEAD,
+            max = MAX_RESUME_AHEAD,
+            apply = { chosen -> opts = opts.copy(resumeAheadSeconds = chosen) },
+        ),
+    )
 
     private var channel: RealtimeChannel? = null
 
@@ -183,3 +208,11 @@ public data class TranscodeProgress(
     val totalSeconds: Double? = null,
     val variantsReady: List<String> = emptyList(),
 )
+
+// What an editor offers. Below half a second a seek gives up before an encoder
+// on a busy box has answered; past thirty the viewer has concluded it is broken.
+private const val MIN_SEEK_TIMEOUT_MS: Double = 500.0
+private const val MAX_SEEK_TIMEOUT_MS: Double = 30_000.0
+private const val SEEK_TIMEOUT_STEP_MS: Double = 500.0
+private const val MIN_RESUME_AHEAD: Double = 1.0
+private const val MAX_RESUME_AHEAD: Double = 120.0
