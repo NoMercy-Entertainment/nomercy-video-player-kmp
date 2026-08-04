@@ -73,6 +73,13 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
             expiresAfterMs = null
         }
 
+        // A notice that clears itself. The feedback channel waits for a Playing
+        // or a Time tick, and neither follows a volume press.
+        fun timed(text: String) {
+            message = ChromeMessage(text, ChromeMessage.Kind.Host)
+            expiresAfterMs = TIMED_MESSAGE_MS
+        }
+
         // Only the player's own notices. A host's message stays up.
         fun clearFeedback() {
             if (message?.kind == ChromeMessage.Kind.Feedback) {
@@ -101,6 +108,20 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
                 message = null
                 expiresAfterMs = null
             },
+            // The three the web shows and this channel never carried. A viewer
+            // changing the volume or muting saw nothing at all here while the
+            // browser says so on every press — `showMessage(t('message.volume',
+            // { level }), 1200)` and the muted/unmuted pair beside it.
+            //
+            // Timed rather than feedback: these expire on their own after 1200ms
+            // instead of waiting for a Playing or a Time tick to clear them, and
+            // a volume change does not produce either.
+            player.on(CoreEvents.Volume) { change ->
+                timed(strings.volumeMessage.replace(LEVEL_TOKEN, change.level.toString()))
+            },
+            player.on(CoreEvents.Mute) { change ->
+                timed(if (change.muted) strings.mutedMessage else strings.unmutedMessage)
+            },
         )
 
         onDispose { subscriptions.forEach(Subscription::dispose) }
@@ -121,3 +142,8 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
 
     return message
 }
+
+// The web's `{level}` placeholder, and its 1200ms for a notice that says what
+// just happened rather than what is happening.
+private const val LEVEL_TOKEN = "{level}"
+private const val TIMED_MESSAGE_MS = 1_200.0

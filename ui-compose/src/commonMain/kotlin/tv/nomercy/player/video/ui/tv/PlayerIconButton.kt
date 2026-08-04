@@ -29,6 +29,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -126,6 +128,7 @@ public fun PlayerIconButton(
 ) {
     var focused: Boolean by remember { mutableStateOf(false) }
     val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
+    val focus: FocusManager = LocalFocusManager.current
     val filled: Boolean = focused && focusStyle == PlayerFocusStyle.Filled
     val hovered: Boolean by interaction.collectIsHoveredAsState()
 
@@ -147,11 +150,22 @@ public fun PlayerIconButton(
             //
             // clickable already answers the centre of a pad and enter, so adding
             // a second handler for those would fire twice per press.
+            // Focus is given back after a press, which is the whole of the web's
+            // `:focus-visible` rule expressed here.
+            //
+            // `clickable` focuses the node it is on, and it also answers SPACE by
+            // activating that node. So a pointer press on Pause left Pause holding
+            // focus, and the next Space re-pressed the button instead of reaching
+            // the player — playback control was lost to whatever was clicked last,
+            // and the ring appeared on a control nobody had tabbed to. Clearing
+            // returns focus to the chrome, which is where the key handler lives.
+            // Tab never runs onClick, so keyboard navigation keeps its focus and
+            // its ring exactly as before.
             .clickable(
                 enabled = enabled,
                 interactionSource = interaction,
                 indication = null,
-                onClick = onClick,
+                onClick = pressHandler(onClick, focusStyle, focus),
             )
             // Announced as disabled, not merely drawn dim. A screen reader that
             // read this as an ordinary button would send somebody to press it.
@@ -231,6 +245,25 @@ private fun Glyph(
 // `background: rgba(255, 255, 255, 0.08)` while a pointer is on a header
 // button, and nothing at all on a transport one - `.btn:hover` sets
 // `background: transparent` explicitly.
+// Activate, then give focus back — unless a television is driving.
+//
+// `clickable` focuses the node it is on AND answers SPACE by activating that
+// node, so a pointer press on Pause left Pause holding focus and the next Space
+// re-pressed the button instead of reaching the player. Playback control went to
+// whatever was clicked last, and the ring appeared on a control nobody tabbed to.
+//
+// On a television the focus IS the cursor: a D-pad centre press must leave the
+// highlight where it was or the next press has nowhere to go. Filled is the
+// treatment a TV passes, so it is also the signal that focus is navigation.
+private fun pressHandler(
+    onClick: () -> Unit,
+    focusStyle: PlayerFocusStyle,
+    focus: FocusManager,
+): () -> Unit = {
+    onClick()
+    if (focusStyle != PlayerFocusStyle.Filled) focus.clearFocus()
+}
+
 private fun Modifier.hoverPaint(hovered: Boolean, fill: Color, shape: Shape): Modifier =
     if (hovered) background(fill, shape) else this
 

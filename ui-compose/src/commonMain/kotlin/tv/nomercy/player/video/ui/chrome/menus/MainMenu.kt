@@ -94,33 +94,40 @@ internal fun MainMenu(
 // The half of the list that changes how the picture looks rather than what is
 // in it. Split from the rows above only because the whole list is longer than
 // one function is allowed to be; the order across both is still the web's.
+// Rows straight into the caller's column, NOT a second MenuRows.
+//
+// Wrapped in one of its own, this half of the list was nested inside the first
+// half's container and took its `padding(start = ROWS_INSET)` a second time —
+// so speed, aspect ratio and playlist were drawn a full inset right of
+// subtitles, quality and the rest, in every menu that composes two halves. It
+// put a scroller inside a scroller too, which is the other half of the same
+// mistake. The split exists so neither function outgrows its length; it was
+// never meant to be a second container.
 @Composable
 private fun MainMenuPresentation(
     state: ChromeState,
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    MenuRows {
-        MenuRow(strings.speed, tag = ROW_SPEED, icon = FluentIcons.Speed, opensSubMenu = true) {
-            onMenuChange(MenuState.Speed)
-        }
+    MenuRow(strings.speed, tag = ROW_SPEED, icon = FluentIcons.Speed, opensSubMenu = true) {
+        onMenuChange(MenuState.Speed)
+    }
 
-        MenuRow(
-            strings.aspectRatio,
-            tag = ROW_ASPECT_RATIO,
-            icon = FluentIcons.AspectFit,
-            opensSubMenu = true,
-        ) {
-            onMenuChange(MenuState.AspectRatio)
-        }
+    MenuRow(
+        strings.aspectRatio,
+        tag = ROW_ASPECT_RATIO,
+        icon = FluentIcons.AspectFit,
+        opensSubMenu = true,
+    ) {
+        onMenuChange(MenuState.AspectRatio)
+    }
 
-        // The web lists this here as well as opening it from its own button, and
-        // this had only the button. Somebody in the settings list looking for
-        // the next episode found nothing.
-        if (state.queue.size > 1) {
-            MenuRow(strings.playlist, tag = ROW_PLAYLIST, icon = FluentIcons.Playlist, opensSubMenu = true) {
-                onMenuChange(MenuState.Playlist)
-            }
+    // The web lists this here as well as opening it from its own button, and
+    // this had only the button. Somebody in the settings list looking for
+    // the next episode found nothing.
+    if (state.queue.size > 1) {
+        MenuRow(strings.playlist, tag = ROW_PLAYLIST, icon = FluentIcons.Playlist, opensSubMenu = true) {
+            onMenuChange(MenuState.Playlist)
         }
     }
 }

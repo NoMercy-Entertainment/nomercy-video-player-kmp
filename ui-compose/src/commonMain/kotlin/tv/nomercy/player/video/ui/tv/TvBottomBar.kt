@@ -144,6 +144,9 @@ public fun tvChromeStrings(locale: String): TvChromeStrings {
         loading = ChromeTranslations.get(locale, "plugin.desktop-ui.message.loading"),
         buffering = ChromeTranslations.get(locale, "plugin.desktop-ui.message.buffering"),
         error = ChromeTranslations.get(locale, "plugin.desktop-ui.message.error"),
+        volumeMessage = ChromeTranslations.get(locale, "plugin.desktop-ui.message.volume"),
+        mutedMessage = ChromeTranslations.get(locale, "plugin.desktop-ui.message.muted"),
+        unmutedMessage = ChromeTranslations.get(locale, "plugin.desktop-ui.message.unmuted"),
     )
 }
 
@@ -213,6 +216,13 @@ public data class TvChromeStrings(
     // of the handful that cannot be read out of the generated table and has to be
     // supplied by a host that wants it translated.
     val seekPreview: String = "Seek preview",
+
+    // The three message-channel notices the web shows and this had no fields
+    // for, so a viewer changing the volume or muting got nothing on screen while
+    // the browser says so every time. `{level}` is the web's own placeholder.
+    val volumeMessage: String = "Volume: {level}%",
+    val mutedMessage: String = "Muted",
+    val unmutedMessage: String = "Unmuted",
 )
 
 internal const val BOTTOM_BAR_TAG = "tv-bottom-bar"

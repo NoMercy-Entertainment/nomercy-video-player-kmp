@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
@@ -85,10 +88,36 @@ public fun ShortcutsOverlay(
             .pointerInput(Unit) { detectTapGestures { onDismiss() } }
             .testTag(SHORTCUTS_TAG),
     ) {
+        ShortcutsCard(title, groups, hint)
+        }
+}
+
+// The card itself, split out so ShortcutsOverlay stays inside its length.
+//
+// `.keybinds-card` is a centred flex child: as wide as its three columns need
+// and no wider, so the picture stays visible around it. This filled every pixel
+// it was offered and the overlay read as a full-screen table.
+//
+// Clipped, because the decoration inside is deliberately hung past the corner —
+// `right: -114px` — and `overflow: hidden` is what turns that from a keyboard
+// lying across the player into one disappearing under the card's edge.
+@Composable
+private fun ShortcutsCard(title: String, groups: List<ShortcutGroup>, hint: String) {
+    Box(
+        modifier = Modifier
+            .widthIn(max = CARD_MAX_WIDTH)
+            .clip(RoundedCornerShape(CARD_RADIUS))
+            .background(CARD_BACKGROUND),
+    ) {
+        KeyboardDecoration(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .offset(x = DECORATION_RIGHT, y = -DECORATION_BOTTOM),
+        )
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .background(CARD_BACKGROUND, RoundedCornerShape(CARD_RADIUS))
                 .padding(horizontal = CARD_PADDING_HORIZONTAL, vertical = CARD_PADDING_VERTICAL)
                 // `overflow-y: auto` on the dialog. Nine groups do not fit a short
                 // window, and a card that overflows silently hides whole groups.
@@ -96,11 +125,7 @@ public fun ShortcutsOverlay(
         ) {
             BasicText(
                 text = title,
-                style = TextStyle(
-                    color = Color.White,
-                    fontSize = HEADING_SIZE,
-                    fontWeight = FontWeight.SemiBold,
-                ),
+                style = TextStyle(color = Color.White, fontSize = HEADING_SIZE, fontWeight = FontWeight.SemiBold),
                 modifier = Modifier.padding(bottom = HEADING_GAP),
             )
 
@@ -264,3 +289,11 @@ private val HINT_COLOR: Color = Color.White.copy(alpha = 0.35f)
 private val HINT_GAP: Dp = 12.dp
 
 internal const val SHORTCUTS_TAG = "nm-shortcuts-overlay"
+
+// `.keybinds-card` is a centred flex child: as wide as its three columns and no
+// wider. This is the ceiling that keeps it off the window's edges.
+private val CARD_MAX_WIDTH: Dp = 880.dp
+
+// `.keybinds-decoration { bottom: 48px; right: -114px }`.
+private val DECORATION_BOTTOM: Dp = 48.dp
+private val DECORATION_RIGHT: Dp = 114.dp
