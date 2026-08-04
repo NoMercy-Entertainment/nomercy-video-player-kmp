@@ -88,22 +88,29 @@ internal fun MenuHeader(spec: MenuHeaderSpec) {
                 .weight(1f),
         )
 
-        PlayerIconButton(
-            icon = FluentIcons.Close,
-            description = spec.strings.close,
-            onClick = { spec.onMenuChange(MenuState.Hidden) },
-            buttonSize = HEADER_BUTTON,
-            iconSize = HEADER_ICON,
-            focusRequester = if (sub) null else nav?.header,
-            shape = HEADER_BUTTON_SHAPE,
-            hoverFill = HEADER_BUTTON_HOVER,
-            focusStyle = ring,
-            modifier = Modifier.testTag(MENU_CLOSE_TAG).menuNavEntry(nav),
-        )
+        HeaderClose(spec, nav, ring, sub)
     }
 
     // `border-bottom: 1px solid rgba(209, 213, 219, 0.2)`.
     Box(modifier = Modifier.fillMaxWidth().height(HEADER_RULE).background(HEADER_RULE_COLOR))
+}
+
+// The way out of the menu entirely, drawn on every pane. On the main list it is also the
+// pane-open focus, since there is no back arrow ahead of it to take that.
+@Composable
+private fun HeaderClose(spec: MenuHeaderSpec, nav: MenuNav?, ring: PlayerFocusStyle, sub: Boolean) {
+    PlayerIconButton(
+        icon = FluentIcons.Close,
+        description = spec.strings.close,
+        onClick = { spec.onMenuChange(MenuState.Hidden) },
+        buttonSize = HEADER_BUTTON,
+        iconSize = HEADER_ICON,
+        focusRequester = if (sub) null else nav?.header,
+        shape = HEADER_BUTTON_SHAPE,
+        hoverFill = HEADER_BUTTON_HOVER,
+        focusStyle = ring,
+        modifier = Modifier.testTag(MENU_CLOSE_TAG).menuNavEntry(nav),
+    )
 }
 
 // The way back to the main list, drawn on every pane that is not it.
