@@ -91,6 +91,14 @@ internal class ComposeFrameSink : VlcVideoFrameSink {
 
     override fun display(picture: ByteBuffer): Unit = accept(picture)
 
+    // Back to nothing, so FrameCanvas draws its black instead of the last item.
+    // The version still moves: a draw subscribed to it has to be told that what
+    // it was drawing is gone.
+    override fun clear() {
+        frame.value = null
+        version.value += 1
+    }
+
     // The buffer is libVLC's and it reuses it, so the frame has to be copied out
     // before this returns. Holding the buffer instead would draw whatever the
     // decoder happened to be writing.
