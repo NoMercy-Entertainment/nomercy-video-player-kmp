@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -67,7 +68,12 @@ public fun AssSubtitleLayer(
         }
     }
 
-    Box(modifier.fillMaxSize().onSizeChanged { measured: IntSize -> surface = measured }) {
+    Box(
+        modifier
+            .fillMaxSize()
+            .testTag(ASS_SUBTITLE_TAG)
+            .onSizeChanged { measured: IntSize -> surface = measured },
+    ) {
         picture?.let { frame: ImageBitmap ->
             Image(
                 bitmap = frame,
@@ -98,3 +104,5 @@ internal expect fun assImageBitmap(pixels: IntArray, width: Int, height: Int): I
 // RenderScheduler already uses for a moving cue. A static line costs nothing at
 // this rate because the renderer answers null for it.
 private const val POLL_INTERVAL_MS = 42L
+
+internal const val ASS_SUBTITLE_TAG = "nm-ass-subtitles"

@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kmp.library)
+    alias(libs.plugins.maven.publish)
 }
 
 // The libass-backed subtitle renderer, in its own module because a native
@@ -205,4 +206,19 @@ tasks.matching { it.name.startsWith("cinteropLibass") }.configureEach {
 // rather than allowed to write a partial answer over a complete one.
 tasks.matching { it.name == "klibApiCheck" || it.name == "klibApiDump" }.configureEach {
     onlyIf { org.gradle.internal.os.OperatingSystem.current().isMacOsX }
+}
+
+// Its own coordinate, and the reason this module exists at all.
+//
+// A consumer showing plain WebVTT takes the video library and never links
+// libass. That promise is only real if the two are separate artifacts — a
+// module inside the repository is reachable by checking the repository out and
+// by nothing else, which is what this was: the testbed asked for it by
+// coordinate and the coordinate did not exist.
+mavenPublishing {
+    publishToMavenCentral()
+
+    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+        signAllPublications()
+    }
 }
