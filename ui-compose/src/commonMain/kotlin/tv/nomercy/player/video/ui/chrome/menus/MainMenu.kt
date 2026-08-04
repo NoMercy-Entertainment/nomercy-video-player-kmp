@@ -183,7 +183,7 @@ private fun MenuRows(rows: @Composable () -> Unit) {
             // it was here, so every row ran edge to edge into a card with an 8px
             // radius and the rounded corners of the rows themselves had nothing
             // to sit against.
-            verticalArrangement = Arrangement.spacedBy(ROWS_GAP),
+            verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
             modifier = Modifier
                 .then(if (scrollable) Modifier.heightIn(max = cap) else Modifier)
                 .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
@@ -192,16 +192,13 @@ private fun MenuRows(rows: @Composable () -> Unit) {
                 // padding where a scrollbar stands in it — on a phone the rows
                 // ran flush into the card's rounded corner while the left sat
                 // 8dp in.
-                .padding(ROWS_INSET),
+                .padding(MENU_LIST_PADDING),
         ) {
             rows()
         }
     }
 }
 
-// `.scroll-container { padding: 8px 0 8px 8px; gap: 4px }`.
-private val ROWS_INSET = 8.dp
-private val ROWS_GAP = 4.dp
 
 // `.main-menu { max-height: 60vh }` — the settings list, inside a frame the
 // stylesheet caps separately at `calc(100% - 2rem)`.

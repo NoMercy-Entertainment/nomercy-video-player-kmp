@@ -486,17 +486,3 @@ internal const val EPISODE_THUMB_TAG = "nm-episode-thumb-"
 // edge to edge into a card with an 8px radius while the row above it sat 8px
 // in — which is the margin Stoney has filed against these menus more than once.
 //
-// Padded on BOTH sides, and that is a deliberate divergence from the web.
-//
-// `scrollbar-gutter: stable` reserves the trailing strip for a scrollbar, so a
-// browser's rows stop short of the right edge only because something else is
-// standing there. On a phone nothing is, and the rows ran flush into the card's
-// rounded corner while the left side sat 8px in — the same list looking
-// different on two platforms for a reason neither platform shows.
-//
-// One inset on both sides is the same UI everywhere. The rail indicator draws
-// inside it rather than in a gutter of its own.
-private val MENU_LIST_PADDING =
-    PaddingValues(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
-
-private val MENU_LIST_GAP = 4.dp

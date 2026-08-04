@@ -461,7 +461,7 @@ internal val RAIL_BORDER = 2.dp
 internal val RAIL_BORDER_COLOR = Color(red = 107, green = 114, blue = 128, alpha = 51)
 
 // `.scroll-container { padding: 8px 0 8px 8px }`.
-internal val RAIL_PADDING = PaddingValues(start = 8.dp, top = 8.dp, end = 0.dp, bottom = 8.dp)
+internal val RAIL_PADDING = MENU_LIST_PADDING
 
 // The seasons rail keeps the base scroll-container rule in both orientations —
 // the portrait override targets `.episode-menu .scroll-container` alone.
