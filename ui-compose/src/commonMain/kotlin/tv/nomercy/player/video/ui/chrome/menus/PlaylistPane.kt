@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -168,7 +169,7 @@ private fun SeasonsRail(
     modifier: Modifier = Modifier,
     onChoose: (Int) -> Unit,
 ) {
-    ScrollingRail(modifier.testTag(SEASONS_RAIL_TAG), seasons, SEASONS_RAIL_STYLE) { season ->
+    ScrollingRail(modifier.testTag(SEASONS_RAIL_TAG), seasons, SEASONS_RAIL_STYLE, scrollTo = chosen) { season ->
         MenuRow(seasonLabel(picks.strings, season), isCurrent = season == chosen, tag = "$ROW_SEASON$season") {
             onChoose(season)
         }
@@ -177,7 +178,7 @@ private fun SeasonsRail(
 
 @Composable
 internal fun EpisodeRail(picks: PlaylistPicks, rows: List<Int>, modifier: Modifier) {
-    ScrollingRail(modifier.testTag(EPISODES_RAIL_TAG), rows, picks.cards.rail) { index ->
+    ScrollingRail(modifier.testTag(EPISODES_RAIL_TAG), rows, picks.cards.rail, scrollTo = picks.currentIndex) { index ->
         PlaylistCard(picks, index)
     }
 }
@@ -197,6 +198,11 @@ private fun ScrollingRail(
     modifier: Modifier,
     values: List<Int>,
     rail: RailStyle,
+    // Where the list should already be looking when it opens. A viewer on
+    // episode 19 who opens the list to find episode 1 has to scroll to where
+    // they already are before they can do anything, and on a remote that is
+    // eighteen presses.
+    scrollTo: Int = -1,
     row: @Composable (Int) -> Unit,
 ) {
     BoxWithConstraints(modifier = modifier) {
@@ -209,6 +215,13 @@ private fun ScrollingRail(
             }
         } else {
             val scroll: LazyListState = rememberLazyListState()
+
+            // Once per opening, not on every recomposition: scrolling again
+            // after the viewer has moved the list would drag them back.
+            LaunchedEffect(scrollTo) {
+                val index: Int = values.indexOf(scrollTo)
+                if (index >= 0) scroll.scrollToItem(index)
+            }
 
             LazyColumn(
                 state = scroll,

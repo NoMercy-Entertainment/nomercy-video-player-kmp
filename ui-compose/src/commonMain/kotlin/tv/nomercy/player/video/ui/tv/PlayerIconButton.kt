@@ -19,6 +19,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.ui.draw.scale
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.Image
@@ -135,7 +136,12 @@ public fun PlayerIconButton(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .size(buttonSize)
+            // requiredSize, not size. size() is still coerced by the parent's
+            // constraints, so a 40dp button inside a shorter bar row measured
+            // 40 wide and however tall the row allowed — and CircleShape over a
+            // 40x32 box is an OVAL, which is what a viewer sees the moment they
+            // hover or focus one.
+            .requiredSize(buttonSize)
             .hoverPaint(hovered && enabled, hoverFill, shape)
             .focusPaint(focused, focusStyle, shape)
             .then(focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)
