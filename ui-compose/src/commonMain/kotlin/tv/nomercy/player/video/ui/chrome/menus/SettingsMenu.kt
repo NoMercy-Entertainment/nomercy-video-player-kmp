@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome.menus
 
+import androidx.compose.foundation.layout.PaddingValues
 import tv.nomercy.player.video.ui.chrome.trimRate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -240,7 +241,10 @@ private fun AspectRatioMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    Column {
+    Column(
+        modifier = Modifier.padding(MENU_LIST_PADDING),
+        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
+    ) {
         ASPECT_RATIOS.forEach { mode ->
             MenuRow(
                 aspectLabel(mode, strings),
@@ -271,7 +275,10 @@ private fun QualityMenu(
     val offerable: List<QualityLevel> =
         offerableRungs(state.qualityLevels, rememberDeviceCapabilities().hasHdrDisplay)
 
-    LazyColumn {
+    LazyColumn(
+        contentPadding = MENU_LIST_PADDING,
+        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
+    ) {
         // Automatic first, because it is what most viewers should stay on and
         // the list below it exists for the ones who know they want otherwise.
         item {
@@ -301,7 +308,10 @@ private fun AudioMenu(
     commands: ChromeCommands,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    LazyColumn {
+    LazyColumn(
+        contentPadding = MENU_LIST_PADDING,
+        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
+    ) {
         itemsIndexed(state.audioTracks) { index, track ->
             MenuRow(audioLabel(track, index), isCurrent = track == state.activeAudio) {
                 commands.selectAudioTrack(track)
@@ -318,7 +328,10 @@ private fun SubtitleMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    LazyColumn {
+    LazyColumn(
+        contentPadding = MENU_LIST_PADDING,
+        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
+    ) {
         // Off is a row rather than an absence. A viewer turning subtitles off
         // has to be able to say so, and a list with no way back is one they
         // leave by restarting the film.
@@ -345,7 +358,10 @@ private fun SpeedMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    LazyColumn {
+    LazyColumn(
+        contentPadding = MENU_LIST_PADDING,
+        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
+    ) {
         items(SPEEDS) { speed ->
             MenuRow(speedLabel(speed, strings), isCurrent = speed == state.rate, tag = "$ROW_SPEED_VALUE$speed") {
                 commands.setRate(speed)
@@ -462,3 +478,16 @@ internal const val EPISODES_RAIL_TAG = "nm-episodes-rail"
 internal const val ROW_SEASON = "nm-season-"
 internal const val ROW_EPISODE = "nm-episode-"
 internal const val EPISODE_THUMB_TAG = "nm-episode-thumb-"
+
+// `.scroll-container { padding: 8px 0 8px 8px; gap: 4px }`.
+//
+// Every submenu list was a bare LazyColumn with neither. The main list got the
+// inset and the lists it opens onto did not, so a subtitle or quality row ran
+// edge to edge into a card with an 8px radius while the row above it sat 8px
+// in — which is the margin Stoney has filed against these menus more than once.
+//
+// No padding on the trailing edge, because `scrollbar-gutter: stable` reserves
+// it for the scrollbar, and the rail indicator draws there.
+private val MENU_LIST_PADDING = PaddingValues(start = 8.dp, top = 8.dp, bottom = 8.dp)
+
+private val MENU_LIST_GAP = 4.dp
