@@ -187,7 +187,12 @@ private fun MenuRows(rows: @Composable () -> Unit) {
             modifier = Modifier
                 .then(if (scrollable) Modifier.heightIn(max = cap) else Modifier)
                 .then(if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier)
-                .padding(start = ROWS_INSET, top = ROWS_INSET, bottom = ROWS_INSET),
+                // Both sides, like the submenus. The web leaves the trailing
+                // strip to `scrollbar-gutter: stable`, which only reads as
+                // padding where a scrollbar stands in it — on a phone the rows
+                // ran flush into the card's rounded corner while the left sat
+                // 8dp in.
+                .padding(ROWS_INSET),
         ) {
             rows()
         }
