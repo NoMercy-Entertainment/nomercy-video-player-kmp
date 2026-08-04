@@ -326,10 +326,11 @@ private const val HOVER_MS = 180
 // and a control below it is one people lean forward to identify.
 // The web's, measured on the running player.
 internal val WEB_BUTTON_SIZE: Dp = 40.dp
-// `.btn` is 40px with `border: 2px` and `padding: 8px`, so the glyph inside it is
-// twenty — not twenty-two. Two units over on a forty-unit control is the
-// difference between an icon sitting in a button and an icon filling it.
-internal val WEB_ICON_SIZE: Dp = 20.dp
+// Twenty-two, which is what `svgFromIcon(icon, size = 22)` writes as an SVG width attribute on
+// every transport control. `.btn-icon` declares no width in CSS at all, so the stylesheet cannot
+// tell you this number — deriving it from `.btn`'s 40px box minus its border and padding gives
+// twenty, which is what this used to say and what the browser has never drawn.
+internal val WEB_ICON_SIZE: Dp = 22.dp
 
 // A television's, which is what this file used for everything.
 public val TV_BUTTON_SIZE: Dp = 48.dp
