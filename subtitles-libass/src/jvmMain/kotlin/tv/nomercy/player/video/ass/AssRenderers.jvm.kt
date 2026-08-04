@@ -36,7 +36,7 @@ public actual object AssRenderers {
     public actual fun create(context: AssPlatformContext): AssRenderer? {
         val lib: LibAss = loaded() ?: return null
         val library = lib.ass_library_init() ?: return null
-        return JvmAssRenderer(lib, library)
+        return NativeAssRenderer(lib, library, DESKTOP_GLYPH_MAX, DESKTOP_BITMAP_CACHE_MEGABYTES)
     }
 
     public actual fun whyUnavailable(): String? = if (loaded() != null) null else loadFailure
@@ -102,3 +102,12 @@ public actual object AssRenderers {
 
     private fun loaded(): LibAss? = instance
 }
+
+// The desktop's budget, which is Android's HIGH tier: a machine with a real
+// heap gets the same ceiling as a flagship phone. The pair matters together —
+// 32MB with a small entry cap evicts on COUNT before the megabytes are spent
+// and sends FreeType back over glyphs it already had, which measured 1834ms
+// against 403ms in production.
+private const val DESKTOP_GLYPH_MAX = 6_000
+
+private const val DESKTOP_BITMAP_CACHE_MEGABYTES = 32

@@ -98,6 +98,25 @@ kotlin {
     }
 
     sourceSets {
+        // One source set for the two platforms that can run JNA.
+        //
+        // libass is driven through the same C entry points everywhere, and this
+        // module had two bindings to it: our own JNA interface on the desktop
+        // and a third-party JNI wrapper on Android. Two bindings is two places
+        // for a cache limit or a frame size to be set differently, which is how
+        // the same subtitle renders correctly on one surface and not the other.
+        //
+        // JNA runs on Android, so there is no reason for the second one. The
+        // default hierarchy has no jvm+android group, so it is declared.
+        val jvmAndroidMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.jna)
+            }
+        }
+        androidMain.get().dependsOn(jvmAndroidMain)
+        jvmMain.get().dependsOn(jvmAndroidMain)
+
         commonMain.dependencies {
             api(project(":"))
             // The portable filesystem the font cache writes through, so its
@@ -112,12 +131,6 @@ kotlin {
             // not to the common metadata one, and without this the shared
             // source set cannot see the Plugin it extends.
             api(libs.nomercy.player.core)
-        }
-        androidMain.dependencies {
-            implementation(libs.ass.kt)
-        }
-        jvmMain.dependencies {
-            implementation(libs.jna)
         }
         commonTest.dependencies {
             // A filesystem the tests own. Thirty-day eviction cannot be waited

@@ -8,17 +8,46 @@
 
 package tv.nomercy.player.video.ass
 
-import tv.nomercy.player.video.subtitles.AssRenderer
 import android.app.ActivityManager
 import android.content.Context
+import com.sun.jna.Native
 import tv.nomercy.player.video.ass.render.MemoryTier
+import tv.nomercy.player.video.subtitles.AssRenderer
 
 public actual class AssPlatformContext(public val android: Context)
 
+// libass on Android: OUR build, through the same JNA binding the desktop uses.
+//
+// This was io.github.peerless2012:ass-kt — a second driver for a library the
+// desktop already drove through LibAss. Two drivers is two places for a cache
+// limit, a frame size or a font registration to be set differently, which is
+// how the same subtitle renders correctly on one surface and wrong on another
+// with nothing reporting it.
+//
+// The .so comes from nomercy-libass, built from the same pinned sources as
+// every other platform, so a sign drawn on a phone and one drawn in a browser
+// came out of the same code.
 public actual object AssRenderers {
 
-    public actual fun create(context: AssPlatformContext): AssRenderer? =
-        if (whyUnavailable() == null) AndroidAssRenderer(tierFor(context.android)) else null
+    public actual fun create(context: AssPlatformContext): AssRenderer? {
+        val lib: LibAss = loaded() ?: return null
+        val library = lib.ass_library_init() ?: return null
+
+        val tier: MemoryTier = tierFor(context.android)
+
+        return NativeAssRenderer(lib, library, tier.glyphCacheMax, tier.libassCacheMegabytes)
+    }
+
+    public actual fun whyUnavailable(): String? = if (loaded() != null) null else loadFailure
+
+    private var loadFailure: String? = null
+
+    // Loaded once and remembered. JNA reports a missing library by throwing from
+    // the load itself, and letting that escape a question like "is this
+    // available" would make the check the crash it exists to prevent.
+    private val instance: LibAss? by lazy { attempt() }
+
+    private fun loaded(): LibAss? = instance
 
     // The heap the system granted this process, which is the only honest input
     // to the budget. A television box and a flagship phone run the same build
@@ -30,25 +59,24 @@ public actual object AssRenderers {
         return MemoryTier.forHeapMegabytes(manager?.memoryClass ?: 0)
     }
 
-    // The binding ships its own libass for every Android ABI, so the only way it
-    // is missing is a build that stripped it. Asking the classloader is the only
-    // honest answer — a hardcoded "available" would turn a packaging mistake
-    // into blank subtitles with no explanation.
-    // LinkageError, not just UnsatisfiedLinkError. The binding loads its native
-    // library in a static initializer, so on a host JVM — a Robolectric run, a
-    // unit test, an Android build missing this ABI — the class is found and then
-    // fails to initialize, which arrives as NoClassDefFoundError. Catching only
-    // the narrower type made this function throw the very failure it exists to
-    // report.
+    // Plain "ass": the packaged library is `libass.so` in this build's jniLibs
+    // for the running ABI, and JNA adds the prefix and suffix itself. A path
+    // here would be a path that only exists on the machine that wrote it.
     @Suppress("TooGenericExceptionCaught")
-    public actual fun whyUnavailable(): String? = try {
-        Class.forName("io.github.peerless2012.ass.Ass")
+    private fun attempt(): LibAss? = try {
+        Native.load("ass", LibAss::class.java)
+    } catch (missing: UnsatisfiedLinkError) {
+        recordFailure("libass is not in this build's jniLibs", missing.message)
         null
-    } catch (missing: ClassNotFoundException) {
-        "libass binding not on the classpath: ${missing.message}"
-    } catch (unlinkable: LinkageError) {
-        "libass native library did not load on this platform: ${unlinkable.message}"
+    } catch (unloadable: LinkageError) {
+        recordFailure("libass could not be loaded", unloadable.message)
+        null
     } catch (refused: RuntimeException) {
-        "libass binding refused to initialize: ${refused.message}"
+        recordFailure("libass refused to load", refused.message)
+        null
+    }
+
+    private fun recordFailure(what: String, detail: String?) {
+        if (loadFailure == null) loadFailure = "$what: $detail"
     }
 }

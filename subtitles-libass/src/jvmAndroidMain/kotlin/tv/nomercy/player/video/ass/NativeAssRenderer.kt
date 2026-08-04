@@ -23,7 +23,16 @@ import com.sun.jna.Pointer
 //
 // Every native call is serialized. libass contexts are not thread-safe, and a
 // render racing an add is a native crash whose Kotlin stack names neither.
-internal class JvmAssRenderer(private val lib: LibAss, private val library: Pointer) : AssRenderer {
+// The cache budget is a PARAMETER, not a constant, because the two platforms
+// that share this renderer do not share a heap. A 265MB television box and a
+// desktop cannot afford the same glyph cache, and the numbers production found
+// live per tier — see MemoryTier on Android.
+internal class NativeAssRenderer(
+    private val lib: LibAss,
+    private val library: Pointer,
+    private val glyphMax: Int,
+    private val bitmapCacheMegabytes: Int,
+) : AssRenderer {
 
     private val lock = Any()
 
@@ -122,7 +131,7 @@ internal class JvmAssRenderer(private val lib: LibAss, private val library: Poin
         // their own. The pair matches Android's largest tier: the glyph count
         // has to track the megabytes or the count evicts first and every
         // eviction sends FreeType back over a glyph it already had.
-        lib.ass_set_cache_limits(created, DESKTOP_GLYPH_MAX, DESKTOP_BITMAP_CACHE_MEGABYTES)
+        lib.ass_set_cache_limits(created, glyphMax, bitmapCacheMegabytes)
         applySize(created)
         renderer = created
         disposeTrack()
@@ -161,5 +170,3 @@ internal class JvmAssRenderer(private val lib: LibAss, private val library: Poin
     }
 }
 
-private const val DESKTOP_GLYPH_MAX = 6_000
-private const val DESKTOP_BITMAP_CACHE_MEGABYTES = 32
