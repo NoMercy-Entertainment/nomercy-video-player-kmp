@@ -31,6 +31,14 @@ public actual fun PlayerSurface(
                 // have to find and disable it.
                 useController = false
                 resizeMode = resizeModeOf(stretching)
+                // PlayerView keeps an opaque black shutter over the video and
+                // lifts it when ITS OWN output reports a frame. That is a
+                // different signal from the engine's, and when the two disagree
+                // the result is the exact report: firstFrame fired, the engine
+                // listed three audio tracks, six subtitles and nine rungs, and
+                // the screen stayed black. A transparent shutter cannot hide a
+                // picture that is being decoded.
+                setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
                 player = surface.exoPlayer
             }
         },
@@ -39,6 +47,7 @@ public actual fun PlayerSurface(
         update = { view ->
             view.player = surface.exoPlayer
             view.resizeMode = resizeModeOf(stretching)
+            view.setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
         },
         onRelease = { view -> view.player = null },
     )

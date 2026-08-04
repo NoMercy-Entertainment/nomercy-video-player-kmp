@@ -99,6 +99,16 @@ private fun rememberViewModeRevision(player: NMVideoPlayer): Int {
             player.on(VideoEvents.Theater) { revision += 1 },
             player.on(VideoEvents.Pip) { revision += 1 },
             player.on(VideoEvents.AspectRatio) { revision += 1 },
+            // The tracks, for the same reason and with the same symptom. The
+            // rungs, the chosen one and whether adaptation owns the choice are
+            // all read off the player below and live in no snapshot, so picking
+            // a quality moved the engine and left the menu drawing its tick
+            // against the value it was composed with. It read as a selector that
+            // does nothing, and the engine was switching the whole time.
+            player.on(CoreEvents.QualityState) { revision += 1 },
+            player.on(CoreEvents.StreamsReady) { revision += 1 },
+            player.on(CoreEvents.AudioTrack) { revision += 1 },
+            player.on(CoreEvents.Subtitle) { revision += 1 },
         )
 
         onDispose { subscriptions.forEach { it.dispose() } }

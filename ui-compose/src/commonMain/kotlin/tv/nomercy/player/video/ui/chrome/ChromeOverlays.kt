@@ -185,6 +185,60 @@ internal fun BoxScope.MenuDismissLayer(menu: MenuState, onMenuChange: (MenuState
 internal const val MENU_DISMISS_TAG = "nm-menu-dismiss"
 
 /**
+ * What a click on the picture does when a pointer is driving.
+ *
+ * The tap zones are the touch build's, and everything about clicking the picture
+ * sat inside `if (!pointerDriven)` — so on a desktop a click on the film did
+ * nothing at all and a double click did nothing either, while the same two
+ * gestures in a browser pause it and fill the screen. There was no layer there
+ * to press.
+ *
+ * A single click toggles play and a double click toggles fullscreen, which is
+ * the browser's pairing. Compose delivers both from one detector, so the first
+ * click of a double is not also a pause.
+ */
+@Composable
+internal fun BoxScope.PointerClickLayer(
+    state: ChromeState,
+    commands: ChromeCommands,
+    onActivity: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .matchParentSize()
+            .testTag(POINTER_CLICK_TAG)
+            .pointerInput(state.playing, state.fullscreen) {
+                detectTapGestures(
+                    onTap = {
+                        onActivity()
+                        commands.setPlaying(!state.playing)
+                    },
+                    onDoubleTap = {
+                        onActivity()
+                        commands.setFullscreen(!state.fullscreen)
+                    },
+                )
+            },
+    )
+}
+
+internal const val POINTER_CLICK_TAG = "nm-pointer-click"
+
+// The pointer build's half of the picture layer, taking the whole input rather
+// than three of its fields. It lives beside the layer it mounts because
+// VideoChrome.kt is at its file-function ceiling, and a wrapper belongs with
+// the thing it wraps rather than with the branch that chose it.
+@Composable
+internal fun BoxScope.PointerLayer(input: ChromeInput) {
+    PointerClickLayer(
+        state = input.zones.state,
+        commands = input.zones.commands,
+        onActivity = input.controller::bumpActivity,
+    )
+}
+
+/**
  * The buffering ring, which is what the web draws and this drew as a word.
  *
  * `<svg viewBox="0 0 50 50"><circle r="20" stroke="#fff" stroke-width="4"

@@ -315,6 +315,8 @@ private fun ChromeFrame(
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
+            } else {
+                PointerLayer(input)
             }
 
             content()

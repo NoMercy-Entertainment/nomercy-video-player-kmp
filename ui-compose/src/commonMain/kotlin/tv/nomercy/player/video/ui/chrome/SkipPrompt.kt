@@ -10,6 +10,9 @@ package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -179,12 +182,19 @@ public fun SkipButton(
     onSkip: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .padding(SKIP_INSET)
             .background(SKIP_BACKGROUND, RoundedCornerShape(SKIP_RADIUS))
-            .clickable(onClick = onSkip)
+            // Clipped to the pill and no default indication, for the same reason
+            // the play control is: a bare `clickable` takes Compose's ripple,
+            // which is a rounded rectangle of its own radius drawn over whatever
+            // shape the button actually is.
+            .clip(RoundedCornerShape(SKIP_RADIUS))
+            .clickable(interactionSource = interaction, indication = null, onClick = onSkip)
             .padding(horizontal = SKIP_PADDING_H, vertical = SKIP_PADDING_V)
             .testTag(if (kind == SkipKind.Intro) SKIP_INTRO_TAG else SKIP_OUTRO_TAG),
     ) {

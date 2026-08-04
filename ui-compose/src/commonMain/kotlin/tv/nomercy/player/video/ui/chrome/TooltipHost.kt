@@ -105,8 +105,17 @@ public fun ControlTooltip(
                 // `white-space: nowrap`. A label that wraps changes the box's
                 // width, and the clamp that keeps it on screen is computed from
                 // that width.
+                //
+                // Not wrapping is not the same as being cut. `nowrap` keeps the
+                // text whole and lets it overflow; Clip throws away whatever
+                // does not fit, which is how "Kwaliteit: 1080p" was read off a
+                // screen as "Kwaliteit: 108p" and taken for a ladder reporting a
+                // 108-line rung. A tooltip that silently shortens a number is
+                // worse than one that overflows, because the short number looks
+                // like an answer.
                 maxLines = 1,
-                overflow = TextOverflow.Clip,
+                softWrap = false,
+                overflow = TextOverflow.Visible,
             )
         }
     }

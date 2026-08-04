@@ -10,6 +10,10 @@ package tv.nomercy.player.video.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -39,10 +43,22 @@ public fun PlayPauseControl(
     modifier: Modifier = Modifier,
     tint: Color = Color.White,
 ) {
+    val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
+
     Canvas(
         modifier = modifier
             .size(CONTROL_SIZE)
-            .clickable(onClick = onToggle)
+            // No indication, and a circle if anything ever draws one.
+            //
+            // A bare `clickable` takes Compose's default: a rounded-RECTANGLE
+            // ripple around an unclipped Canvas. That is the square ring around
+            // the play triangle Stoney reported six times — the button was round
+            // and the thing drawn over it was not, which is why every answer read
+            // off the shape in the source came back "it is a circle" and was
+            // useless. PlayerIconButton already passes `indication = null` and
+            // paints its own states; this is the same rule.
+            .clip(CircleShape)
+            .clickable(interactionSource = interaction, indication = null, onClick = onToggle)
             .semantics { contentDescription = if (playing) PAUSE_LABEL else PLAY_LABEL },
     ) {
         if (playing) {
