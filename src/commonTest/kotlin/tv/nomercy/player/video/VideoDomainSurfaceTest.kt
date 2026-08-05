@@ -13,6 +13,9 @@ import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.core.player.AudioTrackState
 import tv.nomercy.player.core.ports.SubtitleTrack
+import tv.nomercy.player.core.errors.CoreErrorCodes
+import tv.nomercy.player.core.errors.StateError
+import kotlin.test.assertFailsWith
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -127,6 +130,19 @@ class VideoDomainSurfaceTest {
         subject.addSubtitleTrack(DUTCH)
 
         assertEquals(listOf("sub-en", "sub-nl"), subject.subtitles().map { it.id })
+    }
+
+    @Test
+    fun aSidecarWithNothingLoadedIsRefusedRatherThanKept() = runTest {
+        // Kept, it would belong to whatever item loaded next — a Dutch subtitle
+        // silently offered against the following film.
+        val subject = NMVideoPlayer(FakeVideoBackend())
+        subject.setup()
+        subject.ready().await()
+
+        val raised = assertFailsWith<StateError> { subject.addSubtitleTrack(DUTCH) }
+
+        assertEquals(CoreErrorCodes.NO_ACTIVE_ITEM, raised.code)
     }
 
     @Test

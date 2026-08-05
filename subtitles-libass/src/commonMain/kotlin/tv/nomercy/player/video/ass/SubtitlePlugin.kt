@@ -64,7 +64,17 @@ public class SubtitlePlugin(
     // Returns false when the subtitle could not be read at all, so a caller can
     // fall back rather than sit in front of a player showing nothing.
     public suspend fun load(subtitleUrl: String, fontManifestUrl: String?): Boolean {
-        val subtitle: String = get(subtitleUrl)?.body ?: return false
+        val subtitle: String = get(subtitleUrl)?.body ?: run {
+            // A false with nothing said. The caller can fall back, and everyone
+            // else — a consumer's error surface, a support ticket — had no way
+            // to learn the track never arrived.
+            report(
+                code = LOAD_FAILED,
+                message = "no subtitle at $subtitleUrl; nothing was loaded",
+                context = mapOf("url" to subtitleUrl),
+            )
+            return false
+        }
 
         // Fonts first, and every one of them, before the track exists. A font
         // that arrives after the renderer has drawn once is a font libass has
@@ -97,7 +107,21 @@ public class SubtitlePlugin(
             }
             loadedFonts = attached
 
-            renderer.loadTrack(subtitle)
+            try {
+                renderer.loadTrack(subtitle)
+            }
+            catch (@Suppress("TooGenericExceptionCaught") cause: Throwable) {
+                // libass refusing a track is a rendering failure, not a missing
+                // file, and it used to unwind out of here as whatever the
+                // native layer threw.
+                report(
+                    code = RENDER_ERROR,
+                    message = "libass could not load the track from $subtitleUrl",
+                    cause = cause,
+                    context = mapOf("url" to subtitleUrl),
+                )
+                return false
+            }
             currentTrack = subtitle
         }
         return true
@@ -233,9 +257,19 @@ public class SubtitlePlugin(
     private companion object {
         val OK_RANGE = 200..299
 
-        // Namespaced the way every other player error is, so a host filtering
-        // by scope catches it without knowing this plugin exists.
-        const val FONTS_MANIFEST_FAILED = "plugin:subtitle/fonts-manifest-failed"
+        // The web's namespace, not this plugin's own.
+        //
+        // These read plugin:subtitle/* here and plugin:octopus/* everywhere
+        // else, which is one failure a consumer has to match twice. The web
+        // plugin is named for the library it wraps and this one is not, but a
+        // renderer's name is a poor reason to give its failures two spellings —
+        // the same argument the video-namespaced HDR code settles the same way.
+        const val FONTS_MANIFEST_FAILED = "plugin:octopus/fonts-manifest-failed"
+        const val LOAD_FAILED = "plugin:octopus/load-failed"
+        const val RENDER_ERROR = "plugin:octopus/render-error"
+
+        // No web counterpart: the browser renderer is handed fonts by the page
+        // and never reports one it could not read.
         const val FONT_UNREADABLE = "plugin:subtitle/font-unreadable"
     }
 }

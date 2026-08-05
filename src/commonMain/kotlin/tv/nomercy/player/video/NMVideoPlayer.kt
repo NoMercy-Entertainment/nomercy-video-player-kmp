@@ -12,6 +12,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.cues.ChapterCues
+import tv.nomercy.player.core.errors.CoreErrorCodes
+import tv.nomercy.player.core.errors.stateError
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.core.ports.CastSender
@@ -479,6 +481,16 @@ public open class NMVideoPlayer(
     // the engine, because not every engine accepts a track after loading and
     // the ones that refuse would silently drop it.
     public open fun addSubtitleTrack(track: SubtitleTrack) {
+        // With nothing loaded there is nothing for the track to belong to, and
+        // it used to be kept anyway — so a sidecar added early was silently
+        // attached to whatever item happened to load next.
+        if (item() == null) {
+            throw stateError(
+                CoreErrorCodes.NO_ACTIVE_ITEM,
+                "addSubtitleTrack() called with no active item.",
+            )
+        }
+
         externalSubtitles = externalSubtitles.filterNot { it.id == track.id } + track
         emit(CoreEvents.Subtitles, SubtitlesPayload(subtitles()))
     }
