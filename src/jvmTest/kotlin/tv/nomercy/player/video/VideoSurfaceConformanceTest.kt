@@ -30,6 +30,7 @@ private val WEB_ONLY_METHODS = setOf(
     "createElement",
     "createSVG",
     "audioContext",
+    "selectAudioOutput",
     // The <video> element itself. There is no such handle off the web; the
     // equivalent here is backend(), which the player already exposes.
     "videoElement",

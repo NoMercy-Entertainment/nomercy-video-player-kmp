@@ -57,6 +57,7 @@ class MethodSurfaceConformanceTest {
         "createButton",
         "createSVG",
         "audioContext",
+        "selectAudioOutput",
         "experimental",
     )
 
