@@ -1225,6 +1225,14 @@ public class tv/nomercy/player/video/session/VideoMediaSessionPlugin : tv/nomerc
 	protected fun nowPlayingFor (Ltv/nomercy/player/core/media/PlaylistItem;)Ltv/nomercy/player/core/ports/NowPlaying;
 }
 
+public final class tv/nomercy/player/video/subtitles/AssChangedRows {
+	public final fun getBottom ()I
+	public final fun getTop ()I
+	public final fun isEmpty ()Z
+	public final fun leftAt (I)I
+	public final fun rightAt (I)I
+}
+
 public final class tv/nomercy/player/video/subtitles/AssCompositeKt {
 	public static final fun assArgbOf (I)I
 	public static final fun compositeAssFrame (Ljava/util/List;II)[I
@@ -1251,7 +1259,10 @@ public final class tv/nomercy/player/video/subtitles/AssFrame {
 public final class tv/nomercy/player/video/subtitles/AssFrameCompositor {
 	public fun <init> ()V
 	public final fun composite (Ljava/util/List;II)[I
+	public final fun compositeParallel (Ljava/util/List;IIILkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun render (Ljava/util/List;II)Ltv/nomercy/player/video/subtitles/AssSurfaceFrame;
+	public final fun renderParallel (Ljava/util/List;IIILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun renderParallel$default (Ltv/nomercy/player/video/subtitles/AssFrameCompositor;Ljava/util/List;IIILkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class tv/nomercy/player/video/subtitles/AssImage {
@@ -1278,29 +1289,6 @@ public final class tv/nomercy/player/video/subtitles/AssImage {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class tv/nomercy/player/video/subtitles/AssRegion {
-	public static final field Companion Ltv/nomercy/player/video/subtitles/AssRegion$Companion;
-	public fun <init> (IIII)V
-	public final fun component1 ()I
-	public final fun component2 ()I
-	public final fun component3 ()I
-	public final fun component4 ()I
-	public final fun copy (IIII)Ltv/nomercy/player/video/subtitles/AssRegion;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/subtitles/AssRegion;IIIIILjava/lang/Object;)Ltv/nomercy/player/video/subtitles/AssRegion;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getBottom ()I
-	public final fun getLeft ()I
-	public final fun getRight ()I
-	public final fun getTop ()I
-	public fun hashCode ()I
-	public final fun isEmpty ()Z
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class tv/nomercy/player/video/subtitles/AssRegion$Companion {
-	public final fun getNONE ()Ltv/nomercy/player/video/subtitles/AssRegion;
-}
-
 public abstract interface class tv/nomercy/player/video/subtitles/AssRenderer {
 	public abstract fun addFont (Ljava/lang/String;[B)V
 	public abstract fun clearFonts ()V
@@ -1311,20 +1299,10 @@ public abstract interface class tv/nomercy/player/video/subtitles/AssRenderer {
 }
 
 public final class tv/nomercy/player/video/subtitles/AssSurfaceFrame {
-	public fun <init> ([IIILtv/nomercy/player/video/subtitles/AssRegion;)V
-	public final fun component1 ()[I
-	public final fun component2 ()I
-	public final fun component3 ()I
-	public final fun component4 ()Ltv/nomercy/player/video/subtitles/AssRegion;
-	public final fun copy ([IIILtv/nomercy/player/video/subtitles/AssRegion;)Ltv/nomercy/player/video/subtitles/AssSurfaceFrame;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/subtitles/AssSurfaceFrame;[IIILtv/nomercy/player/video/subtitles/AssRegion;ILjava/lang/Object;)Ltv/nomercy/player/video/subtitles/AssSurfaceFrame;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getChanged ()Ltv/nomercy/player/video/subtitles/AssRegion;
+	public final fun getChanged ()Ltv/nomercy/player/video/subtitles/AssChangedRows;
 	public final fun getGeneration ()I
 	public final fun getPixels ()[I
 	public final fun getSlot ()I
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class tv/nomercy/player/video/subtitles/CueAlign : java/lang/Enum {

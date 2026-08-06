@@ -24,10 +24,15 @@ public final class tv/nomercy/player/video/ass/SubtitlePlugin : tv/nomercy/playe
 	public fun <init> (Ltv/nomercy/player/video/subtitles/AssRenderer;Ltv/nomercy/player/video/ass/fonts/TwoTierFontCache;)V
 	public synthetic fun <init> (Ltv/nomercy/player/video/subtitles/AssRenderer;Ltv/nomercy/player/video/ass/fonts/TwoTierFontCache;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun addFontLate (Ljava/lang/String;[BLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun clear (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun dispose ()V
+	public final fun fonts ()Ljava/util/List;
 	public final fun getLoadedFonts ()Ljava/util/List;
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public final fun load (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun renderer ()Ltv/nomercy/player/video/subtitles/AssRenderer;
+	public final fun subtitle ()Ljava/lang/String;
+	public final fun subtitle (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class tv/nomercy/player/video/ass/fonts/CachedFont {

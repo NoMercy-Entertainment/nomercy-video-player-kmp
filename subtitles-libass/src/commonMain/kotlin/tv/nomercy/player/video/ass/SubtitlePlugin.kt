@@ -63,7 +63,53 @@ public class SubtitlePlugin(
 
     // Returns false when the subtitle could not be read at all, so a caller can
     // fall back rather than sit in front of a player showing nothing.
+    // The track that is loaded, by url, or null when none is.
+    //
+    // The reference calls this pair `subtitle`; this had only load(), so a
+    // consumer could set a track and had no way to ask which one was showing.
+    public fun subtitle(): String? = currentSubtitleUrl
+
+    /**
+     * Load a subtitle by url, or pass null to take it off.
+     *
+     * The reference's `subtitle(url)`. Null destroys the current track rather
+     * than being ignored, which is how a viewer turns captions off.
+     */
+    public suspend fun subtitle(url: String?) {
+        if (url == null) {
+            clear()
+            return
+        }
+        load(url, null)
+    }
+
+    /** The font files handed to the renderer, by the reference's name for them. */
+    public fun fonts(): List<String> = loadedFonts
+
+    /** The renderer this plugin is drawing through. */
+    public fun renderer(): AssRenderer = renderer
+
+    /**
+     * Take the current track off and forget it.
+     *
+     * Separate from dispose: the plugin stays registered and ready for the next
+     * track, which is what turning captions off means.
+     */
+    public suspend fun clear() {
+        nativeLock.withLock {
+            renderer.clearFonts()
+            // An empty track is how this renderer is told to draw nothing;
+            // there is no separate reset on the contract.
+            renderer.loadTrack("")
+        }
+        currentSubtitleUrl = null
+        loadedFonts = emptyList()
+    }
+
+    private var currentSubtitleUrl: String? = null
+
     public suspend fun load(subtitleUrl: String, fontManifestUrl: String?): Boolean {
+        currentSubtitleUrl = subtitleUrl
         val subtitle: String = get(subtitleUrl)?.body ?: run {
             // A false with nothing said. The caller can fall back, and everyone
             // else — a consumer's error surface, a support ticket — had no way

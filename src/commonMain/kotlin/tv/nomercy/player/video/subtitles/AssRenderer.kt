@@ -57,6 +57,15 @@ public interface AssRenderer {
 }
 
 // One frame's worth of cues, as images the surface positions itself.
+//
+// Valid until the next call to render() on the same renderer, which then
+// overwrites the coverage arrays in place. Draw the frame, or copy what is
+// needed out of it, before asking for another — holding one across a render
+// reads pixels from a later frame.
+//
+// A renderer allocating a fresh array per glyph run instead produced a million
+// of them across a two-minute ending sequence, and the collector's pauses were
+// what dropped frames rather than the rendering.
 public data class AssFrame(
     val images: List<AssImage>,
     val changed: Boolean,

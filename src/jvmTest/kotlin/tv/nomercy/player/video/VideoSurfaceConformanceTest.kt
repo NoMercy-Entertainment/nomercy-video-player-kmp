@@ -134,6 +134,10 @@ class VideoSurfaceConformanceTest {
         val OBJECT_METHODS = setOf("equals", "hashCode", "toString")
 
         val NATIVE_ONLY = setOf(
+            // Core's seam for AutoAdvancePlugin.preloadNext, which IS on the
+            // contract. LoadOptions carries no slot here because the engines
+            // expose a real secondary rather than a browser cache to warm.
+            "preloadNow",
             "context", "transport", "volume", "time", "state", "lifecycle", "bridge", "activity",
             "cueParsers", "streamFactories", "metrics", "bandwidth", "plugins", "queue",
             // The emitter methods. The web player extends EventEmitter, so these are
