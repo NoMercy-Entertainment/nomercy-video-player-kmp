@@ -16,6 +16,7 @@ import tv.nomercy.player.core.cues.TextPayload
 import tv.nomercy.player.core.cues.VttSubtitlePayload
 import tv.nomercy.player.core.events.ALIGN_CENTER
 import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.CueEvent
 import tv.nomercy.player.core.events.FULL_SIZE
 import tv.nomercy.player.core.events.SubtitleCue
 import tv.nomercy.player.core.events.SubtitleCueChange
@@ -134,8 +135,27 @@ internal class SidecarSubtitleCues(
         val crossing: CueCrossing<TextPayload> = started.advanceTo(seconds)
         if (!crossing.changed) return
 
+        // The crossing itself, on the player's own channel.
+        //
+        // cue:enter and cue:exit were declared, catalogued and emitted by
+        // nothing: the tracker computed both halves and handed them to a caller
+        // that announced only the resulting LIST. A consumer wiring
+        // `on('cue:enter')` — which is what the reference documents, and how a
+        // karaoke overlay or an analytics hook is written — heard nothing ever,
+        // while `subtitleCue` fired beside it.
+        crossing.entered.forEach { cue -> host.emit(CoreEvents.CueEnter, eventOf(cue)) }
+        crossing.exited.forEach { cue -> host.emit(CoreEvents.CueExit, eventOf(cue)) }
+
         announce(started.active.map { cueOf(it.payload) })
     }
+
+    // Seconds on the wire, as the reference's payload carries them.
+    private fun eventOf(cue: Cue<TextPayload>): CueEvent = CueEvent(
+        id = cue.id,
+        startTime = cue.start,
+        endTime = cue.end,
+        text = cue.payload.text,
+    )
 
     private fun announce(cues: List<SubtitleCue>) {
         host.emit(CoreEvents.SubtitleCue, SubtitleCueChange(cues = cues, language = language))
