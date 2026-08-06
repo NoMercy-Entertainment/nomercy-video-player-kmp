@@ -30,6 +30,7 @@ import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.Fetcher
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.MediaBackend
+import tv.nomercy.player.core.events.SubtitlePayload
 import tv.nomercy.player.core.media.DynamicRange
 import tv.nomercy.player.core.media.QualityDescriptor
 import tv.nomercy.player.core.ports.QualityLevel
@@ -108,7 +109,7 @@ public open class NMVideoPlayer(
     // a video player that skipped this hands core an engine it cannot ask for a
     // subtitle — which is exactly what happened here: the whole track surface
     // answered empty and every menu built from it was blank.
-    video: VideoBackend? = null,
+    private val video: VideoBackend? = null,
     // Where this player's own suspending work runs — a segment window seeking
     // back on a loop, a hold pausing at the boundary. Injectable for the same
     // reason core's is: a test that cannot control the scheduler is asserting
@@ -601,7 +602,30 @@ public open class NMVideoPlayer(
     // an engine track stops the file.
     override fun subtitle(track: SubtitleTrack?) {
         val isSidecar: Boolean = sidecarCues.select(track)
-        super.subtitle(if (isSidecar) null else track)
+        if (!isSidecar) {
+            super.subtitle(track)
+            return
+        }
+
+        // The ENGINE is told null, because it has no such track and asking for
+        // one leaves the picture blank. The ANNOUNCEMENT is the track the viewer
+        // chose, which is what this used to get wrong by passing the same null
+        // to both.
+        //
+        // Every sidecar selection therefore announced itself as captions off.
+        // Any consumer keying on `subtitle` saw "off" for a track that was
+        // playing — and selecting off AFTER a sidecar changed nothing, because
+        // the announcement was already null. That is why turning captions off
+        // left the libass raster frozen exactly where it was while the click
+        // landed and the menu closed normally.
+        engineTrack(null)
+        emit(CoreEvents.Subtitle, SubtitlePayload(subtitles().indexOf(track).toDouble()))
+    }
+
+    // The engine's own selector, reached without the announcement super would
+    // make. Kept beside the override so the pair is read together.
+    private fun engineTrack(track: SubtitleTrack?) {
+        video?.subtitleTrack(track)
     }
 
     // The rung the viewer ASKED for, which is not the rung that ends up playing.
