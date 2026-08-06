@@ -30,6 +30,8 @@ import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.Fetcher
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.MediaBackend
+import tv.nomercy.player.core.media.DynamicRange
+import tv.nomercy.player.core.media.QualityDescriptor
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.Storage
 import tv.nomercy.player.core.ports.VideoBackend
@@ -204,7 +206,10 @@ public open class NMVideoPlayer(
 
         // Once the engine has populated its lists, which is what mediaReady
         // says. Asking any earlier reads two empty lists and picks nothing.
-        context.on(CoreEvents.MediaReady) { applyDefaultTracks() }
+        context.on(CoreEvents.MediaReady) {
+            applyDefaultTracks()
+            announceLevels()
+        }
 
         // The item's own subtitle files, registered the moment it becomes the
         // one playing. Without this a host would have to call addSubtitleTrack
@@ -297,6 +302,40 @@ public open class NMVideoPlayer(
     // asked for French on a film that has no French subtitles is not owed an
     // error, and a player that turned captions off to signal the miss would be
     // making the absence worse than it is.
+    // The engine's ladder, published as the event a quality menu is built from.
+    //
+    // VideoBackendBridge.announceLevels was public, emitted VideoEvents.Levels
+    // and was called by nothing at all — declared-never-emitted, the same class
+    // as beforeLoad. A consumer following the reference and waiting for `levels`
+    // waited forever while qualityLevels() sat there holding the answer.
+    //
+    // Announced from mediaReady because that is already the moment this player
+    // reads the engine's lists: the comment beside applyDefaultTracks says
+    // asking any earlier gets two empty ones, and a ladder is no different.
+    //
+    // Silent on an empty ladder. A progressive file has no rungs, and an empty
+    // `levels` would tell a menu to rebuild itself around nothing.
+    private fun announceLevels() {
+        val ladder: List<QualityLevel> = qualityLevels()
+        if (ladder.isEmpty()) return
+
+        videoBridge.announceLevels(
+            ladder.map { level ->
+                QualityDescriptor(
+                    height = level.height,
+                    width = level.width,
+                    bitrate = level.bitrate,
+                    // Two DynamicRange enums, one per layer, and they carry
+                    // the same strings — so the token is the conversion, and a
+                    // hand-written when() would be four branches that drift the
+                    // day a fifth range is added to one of them.
+                    dynamicRange = DynamicRange.fromToken(level.dynamicRange.wire),
+                    codec = level.codec,
+                )
+            },
+        )
+    }
+
     private fun applyDefaultTracks() {
         val config: PlayerConfig = options()
 
