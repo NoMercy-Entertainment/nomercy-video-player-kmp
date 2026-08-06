@@ -100,26 +100,7 @@ class OverlayGeometryDumpTest {
         }
         waitForIdle()
 
-        val rows: MutableList<String> = mutableListOf()
-
-        for (tag in TAGS) {
-            // onAllNodesWithTag, not onNodeWithTag: a control the current
-            // config does not draw is absent rather than failed, and a dump
-            // that threw on the first one would report nothing about the
-            // twenty that are there.
-            val nodes = onAllNodesWithTag(tag).fetchSemanticsNodes()
-            if (nodes.isEmpty()) continue
-
-            val node = nodes.first()
-            val bounds = node.boundsInRoot
-            rows += """{"name":"$tag"""" +
-                ""","left":${bounds.left / WIDTH}""" +
-                ""","top":${bounds.top / HEIGHT}""" +
-                ""","width":${bounds.width / WIDTH}""" +
-                ""","height":${bounds.height / HEIGHT}""" +
-                ""","widthPx":${bounds.width.toInt()}""" +
-                ""","heightPx":${bounds.height.toInt()}}"""
-        }
+        val rows: List<String> = measured()
 
         // The bar and its play button, by name. A count was the first form of
         // this guard and it was a guess dressed as a threshold: the number that
@@ -139,6 +120,32 @@ class OverlayGeometryDumpTest {
         out.writeText(
             """{"container":{"width":$WIDTH,"height":$HEIGHT},"elements":[${rows.joinToString(",")}]}""",
         )
+    }
+
+    // The measuring half, lifted out so the test reads as what it asserts. A
+    // dump that had grown past forty lines was a dump nobody could see the
+    // claim inside.
+    private fun androidx.compose.ui.test.ComposeUiTest.measured(): List<String> {
+        val rows: MutableList<String> = mutableListOf()
+        for (tag in TAGS) {
+                // onAllNodesWithTag, not onNodeWithTag: a control the current
+                // config does not draw is absent rather than failed, and a dump
+                // that threw on the first one would report nothing about the
+                // twenty that are there.
+                val nodes = onAllNodesWithTag(tag).fetchSemanticsNodes()
+                if (nodes.isEmpty()) continue
+
+                val node = nodes.first()
+                val bounds = node.boundsInRoot
+                rows += """{"name":"$tag"""" +
+                    ""","left":${bounds.left / WIDTH}""" +
+                    ""","top":${bounds.top / HEIGHT}""" +
+                    ""","width":${bounds.width / WIDTH}""" +
+                    ""","height":${bounds.height / HEIGHT}""" +
+                    ""","widthPx":${bounds.width.toInt()}""" +
+                    ""","heightPx":${bounds.height.toInt()}}"""
+            }
+        return rows
     }
 
     private companion object {
