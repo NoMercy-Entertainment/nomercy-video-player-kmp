@@ -78,7 +78,7 @@ public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/cont
 	public fun clearSegment ()V
 	public fun cycleAspectRatio ()V
 	public fun cycleAudioTracks ()V
-	public fun cycleSubtitles ()V
+	public fun cycleSubtitles (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun dispose (Ltv/nomercy/player/core/player/ActionOptions;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun fullscreen ()Z
 	public fun fullscreen (Z)V
@@ -91,9 +91,9 @@ public class tv/nomercy/player/video/NMVideoPlayer : tv/nomercy/player/core/cont
 	public fun playSegment (Ltv/nomercy/player/video/SegmentBoundary;Ltv/nomercy/player/video/SegmentEndBehaviour;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun playSegment$default (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/SegmentBoundary;Ltv/nomercy/player/video/SegmentEndBehaviour;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public fun quality (Ltv/nomercy/player/core/ports/QualityLevel;)V
-	public fun removeSubtitleTrack (Ljava/lang/String;)V
+	public fun removeSubtitleTrack (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun subtitle ()Ltv/nomercy/player/core/ports/SubtitleTrack;
-	public fun subtitle (Ltv/nomercy/player/core/ports/SubtitleTrack;)V
+	public fun subtitle (Ltv/nomercy/player/core/ports/SubtitleTrack;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun subtitleState ()Ltv/nomercy/player/core/player/AudioTrackState;
 	public fun subtitleStyle ()Ltv/nomercy/player/core/events/SubtitleStyle;
 	public fun subtitleStyle (Ltv/nomercy/player/core/events/SubtitleStyle;)V

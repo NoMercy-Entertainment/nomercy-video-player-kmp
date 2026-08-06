@@ -301,7 +301,7 @@ public class AppleVideoTracks internal constructor(
     }
 
     public fun selectSubtitle(track: SubtitleTrack?) {
-        player.subtitle(track)
+        scope.launch { player.subtitle(track) }
     }
 }
 
