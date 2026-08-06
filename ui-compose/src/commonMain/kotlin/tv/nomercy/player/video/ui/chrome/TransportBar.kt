@@ -259,6 +259,7 @@ private fun TransportControlButton(
             description = strings.previous,
             enabled = state.hasPrevious,
             onClick = { commands.previous() },
+            modifier = Modifier.testTag(PREVIOUS_TAG),
         )
 
         else -> StepControlButton(control, state, commands, strings)
@@ -325,6 +326,7 @@ private fun StepControlButton(
             description = strings.next,
             enabled = state.hasNext,
             onClick = { commands.next() },
+            modifier = Modifier.testTag(NEXT_TAG),
         )
 
         else -> Unit
@@ -535,6 +537,7 @@ private fun MenuControlButton(
                 description = strings.subtitles,
                 expanded = state.menu == MenuState.Subtitle,
                 open = commands::openSubtitleMenu,
+                tag = SUBTITLES_TAG,
             ),
             close = commands::closeMenu,
         )
@@ -547,6 +550,7 @@ private fun MenuControlButton(
                 description = strings.language,
                 expanded = state.menu == MenuState.Audio,
                 open = commands::openAudioMenu,
+                tag = AUDIO_TAG,
             ),
             close = commands::closeMenu,
         )
@@ -685,6 +689,14 @@ internal const val THEATER_TAG = "nm-theater"
 internal const val PIP_TAG = "nm-pip"
 internal const val SPEED_TAG = "nm-speed"
 internal const val QUALITY_TAG = "nm-quality"
+
+// Four controls rendered a button and tagged nothing, so no UI test and no
+// screenshot comparison could address them — an overlay element that cannot be
+// measured is one nobody can prove is there.
+internal const val PREVIOUS_TAG = "nm-previous"
+internal const val NEXT_TAG = "nm-next"
+internal const val SUBTITLES_TAG = "nm-subtitles"
+internal const val AUDIO_TAG = "nm-audio"
 internal const val PLAYLIST_TAG = "nm-playlist"
 internal const val FULLSCREEN_TAG: String = "nm-chrome-fullscreen"
 
