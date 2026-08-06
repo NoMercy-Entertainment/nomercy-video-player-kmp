@@ -154,9 +154,15 @@ public class SubtitlePlugin(
             reconcile()
         }
 
-        // A new film knows nothing until its own list and selection arrive.
+        // A new film's SELECTION is unknown until it announces one. The list is
+        // not cleared here, and that ordering is the whole of it: the player
+        // emits the new item's tracks from inside the `item` dispatch, so the
+        // list has already arrived by the time this runs. Clearing it here threw
+        // the new item's tracks away, `wanted()` could never resolve one, and
+        // every reconcile computed null both before and after — which is a
+        // selection change that correctly does nothing, and looks on screen
+        // exactly like the raster never clearing.
         on(CoreEvents.Item) {
-            available = emptyList()
             selected = null
             selectionSeen = false
             manifestUrl = null
