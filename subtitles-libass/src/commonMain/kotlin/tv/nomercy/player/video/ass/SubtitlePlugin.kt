@@ -15,6 +15,12 @@ import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.FetchResponse
 import tv.nomercy.player.video.subtitles.AssFontNames
 import tv.nomercy.player.video.subtitles.FontManifest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import tv.nomercy.player.core.events.CoreEvents
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import tv.nomercy.player.video.ass.fonts.CachedFont
@@ -105,6 +111,34 @@ public class SubtitlePlugin(
         currentSubtitleUrl = null
         loadedFonts = emptyList()
     }
+
+    // The track does not survive the item that carried it.
+    //
+    // This plugin registered no listeners at all, so a track loaded for one film
+    // stayed in the renderer when the queue moved on and libass went on drawing
+    // that film's dialogue against the next one's playhead. Photographed on the
+    // desktop testbed: Big Buck Bunny, a Blender short with no Japanese
+    // dialogue, rendering an anime karaoke line in romaji over its opening.
+    //
+    // The sidecar CueTracker was fixed for exactly this and it is a different
+    // renderer on a different path — clearing one said nothing about the other,
+    // which is why the leak survived a fix that looked complete.
+    override fun use() {
+        on(CoreEvents.Item) {
+            // The url drops synchronously and the native work is launched.
+            // `subtitle()` is what a consumer and the chrome read to decide
+            // whether captions are on, and leaving it set until libass caught
+            // up would leave a menu ticking a track for a film that no longer
+            // has one.
+            currentSubtitleUrl = null
+            pluginScope.launch { clear() }
+        }
+    }
+
+    // Launched rather than called: clear() suspends because it enters libass
+    // under the lock, and an event listener that could suspend would colour
+    // every emitter on this bus.
+    private val pluginScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private var currentSubtitleUrl: String? = null
 
@@ -297,6 +331,7 @@ public class SubtitlePlugin(
     }
 
     override fun dispose() {
+        pluginScope.cancel()
         renderer.release()
     }
 
