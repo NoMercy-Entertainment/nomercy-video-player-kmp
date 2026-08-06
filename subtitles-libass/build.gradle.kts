@@ -239,6 +239,34 @@ tasks.matching { it.name == "klibApiCheck" || it.name == "klibApiDump" }.configu
     onlyIf { org.gradle.internal.os.OperatingSystem.current().isMacOsX }
 }
 
+// What a moving ASS subtitle costs on the desktop, on the tracks that are slow.
+//
+// A task rather than a test: it reports numbers, it takes minutes, and a suite
+// that fails on a timing is a suite that fails on whatever else the machine was
+// doing. The gate for "is it fast enough" is read by a person looking at the
+// distribution, not by an assertion on an average.
+val assBenchmark by tasks.registering(JavaExec::class) {
+    description = "Measures libass render, copy-out and composite cost on real anime tracks."
+    group = "verification"
+
+    val test = kotlin.jvm().compilations.getByName("test")
+    classpath = files(test.output.allOutputs, test.runtimeDependencyFiles)
+    mainClass.set("tv.nomercy.player.video.ass.bench.AssRenderBenchmark")
+    dependsOn(tasks.named("jvmTestClasses"))
+
+    // Both are paths on the machine running it — the libass build and the
+    // staged tracks are gigabytes of anime, neither of which belongs in a repo.
+    systemProperty("nomercy.bench.libass", providers.gradleProperty("bench.libass").getOrElse(""))
+    systemProperty("nomercy.bench.assets", providers.gradleProperty("bench.assets").getOrElse(""))
+    systemProperty("nomercy.bench.only", providers.gradleProperty("bench.only").getOrElse(""))
+    systemProperty("nomercy.bench.bands", providers.gradleProperty("bench.bands").getOrElse("8"))
+    // Overridable, because "is this frame slow or is this a collector pause"
+    // is answered by running the same window under a different collector and
+    // watching whether the maxima move. Every stage peaking at once is a pause;
+    // one stage peaking is the code in it.
+    jvmArgs(providers.gradleProperty("bench.jvmArgs").getOrElse("-Xmx2g").split(" "))
+}
+
 // Its own coordinate, and the reason this module exists at all.
 //
 // A consumer showing plain WebVTT takes the video library and never links

@@ -87,15 +87,29 @@ internal class NativeAssRenderer(
 
     // libass returns a linked list it owns, valid until the next render. Copying
     // out here is what stops the caller holding memory libass is about to reuse.
+    //
+    // Into buffers this renderer keeps, not fresh ones. An ending sequence is
+    // two hundred glyph runs a frame, and allocating a coverage array for each
+    // was a million arrays over a two-minute window — enough garbage that the
+    // collector's pauses, not the rendering, were what dropped frames. Run n
+    // is close to the same size frame after frame, so a buffer per position
+    // stops growing almost immediately.
+    //
+    // The consequence is the lifetime in AssFrame's documentation: the arrays
+    // belong to the renderer and the next render overwrites them. That is the
+    // same lifetime libass itself gives, one step further out.
+    private val coverage: MutableList<ByteArray> = mutableListOf()
+
     private fun walk(head: Pointer): List<AssImage> {
         val images: MutableList<AssImage> = mutableListOf()
         var cursor: Pointer? = head
+        var run = 0
 
         while (cursor != null) {
             val image = AssImageStruct(cursor)
-            val coverage: ByteArray = image.bitmap
-                ?.getByteArray(0, image.stride * image.h)
-                ?: ByteArray(0)
+            val size: Int = image.stride * image.h
+            val pixels: ByteArray = borrow(run, size)
+            image.bitmap?.read(0, pixels, 0, size)
 
             images += AssImage(
                 x = image.dstX,
@@ -104,11 +118,25 @@ internal class NativeAssRenderer(
                 height = image.h,
                 stride = image.stride,
                 colour = image.color,
-                pixels = coverage,
+                pixels = pixels,
             )
             cursor = image.next
+            run++
         }
         return images
+    }
+
+    // Exactly the declared size, because AssImage.stride and height describe the
+    // array and a longer one would be read past its content by anything that
+    // trusted its length instead.
+    private fun borrow(run: Int, size: Int): ByteArray {
+        while (coverage.size <= run) coverage += ByteArray(0)
+        val held: ByteArray = coverage[run]
+        if (held.size == size) return held
+
+        val fresh = ByteArray(size)
+        coverage[run] = fresh
+        return fresh
     }
 
     private fun applySize(target: Pointer) {

@@ -118,7 +118,7 @@ public fun AssSubtitleLayer(
 // Null means "keep what is on screen". The renderer answers null for a frame
 // that has not changed, which is most of them — a static line held for four
 // seconds is one render and ninety-five identical ones nobody should pay for.
-private fun nextPicture(
+private suspend fun nextPicture(
     renderer: AssRenderer,
     compositor: AssFrameCompositor,
     picture: AssPictureSurface,
@@ -128,7 +128,10 @@ private fun nextPicture(
     val frame: AssFrame = renderer.render(timeMs) ?: return null
     if (!frame.changed) return null
 
-    val composited: AssSurfaceFrame = compositor.render(frame.images, surface.width, surface.height)
+    // Banded, because a single ending sequence puts two hundred glyph runs over
+    // an eighth of the screen and blending them in one pass was four
+    // milliseconds — a quarter of a 60fps budget spent on subtitles alone.
+    val composited: AssSurfaceFrame = compositor.renderParallel(frame.images, surface.width, surface.height)
     return picture.bitmap(composited, surface.width, surface.height)
 }
 
