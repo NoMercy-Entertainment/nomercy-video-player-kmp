@@ -1560,6 +1560,7 @@ public class tv/nomercy/player/video/transcode/LiveTranscodingPlugin : tv/nomerc
 	public fun getOptions ()Ltv/nomercy/player/video/transcode/LiveTranscodingOptions;
 	public final fun getTranscodedTo ()Lkotlinx/coroutines/flow/StateFlow;
 	public fun optionFields ()Ljava/util/List;
+	public final fun transcodedTo ()D
 	public fun use ()V
 }
 

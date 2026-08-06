@@ -2073,6 +2073,7 @@ open class tv.nomercy.player.video.transcode/LiveTranscodingPlugin : tv.nomercy.
     open val options // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.options|{}options[0]
         open fun <get-options>(): tv.nomercy.player.video.transcode/LiveTranscodingOptions // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.options.<get-options>|<get-options>(){}[0]
 
+    final fun transcodedTo(): kotlin/Double // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.transcodedTo|transcodedTo(){}[0]
     open fun dispose() // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.dispose|dispose(){}[0]
     open fun optionFields(): kotlin.collections/List<tv.nomercy.player.core.plugin/PluginOptionField> // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.optionFields|optionFields(){}[0]
     open fun use() // tv.nomercy.player.video.transcode/LiveTranscodingPlugin.use|use(){}[0]

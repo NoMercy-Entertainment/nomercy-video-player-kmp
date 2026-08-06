@@ -88,6 +88,16 @@ public open class LiveTranscodingPlugin(
     /** How many seconds the encoder has written, from its own progress reports. */
     public val transcodedTo: StateFlow<Double> = head.asStateFlow()
 
+    /**
+     * How far the transcoder has got, as the reference reports it.
+     *
+     * The flow above is the native addition — a consumer that wants to react
+     * rather than poll. This is the reference'''s own accessor, and it was
+     * missing: a UI porting from the web called transcodedTo() and found a
+     * property it could not invoke.
+     */
+    public fun transcodedTo(): Double = head.value
+
     private var jobId: String = ""
 
     override fun use() {
