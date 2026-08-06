@@ -8,7 +8,12 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Alignment
@@ -68,12 +73,29 @@ class OverlayGeometryDumpTest {
                 modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp),
                 contentAlignment = Alignment.BottomStart,
             ) {
-                TransportBar(
-                    state = FULLY_STOCKED,
-                    commands = RecordingMenuCommands(),
-                    strings = TvChromeStrings(),
-                    buttons = EVERY_BUTTON,
-                )
+                // The chrome's whole bottom stack, from the chrome's own
+                // constants: the scrubber row's height, the gap, and the
+                // padding under the bar. Composing the bar alone put every
+                // element the same 0.02 of the container too low, and a uniform
+                // offset across everything is the fixture placing things
+                // differently rather than a layout that is wrong.
+                //
+                // The strip stands in as a spacer of its stated height. The
+                // question here is where the BAR lands, and mounting the real
+                // strip would need a scene and a host to answer a question
+                // neither of them changes.
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = BOTTOM_STACK_PADDING),
+                    verticalArrangement = Arrangement.spacedBy(BOTTOM_STACK_GAP),
+                ) {
+                    Spacer(Modifier.height(STRIP_TOP_MARGIN + STRIP_ROW_HEIGHT))
+                    TransportBar(
+                        state = FULLY_STOCKED,
+                        commands = RecordingMenuCommands(),
+                        strings = TvChromeStrings(),
+                        buttons = EVERY_BUTTON,
+                    )
+                }
             }
         }
         waitForIdle()
@@ -142,8 +164,10 @@ class OverlayGeometryDumpTest {
          * comparison over it silently covers half the overlay.
          */
         val EVERY_BUTTON = ChromeButtons(
-            seekBack = true,
-            seekForward = true,
+            // Seek buttons OFF, because the reference page does not draw them.
+            // Turning them on packed two extra controls into the left group and
+            // shifted every control after them — four findings about a fixture
+            // asking for more than the thing it is measured against.
             subtitles = true,
             audio = true,
             quality = true,
