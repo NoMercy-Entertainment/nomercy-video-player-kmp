@@ -128,7 +128,12 @@ internal class VideoChromeCommands(
     // a missing one.
     override fun selectQuality(level: QualityLevel?): Unit = player.quality(level)
 
-    override fun selectAudioTrack(track: AudioTrack): Unit = player.audioTrack(track)
+    // Launched, not awaited. The setter suspends because the reference's is an
+    // async writer with a cancellable before-hook in front of it, and a chrome
+    // callback that suspended would make every menu row a suspending call site.
+    override fun selectAudioTrack(track: AudioTrack) {
+        scope.launch { player.audioTrack(track) }
+    }
 
     override fun selectSubtitleTrack(track: SubtitleTrack?): Unit = player.subtitle(track)
 

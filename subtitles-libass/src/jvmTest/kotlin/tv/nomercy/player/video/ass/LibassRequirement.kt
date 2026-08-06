@@ -8,18 +8,30 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.core.natives.NativeRuntimeKind
+import tv.nomercy.player.core.natives.NativeRuntimes
 import tv.nomercy.player.video.subtitles.AssRenderer
 import kotlin.test.fail
 
 // Whether a missing libass is allowed to end a gate quietly.
 //
-// A skip is right on a developer's Windows machine, where the only builds in
-// circulation are the copies statically linked inside VLC and mpv and cannot be
-// loaded from outside them. It is exactly wrong on the Linux job, which installs
-// the package on purpose: there, a skip means the install stopped working and
-// the whole desktop rendering path went untested behind a green tick.
+// This used to skip on Windows, on the premise that "the only builds in
+// circulation are the copies statically linked inside VLC and mpv". That
+// premise died when nomercy-libass started publishing a windows-x64 archive,
+// and nobody told the gate — so the whole styled-subtitle path went untested on
+// the desktop behind five green ticks, and the way it surfaced instead was a
+// viewer saying an episode had no subtitles.
 //
-// So the job that installs it says so, and the gate fails rather than skips.
+// A gate that skips on the platform where the thing is broken is not a gate.
+// So the question is no longer "which host is this" but "is a payload
+// published for this host": where one is, libass is required and a failure to
+// load it is a red, whatever the reason. That is the same question the shipped
+// loader asks, which is the point — the gate and the product now disagree about
+// nothing.
+//
+// The environment variable stays as an override for a host with no published
+// payload, so the Linux job that installs the distribution package still says
+// so and still fails rather than skips.
 internal object LibassRequirement {
 
     private const val VARIABLE = "NOMERCY_REQUIRE_LIBASS"
@@ -42,5 +54,6 @@ internal object LibassRequirement {
         return null
     }
 
-    fun isRequired(): Boolean = System.getenv(VARIABLE) == "1"
+    fun isRequired(): Boolean =
+        System.getenv(VARIABLE) == "1" || NativeRuntimes.isPublished(NativeRuntimeKind.LIB_ASS)
 }

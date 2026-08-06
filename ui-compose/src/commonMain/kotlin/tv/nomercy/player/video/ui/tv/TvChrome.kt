@@ -92,8 +92,8 @@ public fun rememberTvChrome(
     val callbacks: TvChromeCallbacks = remember(player, scope) {
         PlayerTvCallbacks(player, scope, onExit) { preview = it }
     }
-    val content: TvContentCallbacks = remember(player) {
-        PlayerTvContent(player, onSelectEpisode, onSearchSubtitles)
+    val content: TvContentCallbacks = remember(player, scope) {
+        PlayerTvContent(player, scope, onSelectEpisode, onSearchSubtitles)
     }
     val scheduler = rememberChromeScheduler()
 
@@ -169,6 +169,7 @@ private class PlayerTvCallbacks(
 
 private class PlayerTvContent(
     private val player: NMVideoPlayer,
+    private val scope: CoroutineScope,
     private val onSelectEpisode: (String) -> Unit,
     private val onSearchSubtitles: () -> Unit,
 ) : TvContentCallbacks {
@@ -178,7 +179,12 @@ private class PlayerTvContent(
     // By identifier against the list the player reported, so a track that has
     // moved since the menu was drawn still selects the one whose name was read.
     override fun selectAudioTrack(id: String) {
-        player.audioTracks().firstOrNull { it.id == id }?.let { player.audioTrack(it) }
+        player.audioTracks().firstOrNull { it.id == id }?.let { track ->
+            // Launched, not awaited: the setter suspends because the reference
+            // puts a cancellable before-hook in front of it, and a D-pad menu
+            // row is not a suspending call site.
+            scope.launch { player.audioTrack(track) }
+        }
     }
 
     // Null is off, which is a row in the list rather than an absence, so an

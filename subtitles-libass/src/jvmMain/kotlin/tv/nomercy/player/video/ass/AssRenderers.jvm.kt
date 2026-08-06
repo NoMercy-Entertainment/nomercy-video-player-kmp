@@ -39,7 +39,19 @@ public actual object AssRenderers {
         return NativeAssRenderer(lib, library, DESKTOP_GLYPH_MAX, DESKTOP_BITMAP_CACHE_MEGABYTES)
     }
 
-    public actual fun whyUnavailable(): String? = if (loaded() != null) null else loadFailure
+    // The payload's reason first, because it is the one that is usually true.
+    //
+    // This reported only what JNA said about the LAST-resort plain "ass"
+    // lookup, so a payload that failed to download said "libass is not
+    // installed on this machine" — which points a reader at their package
+    // manager when the actual answer was a 404 on the archive. The distinction
+    // is the whole diagnosis, and it was being thrown away.
+    public actual fun whyUnavailable(): String? {
+        if (loaded() != null) return null
+        return NativeRuntimes.whyUnavailable(NativeRuntimeKind.LIB_ASS)
+            ?.let { payload -> "$payload (and no system libass: $loadFailure)" }
+            ?: loadFailure
+    }
 
     private var loadFailure: String? = null
 

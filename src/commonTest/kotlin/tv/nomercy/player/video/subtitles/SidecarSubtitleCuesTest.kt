@@ -222,6 +222,46 @@ class SidecarSubtitleCuesTest {
         assertEquals(listOf(BRITISH.id), player.subtitles().map { it.id })
     }
 
+    // The film changed, so the previous film's captions come off it.
+    //
+    // Clearing the track LIST is not what stops them. A playing sidecar is a
+    // CueTracker subscribed to `time`, and one that nobody disposed goes on
+    // matching the OUTGOING film's cues against the INCOMING film's playhead —
+    // so a title that ships no subtitles at all gets the last one's dialogue
+    // drawn over it, which is exactly what a viewer reported seeing.
+    //
+    // The overlay's own clear-on-item does not save it either: that runs once,
+    // and the surviving tracker repaints on the very next tick.
+    @Test
+    fun theOutgoingFilmsSidecarStopsDrawingOnTheNextItem() = runTest {
+        val fetcher = FakeFetcher().respondWith(body = VTT)
+        val player = playerWith(fetcher)
+        player.setup()
+
+        player.queue(
+            listOf<PlaylistItem>(
+                Film(id = "sintel", subtitles = listOf(DUTCH)),
+                Film(id = "bunny", subtitles = emptyList()),
+            ),
+        )
+
+        player.choose(DUTCH)
+        tick(player, 1.5)
+
+        val seen = cuesSeenBy(player)
+        player.next()
+        yield()
+
+        // The moment on the new item's timeline where the OLD file has a line.
+        tick(player, 1.5)
+
+        assertNull(player.subtitle())
+        assertTrue(
+            seen.all { it.cues.isEmpty() },
+            "the previous film's captions were drawn on the next item: ${seen.flatMap { change -> change.cues.map { it.text } }}",
+        )
+    }
+
     private companion object {
         const val FIRST_LINE = "Wat is er met je hand gebeurd?"
         const val SIGN = "— SINTEL —"

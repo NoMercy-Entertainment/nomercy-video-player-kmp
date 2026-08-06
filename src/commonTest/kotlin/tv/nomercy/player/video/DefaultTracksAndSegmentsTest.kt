@@ -46,6 +46,13 @@ class DefaultTracksAndSegmentsTest {
         backgroundScope.launch { subject.setup(config) }
         runCurrent()
         subject.emit(CoreEvents.MediaReady, Unit)
+        // Again, because choosing the default AUDIO track is deferred where
+        // choosing the default subtitle is not: the audio setter carries a
+        // cancellable before-hook and so it suspends, and the reference's
+        // _applyDefaultTracks is a void method that does not await it either.
+        // Without this the assertion reads the engine's own pick and calls it
+        // the host's.
+        runCurrent()
         return subject
     }
 

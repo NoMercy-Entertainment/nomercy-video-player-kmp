@@ -215,7 +215,7 @@ public class AppleVideoEngine(
      * a menu offers. Detekt counted the methods and said so, and it was right —
      * an engine that had grown a track catalogue was an engine doing two jobs.
      */
-    public val tracks: AppleVideoTracks = AppleVideoTracks(player)
+    public val tracks: AppleVideoTracks = AppleVideoTracks(player, scope)
 
     /**
      * Registers the cast sender against a television at [host].
@@ -278,7 +278,10 @@ public class AppleVideoEngine(
  * carries would drop the codec, the dynamic range and the width, and ask the
  * engine to select something it never offered.
  */
-public class AppleVideoTracks internal constructor(private val player: NMVideoPlayer) {
+public class AppleVideoTracks internal constructor(
+    private val player: NMVideoPlayer,
+    private val scope: CoroutineScope,
+) {
 
     public fun qualityLevels(): List<QualityLevel> = player.qualityLevels()
 
@@ -290,8 +293,11 @@ public class AppleVideoTracks internal constructor(private val player: NMVideoPl
         player.quality(level)
     }
 
+    // Launched like every other command on this facade: the setter suspends
+    // because the reference puts a cancellable before-hook in front of it, and
+    // this surface is called from Swift, where a suspend function is not.
     public fun selectAudio(track: AudioTrack) {
-        player.audioTrack(track)
+        scope.launch { player.audioTrack(track) }
     }
 
     public fun selectSubtitle(track: SubtitleTrack?) {

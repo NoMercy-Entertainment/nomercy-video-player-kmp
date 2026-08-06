@@ -269,6 +269,19 @@ public open class NMVideoPlayer(
     }
 
     private fun adoptItemSubtitles() {
+        // The outgoing item's sidecar stops here, before anything reads the new
+        // one. The reference drops it in core's queue seam ahead of emitting
+        // `item`; this is the first Item listener the player registers, so a
+        // plugin sees the same already-dropped state it does.
+        //
+        // Clearing the track LIST is not enough on its own. A sidecar is a
+        // CueTracker subscribed to `time`, and a tracker nobody stopped goes on
+        // matching the outgoing film's cues against the incoming film's
+        // playhead — which draws the previous title's dialogue over an item
+        // that may carry no subtitles at all, straight past the overlay's own
+        // clear-on-item, because the tracker repaints immediately after it.
+        sidecarCues.dispose()
+
         externalSubtitles = (item() as? VideoPlaylistItem)
             ?.subtitles
             .orEmpty()
