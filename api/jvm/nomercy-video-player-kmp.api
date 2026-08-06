@@ -722,6 +722,7 @@ public class tv/nomercy/player/video/cast/VideoCastPlugin : tv/nomercy/player/co
 	public static final field Manifest Ltv/nomercy/player/video/cast/VideoCastPlugin$Manifest;
 	public fun <init> (Ltv/nomercy/player/video/cast/RemoteVideoController;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/video/cast/CastWaker;)V
 	public synthetic fun <init> (Ltv/nomercy/player/video/cast/RemoteVideoController;Lkotlinx/coroutines/CoroutineScope;Ltv/nomercy/player/video/cast/CastWaker;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun disconnect (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun dispose ()V
 	public fun getCastState ()Lkotlinx/coroutines/flow/StateFlow;
 	public fun getCasting ()Z

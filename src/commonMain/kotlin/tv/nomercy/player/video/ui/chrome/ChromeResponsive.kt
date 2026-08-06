@@ -48,8 +48,19 @@ public enum class ChromeControl {
     PREVIOUS,
     CHAPTER_PREV,
     CHAPTER_NEXT,
-    SEEK_BACK,
+
+    // Forward above back, which is the reference's order and its reasoning:
+    // the two are a pair, and ranking back higher makes the bar drop forward
+    // first and leave a lone rewind button on it — a player that looks like it
+    // can only go backwards. Forward is also the one that earns the place,
+    // because skipping an intro is what it is for.
+    //
+    // This file said it was DEFAULT_PRIORITY "in order" and had these two
+    // swapped, so at the width where one of the pair drops the desktop lost
+    // exactly the wrong one.
     SEEK_FORWARD,
+    SEEK_BACK,
+
     THEATER,
     PIP,
     SPEED,
