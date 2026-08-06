@@ -135,7 +135,12 @@ internal class VideoChromeCommands(
         scope.launch { player.audioTrack(track) }
     }
 
-    override fun selectSubtitleTrack(track: SubtitleTrack?): Unit = player.subtitle(track)
+    // Launched, like every other suspending command on this class: choosing a
+    // caption is refusable now and a before-listener may suspend, and a menu
+    // row cannot wait for one to answer.
+    override fun selectSubtitleTrack(track: SubtitleTrack?) {
+        scope.launch { player.subtitle(track) }
+    }
 
     override fun setRate(rate: Float) {
         scope.launch { player.playbackRate(rate.toDouble()) }

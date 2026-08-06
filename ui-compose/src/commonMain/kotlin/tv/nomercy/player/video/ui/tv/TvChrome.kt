@@ -190,7 +190,7 @@ private class PlayerTvContent(
     // Null is off, which is a row in the list rather than an absence, so an
     // identifier that matches nothing turns them off rather than doing nothing.
     override fun selectSubtitleTrack(id: String) {
-        player.subtitle(player.subtitles().firstOrNull { it.id == id })
+        scope.launch { player.subtitle(player.subtitles().firstOrNull { it.id == id }) }
     }
 
     override fun searchSubtitlesOnline(): Unit = onSearchSubtitles()

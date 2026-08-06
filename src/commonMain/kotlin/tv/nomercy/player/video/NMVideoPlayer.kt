@@ -208,8 +208,15 @@ public open class NMVideoPlayer(
         // Once the engine has populated its lists, which is what mediaReady
         // says. Asking any earlier reads two empty lists and picks nothing.
         context.on(CoreEvents.MediaReady) {
-            applyDefaultTracks()
+            // Launched, because choosing a default track is refusable now and a
+            // before-listener may suspend. An event listener that could suspend
+            // would colour every emitter on this bus.
+            // Only the suspending half is launched. The ladder is published
+            // synchronously, because a consumer building a quality menu from
+            // `levels` should have it by the time mediaReady has finished
+            // dispatching rather than a scheduler tick later.
             announceLevels()
+            playerScope.launch { applyDefaultTracks() }
         }
 
         // The item's own subtitle files, registered the moment it becomes the
@@ -337,7 +344,7 @@ public open class NMVideoPlayer(
         )
     }
 
-    private fun applyDefaultTracks() {
+    private suspend fun applyDefaultTracks() {
         val config: PlayerConfig = options()
 
         config.defaultSubtitleLanguage?.let { wanted ->
@@ -508,7 +515,7 @@ public open class NMVideoPlayer(
     // what a remote's subtitle button does: press it enough times and the
     // subtitles go away. A cycle that never reached off would trap a viewer who
     // turned them on by accident.
-    public open fun cycleSubtitles() {
+    public open suspend fun cycleSubtitles() {
         val available: List<SubtitleTrack?> = subtitles() + listOf(null)
         if (available.size <= 1) return
 
@@ -552,7 +559,7 @@ public open class NMVideoPlayer(
         emit(CoreEvents.Subtitles, SubtitlesPayload(subtitles()))
     }
 
-    public open fun removeSubtitleTrack(id: String) {
+    public open suspend fun removeSubtitleTrack(id: String) {
         val without: List<SubtitleTrack> = externalSubtitles.filterNot { it.id == id }
         if (without.size == externalSubtitles.size) return
 
@@ -600,7 +607,7 @@ public open class NMVideoPlayer(
     // producers feeding one cue channel puts two sets of captions on one
     // picture, so choosing a file turns the engine's own text off, and choosing
     // an engine track stops the file.
-    override fun subtitle(track: SubtitleTrack?) {
+    override suspend fun subtitle(track: SubtitleTrack?) {
         val isSidecar: Boolean = sidecarCues.select(track)
         if (!isSidecar) {
             super.subtitle(track)

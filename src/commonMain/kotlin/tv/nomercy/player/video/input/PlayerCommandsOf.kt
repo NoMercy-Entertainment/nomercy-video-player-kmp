@@ -104,7 +104,12 @@ private class PlayerPresentation(
     private val scope: CoroutineScope,
 ) : VideoPresentation {
 
-    override fun cycleSubtitles(): Unit = player.cycleSubtitles()
+    // Launched on the scope this was built with, the same way every other
+    // suspending command here is: a key press cannot wait for a before-listener
+    // to answer.
+    override fun cycleSubtitles() {
+        scope.launch { player.cycleSubtitles() }
+    }
 
     override fun cycleAudioTracks(): Unit = player.cycleAudioTracks()
 
