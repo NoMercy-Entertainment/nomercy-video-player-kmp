@@ -296,7 +296,9 @@ public open class NMVideoPlayer(
         config.defaultAudioLanguage?.let { wanted ->
             val tracks: List<AudioTrack> = audioTracks()
             matchLanguage(tracks.map { it.language }, wanted)
-                ?.let { index -> audioTrack(tracks[index]) }
+                // Not awaited, because the reference does not await it either:
+                // _applyDefaultTracks is a void method calling an async setter.
+                ?.let { index -> playerScope.launch { audioTrack(tracks[index]) } }
         }
     }
 
@@ -470,7 +472,9 @@ public open class NMVideoPlayer(
         if (available.size <= 1) return
 
         val here: Int = available.indexOfFirst { it.id == audioTrack()?.id }
-        audioTrack(available[(here + 1) % available.size])
+        // Same as the reference: cycleAudioTracks returns void and does not
+        // await the selection it starts.
+        playerScope.launch { audioTrack(available[(here + 1) % available.size]) }
     }
 
     // A subtitle file the item did not come with.
