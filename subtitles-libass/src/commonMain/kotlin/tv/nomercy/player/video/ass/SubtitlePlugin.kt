@@ -21,6 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.ports.SubtitleTrack
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import tv.nomercy.player.video.ass.fonts.CachedFont
@@ -123,47 +124,92 @@ public class SubtitlePlugin(
     // The sidecar CueTracker was fixed for exactly this and it is a different
     // renderer on a different path — clearing one said nothing about the other,
     // which is why the leak survived a fix that looked complete.
+    // One pipeline, fed by the two event families that can change what should
+    // be on screen, and a single place that decides.
+    //
+    // The listeners do not act. They update what is KNOWN — the track list, the
+    // selected index, the item — and then ask for a reconcile, which compares
+    // what should be drawn against what is drawn and moves one to the other.
+    // Every earlier shape of this acted directly from a listener and each one
+    // handled the case it was written for: the item change cleared, and then
+    // turning captions off did not; the selection cleared, and then turning them
+    // back on did not, because nothing loaded except on an item change. A rule
+    // per transition is a rule missing per transition nobody has hit yet.
     override fun use() {
-        // The SELECTED TRACK, not only the item.
-        //
-        // This overlay's lifecycle was bound to the queue: it was handed a track
-        // when the item changed and heard nothing at all when the viewer changed
-        // tracks inside it. So ASS to ASS worked — the consumer handed it the
-        // new file — and ASS to off and ASS to WebVTT left the last rasterised
-        // frame on screen with libass still holding the old track. A sign frozen
-        // over a film that is no longer showing it.
-        //
-        // libass has no concept of "another renderer is drawing now"; only the
-        // selection says so.
-        //
-        // Cleared unless the consumer answers the selection by handing this
-        // plugin a different file. The url is captured before the launch and
-        // compared after it, so a load() that lands in the same frame wins and
-        // the track that was just installed is not wiped by the event that
-        // caused it.
-        on(CoreEvents.Subtitle) {
-            // The url drops synchronously: subtitle() is what a chrome reads to
-            // tick the current track, and leaving it set until libass caught up
-            // would tick a file that is no longer being drawn.
-            currentSubtitleUrl = null
-
-            // The native teardown is launched, and skipped if the consumer has
-            // meanwhile handed this plugin a new file. That is the ASS-to-ASS
-            // case, which already worked and must keep working — clearing
-            // unconditionally would wipe the track the selection just installed.
-            pluginScope.launch { if (currentSubtitleUrl == null) clear() }
+        // The list, so a selection index can be resolved to a file. Reconciling
+        // on it only once a selection has been seen: before that the list
+        // arriving would compute "nothing selected" and take down a track a
+        // consumer had loaded by hand.
+        on(CoreEvents.Subtitles) { payload ->
+            available = payload.tracks.filterIsInstance<SubtitleTrack>()
+            if (selectionSeen) reconcile()
         }
 
+        // Which one, or none. libass has no concept of another renderer drawing
+        // now, so a selection this plugin cannot draw reads here as "draw
+        // nothing" — which is exactly right, and is the WebVTT case.
+        on(CoreEvents.Subtitle) { payload ->
+            selected = payload.track?.toInt()
+            selectionSeen = true
+            reconcile()
+        }
+
+        // A new film knows nothing until its own list and selection arrive.
         on(CoreEvents.Item) {
-            // The url drops synchronously and the native work is launched.
-            // `subtitle()` is what a consumer and the chrome read to decide
-            // whether captions are on, and leaving it set until libass caught
-            // up would leave a menu ticking a track for a film that no longer
-            // has one.
-            currentSubtitleUrl = null
-            pluginScope.launch { clear() }
+            available = emptyList()
+            selected = null
+            selectionSeen = false
+            manifestUrl = null
+            reconcile()
         }
     }
+
+    // What should be drawn, given everything currently known.
+    //
+    // Null when captions are off, when the selection belongs to another
+    // renderer, or when nothing is known yet.
+    private fun wanted(): String? {
+        val index: Int = selected ?: return null
+        val track: SubtitleTrack = available.getOrNull(index) ?: return null
+        return track.url?.takeIf { styled(track) }
+    }
+
+    // Format first, because that is what the track declares; the extension is
+    // the fallback for a server that sends none.
+    private fun styled(track: SubtitleTrack): Boolean {
+        val format: String = track.format.lowercase()
+        if (format == "ass" || format == "ssa") return true
+        val url: String = track.url?.lowercase() ?: return false
+        return url.endsWith(".ass") || url.endsWith(".ssa")
+    }
+
+    // Move what is drawn to what should be.
+    //
+    // The url is written synchronously because subtitle() is what a chrome reads
+    // to tick the current track, and a menu ticking a file nothing is drawing is
+    // the same lie in the other direction. The native work is launched, and
+    // re-checks before it acts: a second selection arriving while the first is
+    // still loading must not leave the loser installed.
+    private fun reconcile() {
+        val target: String? = wanted()
+        if (target == currentSubtitleUrl) return
+
+        currentSubtitleUrl = target
+        pluginScope.launch {
+            if (currentSubtitleUrl != target) return@launch
+            if (target == null) clear() else load(target, manifestUrl)
+        }
+    }
+
+    private var available: List<SubtitleTrack> = emptyList()
+    private var selected: Int? = null
+    private var selectionSeen: Boolean = false
+
+    // The font manifest the consumer named for this item, remembered so a
+    // reselection inside the same film gets the same faces. libass resolves a
+    // face when it draws, so a track reloaded without them renders in a fallback
+    // and nothing reports a problem.
+    private var manifestUrl: String? = null
 
     // Launched rather than called: clear() suspends because it enters libass
     // under the lock, and an event listener that could suspend would colour
@@ -174,6 +220,9 @@ public class SubtitlePlugin(
 
     public suspend fun load(subtitleUrl: String, fontManifestUrl: String?): Boolean {
         currentSubtitleUrl = subtitleUrl
+        // Remembered, so a reselection inside the same film reloads with the
+        // faces the consumer named rather than without them.
+        manifestUrl = fontManifestUrl
         val subtitle: String = get(subtitleUrl)?.body ?: run {
             // A false with nothing said. The caller can fall back, and everyone
             // else — a consumer's error surface, a support ticket — had no way
