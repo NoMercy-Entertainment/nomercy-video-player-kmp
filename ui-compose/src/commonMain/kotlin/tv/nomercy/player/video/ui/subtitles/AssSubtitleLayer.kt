@@ -67,17 +67,11 @@ public fun AssSubtitleLayer(
     val compositor: AssFrameCompositor = remember { AssFrameCompositor() }
     val picture: AssPictureSurface = remember { AssPictureSurface() }
 
-    // The engine reports a position a few times a second; a moving cue needs
-    // one every frame. This carries the last report forward by the time since
-    // it arrived, which is what the browser's currentTime gives for free.
-    val playhead: SmoothedPlayhead = remember { SmoothedPlayhead() }
 
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
             // Sizing is native work too, and it happens on every resize.
             withContext(Dispatchers.Default) { renderer.frameSize(surface.width, surface.height) }
-
-            var drawAtMs: Long = positionMs()
 
             while (coroutineContext.isActive) {
                 // Rasterising OFF the composition thread, which is the whole
@@ -96,7 +90,7 @@ public fun AssSubtitleLayer(
                 // Only the finished ImageBitmap crosses back, and the state
                 // write lands on the main thread where composition expects it.
                 val next: ImageBitmap? = withContext(Dispatchers.Default) {
-                    nextPicture(renderer, compositor, picture, drawAtMs, surface)
+                    nextPicture(renderer, compositor, picture, positionMs(), surface)
                 }
 
                 frame = next ?: frame
@@ -121,7 +115,7 @@ public fun AssSubtitleLayer(
                 // densest track measured 14ms when this was written and 3.5ms
                 // after the compositor was rewritten; at 14ms per frame asking
                 // for display rate would have been asking for a stall.
-                drawAtMs = withFrameNanos { nowNanos -> playhead.positionAt(positionMs(), nowNanos) }
+                withFrameNanos { }
             }
         }
     }
