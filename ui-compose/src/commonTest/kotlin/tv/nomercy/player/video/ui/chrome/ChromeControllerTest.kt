@@ -206,6 +206,63 @@ class ChromeControllerTest {
     private fun assertEquals0(value: Int) {
         assertTrue(value == 0, "expected nothing scheduled, found $value")
     }
+    // An overlay this controller does not own can pin the bars.
+    //
+    // Its own menus pin through setMenuOpen, but a cast panel or device picker
+    // anchored to the bars is built elsewhere and had no way to say "do not
+    // hide underneath me" — so it hid underneath, which is the bug the
+    // reference's holdChrome exists to prevent.
+    @Test
+    fun anExternalOverlayCanPinTheChromeOpen() {
+        val chrome: ChromeController = controller(playing = true)
+        chrome.bumpActivity()
+
+        chrome.holdChrome()
+        scheduler.elapse(INACTIVITY)
+
+        assertTrue(chrome.ui.value.active)
+    }
+
+    @Test
+    fun theChromeHidesAgainOnceTheLastHoldGoes() {
+        val chrome: ChromeController = controller(playing = true)
+        chrome.holdChrome()
+        chrome.releaseChrome()
+
+        scheduler.elapse(INACTIVITY)
+
+        assertFalse(chrome.ui.value.active)
+    }
+
+    // Two overlays open at once: the first to close must not drop the bars out
+    // from under the second, which is why this is a count and not a flag.
+    @Test
+    fun oneOfTwoHoldsClosingKeepsTheChromeUp() {
+        val chrome: ChromeController = controller(playing = true)
+        chrome.holdChrome()
+        chrome.holdChrome()
+
+        chrome.releaseChrome()
+        scheduler.elapse(INACTIVITY)
+
+        assertTrue(chrome.ui.value.active)
+    }
+
+    // A double release cannot wedge the chrome permanently hidden by driving
+    // the count negative — the next hold has to work.
+    @Test
+    fun anExtraReleaseCannotWedgeTheChromeHidden() {
+        val chrome: ChromeController = controller(playing = true)
+        chrome.holdChrome()
+        chrome.releaseChrome()
+        chrome.releaseChrome()
+
+        chrome.holdChrome()
+        scheduler.elapse(INACTIVITY)
+
+        assertTrue(chrome.ui.value.active)
+    }
+
 }
 
 private const val INACTIVITY = 4_000L

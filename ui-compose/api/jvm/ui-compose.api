@@ -254,10 +254,12 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeController {
 	public final fun bumpActivity ()V
 	public final fun dispose ()V
 	public final fun getUi ()Lkotlinx/coroutines/flow/StateFlow;
+	public final fun holdChrome ()V
 	public final fun maybeHide ()V
 	public final fun onPointerExit ()V
 	public final fun onSingleTap ()Z
 	public final fun onTapDown ()V
+	public final fun releaseChrome ()V
 	public final fun setControlsHovered (Z)V
 	public final fun setMenuOpen (Z)V
 	public final fun setPlaying (Z)V
@@ -581,16 +583,18 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeTransportCommands$Def
 public final class tv/nomercy/player/video/ui/chrome/ChromeUi {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (ZZZZ)V
-	public synthetic fun <init> (ZZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (ZZZZI)V
+	public synthetic fun <init> (ZZZZIILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Z
 	public final fun component2 ()Z
 	public final fun component3 ()Z
 	public final fun component4 ()Z
-	public final fun copy (ZZZZ)Ltv/nomercy/player/video/ui/chrome/ChromeUi;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeUi;ZZZZILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeUi;
+	public final fun component5 ()I
+	public final fun copy (ZZZZI)Ltv/nomercy/player/video/ui/chrome/ChromeUi;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/chrome/ChromeUi;ZZZZIILjava/lang/Object;)Ltv/nomercy/player/video/ui/chrome/ChromeUi;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getActive ()Z
+	public final fun getChromeHolds ()I
 	public final fun getControlsHovered ()Z
 	public final fun getMenuOpen ()Z
 	public final fun getScrubbing ()Z

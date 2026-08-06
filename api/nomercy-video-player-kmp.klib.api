@@ -1141,6 +1141,12 @@ final class tv.nomercy.player.video.subtitles/AssFrame { // tv.nomercy.player.vi
     final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/AssFrame.toString|toString(){}[0]
 }
 
+final class tv.nomercy.player.video.subtitles/AssFrameCompositor { // tv.nomercy.player.video.subtitles/AssFrameCompositor|null[0]
+    constructor <init>() // tv.nomercy.player.video.subtitles/AssFrameCompositor.<init>|<init>(){}[0]
+
+    final fun composite(kotlin.collections/List<tv.nomercy.player.video.subtitles/AssImage>, kotlin/Int, kotlin/Int): kotlin/IntArray // tv.nomercy.player.video.subtitles/AssFrameCompositor.composite|composite(kotlin.collections.List<tv.nomercy.player.video.subtitles.AssImage>;kotlin.Int;kotlin.Int){}[0]
+}
+
 final class tv.nomercy.player.video.subtitles/AssImage { // tv.nomercy.player.video.subtitles/AssImage|null[0]
     constructor <init>(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int, kotlin/ByteArray) // tv.nomercy.player.video.subtitles/AssImage.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int;kotlin.ByteArray){}[0]
 

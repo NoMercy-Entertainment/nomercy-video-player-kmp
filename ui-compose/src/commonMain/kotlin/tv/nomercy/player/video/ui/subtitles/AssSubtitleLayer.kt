@@ -29,7 +29,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.isActive
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssRenderer
-import tv.nomercy.player.video.subtitles.compositeAssFrame
+import tv.nomercy.player.video.subtitles.AssFrameCompositor
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -60,6 +60,11 @@ public fun AssSubtitleLayer(
     var surface: IntSize by remember { mutableStateOf(IntSize.Zero) }
     var picture: ImageBitmap? by remember { mutableStateOf(null) }
 
+    // One compositor for the life of the layer, holding the buffers it draws
+    // into. A fresh eight-megabyte surface per frame was costing more than
+    // libass spent rasterising the glyphs that go on it.
+    val compositor: AssFrameCompositor = remember { AssFrameCompositor() }
+
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
             // Sizing is native work too, and it happens on every resize.
@@ -82,7 +87,7 @@ public fun AssSubtitleLayer(
                 // Only the finished ImageBitmap crosses back, and the state
                 // write lands on the main thread where composition expects it.
                 val next: ImageBitmap? = withContext(Dispatchers.Default) {
-                    nextPicture(renderer, positionMs(), surface)
+                    nextPicture(renderer, compositor, positionMs(), surface)
                 }
 
                 picture = next ?: picture
@@ -111,11 +116,16 @@ public fun AssSubtitleLayer(
 // Null means "keep what is on screen". The renderer answers null for a frame
 // that has not changed, which is most of them — a static line held for four
 // seconds is one render and ninety-five identical ones nobody should pay for.
-private fun nextPicture(renderer: AssRenderer, timeMs: Long, surface: IntSize): ImageBitmap? {
+private fun nextPicture(
+    renderer: AssRenderer,
+    compositor: AssFrameCompositor,
+    timeMs: Long,
+    surface: IntSize,
+): ImageBitmap? {
     val frame: AssFrame = renderer.render(timeMs) ?: return null
     if (!frame.changed) return null
 
-    val pixels: IntArray = compositeAssFrame(frame.images, surface.width, surface.height)
+    val pixels: IntArray = compositor.composite(frame.images, surface.width, surface.height)
     return assImageBitmap(pixels, surface.width, surface.height)
 }
 

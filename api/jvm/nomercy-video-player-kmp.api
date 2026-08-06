@@ -1248,6 +1248,11 @@ public final class tv/nomercy/player/video/subtitles/AssFrame {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/subtitles/AssFrameCompositor {
+	public fun <init> ()V
+	public final fun composite (Ljava/util/List;II)[I
+}
+
 public final class tv/nomercy/player/video/subtitles/AssImage {
 	public static final field HASH_FACTOR I
 	public fun <init> (IIIIII[B)V

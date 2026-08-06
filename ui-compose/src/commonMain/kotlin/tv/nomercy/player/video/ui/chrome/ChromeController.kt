@@ -25,6 +25,11 @@ public data class ChromeUi(
     val scrubbing: Boolean = false,
     val menuOpen: Boolean = false,
     val controlsHovered: Boolean = false,
+    // How many external overlays are pinning the chrome open. A count rather
+    // than a flag because two of them can be open at once — a cast panel and a
+    // device picker — and the first one to close must not drop the bar out from
+    // under the second.
+    val chromeHolds: Int = 0,
 )
 
 // When the controls show and when they go away.
@@ -97,6 +102,27 @@ public class ChromeController(
     // The three reasons the controls are held open. Each is a state somebody is
     // in the middle of, and hiding out from under any of them takes away the
     // thing they are using.
+    // Pin the chrome while an overlay this controller does not own is showing.
+    //
+    // Its own menus do not need it — they pin through setMenuOpen — but a panel
+    // anchored to the bars and built somewhere else has no way to say "do not
+    // hide underneath me", and without one it does exactly that.
+    //
+    // Balance each hold with exactly one release.
+    public fun holdChrome() {
+        state.value = state.value.copy(chromeHolds = state.value.chromeHolds + 1)
+        bumpActivity()
+    }
+
+    // Floored at zero rather than allowed to go negative, so a double release
+    // cannot wedge the chrome permanently hidden — the reference makes the same
+    // call and for the same reason.
+    public fun releaseChrome() {
+        val remaining: Int = maxOf(0, state.value.chromeHolds - 1)
+        state.value = state.value.copy(chromeHolds = remaining)
+        if (remaining == 0) bumpActivity()
+    }
+
     public fun setMenuOpen(open: Boolean) {
         state.value = state.value.copy(menuOpen = open)
         reconcile()
@@ -142,7 +168,11 @@ public class ChromeController(
     private fun heldOpen(): Boolean {
         val current: ChromeUi = state.value
 
-        return !isPlaying() || current.menuOpen || current.scrubbing || current.controlsHovered
+        return !isPlaying() ||
+            current.menuOpen ||
+            current.scrubbing ||
+            current.controlsHovered ||
+            current.chromeHolds > 0
     }
 
     private fun reconcile() {
