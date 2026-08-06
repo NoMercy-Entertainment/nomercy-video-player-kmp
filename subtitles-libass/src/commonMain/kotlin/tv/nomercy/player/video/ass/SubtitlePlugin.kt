@@ -201,12 +201,33 @@ public class SubtitlePlugin(
         if (target == currentSubtitleUrl) return
 
         currentSubtitleUrl = target
+
+        // Queued behind the previous reconcile, not racing it and not cancelling
+        // it.
+        //
+        // Two selections in quick succession — off then back on, which is the
+        // whole of turning captions off and on again — launched two coroutines
+        // on the same scope with nothing ordering them, so a clear could land
+        // after a load and wipe the track that had just been installed.
+        // Cancelling the older one instead was worse: load() is half a dozen
+        // awaits and a cancel in the middle leaves the plugin holding a url for
+        // a track that never finished arriving.
+        //
+        // reconcileLock is separate from nativeLock, which guards libass itself
+        // and is taken inside load() and clear(). Reusing it here would mean a
+        // reconcile held it across its own fetches, which is the thing that lock
+        // exists not to do.
         pluginScope.launch {
-            if (currentSubtitleUrl != target) return@launch
-            if (target == null) clear() else load(target, manifestUrl)
+            reconcileLock.withLock {
+                // The last word wins. An older reconcile that waited its turn
+                // must not undo the selection made while it waited.
+                if (currentSubtitleUrl != target) return@withLock
+                if (target == null) clear() else load(target, manifestUrl)
+            }
         }
     }
 
+    private val reconcileLock = Mutex()
     private var available: List<SubtitleTrack> = emptyList()
     private var selected: Int? = null
     private var selectionSeen: Boolean = false
