@@ -115,21 +115,32 @@ object AssRenderBenchmark {
 
         for (fps in intArrayOf(60, 120)) {
             val stepMs: Long = 1000L / fps
-            val native = LongArray(0).toMutableList()
-            val copy = LongArray(0).toMutableList()
-            val composite = LongArray(0).toMutableList()
+
+            // Primitive arrays, sized up front, because the ruler was adding to
+            // what it measured.
+            //
+            // These were MutableList<Long>, which boxes every sample: four lists
+            // times ten thousand frames is forty thousand short-lived objects per
+            // block, allocated between the timed sections and collected during
+            // them. The distribution grew 20-110ms outliers over a 3ms median and
+            // they were read as the renderer stalling. Nothing is allocated in
+            // the loop now.
+            val capacity: Int = ((scenario.endMs - scenario.startMs) / stepMs).toInt() + 2
+            val native = LongArray(capacity)
+            val copy = LongArray(capacity)
+            val composite = LongArray(capacity)
+            val upload = LongArray(capacity)
             var frames = 0
             var changedFrames = 0
-            val upload = LongArray(0).toMutableList()
             var runs = 0L
             var peakRuns = 0
 
             step(lib, renderer, track, scenario, compositor, surfaces, stepMs) { nativeNs, copyNs, compositeNs, uploadNs, images ->
+                native[frames] = nativeNs
+                copy[frames] = copyNs
+                composite[frames] = compositeNs
+                upload[frames] = uploadNs
                 frames++
-                native += nativeNs
-                copy += copyNs
-                composite += compositeNs
-                upload += uploadNs
                 if (compositeNs > 0) changedFrames++
                 runs += images
                 if (images > peakRuns) peakRuns = images
@@ -284,12 +295,14 @@ object AssRenderBenchmark {
         changedFrames: Int,
         runs: Long,
         peakRuns: Int,
-        native: List<Long>,
-        copy: List<Long>,
-        composite: List<Long>,
-        upload: List<Long>,
+        native: LongArray,
+        copy: LongArray,
+        composite: LongArray,
+        upload: LongArray,
     ) {
-        val totals: List<Long> = native.indices.map { native[it] + copy[it] + composite[it] + upload[it] }
+        // Only the frames that ran. The arrays are sized for the window and the
+        // last one is short whenever the step does not divide it exactly.
+        val totals = LongArray(frames) { native[it] + copy[it] + composite[it] + upload[it] }
         val budgetNs: Long = stepMs * 1_000_000L
         val missed: Int = totals.count { it > budgetNs }
 
@@ -302,11 +315,11 @@ object AssRenderBenchmark {
             println("  changed area avg ${average / 1000}k px of ${surface / 1000}k " +
                 "(${"%.1f".format(average * 100.0 / surface)}% of the frame)")
         }
-        line("libass  ", native)
-        line("copy-out", copy)
-        line("composite", composite)
-        line("argb->bgra", upload)
-        line("TOTAL   ", totals)
+        line("libass  ", native, frames)
+        line("copy-out", copy, frames)
+        line("composite", composite, frames)
+        line("argb->bgra", upload, frames)
+        line("TOTAL   ", totals, frames)
         val worst: Double = totals.max() / 1_000_000.0
         println(
             "  budget ${stepMs}ms -> MISSED $missed/$frames frames " +
@@ -314,8 +327,8 @@ object AssRenderBenchmark {
         )
     }
 
-    private fun line(label: String, samples: List<Long>) {
-        val sorted: LongArray = samples.sorted().toLongArray()
+    private fun line(label: String, samples: LongArray, frames: Int) {
+        val sorted: LongArray = samples.copyOf(frames).also { it.sort() }
         fun at(fraction: Double): Double =
             sorted[(fraction * (sorted.size - 1)).toInt()] / 1_000_000.0
         println(

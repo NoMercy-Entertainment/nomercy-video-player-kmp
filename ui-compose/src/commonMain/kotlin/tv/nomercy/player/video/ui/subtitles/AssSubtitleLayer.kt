@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -24,7 +25,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.isActive
 import tv.nomercy.player.video.subtitles.AssFrame
@@ -67,10 +67,17 @@ public fun AssSubtitleLayer(
     val compositor: AssFrameCompositor = remember { AssFrameCompositor() }
     val picture: AssPictureSurface = remember { AssPictureSurface() }
 
+    // The engine reports a position a few times a second; a moving cue needs
+    // one every frame. This carries the last report forward by the time since
+    // it arrived, which is what the browser's currentTime gives for free.
+    val playhead: SmoothedPlayhead = remember { SmoothedPlayhead() }
+
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
             // Sizing is native work too, and it happens on every resize.
             withContext(Dispatchers.Default) { renderer.frameSize(surface.width, surface.height) }
+
+            var drawAtMs: Long = positionMs()
 
             while (coroutineContext.isActive) {
                 // Rasterising OFF the composition thread, which is the whole
@@ -89,11 +96,32 @@ public fun AssSubtitleLayer(
                 // Only the finished ImageBitmap crosses back, and the state
                 // write lands on the main thread where composition expects it.
                 val next: ImageBitmap? = withContext(Dispatchers.Default) {
-                    nextPicture(renderer, compositor, picture, positionMs(), surface)
+                    nextPicture(renderer, compositor, picture, drawAtMs, surface)
                 }
 
                 frame = next ?: frame
-                delay(POLL_INTERVAL_MS)
+
+                // Paced by the display, not by a timer.
+                //
+                // This was delay(42), which is twenty-four updates a second no
+                // matter what the screen is doing, and a subtitle that MOVES —
+                // a karaoke wipe, a \move sign, a fade — steps rather than
+                // slides at that rate. On a 120Hz panel it is one update per
+                // five frames.
+                //
+                // withFrameNanos resumes on the frame the toolkit is about to
+                // draw, so a moving cue advances once per drawn frame and a
+                // still one costs nothing, because the renderer answers null
+                // for a frame that has not changed. It also self-limits: if a
+                // frame ever costs more than the budget the loop simply misses
+                // the next callback instead of queueing work behind itself,
+                // which a fixed delay does.
+                //
+                // Affordable now and not before. Compositing a frame of the
+                // densest track measured 14ms when this was written and 3.5ms
+                // after the compositor was rewritten; at 14ms per frame asking
+                // for display rate would have been asking for a stall.
+                drawAtMs = withFrameNanos { nowNanos -> playhead.positionAt(positionMs(), nowNanos) }
             }
         }
     }
@@ -148,10 +176,5 @@ private suspend fun nextPicture(
 internal expect class AssPictureSurface() {
     fun bitmap(frame: AssSurfaceFrame, frameWidth: Int, frameHeight: Int): ImageBitmap
 }
-
-// The cadence a karaoke wipe needs to look continuous, and the one
-// RenderScheduler already uses for a moving cue. A static line costs nothing at
-// this rate because the renderer answers null for it.
-private const val POLL_INTERVAL_MS = 42L
 
 internal const val ASS_SUBTITLE_TAG = "nm-ass-subtitles"

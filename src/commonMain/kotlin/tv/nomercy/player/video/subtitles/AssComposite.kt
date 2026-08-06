@@ -186,8 +186,16 @@ public class AssFrameCompositor {
         val rows: Int = (safeHeight + strips - 1) / strips
         val perBand: Array<AssChangedRows> = bandRows(strips, safeHeight)
 
+        // The caller takes the first strip itself and hands away the rest.
+        //
+        // A frame ends when its LAST strip does, so every strip that has to be
+        // picked up by another thread is one more chance for the frame to wait
+        // on a worker the operating system has not scheduled yet. Handing away
+        // all eight and idling means the fastest possible frame still costs a
+        // dispatch and a wake-up; doing one strip here removes both from the
+        // critical path and leaves the caller busy instead of parked.
         coroutineScope {
-            for (band in 0 until strips) {
+            for (band in 1 until strips) {
                 val top: Int = band * rows
                 val bottom: Int = minOf(top + rows, safeHeight) - 1
                 if (top > bottom) continue
@@ -196,6 +204,13 @@ public class AssFrameCompositor {
                     for (image in images) {
                         blit(pixels, safeWidth, safeHeight, image, perBand[band], top, bottom, palettes[band])
                     }
+                }
+            }
+
+            val firstBottom: Int = minOf(rows, safeHeight) - 1
+            if (firstBottom >= 0) {
+                for (image in images) {
+                    blit(pixels, safeWidth, safeHeight, image, perBand[0], 0, firstBottom, palettes[0])
                 }
             }
         }
