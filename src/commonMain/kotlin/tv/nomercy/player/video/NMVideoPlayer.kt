@@ -216,6 +216,7 @@ public open class NMVideoPlayer(
             // `levels` should have it by the time mediaReady has finished
             // dispatching rather than a scheduler tick later.
             announceLevels()
+            announceAudioTracks()
             playerScope.launch { applyDefaultTracks() }
         }
 
@@ -341,6 +342,40 @@ public open class NMVideoPlayer(
                     codec = level.codec,
                 )
             },
+        )
+    }
+
+    // The engine's audio list, published as the event a track menu is built
+    // from.
+    //
+    // `audioTracks` was declared with its payload and emitted by nothing, while
+    // its singular sibling `audioTrack` said WHICH one was chosen — so a
+    // consumer could be told the selection changed and never be told what there
+    // was to select. Announced from mediaReady for the same reason the ladder
+    // is: that is the moment the engine has read its lists.
+    //
+    // Silent on an empty list, which is a film with one muxed track and nothing
+    // for a menu to offer.
+    private fun announceAudioTracks() {
+        val tracks: List<AudioTrack> = audioTracks()
+        if (tracks.isEmpty()) return
+
+        // The event's own AudioTrack, not the port's. Two types with the same
+        // name in two layers: the port's is what an engine reports, this one is
+        // what the payload carries, and the contract spells the payload.
+        emit(
+            VideoEvents.AudioTracks,
+            AudioTracksChange(
+                tracks.map { track ->
+                    tv.nomercy.player.video.AudioTrack(
+                        id = track.id,
+                        language = track.language,
+                        label = track.label,
+                        channels = track.channels,
+                        codec = track.codec,
+                    )
+                },
+            ),
         )
     }
 
