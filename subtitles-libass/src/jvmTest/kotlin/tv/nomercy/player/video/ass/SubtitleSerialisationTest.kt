@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ass
 
 import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.subtitles.AssFrame
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -60,6 +61,9 @@ private class ConcurrencyGuardRenderer : AssRenderer {
 
     override fun loadTrack(assContent: String): Unit = guarded { }
 
+    override fun storageSize(width: Int, height: Int): Unit = guarded { }
+
+    override fun storageSize(): AssSize? = null
     override fun frameSize(width: Int, height: Int): Unit = guarded { }
 
     override fun render(timeMillis: Long): AssFrame? = guarded { null }

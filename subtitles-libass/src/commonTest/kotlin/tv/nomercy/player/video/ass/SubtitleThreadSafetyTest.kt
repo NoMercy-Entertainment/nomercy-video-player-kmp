@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ass
 
 import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.subtitles.AssFrame
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -46,6 +47,10 @@ private class OrderingRenderer : AssRenderer {
     override fun loadTrack(assContent: String) {
         calls += "loadTrack"
     }
+
+    override fun storageSize(width: Int, height: Int): Unit = Unit
+
+    override fun storageSize(): AssSize? = null
 
     override fun frameSize(width: Int, height: Int) {
         calls += "frameSize"

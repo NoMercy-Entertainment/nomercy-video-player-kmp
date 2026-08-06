@@ -89,7 +89,7 @@ internal actual class AssPictureSurface actual constructor() {
         var source: Int = row * stride + left
         var target: Int = source * BYTES_PER_PIXEL
 
-        for (x in left..right) {
+        repeat(right - left + 1) {
             val pixel: Int = pixels[source++]
             bytes[target++] = pixel.toByte()
             bytes[target++] = (pixel ushr GREEN_SHIFT).toByte()

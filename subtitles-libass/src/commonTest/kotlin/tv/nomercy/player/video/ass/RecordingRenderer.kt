@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ass
 
 import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.subtitles.AssFrame
 
 // A renderer that records the order it was called in.
@@ -37,6 +38,10 @@ class RecordingRenderer : AssRenderer {
     override fun loadTrack(assContent: String) {
         calls += "loadTrack"
     }
+
+    override fun storageSize(width: Int, height: Int): Unit = Unit
+
+    override fun storageSize(): AssSize? = null
 
     override fun frameSize(width: Int, height: Int) {
         calls += "frameSize"

@@ -48,6 +48,32 @@ public interface AssRenderer {
     // place rather than failing.
     public fun frameSize(width: Int, height: Int)
 
+    // The size of the VIDEO the cues were authored against, which is not the
+    // size they are drawn at.
+    //
+    // Borders, shadows and blur are authored in the script's own coordinates,
+    // and libass scales them by frame over storage. Leaving storage equal to the
+    // frame makes that ratio one, so a 1080p track drawn into a 590-pixel-tall
+    // overlay keeps its full-size outlines around half-size glyphs — every cue
+    // comes out thick and blobby, and nothing reports a problem because the text
+    // itself is the right size.
+    //
+    // A host that knows the decoded video size should say so. A track's own
+    // PlayResX/PlayResY is the fallback the renderer primes itself with, since
+    // that is the space the author was working in.
+    public fun storageSize(width: Int, height: Int)
+
+    // The space in effect: what a host set, or what the loaded track declares,
+    // or null before either is known.
+    //
+    // A surface needs it to decide how big to rasterize. Drawing at the size of
+    // the overlay looks right until the overlay is smaller than the video, and
+    // then everything libass does not scale linearly — outline thickness,
+    // shadow offset, blur radius — arrives proportionally too heavy. Every
+    // other player rasterizes at the video's own resolution and lets the GPU
+    // scale the result, which is why theirs stay crisp in a small window.
+    public fun storageSize(): AssSize?
+
     // Null when nothing changed since the last call at a nearby timestamp, which
     // is most frames: redrawing an unchanged cue sixty times a second is how a
     // subtitle renderer becomes the reason a device gets hot.
@@ -55,6 +81,14 @@ public interface AssRenderer {
 
     public fun release()
 }
+
+// A size in pixels, for the geometry the renderer and its surface have to agree
+// on. Its own type rather than a pair, because a pair of ints at a call site
+// says nothing about which one is the width.
+public data class AssSize(
+    val width: Int,
+    val height: Int,
+)
 
 // One frame's worth of cues, as images the surface positions itself.
 //

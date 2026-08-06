@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -25,10 +28,12 @@ import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssImage
 import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.ui.chrome.ChromeSlots
 import tv.nomercy.player.video.ui.chrome.RecordingVideoBackend
 import tv.nomercy.player.video.ui.chrome.VideoChrome
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -49,28 +54,41 @@ class AssSubtitleLayerTest {
     @Test
     fun aRasterizedRunIsPaintedOverThePicture() = runComposeUiTest {
         val renderer = OneRunRenderer()
+        // Unmounted before the test ends, because the layer redraws on the
+        // frame clock and a composition that never stops is a coroutine the
+        // harness waits a full minute for before failing the test it already
+        // passed.
+        var mounted: Boolean by mutableStateOf(true)
 
         setContent {
-            val player = NMVideoPlayer(RecordingVideoBackend())
-            LaunchedEffect(player) { player.setup(PlayerConfig()) }
+            if (mounted) {
+                val player = NMVideoPlayer(RecordingVideoBackend())
+                LaunchedEffect(player) { player.setup(PlayerConfig()) }
 
-            Box(modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp)) {
-                VideoChrome(
-                    player,
-                    FormFactor.Desktop,
-                    slots = ChromeSlots(
-                        styledSubtitles = { _, _ ->
-                            AssSubtitleLayer(renderer = renderer, positionMs = { 0L })
-                        },
-                    ),
-                )
+                Box(modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp)) {
+                    VideoChrome(
+                        player,
+                        FormFactor.Desktop,
+                        slots = ChromeSlots(
+                            styledSubtitles = { _, _ ->
+                                AssSubtitleLayer(renderer = renderer, positionMs = { 0L })
+                            },
+                        ),
+                    )
+                }
             }
         }
 
+        // No waitForIdle here. The layer redraws on the frame clock and never
+        // goes idle by design, so waiting for that is waiting for the harness's
+        // one-minute timeout. The wait above is the real condition: the frame
+        // has been rasterized, and captureToImage draws what is composed.
         waitUntil(timeoutMillis = TIMEOUT_MS) { renderer.asked }
-        waitForIdle()
 
         val painted = onNodeWithTag(ASS_SUBTITLE_TAG).captureToImage().toPixelMap()
+        mounted = false
+        waitForIdle()
+
         val inside = painted[RUN_X + RUN_WIDTH / 2, RUN_Y + RUN_HEIGHT / 2]
 
         assertTrue(inside.alpha > 0f, "the run libass rasterized reached the surface")
@@ -85,35 +103,42 @@ class AssSubtitleLayerTest {
     }
 
     @Test
-    fun theSurfaceSizeReachesTheRendererSoCuesLandWhereTheyBelong() = runComposeUiTest {
-        val renderer = OneRunRenderer()
+    fun aTrackIsRasterizedAtItsOwnResolutionRatherThanTheOverlays() = runComposeUiTest {
+        // The overlay here is 640x360 and the track was authored for 1080p.
+        // Rasterizing at the overlay's size keeps the glyphs proportional and
+        // not the outline, shadow or blur around them, so every cue in a
+        // windowed player comes out thick and blobby.
+        val renderer = OneRunRenderer(space = AssSize(1920, 1080))
+        var mounted: Boolean by mutableStateOf(true)
 
+        // Mounted directly rather than through the chrome. What size the
+        // renderer is asked for does not involve the chrome at all, and the
+        // test above already proves the slot is wired; carrying a whole player
+        // into this one only adds coroutines for its frame loop to compete
+        // with.
         setContent {
-            val player = NMVideoPlayer(RecordingVideoBackend())
-            LaunchedEffect(player) { player.setup(PlayerConfig()) }
-
-            Box(modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp)) {
-                VideoChrome(
-                    player,
-                    FormFactor.Desktop,
-                    slots = ChromeSlots(
-                        styledSubtitles = { _, _ ->
-                            AssSubtitleLayer(renderer = renderer, positionMs = { 0L })
-                        },
-                    ),
-                )
+            if (mounted) {
+                Box(modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp)) {
+                    AssSubtitleLayer(renderer = renderer, positionMs = { 0L })
+                }
             }
         }
 
         waitUntil(timeoutMillis = TIMEOUT_MS) { renderer.asked }
+        mounted = false
+        waitForIdle()
 
-        assertTrue(renderer.width > 0 && renderer.height > 0, "libass positions cues in the surface's own pixels")
+        assertEquals(
+            AssSize(1920, 1080),
+            AssSize(renderer.width, renderer.height),
+            "the track's own space was ignored and the cue was rasterized at the overlay's size",
+        )
     }
 }
 
 // One opaque white run, once. Everything after it is null, which is what the
 // real renderer answers for a frame that has not changed.
-private class OneRunRenderer : AssRenderer {
+private class OneRunRenderer(private var space: AssSize? = null) : AssRenderer {
     var asked: Boolean = false
         private set
 
@@ -130,6 +155,12 @@ private class OneRunRenderer : AssRenderer {
     override fun clearFonts(): Unit = Unit
 
     override fun loadTrack(assContent: String): Unit = Unit
+
+    override fun storageSize(): AssSize? = space
+
+    override fun storageSize(width: Int, height: Int) {
+        space = AssSize(width, height)
+    }
 
     override fun frameSize(width: Int, height: Int) {
         this.width = width

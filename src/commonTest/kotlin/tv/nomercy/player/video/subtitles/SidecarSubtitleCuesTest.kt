@@ -258,7 +258,8 @@ class SidecarSubtitleCuesTest {
         assertNull(player.subtitle())
         assertTrue(
             seen.all { it.cues.isEmpty() },
-            "the previous film's captions were drawn on the next item: ${seen.flatMap { change -> change.cues.map { it.text } }}",
+            "the previous film's captions were drawn on the next item: " +
+                seen.flatMap { change -> change.cues.map { it.text } },
         )
     }
 

@@ -29,20 +29,24 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.isActive
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.subtitles.AssFrameCompositor
 import tv.nomercy.player.video.subtitles.AssSurfaceFrame
 import kotlin.coroutines.coroutineContext
+import kotlin.math.sqrt
 
 /**
  * Draws what libass rasterized.
  *
  * ASS is not text with a colour — it is positioned, rotated, faded,
  * karaoke-timed drawing with its own layout engine — so the cue arrives as
- * images with positions rather than as a string a chrome can style. This lays
- * them over the video at the size the video is actually being drawn at, which
- * is why it takes the surface's size from layout rather than from the stream:
- * a sign pinned to a character's shirt is in the wrong place the moment those
- * two disagree.
+ * images with positions rather than as a string a chrome can style.
+ *
+ * Rasterized at the resolution the track was authored against and scaled to
+ * the overlay, rather than rasterized at the overlay's own size. Drawing
+ * straight into a small overlay keeps the text proportional but not the
+ * outlines, shadows and blur around it, and a cue in a windowed player comes
+ * out thick and blobby with nothing reporting a problem.
  *
  * [positionMs] is read on every poll rather than passed as a value, so the
  * layer does not recompose sixty times a second to follow the playhead.
@@ -70,10 +74,21 @@ public fun AssSubtitleLayer(
 
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
-            // Sizing is native work too, and it happens on every resize.
-            withContext(Dispatchers.Default) { renderer.frameSize(surface.width, surface.height) }
+            var target: IntSize = IntSize.Zero
 
             while (coroutineContext.isActive) {
+                // Re-asked rather than set once, because the size to draw at is
+                // the TRACK's, and the track arrives after the layer does. A
+                // frame size fixed on the first composition is the overlay's
+                // size forever, and the overlay is usually smaller than the
+                // video.
+                val next: IntSize = rasterSize(renderer.storageSize(), surface)
+                if (next != target) {
+                    target = next
+                    // Sizing is native work too, and it happens on every resize.
+                    withContext(Dispatchers.Default) { renderer.frameSize(target.width, target.height) }
+                }
+
                 // Rasterising OFF the composition thread, which is the whole
                 // point of this line.
                 //
@@ -89,11 +104,11 @@ public fun AssSubtitleLayer(
                 //
                 // Only the finished ImageBitmap crosses back, and the state
                 // write lands on the main thread where composition expects it.
-                val next: ImageBitmap? = withContext(Dispatchers.Default) {
-                    nextPicture(renderer, compositor, picture, positionMs(), surface)
+                val drawn: ImageBitmap? = withContext(Dispatchers.Default) {
+                    nextPicture(renderer, compositor, picture, positionMs(), target)
                 }
 
-                frame = next ?: frame
+                frame = drawn ?: frame
 
                 // Paced by the display, not by a timer.
                 //
@@ -130,7 +145,11 @@ public fun AssSubtitleLayer(
             Image(
                 bitmap = drawn,
                 contentDescription = contentDescription,
-                contentScale = ContentScale.None,
+                // Fit, not None. The picture is rasterized at the video's own
+                // resolution and scaled here, which is what every other player
+                // does and the only way an outline authored for 1080p stays
+                // proportional in a smaller window.
+                contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -145,7 +164,7 @@ private suspend fun nextPicture(
     compositor: AssFrameCompositor,
     picture: AssPictureSurface,
     timeMs: Long,
-    surface: IntSize,
+    target: IntSize,
 ): ImageBitmap? {
     val frame: AssFrame = renderer.render(timeMs) ?: return null
     if (!frame.changed) return null
@@ -153,9 +172,39 @@ private suspend fun nextPicture(
     // Banded, because a single ending sequence puts two hundred glyph runs over
     // an eighth of the screen and blending them in one pass was four
     // milliseconds — a quarter of a 60fps budget spent on subtitles alone.
-    val composited: AssSurfaceFrame = compositor.renderParallel(frame.images, surface.width, surface.height)
-    return picture.bitmap(composited, surface.width, surface.height)
+    val composited: AssSurfaceFrame = compositor.renderParallel(frame.images, target.width, target.height)
+    return picture.bitmap(composited, target.width, target.height)
 }
+
+// How big to rasterize, given what the track was authored against.
+//
+// The track's own space when there is one, so borders, shadows and blur come
+// out at the proportions the author drew them at. Capped, because a 4K track in
+// a thumbnail-sized overlay would rasterize eight million pixels a frame to be
+// scaled into a few hundred thousand; the cap costs sharpness the display
+// cannot show anyway.
+//
+// Never larger than the space itself. Rendering a 720p script at 1080p asks
+// libass to invent detail and costs more than it can return.
+//
+// The overlay's own size is the fallback, which is what this always did. It is
+// only reached before a track has loaded.
+internal fun rasterSize(source: AssSize?, surface: IntSize): IntSize {
+    if (source == null || source.width <= 0 || source.height <= 0) return surface
+
+    val area: Long = source.width.toLong() * source.height.toLong()
+    if (area <= MAX_RASTER_PIXELS) return IntSize(source.width, source.height)
+
+    val scale: Double = sqrt(MAX_RASTER_PIXELS.toDouble() / area.toDouble())
+    return IntSize(
+        (source.width * scale).toInt().coerceAtLeast(1),
+        (source.height * scale).toInt().coerceAtLeast(1),
+    )
+}
+
+// 1080p, which is Android's largest tier and the resolution these tracks are
+// authored at.
+private const val MAX_RASTER_PIXELS: Long = 1920L * 1080L
 
 /**
  * Premultiplied ARGB pixels as the toolkit's own bitmap.

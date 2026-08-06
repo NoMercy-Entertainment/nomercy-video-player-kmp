@@ -239,6 +239,22 @@ tasks.matching { it.name == "klibApiCheck" || it.name == "klibApiDump" }.configu
     onlyIf { org.gradle.internal.os.OperatingSystem.current().isMacOsX }
 }
 
+// Where a cue actually lands, off-screen, so a geometry bug can be told apart
+// from a drawing one.
+val assGeometryProbe by tasks.registering(JavaExec::class) {
+    description = "Renders one cue at a given surface size and reports its pixel extents."
+    group = "verification"
+
+    val test = kotlin.jvm().compilations.getByName("test")
+    classpath = files(test.output.allOutputs, test.runtimeDependencyFiles)
+    mainClass.set("tv.nomercy.player.video.ass.bench.AssGeometryProbe")
+    dependsOn(tasks.named("jvmTestClasses"))
+
+    for (name in listOf("libass", "track", "fonts", "out", "time", "width", "height")) {
+        systemProperty("nomercy.probe.$name", providers.gradleProperty("probe.$name").getOrElse(""))
+    }
+}
+
 // What a moving ASS subtitle costs on the desktop, on the tracks that are slow.
 //
 // A task rather than a test: it reports numbers, it takes minutes, and a suite

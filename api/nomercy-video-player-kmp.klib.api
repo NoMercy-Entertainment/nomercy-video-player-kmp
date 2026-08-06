@@ -402,6 +402,8 @@ abstract interface tv.nomercy.player.video.subtitles/AssRenderer { // tv.nomercy
     abstract fun loadTrack(kotlin/String) // tv.nomercy.player.video.subtitles/AssRenderer.loadTrack|loadTrack(kotlin.String){}[0]
     abstract fun release() // tv.nomercy.player.video.subtitles/AssRenderer.release|release(){}[0]
     abstract fun render(kotlin/Long): tv.nomercy.player.video.subtitles/AssFrame? // tv.nomercy.player.video.subtitles/AssRenderer.render|render(kotlin.Long){}[0]
+    abstract fun storageSize(): tv.nomercy.player.video.subtitles/AssSize? // tv.nomercy.player.video.subtitles/AssRenderer.storageSize|storageSize(){}[0]
+    abstract fun storageSize(kotlin/Int, kotlin/Int) // tv.nomercy.player.video.subtitles/AssRenderer.storageSize|storageSize(kotlin.Int;kotlin.Int){}[0]
 }
 
 abstract interface tv.nomercy.player.video.tv/TvChromeCallbacks { // tv.nomercy.player.video.tv/TvChromeCallbacks|null[0]
@@ -1192,6 +1194,22 @@ final class tv.nomercy.player.video.subtitles/AssImage { // tv.nomercy.player.vi
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.subtitles/AssImage.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video.subtitles/AssImage.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/AssImage.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.subtitles/AssSize { // tv.nomercy.player.video.subtitles/AssSize|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int) // tv.nomercy.player.video.subtitles/AssSize.<init>|<init>(kotlin.Int;kotlin.Int){}[0]
+
+    final val height // tv.nomercy.player.video.subtitles/AssSize.height|{}height[0]
+        final fun <get-height>(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSize.height.<get-height>|<get-height>(){}[0]
+    final val width // tv.nomercy.player.video.subtitles/AssSize.width|{}width[0]
+        final fun <get-width>(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSize.width.<get-width>|<get-width>(){}[0]
+
+    final fun component1(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSize.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSize.component2|component2(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Int = ...): tv.nomercy.player.video.subtitles/AssSize // tv.nomercy.player.video.subtitles/AssSize.copy|copy(kotlin.Int;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.subtitles/AssSize.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSize.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/AssSize.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video.subtitles/AssSurfaceFrame { // tv.nomercy.player.video.subtitles/AssSurfaceFrame|null[0]

@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ass.fonts
 
 import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.TtfNameParser
 import okio.Path.Companion.toPath
@@ -33,6 +34,9 @@ private class RecordingRenderer : AssRenderer {
     override fun clearFonts(): Unit = Unit
 
     override fun loadTrack(assContent: String) = Unit
+    override fun storageSize(width: Int, height: Int) = Unit
+
+    override fun storageSize(): AssSize? = null
     override fun frameSize(width: Int, height: Int) = Unit
     override fun render(timeMillis: Long): AssFrame? = null
     override fun release() = Unit

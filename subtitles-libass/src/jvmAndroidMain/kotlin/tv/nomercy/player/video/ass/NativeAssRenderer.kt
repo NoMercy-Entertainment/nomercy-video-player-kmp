@@ -8,7 +8,9 @@
 
 package tv.nomercy.player.video.ass
 
+import tv.nomercy.player.video.ass.render.RenderGeometry
 import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssImage
 import com.sun.jna.Pointer
@@ -41,6 +43,11 @@ internal class NativeAssRenderer(
     private var trackContent: String? = null
     private var width: Int = 0
     private var height: Int = 0
+    // Zero until a host or a track says otherwise, and zero means "the frame",
+    // which is libass's own default rather than a guess of ours.
+    private var storageWidth: Int = 0
+    private var storageHeight: Int = 0
+    private var hostStorage: Boolean = false
     private var released: Boolean = false
 
     override fun addFont(name: String, data: ByteArray): Unit = synchronized(lock) {
@@ -62,8 +69,43 @@ internal class NativeAssRenderer(
     override fun loadTrack(assContent: String): Unit = synchronized(lock) {
         if (released) return
         trackContent = assContent
+        // Primed from the script, because one title ships tracks authored in
+        // different spaces — No Game No Life's alternative track is 1280x720
+        // where its full one is 1920x1080 — and a storage size left on the
+        // previous track's value lays the new one out in the wrong coordinates.
+        if (!hostStorage) {
+            val primed: Pair<Int, Int>? = RenderGeometry.primeStorageFromScript(
+                playRes(assContent, "PlayResX:"),
+                playRes(assContent, "PlayResY:"),
+            )
+            storageWidth = primed?.first ?: 0
+            storageHeight = primed?.second ?: 0
+        }
         disposeTrack()
+        renderer?.let { applySize(it) }
     }
+
+    override fun storageSize(): AssSize? = synchronized(lock) {
+        if (storageWidth > 0 && storageHeight > 0) AssSize(storageWidth, storageHeight) else null
+    }
+
+    override fun storageSize(width: Int, height: Int): Unit = synchronized(lock) {
+        if (released) return
+        // A host that knows the decoded size outranks the script, and keeps
+        // outranking it: the next track must not quietly take the answer back.
+        hostStorage = width > 0 && height > 0
+        storageWidth = width.coerceAtLeast(0)
+        storageHeight = height.coerceAtLeast(0)
+        renderer?.let { applySize(it) }
+    }
+
+    // The header only. The full parse walks thirteen thousand events on a track
+    // like this one, and this runs on the thread that is about to draw a frame.
+    private fun playRes(assContent: String, key: String): Int =
+        assContent.lineSequence()
+            .take(HEADER_LINES)
+            .firstOrNull { it.trimStart().startsWith(key, ignoreCase = true) }
+            ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
 
     override fun frameSize(width: Int, height: Int): Unit = synchronized(lock) {
         if (released) return
@@ -141,7 +183,9 @@ internal class NativeAssRenderer(
 
     private fun applySize(target: Pointer) {
         if (width == 0 || height == 0) return
-        lib.ass_set_storage_size(target, width, height)
+        val storedWidth: Int = if (storageWidth > 0) storageWidth else width
+        val storedHeight: Int = if (storageHeight > 0) storageHeight else height
+        lib.ass_set_storage_size(target, storedWidth, storedHeight)
         lib.ass_set_frame_size(target, width, height)
     }
 
@@ -196,5 +240,10 @@ internal class NativeAssRenderer(
         trackContent = null
         lib.ass_library_done(library)
     }
-}
 
+    private companion object {
+        // Every ASS header ends well inside this; [Events] on the densest track
+        // here is line 40.
+        const val HEADER_LINES = 200
+    }
+}

@@ -275,12 +275,10 @@ public class AssFrameCompositor {
         bandBottom: Int,
         palette: RunPalette,
     ) {
-        if (image.width <= 0 || image.height <= 0) return
-
-        // A run whose declared rectangle is larger than the bytes that arrived.
-        // Reading past the array here would be an exception per frame rather
-        // than a missing glyph.
-        if (image.pixels.size < image.stride * image.height) return
+        // Nothing to draw, or a run whose declared rectangle is larger than the
+        // bytes that arrived. Reading past the array would be an exception per
+        // frame rather than a missing glyph.
+        if (image.width <= 0 || image.height <= 0 || image.pixels.size < image.stride * image.height) return
 
         val colour: Int = assArgbOf(image.colour)
         val tintAlpha: Int = (colour ushr ALPHA_SHIFT) and BYTE_MASK
@@ -299,17 +297,16 @@ public class AssFrameCompositor {
             val targetRow: Int = y * frameWidth
 
             for (x in left..right) {
-                val coverage: Int = image.pixels[sourceRow + x].toInt() and BYTE_MASK
-                if (coverage == 0) continue
-
-                val source: Int = table[coverage]
-                if (source == 0) continue
-
-                val offset: Int = targetRow + x
-                val destination: Int = pixels[offset]
-                // Nothing under it, which is most pixels: a glyph and its
-                // outline touch, they do not tile.
-                pixels[offset] = if (destination == 0) source else over(source, destination)
+                // Zero coverage reads back as a zero entry, so the two cases
+                // that used to be skipped separately are one test.
+                val source: Int = table[image.pixels[sourceRow + x].toInt() and BYTE_MASK]
+                if (source != 0) {
+                    val offset: Int = targetRow + x
+                    val destination: Int = pixels[offset]
+                    // Nothing under it, which is most pixels: a glyph and its
+                    // outline touch, they do not tile.
+                    pixels[offset] = if (destination == 0) source else over(source, destination)
+                }
             }
             written.include(y, left, right)
         }
