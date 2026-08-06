@@ -141,8 +141,20 @@ public fun TransportBar(
                 // that much further from the controls. The height has to be
                 // stated for the padding to be absorbed rather than added.
                 .height(TRANSPORT_ROW_HEIGHT)
-                .padding(horizontal = metrics.paddingHorizontal, vertical = metrics.paddingVertical)
-                .testTag(TRANSPORT_BAR_TAG),
+                .testTag(TRANSPORT_BAR_TAG)
+                // Horizontal only. Vertical padding applied here comes OUT of
+                // the stated forty, so the buttons laid out 32 tall while every
+                // width assertion passed — one axis had never been measured.
+                //
+                // The reference resolves 2px and 4px of vertical padding at
+                // these bands AND still lays the button out at forty inside a
+                // forty-tall row: its padding sits outside the button's box
+                // rather than eating into it. A row that is forty with
+                // forty-tall buttons is that outcome; adding the padding back
+                // as a height would make the row 44 and 48 and push the
+                // progress strip away from the controls, which is the bug the
+                // stated height was introduced to fix.
+                .padding(horizontal = metrics.paddingHorizontal),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(metrics.gap),
         ) {
