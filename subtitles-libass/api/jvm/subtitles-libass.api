@@ -33,6 +33,7 @@ public final class tv/nomercy/player/video/ass/SubtitlePlugin : tv/nomercy/playe
 	public final fun renderer ()Ltv/nomercy/player/video/subtitles/AssRenderer;
 	public final fun subtitle ()Ljava/lang/String;
 	public final fun subtitle (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun use ()V
 }
 
 public final class tv/nomercy/player/video/ass/fonts/CachedFont {
