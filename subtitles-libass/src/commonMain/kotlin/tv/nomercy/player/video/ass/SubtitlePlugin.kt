@@ -124,6 +124,36 @@ public class SubtitlePlugin(
     // renderer on a different path — clearing one said nothing about the other,
     // which is why the leak survived a fix that looked complete.
     override fun use() {
+        // The SELECTED TRACK, not only the item.
+        //
+        // This overlay's lifecycle was bound to the queue: it was handed a track
+        // when the item changed and heard nothing at all when the viewer changed
+        // tracks inside it. So ASS to ASS worked — the consumer handed it the
+        // new file — and ASS to off and ASS to WebVTT left the last rasterised
+        // frame on screen with libass still holding the old track. A sign frozen
+        // over a film that is no longer showing it.
+        //
+        // libass has no concept of "another renderer is drawing now"; only the
+        // selection says so.
+        //
+        // Cleared unless the consumer answers the selection by handing this
+        // plugin a different file. The url is captured before the launch and
+        // compared after it, so a load() that lands in the same frame wins and
+        // the track that was just installed is not wiped by the event that
+        // caused it.
+        on(CoreEvents.Subtitle) {
+            // The url drops synchronously: subtitle() is what a chrome reads to
+            // tick the current track, and leaving it set until libass caught up
+            // would tick a file that is no longer being drawn.
+            currentSubtitleUrl = null
+
+            // The native teardown is launched, and skipped if the consumer has
+            // meanwhile handed this plugin a new file. That is the ASS-to-ASS
+            // case, which already worked and must keep working — clearing
+            // unconditionally would wipe the track the selection just installed.
+            pluginScope.launch { if (currentSubtitleUrl == null) clear() }
+        }
+
         on(CoreEvents.Item) {
             // The url drops synchronously and the native work is launched.
             // `subtitle()` is what a consumer and the chrome read to decide
