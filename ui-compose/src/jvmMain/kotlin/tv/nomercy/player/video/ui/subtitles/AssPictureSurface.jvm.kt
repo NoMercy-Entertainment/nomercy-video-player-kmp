@@ -69,7 +69,7 @@ internal actual class AssPictureSurface actual constructor() {
     // True when the buffers were just replaced, which is a resize or the first
     // frame.
     private fun adopt(compositorGeneration: Int, frameWidth: Int, frameHeight: Int): Boolean {
-        if (compositorGeneration == generation && frameWidth == width && frameHeight == height) return false
+        if (compositorGeneration == generation && sized(frameWidth, frameHeight)) return false
 
         generation = compositorGeneration
         width = frameWidth
@@ -77,6 +77,8 @@ internal actual class AssPictureSurface actual constructor() {
         buffers = Array(BUFFER_COUNT) { ByteArray(frameWidth * frameHeight * BYTES_PER_PIXEL) }
         return true
     }
+
+    private fun sized(frameWidth: Int, frameHeight: Int): Boolean = frameWidth == width && frameHeight == height
 
     // Written out by hand rather than through an IntBuffer view. A
     // little-endian int view over a heap byte array is not a bulk copy — the

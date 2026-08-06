@@ -152,31 +152,18 @@ public fun VideoChrome(
 
     var menu: MenuState by remember { mutableStateOf(MenuState.Hidden) }
     val panel: ShortcutsPanel = rememberShortcutsPanel()
-    val message: String? = rememberChromeMessage(player, strings)?.text
-    val error: ChromeError? = rememberPlayerError(player)
     // `menu` rides along so the bar's trigger buttons can carry the web's
     // aria-expanded state — see MenuTriggers.kt.
-    val state: ChromeState = rememberChromeState(player, message, error)
+    val message: String? = rememberChromeMessage(player, strings)?.text
+    val state: ChromeState = rememberChromeState(player, message, rememberPlayerError(player))
         .copy(autoSkipChapters = autoSkip.enabled, showRemaining = clock.showRemaining, menu = menu)
 
     val controller: ChromeController = rememberChromeController(player, scheduler, inactivityMs)
     val commands: ChromeCommands = rememberVideoCommands(player, autoSkip, clock) { menu = it }
 
-    // The chrome plugin, if the host registered one, gets the live controller
-    // for as long as this chrome is composed. Without this its holdChrome() is
-    // a call into null — a handle that answers politely and does nothing, which
-    // is worse than not having one.
-    val chromePlugin: DesktopUiPlugin? = remember(player) { player.getPlugin(DesktopUiPlugin.id) as? DesktopUiPlugin }
-    DisposableEffect(chromePlugin, controller) {
-        chromePlugin?.controller = controller
-        onDispose { if (chromePlugin?.controller === controller) chromePlugin?.controller = null }
-    }
-
+    HoldChromePlugin(player, controller)
     ChromeBindings(controller, state.playing, menu)
-
     AutoSkipBinding(state, commands)
-
-    val keyFocus: FocusRequester = remember { FocusRequester() }
 
     val input = ChromeInput(
         rememberVideoKeys(player, formFactor),
@@ -184,7 +171,7 @@ public fun VideoChrome(
         TouchZoneInput(state, commands, player::now),
         gestures,
         panel,
-        keyFocus,
+        remember { FocusRequester() },
     )
 
     // The picture and the words on it, as one layer.

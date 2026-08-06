@@ -68,8 +68,7 @@ public fun AssSubtitleLayer(
     // One compositor for the life of the layer, holding the buffers it draws
     // into. A fresh eight-megabyte surface per frame was costing more than
     // libass spent rasterising the glyphs that go on it.
-    val compositor: AssFrameCompositor = remember { AssFrameCompositor() }
-    val picture: AssPictureSurface = remember { AssPictureSurface() }
+    val drawing: AssDrawing = remember { AssDrawing(AssFrameCompositor(), AssPictureSurface()) }
 
 
     LaunchedEffect(renderer, surface) {
@@ -105,7 +104,7 @@ public fun AssSubtitleLayer(
                 // Only the finished ImageBitmap crosses back, and the state
                 // write lands on the main thread where composition expects it.
                 val drawn: ImageBitmap? = withContext(Dispatchers.Default) {
-                    nextPicture(renderer, compositor, picture, positionMs(), target)
+                    nextPicture(renderer, drawing, positionMs(), target)
                 }
 
                 frame = drawn ?: frame
@@ -161,8 +160,7 @@ public fun AssSubtitleLayer(
 // seconds is one render and ninety-five identical ones nobody should pay for.
 private suspend fun nextPicture(
     renderer: AssRenderer,
-    compositor: AssFrameCompositor,
-    picture: AssPictureSurface,
+    drawing: AssDrawing,
     timeMs: Long,
     target: IntSize,
 ): ImageBitmap? {
@@ -172,9 +170,17 @@ private suspend fun nextPicture(
     // Banded, because a single ending sequence puts two hundred glyph runs over
     // an eighth of the screen and blending them in one pass was four
     // milliseconds — a quarter of a 60fps budget spent on subtitles alone.
-    val composited: AssSurfaceFrame = compositor.renderParallel(frame.images, target.width, target.height)
-    return picture.bitmap(composited, target.width, target.height)
+    val composited: AssSurfaceFrame = drawing.compositor.renderParallel(frame.images, target.width, target.height)
+    return drawing.picture.bitmap(composited, target.width, target.height)
 }
+
+// The two things that turn libass images into a bitmap, held together for the
+// life of the layer: the compositor owns the pixel buffers and the surface owns
+// the toolkit's copy of them, and neither is any use without the other.
+private class AssDrawing(
+    val compositor: AssFrameCompositor,
+    val picture: AssPictureSurface,
+)
 
 // How big to rasterize, given what the track was authored against.
 //
@@ -190,15 +196,15 @@ private suspend fun nextPicture(
 // The overlay's own size is the fallback, which is what this always did. It is
 // only reached before a track has loaded.
 internal fun rasterSize(source: AssSize?, surface: IntSize): IntSize {
-    if (source == null || source.width <= 0 || source.height <= 0) return surface
+    val space: AssSize = source?.takeIf { it.width > 0 && it.height > 0 } ?: return surface
 
-    val area: Long = source.width.toLong() * source.height.toLong()
-    if (area <= MAX_RASTER_PIXELS) return IntSize(source.width, source.height)
+    val area: Long = space.width.toLong() * space.height.toLong()
+    if (area <= MAX_RASTER_PIXELS) return IntSize(space.width, space.height)
 
     val scale: Double = sqrt(MAX_RASTER_PIXELS.toDouble() / area.toDouble())
     return IntSize(
-        (source.width * scale).toInt().coerceAtLeast(1),
-        (source.height * scale).toInt().coerceAtLeast(1),
+        (space.width * scale).toInt().coerceAtLeast(1),
+        (space.height * scale).toInt().coerceAtLeast(1),
     )
 }
 

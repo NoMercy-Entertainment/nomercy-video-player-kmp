@@ -20,21 +20,19 @@ class AssCompositeTest {
     private fun libassColour(red: Int, green: Int, blue: Int, alpha: Int): Int =
         (red shl 24) or (green shl 16) or (blue shl 8) or (255 - alpha)
 
-    private fun run(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        colour: Int,
-        coverage: Int,
-    ): AssImage = AssImage(
-        x = x,
-        y = y,
-        width = width,
-        height = height,
-        stride = width,
+    // Where a run sits, apart from what it is filled with — the two halves were
+    // travelling as six positional arguments and every call site read as a row
+    // of unlabelled numbers.
+    private class At(val x: Int, val y: Int, val width: Int, val height: Int)
+
+    private fun run(at: At, colour: Int, coverage: Int): AssImage = AssImage(
+        x = at.x,
+        y = at.y,
+        width = at.width,
+        height = at.height,
+        stride = at.width,
         colour = colour,
-        pixels = ByteArray(width * height) { coverage.toByte() },
+        pixels = ByteArray(at.width * at.height) { coverage.toByte() },
     )
 
     @Test
@@ -47,7 +45,7 @@ class AssCompositeTest {
     @Test
     fun `an opaque run is written at full colour`() {
         val pixels: IntArray = compositeAssFrame(
-            listOf(run(0, 0, 2, 2, libassColour(0x40, 0x80, 0xC0, 255), 255)),
+            listOf(run(At(0, 0, 2, 2), libassColour(0x40, 0x80, 0xC0, 255), 255)),
             2,
             2,
         )
@@ -60,7 +58,7 @@ class AssCompositeTest {
     @Test
     fun `a half covered run is premultiplied`() {
         val pixels: IntArray = compositeAssFrame(
-            listOf(run(0, 0, 1, 1, libassColour(0xFF, 0xFF, 0xFF, 255), 128)),
+            listOf(run(At(0, 0, 1, 1), libassColour(0xFF, 0xFF, 0xFF, 255), 128)),
             1,
             1,
         )
@@ -74,7 +72,7 @@ class AssCompositeTest {
     @Test
     fun `a fully transparent run draws nothing`() {
         val pixels: IntArray = compositeAssFrame(
-            listOf(run(0, 0, 2, 2, libassColour(0xFF, 0x00, 0x00, 0), 255)),
+            listOf(run(At(0, 0, 2, 2), libassColour(0xFF, 0x00, 0x00, 0), 255)),
             2,
             2,
         )
@@ -88,8 +86,8 @@ class AssCompositeTest {
     fun `a later run covers an earlier one`() {
         val pixels: IntArray = compositeAssFrame(
             listOf(
-                run(0, 0, 1, 1, libassColour(0xFF, 0x00, 0x00, 255), 255),
-                run(0, 0, 1, 1, libassColour(0x00, 0xFF, 0x00, 255), 255),
+                run(At(0, 0, 1, 1), libassColour(0xFF, 0x00, 0x00, 255), 255),
+                run(At(0, 0, 1, 1), libassColour(0x00, 0xFF, 0x00, 255), 255),
             ),
             1,
             1,
@@ -101,7 +99,7 @@ class AssCompositeTest {
     @Test
     fun `a run reaching past the surface is clipped rather than throwing`() {
         val pixels: IntArray = compositeAssFrame(
-            listOf(run(-1, -1, 4, 4, libassColour(0xFF, 0xFF, 0xFF, 255), 255)),
+            listOf(run(At(-1, -1, 4, 4), libassColour(0xFF, 0xFF, 0xFF, 255), 255)),
             2,
             2,
         )
@@ -131,11 +129,11 @@ class AssCompositeTest {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
-        compositor.composite(listOf(run(0, 0, 4, 4, white, 255)), 8, 8)
+        compositor.composite(listOf(run(At(0, 0, 4, 4), white, 255)), 8, 8)
         // Three frames, because the buffers rotate: the second frame writes the
         // other buffer and only the third comes back to the one the first used.
-        compositor.composite(listOf(run(4, 4, 4, 4, white, 255)), 8, 8)
-        val third: IntArray = compositor.composite(listOf(run(4, 4, 4, 4, white, 255)), 8, 8)
+        compositor.composite(listOf(run(At(4, 4, 4, 4), white, 255)), 8, 8)
+        val third: IntArray = compositor.composite(listOf(run(At(4, 4, 4, 4), white, 255)), 8, 8)
 
         assertEquals(0, third[0], "the first frame's glyph is still in the buffer")
         assertEquals(0xFFFFFFFF.toInt(), third[4 * 8 + 4])
@@ -148,7 +146,7 @@ class AssCompositeTest {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
-        val first: IntArray = compositor.composite(listOf(run(0, 0, 2, 2, white, 255)), 4, 4)
+        val first: IntArray = compositor.composite(listOf(run(At(0, 0, 2, 2), white, 255)), 4, 4)
         val second: IntArray = compositor.composite(emptyList(), 4, 4)
 
         assertNotEquals(0, first[0], "the frame handed out earlier was cleared underneath its owner")
@@ -163,10 +161,10 @@ class AssCompositeTest {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
-        compositor.render(listOf(run(0, 0, 2, 2, white, 255)), 16, 16)
+        compositor.render(listOf(run(At(0, 0, 2, 2), white, 255)), 16, 16)
         compositor.render(emptyList(), 16, 16)
         // Back to the buffer the first frame used, drawing somewhere else.
-        val third: AssSurfaceFrame = compositor.render(listOf(run(10, 10, 2, 2, white, 255)), 16, 16)
+        val third: AssSurfaceFrame = compositor.render(listOf(run(At(10, 10, 2, 2), white, 255)), 16, 16)
 
         assertEquals(0, third.changed.top, "the rows the first frame dirtied were left out")
         assertEquals(11, third.changed.bottom)
@@ -185,7 +183,7 @@ class AssCompositeTest {
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
         val frame: AssSurfaceFrame = compositor.render(
-            listOf(run(0, 0, 2, 2, white, 255), run(60, 60, 2, 2, white, 255)),
+            listOf(run(At(0, 0, 2, 2), white, 255), run(At(60, 60, 2, 2), white, 255)),
             64,
             64,
         )
@@ -205,7 +203,7 @@ class AssCompositeTest {
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
         val frame: AssSurfaceFrame = compositor.render(
-            listOf(run(2, 0, 2, 1, white, 255), run(20, 0, 2, 1, white, 255)),
+            listOf(run(At(2, 0, 2, 1), white, 255), run(At(20, 0, 2, 1), white, 255)),
             32,
             32,
         )
@@ -256,10 +254,10 @@ class AssCompositeTest {
     @Test
     fun `compositing in bands draws the same pixels as compositing in one pass`() = runTest {
         val images: List<AssImage> = listOf(
-            run(0, 0, 40, 40, libassColour(0xFF, 0x00, 0x00, 255), 200),
-            run(10, 8, 40, 40, libassColour(0x00, 0xFF, 0x00, 180), 255),
-            run(5, 20, 50, 30, libassColour(0x00, 0x00, 0xFF, 120), 90),
-            run(30, 1, 20, 60, libassColour(0xFF, 0xFF, 0x00, 255), 40),
+            run(At(0, 0, 40, 40), libassColour(0xFF, 0x00, 0x00, 255), 200),
+            run(At(10, 8, 40, 40), libassColour(0x00, 0xFF, 0x00, 180), 255),
+            run(At(5, 20, 50, 30), libassColour(0x00, 0x00, 0xFF, 120), 90),
+            run(At(30, 1, 20, 60), libassColour(0xFF, 0xFF, 0x00, 255), 40),
         )
 
         val serial: IntArray = AssFrameCompositor().composite(images, 64, 64).copyOf()
@@ -271,8 +269,8 @@ class AssCompositeTest {
     @Test
     fun `compositing in bands reports the same changed rows`() = runTest {
         val images: List<AssImage> = listOf(
-            run(2, 3, 8, 8, libassColour(0xFF, 0xFF, 0xFF, 255), 255),
-            run(40, 50, 8, 8, libassColour(0xFF, 0x00, 0x00, 255), 255),
+            run(At(2, 3, 8, 8), libassColour(0xFF, 0xFF, 0xFF, 255), 255),
+            run(At(40, 50, 8, 8), libassColour(0xFF, 0x00, 0x00, 255), 255),
         )
 
         val serial: AssSurfaceFrame = AssFrameCompositor().render(images, 64, 64)
@@ -291,7 +289,7 @@ class AssCompositeTest {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
-        compositor.composite(listOf(run(0, 0, 4, 4, white, 255)), 8, 8)
+        compositor.composite(listOf(run(At(0, 0, 4, 4), white, 255)), 8, 8)
         val resized: IntArray = compositor.composite(emptyList(), 16, 16)
 
         assertEquals(16 * 16, resized.size)

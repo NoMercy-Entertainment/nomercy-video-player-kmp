@@ -138,8 +138,9 @@ public class AssFrameCompositor {
         changed.replaceWith(stale)
 
         stale.reset()
+        val whole = Band(stale, top = 0, bottom = safeHeight - 1, palette = serialPalette)
         for (image in images) {
-            blit(pixels, safeWidth, safeHeight, image, stale, 0, safeHeight - 1, serialPalette)
+            blit(Surface(pixels, safeWidth, safeHeight), image, whole)
         }
         changed.absorb(stale)
 
@@ -194,26 +195,7 @@ public class AssFrameCompositor {
         // all eight and idling means the fastest possible frame still costs a
         // dispatch and a wake-up; doing one strip here removes both from the
         // critical path and leaves the caller busy instead of parked.
-        coroutineScope {
-            for (band in 1 until strips) {
-                val top: Int = band * rows
-                val bottom: Int = minOf(top + rows, safeHeight) - 1
-                if (top > bottom) continue
-
-                launch(Dispatchers.Default) {
-                    for (image in images) {
-                        blit(pixels, safeWidth, safeHeight, image, perBand[band], top, bottom, palettes[band])
-                    }
-                }
-            }
-
-            val firstBottom: Int = minOf(rows, safeHeight) - 1
-            if (firstBottom >= 0) {
-                for (image in images) {
-                    blit(pixels, safeWidth, safeHeight, image, perBand[0], 0, firstBottom, palettes[0])
-                }
-            }
-        }
+        spread(Surface(pixels, safeWidth, safeHeight), images, Strips(strips, rows, perBand))
 
         for (band in perBand) {
             stale.absorb(band)
@@ -221,6 +203,37 @@ public class AssFrameCompositor {
         changed.absorb(stale)
 
         return pixels
+    }
+
+    // The caller takes the first strip itself and hands away the rest.
+    //
+    // A frame ends when its LAST strip does, so every strip that has to be
+    // picked up by another thread is one more chance for the frame to wait on a
+    // worker the operating system has not scheduled yet. Handing away all eight
+    // and idling means the fastest possible frame still costs a dispatch and a
+    // wake-up; doing one strip here removes both from the critical path and
+    // leaves the caller busy instead of parked.
+    private suspend fun spread(surface: Surface, images: List<AssImage>, strips: Strips) {
+        coroutineScope {
+            for (band in 1 until strips.count) {
+                val top: Int = band * strips.rows
+                val bottom: Int = minOf(top + strips.rows, surface.height) - 1
+                if (top > bottom) continue
+
+                launch(Dispatchers.Default) {
+                    paint(surface, images, Band(strips.spans[band], top, bottom, palettes[band]))
+                }
+            }
+
+            val firstBottom: Int = minOf(strips.rows, surface.height) - 1
+            if (firstBottom >= 0) {
+                paint(surface, images, Band(strips.spans[0], 0, firstBottom, palettes[0]))
+            }
+        }
+    }
+
+    private fun paint(surface: Surface, images: List<AssImage>, band: Band) {
+        for (image in images) blit(surface, image, band)
     }
 
     private var bandSpans: Array<AssChangedRows> = emptyArray()
@@ -235,8 +248,10 @@ public class AssFrameCompositor {
         return bandSpans
     }
 
+    private fun sized(frameWidth: Int, frameHeight: Int): Boolean = frameWidth == width && frameHeight == height
+
     private fun resize(frameWidth: Int, frameHeight: Int) {
-        if (frameWidth == width && frameHeight == height && buffers.isNotEmpty()) return
+        if (buffers.isNotEmpty() && sized(frameWidth, frameHeight)) return
 
         width = frameWidth
         height = frameHeight
@@ -265,55 +280,107 @@ public class AssFrameCompositor {
         }
     }
 
-    private fun blit(
-        pixels: IntArray,
-        frameWidth: Int,
-        frameHeight: Int,
-        image: AssImage,
-        written: AssChangedRows,
-        bandTop: Int,
-        bandBottom: Int,
-        palette: RunPalette,
-    ) {
+    private fun blit(surface: Surface, image: AssImage, band: Band) {
         // Nothing to draw, or a run whose declared rectangle is larger than the
         // bytes that arrived. Reading past the array would be an exception per
         // frame rather than a missing glyph.
-        if (image.width <= 0 || image.height <= 0 || image.pixels.size < image.stride * image.height) return
+        if (image.width <= 0 || image.pixels.size < image.stride * image.height) return
 
         val colour: Int = assArgbOf(image.colour)
         val tintAlpha: Int = (colour ushr ALPHA_SHIFT) and BYTE_MASK
         if (tintAlpha == 0) return
 
-        val table: IntArray = palette.of(colour, tintAlpha)
+        val area: Area = clip(surface, image, band) ?: return
+        val table: IntArray = band.palette.of(colour, tintAlpha)
+
+        for (y in area.top..area.bottom) {
+            blitRow(surface, Run(image, table), y, area)
+            band.written.include(y, area.left, area.right)
+        }
+    }
+
+    // One row of one run. The inner loop is where every pixel of every frame is
+    // spent, so it is kept flat: a coverage lookup, a zero test and a blend.
+    private fun blitRow(surface: Surface, run: Run, row: Int, area: Area) {
+        val image: AssImage = run.image
+        val table: IntArray = run.table
+        val sourceRow: Int = (row - image.y) * image.stride - image.x
+        val targetRow: Int = row * surface.width
+
+        for (x in area.left..area.right) {
+            // Zero coverage reads back as a zero entry, so the two cases that
+            // used to be skipped separately are one test.
+            val source: Int = table[image.pixels[sourceRow + x].toInt() and BYTE_MASK]
+            if (source == 0) continue
+
+            val offset: Int = targetRow + x
+            val destination: Int = surface.pixels[offset]
+            // Nothing under it, which is most pixels: a glyph and its outline
+            // touch, they do not tile.
+            surface.pixels[offset] = if (destination == 0) source else over(source, destination)
+        }
+    }
+
+    // The part of a run that lands on this band of this surface, or null when
+    // none of it does — which is most runs for most bands.
+    private fun clip(surface: Surface, image: AssImage, band: Band): Area? {
+        if (image.height <= 0) return null
 
         val left: Int = maxOf(image.x, 0)
-        val top: Int = maxOf(maxOf(image.y, 0), bandTop)
-        val right: Int = minOf(image.x + image.width, frameWidth) - 1
-        val bottom: Int = minOf(minOf(image.y + image.height, frameHeight) - 1, bandBottom)
-        if (left > right || top > bottom) return
+        val top: Int = maxOf(maxOf(image.y, 0), band.top)
+        val right: Int = minOf(image.x + image.width, surface.width) - 1
+        val bottom: Int = minOf(minOf(image.y + image.height, surface.height) - 1, band.bottom)
 
-        for (y in top..bottom) {
-            val sourceRow: Int = (y - image.y) * image.stride - image.x
-            val targetRow: Int = y * frameWidth
-
-            for (x in left..right) {
-                // Zero coverage reads back as a zero entry, so the two cases
-                // that used to be skipped separately are one test.
-                val source: Int = table[image.pixels[sourceRow + x].toInt() and BYTE_MASK]
-                if (source != 0) {
-                    val offset: Int = targetRow + x
-                    val destination: Int = pixels[offset]
-                    // Nothing under it, which is most pixels: a glyph and its
-                    // outline touch, they do not tile.
-                    pixels[offset] = if (destination == 0) source else over(source, destination)
-                }
-            }
-            written.include(y, left, right)
-        }
+        return if (left > right || top > bottom) null else Area(left, top, right, bottom)
     }
 
     private val serialPalette = RunPalette()
 }
+
+// The buffer being drawn into, and its dimensions.
+//
+// Together because they are never apart: every one of these was travelling as
+// three arguments beside four more describing the band, and a blend function
+// with eight parameters is one whose call sites cannot be read.
+private class Surface(
+    val pixels: IntArray,
+    val width: Int,
+    val height: Int,
+)
+
+// One horizontal strip: the rows it owns, the spans it has written, and the
+// colour table it is allowed to refill. The table is per band and never shared
+// — two threads refilling one race on the colour it currently holds, and the
+// failure is a run drawn in another band's colour with nothing thrown.
+private class Band(
+    val written: AssChangedRows,
+    val top: Int,
+    val bottom: Int,
+    val palette: RunPalette,
+)
+
+// How a frame is divided: how many strips, how many rows each holds, and the
+// span set each one writes into.
+private class Strips(
+    val count: Int,
+    val rows: Int,
+    val spans: Array<AssChangedRows>,
+)
+
+// A run and the colour table it is drawn through, which are never useful apart:
+// the table IS this run's colour expanded over every coverage value.
+private class Run(
+    val image: AssImage,
+    val table: IntArray,
+)
+
+// The rectangle of a run that actually lands on a band, in surface pixels.
+private class Area(
+    val left: Int,
+    val top: Int,
+    val right: Int,
+    val bottom: Int,
+)
 
 // One colour expanded to every coverage value it can be drawn at.
 //
