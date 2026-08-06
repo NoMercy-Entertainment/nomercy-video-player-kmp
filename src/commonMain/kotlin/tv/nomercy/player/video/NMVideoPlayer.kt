@@ -215,16 +215,32 @@ public open class NMVideoPlayer(
             // synchronously, because a consumer building a quality menu from
             // `levels` should have it by the time mediaReady has finished
             // dispatching rather than a scheduler tick later.
-            announceLevels()
-            announceAudioTracks()
-            playerScope.launch { applyDefaultTracks() }
+            announceEngineLists()
         }
 
         // The item's own subtitle files, registered the moment it becomes the
         // one playing. Without this a host would have to call addSubtitleTrack
         // for every film it queues, and the fields the server already sends
         // would be data nothing read.
-        context.on(CoreEvents.Item) { adoptItemSubtitles() }
+        // Again when the engine learns its length.
+        //
+        // Three announcements read the engine's lists once, inside mediaReady,
+        // and each returns early on an empty one — so an engine that parses its
+        // container after announcing readability published nothing at all. That
+        // is the same shape `duration` had and it had three siblings; searching
+        // for the construct rather than fixing the one instance is what found
+        // them.
+        //
+        // Duration is the signal because it is the one this engine has: by the
+        // time libVLC reports a length it has read the container, so the tracks
+        // are there. Latched per item, so an engine that reports correctly the
+        // first time does not announce twice.
+        context.on(CoreEvents.Duration) { announceEngineLists() }
+
+        context.on(CoreEvents.Item) {
+            listsAnnounced = false
+            adoptItemSubtitles()
+        }
 
         // The item's own chapter markers, taken the same way its subtitles are.
         //
@@ -324,6 +340,19 @@ public open class NMVideoPlayer(
     //
     // Silent on an empty ladder. A progressive file has no rungs, and an empty
     // `levels` would tell a menu to rebuild itself around nothing.
+    private var listsAnnounced: Boolean = false
+
+    // Everything built from what the engine reports, once it reports it.
+    private fun announceEngineLists() {
+        if (listsAnnounced) return
+        if (qualityLevels().isEmpty() && audioTracks().isEmpty() && subtitles().isEmpty()) return
+
+        listsAnnounced = true
+        announceLevels()
+        announceAudioTracks()
+        playerScope.launch { applyDefaultTracks() }
+    }
+
     private fun announceLevels() {
         val ladder: List<QualityLevel> = qualityLevels()
         if (ladder.isEmpty()) return
