@@ -164,7 +164,17 @@ private suspend fun nextPicture(
     timeMs: Long,
     target: IntSize,
 ): ImageBitmap? {
-    val frame: AssFrame = renderer.render(timeMs) ?: return null
+    // Null from render() means "nothing changed", and the caller keeps what it
+    // has — right for a still cue, wrong for no cue at all. One value carried
+    // both answers, so a track that had been torn down left its last rasterised
+    // frame painted forever: measured on the desktop testbed with Rail Wars'
+    // lyrics sitting over No-Rin's opening while it loaded.
+    //
+    // hasTrack() is the third answer. No track composites to a transparent
+    // frame, because the layer has no way to say "draw nothing" other than by
+    // drawing nothing.
+    val frame: AssFrame = renderer.render(timeMs)
+        ?: return if (renderer.hasTrack()) null else blank(drawing, target)
     if (!frame.changed) return null
 
     // Banded, because a single ending sequence puts two hundred glyph runs over
@@ -172,6 +182,12 @@ private suspend fun nextPicture(
     // milliseconds — a quarter of a 60fps budget spent on subtitles alone.
     val composited: AssSurfaceFrame = drawing.compositor.renderParallel(frame.images, target.width, target.height)
     return drawing.picture.bitmap(composited, target.width, target.height)
+}
+
+// Nothing, drawn.
+private suspend fun blank(drawing: AssDrawing, target: IntSize): ImageBitmap {
+    val empty: AssSurfaceFrame = drawing.compositor.renderParallel(emptyList(), target.width, target.height)
+    return drawing.picture.bitmap(empty, target.width, target.height)
 }
 
 // The two things that turn libass images into a bitmap, held together for the

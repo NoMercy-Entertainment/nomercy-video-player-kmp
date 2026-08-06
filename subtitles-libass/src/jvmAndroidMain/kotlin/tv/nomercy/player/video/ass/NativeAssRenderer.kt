@@ -66,6 +66,12 @@ internal class NativeAssRenderer(
         disposeRenderer()
     }
 
+    // Read off the content it was last handed, which it already keeps. An empty
+    // script is how this renderer is told to draw nothing, and without a way to
+    // ask, the layer could not tell "no cue due" from "no track at all" and kept
+    // the last rasterised frame painted over the next film.
+    override fun hasTrack(): Boolean = synchronized(lock) { !trackContent.isNullOrBlank() }
+
     override fun loadTrack(assContent: String): Unit = synchronized(lock) {
         if (released) return
         trackContent = assContent

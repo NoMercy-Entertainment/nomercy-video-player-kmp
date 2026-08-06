@@ -1295,11 +1295,16 @@ public abstract interface class tv/nomercy/player/video/subtitles/AssRenderer {
 	public abstract fun addFont (Ljava/lang/String;[B)V
 	public abstract fun clearFonts ()V
 	public abstract fun frameSize (II)V
+	public fun hasTrack ()Z
 	public abstract fun loadTrack (Ljava/lang/String;)V
 	public abstract fun release ()V
 	public abstract fun render (J)Ltv/nomercy/player/video/subtitles/AssFrame;
 	public abstract fun storageSize ()Ltv/nomercy/player/video/subtitles/AssSize;
 	public abstract fun storageSize (II)V
+}
+
+public final class tv/nomercy/player/video/subtitles/AssRenderer$DefaultImpls {
+	public static fun hasTrack (Ltv/nomercy/player/video/subtitles/AssRenderer;)Z
 }
 
 public final class tv/nomercy/player/video/subtitles/AssSize {

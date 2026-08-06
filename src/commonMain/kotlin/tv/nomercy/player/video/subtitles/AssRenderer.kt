@@ -79,6 +79,22 @@ public interface AssRenderer {
     // subtitle renderer becomes the reason a device gets hot.
     public fun render(timeMillis: Long): AssFrame?
 
+    /**
+     * Whether a track is loaded at all.
+     *
+     * The third answer [render] could not give. Null from it means "nothing
+     * changed since the last call" and the caller keeps what it has, which is
+     * right for a still cue and wrong for no cue at all — so a track that had
+     * been torn down left its last rasterised frame painted forever, and
+     * switching item drew the previous film's dialogue over the new one's
+     * opening.
+     *
+     * Defaults to true, so an implementation that has not been taught this
+     * behaves as it always did rather than blanking a subtitle nobody asked it
+     * to blank.
+     */
+    public fun hasTrack(): Boolean = true
+
     public fun release()
 }
 

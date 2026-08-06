@@ -404,6 +404,7 @@ abstract interface tv.nomercy.player.video.subtitles/AssRenderer { // tv.nomercy
     abstract fun render(kotlin/Long): tv.nomercy.player.video.subtitles/AssFrame? // tv.nomercy.player.video.subtitles/AssRenderer.render|render(kotlin.Long){}[0]
     abstract fun storageSize(): tv.nomercy.player.video.subtitles/AssSize? // tv.nomercy.player.video.subtitles/AssRenderer.storageSize|storageSize(){}[0]
     abstract fun storageSize(kotlin/Int, kotlin/Int) // tv.nomercy.player.video.subtitles/AssRenderer.storageSize|storageSize(kotlin.Int;kotlin.Int){}[0]
+    open fun hasTrack(): kotlin/Boolean // tv.nomercy.player.video.subtitles/AssRenderer.hasTrack|hasTrack(){}[0]
 }
 
 abstract interface tv.nomercy.player.video.tv/TvChromeCallbacks { // tv.nomercy.player.video.tv/TvChromeCallbacks|null[0]
