@@ -165,7 +165,7 @@ public fun VideoChrome(
     // for as long as this chrome is composed. Without this its holdChrome() is
     // a call into null — a handle that answers politely and does nothing, which
     // is worse than not having one.
-    val chromePlugin: DesktopUiPlugin? = remember(player) { player.getPlugin(DesktopUiPlugin::class) }
+    val chromePlugin: DesktopUiPlugin? = remember(player) { player.getPlugin(DesktopUiPlugin.id) as? DesktopUiPlugin }
     DisposableEffect(chromePlugin, controller) {
         chromePlugin?.controller = controller
         onDispose { if (chromePlugin?.controller === controller) chromePlugin?.controller = null }

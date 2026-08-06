@@ -30,6 +30,7 @@ import kotlinx.coroutines.isActive
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssRenderer
 import tv.nomercy.player.video.subtitles.AssFrameCompositor
+import tv.nomercy.player.video.subtitles.AssSurfaceFrame
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -58,12 +59,13 @@ public fun AssSubtitleLayer(
     contentDescription: String? = null,
 ) {
     var surface: IntSize by remember { mutableStateOf(IntSize.Zero) }
-    var picture: ImageBitmap? by remember { mutableStateOf(null) }
+    var frame: ImageBitmap? by remember { mutableStateOf(null) }
 
     // One compositor for the life of the layer, holding the buffers it draws
     // into. A fresh eight-megabyte surface per frame was costing more than
     // libass spent rasterising the glyphs that go on it.
     val compositor: AssFrameCompositor = remember { AssFrameCompositor() }
+    val picture: AssPictureSurface = remember { AssPictureSurface() }
 
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
@@ -87,10 +89,10 @@ public fun AssSubtitleLayer(
                 // Only the finished ImageBitmap crosses back, and the state
                 // write lands on the main thread where composition expects it.
                 val next: ImageBitmap? = withContext(Dispatchers.Default) {
-                    nextPicture(renderer, compositor, positionMs(), surface)
+                    nextPicture(renderer, compositor, picture, positionMs(), surface)
                 }
 
-                picture = next ?: picture
+                frame = next ?: frame
                 delay(POLL_INTERVAL_MS)
             }
         }
@@ -102,9 +104,9 @@ public fun AssSubtitleLayer(
             .testTag(ASS_SUBTITLE_TAG)
             .onSizeChanged { measured: IntSize -> surface = measured },
     ) {
-        picture?.let { frame: ImageBitmap ->
+        frame?.let { drawn: ImageBitmap ->
             Image(
-                bitmap = frame,
+                bitmap = drawn,
                 contentDescription = contentDescription,
                 contentScale = ContentScale.None,
                 modifier = Modifier.fillMaxSize(),
@@ -119,19 +121,30 @@ public fun AssSubtitleLayer(
 private fun nextPicture(
     renderer: AssRenderer,
     compositor: AssFrameCompositor,
+    picture: AssPictureSurface,
     timeMs: Long,
     surface: IntSize,
 ): ImageBitmap? {
     val frame: AssFrame = renderer.render(timeMs) ?: return null
     if (!frame.changed) return null
 
-    val pixels: IntArray = compositor.composite(frame.images, surface.width, surface.height)
-    return assImageBitmap(pixels, surface.width, surface.height)
+    val composited: AssSurfaceFrame = compositor.render(frame.images, surface.width, surface.height)
+    return picture.bitmap(composited, surface.width, surface.height)
 }
 
-// Straight-alpha ARGB pixels as the toolkit's own bitmap. Every platform has
-// one and none of them is reachable from common code.
-internal expect fun assImageBitmap(pixels: IntArray, width: Int, height: Int): ImageBitmap
+/**
+ * Premultiplied ARGB pixels as the toolkit's own bitmap.
+ *
+ * A class rather than a function because the desktop has to keep something
+ * between frames: Skia takes bytes and the compositor holds ints, and
+ * converting the whole surface to find the band that changed cost more than
+ * everything else in the frame together. Android keeps nothing and is a class
+ * anyway, so the layer has one shape to hold rather than a function on one
+ * platform and an object on the other.
+ */
+internal expect class AssPictureSurface() {
+    fun bitmap(frame: AssSurfaceFrame, frameWidth: Int, frameHeight: Int): ImageBitmap
+}
 
 // The cadence a karaoke wipe needs to look continuous, and the one
 // RenderScheduler already uses for a moving cue. A static line costs nothing at

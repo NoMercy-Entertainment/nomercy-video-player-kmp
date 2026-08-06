@@ -1145,6 +1145,7 @@ final class tv.nomercy.player.video.subtitles/AssFrameCompositor { // tv.nomercy
     constructor <init>() // tv.nomercy.player.video.subtitles/AssFrameCompositor.<init>|<init>(){}[0]
 
     final fun composite(kotlin.collections/List<tv.nomercy.player.video.subtitles/AssImage>, kotlin/Int, kotlin/Int): kotlin/IntArray // tv.nomercy.player.video.subtitles/AssFrameCompositor.composite|composite(kotlin.collections.List<tv.nomercy.player.video.subtitles.AssImage>;kotlin.Int;kotlin.Int){}[0]
+    final fun render(kotlin.collections/List<tv.nomercy.player.video.subtitles/AssImage>, kotlin/Int, kotlin/Int): tv.nomercy.player.video.subtitles/AssSurfaceFrame // tv.nomercy.player.video.subtitles/AssFrameCompositor.render|render(kotlin.collections.List<tv.nomercy.player.video.subtitles.AssImage>;kotlin.Int;kotlin.Int){}[0]
 }
 
 final class tv.nomercy.player.video.subtitles/AssImage { // tv.nomercy.player.video.subtitles/AssImage|null[0]
@@ -1176,6 +1177,57 @@ final class tv.nomercy.player.video.subtitles/AssImage { // tv.nomercy.player.vi
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.subtitles/AssImage.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video.subtitles/AssImage.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/AssImage.toString|toString(){}[0]
+}
+
+final class tv.nomercy.player.video.subtitles/AssRegion { // tv.nomercy.player.video.subtitles/AssRegion|null[0]
+    constructor <init>(kotlin/Int, kotlin/Int, kotlin/Int, kotlin/Int) // tv.nomercy.player.video.subtitles/AssRegion.<init>|<init>(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+
+    final val bottom // tv.nomercy.player.video.subtitles/AssRegion.bottom|{}bottom[0]
+        final fun <get-bottom>(): kotlin/Int // tv.nomercy.player.video.subtitles/AssRegion.bottom.<get-bottom>|<get-bottom>(){}[0]
+    final val isEmpty // tv.nomercy.player.video.subtitles/AssRegion.isEmpty|{}isEmpty[0]
+        final fun <get-isEmpty>(): kotlin/Boolean // tv.nomercy.player.video.subtitles/AssRegion.isEmpty.<get-isEmpty>|<get-isEmpty>(){}[0]
+    final val left // tv.nomercy.player.video.subtitles/AssRegion.left|{}left[0]
+        final fun <get-left>(): kotlin/Int // tv.nomercy.player.video.subtitles/AssRegion.left.<get-left>|<get-left>(){}[0]
+    final val right // tv.nomercy.player.video.subtitles/AssRegion.right|{}right[0]
+        final fun <get-right>(): kotlin/Int // tv.nomercy.player.video.subtitles/AssRegion.right.<get-right>|<get-right>(){}[0]
+    final val top // tv.nomercy.player.video.subtitles/AssRegion.top|{}top[0]
+        final fun <get-top>(): kotlin/Int // tv.nomercy.player.video.subtitles/AssRegion.top.<get-top>|<get-top>(){}[0]
+
+    final fun component1(): kotlin/Int // tv.nomercy.player.video.subtitles/AssRegion.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // tv.nomercy.player.video.subtitles/AssRegion.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // tv.nomercy.player.video.subtitles/AssRegion.component3|component3(){}[0]
+    final fun component4(): kotlin/Int // tv.nomercy.player.video.subtitles/AssRegion.component4|component4(){}[0]
+    final fun copy(kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ..., kotlin/Int = ...): tv.nomercy.player.video.subtitles/AssRegion // tv.nomercy.player.video.subtitles/AssRegion.copy|copy(kotlin.Int;kotlin.Int;kotlin.Int;kotlin.Int){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.subtitles/AssRegion.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.subtitles/AssRegion.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/AssRegion.toString|toString(){}[0]
+
+    final object Companion { // tv.nomercy.player.video.subtitles/AssRegion.Companion|null[0]
+        final val NONE // tv.nomercy.player.video.subtitles/AssRegion.Companion.NONE|{}NONE[0]
+            final fun <get-NONE>(): tv.nomercy.player.video.subtitles/AssRegion // tv.nomercy.player.video.subtitles/AssRegion.Companion.NONE.<get-NONE>|<get-NONE>(){}[0]
+    }
+}
+
+final class tv.nomercy.player.video.subtitles/AssSurfaceFrame { // tv.nomercy.player.video.subtitles/AssSurfaceFrame|null[0]
+    constructor <init>(kotlin/IntArray, kotlin/Int, kotlin/Int, tv.nomercy.player.video.subtitles/AssRegion) // tv.nomercy.player.video.subtitles/AssSurfaceFrame.<init>|<init>(kotlin.IntArray;kotlin.Int;kotlin.Int;tv.nomercy.player.video.subtitles.AssRegion){}[0]
+
+    final val changed // tv.nomercy.player.video.subtitles/AssSurfaceFrame.changed|{}changed[0]
+        final fun <get-changed>(): tv.nomercy.player.video.subtitles/AssRegion // tv.nomercy.player.video.subtitles/AssSurfaceFrame.changed.<get-changed>|<get-changed>(){}[0]
+    final val generation // tv.nomercy.player.video.subtitles/AssSurfaceFrame.generation|{}generation[0]
+        final fun <get-generation>(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSurfaceFrame.generation.<get-generation>|<get-generation>(){}[0]
+    final val pixels // tv.nomercy.player.video.subtitles/AssSurfaceFrame.pixels|{}pixels[0]
+        final fun <get-pixels>(): kotlin/IntArray // tv.nomercy.player.video.subtitles/AssSurfaceFrame.pixels.<get-pixels>|<get-pixels>(){}[0]
+    final val slot // tv.nomercy.player.video.subtitles/AssSurfaceFrame.slot|{}slot[0]
+        final fun <get-slot>(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSurfaceFrame.slot.<get-slot>|<get-slot>(){}[0]
+
+    final fun component1(): kotlin/IntArray // tv.nomercy.player.video.subtitles/AssSurfaceFrame.component1|component1(){}[0]
+    final fun component2(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSurfaceFrame.component2|component2(){}[0]
+    final fun component3(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSurfaceFrame.component3|component3(){}[0]
+    final fun component4(): tv.nomercy.player.video.subtitles/AssRegion // tv.nomercy.player.video.subtitles/AssSurfaceFrame.component4|component4(){}[0]
+    final fun copy(kotlin/IntArray = ..., kotlin/Int = ..., kotlin/Int = ..., tv.nomercy.player.video.subtitles/AssRegion = ...): tv.nomercy.player.video.subtitles/AssSurfaceFrame // tv.nomercy.player.video.subtitles/AssSurfaceFrame.copy|copy(kotlin.IntArray;kotlin.Int;kotlin.Int;tv.nomercy.player.video.subtitles.AssRegion){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.subtitles/AssSurfaceFrame.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.subtitles/AssSurfaceFrame.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.subtitles/AssSurfaceFrame.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video.subtitles/CueBox { // tv.nomercy.player.video.subtitles/CueBox|null[0]
