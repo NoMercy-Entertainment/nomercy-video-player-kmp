@@ -727,6 +727,7 @@ public class tv/nomercy/player/video/cast/VideoCastPlugin : tv/nomercy/player/co
 	public fun getCasting ()Z
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public fun getStatus ()Lkotlinx/coroutines/flow/StateFlow;
+	public fun isConnected ()Z
 	public fun reclaim (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun startCast (Ltv/nomercy/player/video/cast/RemoteDevice;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun stopCast (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;

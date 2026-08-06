@@ -19,6 +19,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.focusable
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -175,12 +176,15 @@ public fun VideoChrome(
 
     AutoSkipBinding(state, commands)
 
+    val keyFocus: FocusRequester = remember { FocusRequester() }
+
     val input = ChromeInput(
         rememberVideoKeys(player, formFactor),
         controller,
         TouchZoneInput(state, commands, player::now),
         gestures,
         panel,
+        keyFocus,
     )
 
     // The picture and the words on it, as one layer.

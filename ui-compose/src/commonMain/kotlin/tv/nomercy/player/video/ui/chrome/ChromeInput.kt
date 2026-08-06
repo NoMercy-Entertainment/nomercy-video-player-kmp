@@ -9,6 +9,8 @@
 package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.foundation.focusable
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,17 +70,40 @@ internal class ChromeInput(
      * anybody they existed.
      */
     val panel: ShortcutsPanel,
+    /**
+     * The key handler's focus target, remembered by the caller.
+     *
+     * Held here rather than created here because a FocusRequester built during
+     * composition is a NEW one every recomposition, and requesting focus on one
+     * that was never attached to a node does nothing at all — which would make
+     * this fix look applied and change nothing.
+     */
+    val focus: FocusRequester,
 ) {
 
     val pointerDriven: Boolean get() = keys != null
+
+    // The node the key handler listens through, and the thing that keeps it
+    // focused.
+    //
+    // Compose Desktop clears focus when a press lands on something that is not
+    // itself focusable, so every chrome button was silently switching the
+    // keyboard off: the shortcuts worked until the viewer clicked once, and
+    // then nothing did. Re-requesting on every press puts the target back
+    // before the key arrives.
 
     fun pointerModifier(): Modifier =
         if (!pointerDriven) {
             Modifier
         } else {
             Modifier
+                .focusRequester(focus)
                 .focusable()
-                .pointerActivity(controller::bumpActivity, controller::onPointerExit)
+                .pointerActivity(
+                    onMove = controller::bumpActivity,
+                    onExit = controller::onPointerExit,
+                    onPress = { runCatching { focus.requestFocus() } },
+                )
         }
 
     // The chrome wakes on any press it recognises and then the key does whatever
