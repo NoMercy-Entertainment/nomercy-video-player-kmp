@@ -23,7 +23,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.isActive
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssRenderer
@@ -60,9 +62,30 @@ public fun AssSubtitleLayer(
 
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
-            renderer.frameSize(surface.width, surface.height)
+            // Sizing is native work too, and it happens on every resize.
+            withContext(Dispatchers.Default) { renderer.frameSize(surface.width, surface.height) }
+
             while (coroutineContext.isActive) {
-                picture = nextPicture(renderer, positionMs(), surface) ?: picture
+                // Rasterising OFF the composition thread, which is the whole
+                // point of this line.
+                //
+                // A LaunchedEffect body runs on the main dispatcher, so this
+                // loop was calling into libass — glyph shaping, blending and a
+                // full-surface bitmap copy — on the thread Compose recomposes
+                // and handles input on. Every poll blocked the frame it was
+                // trying to draw into, which reads as a player that is slow and
+                // sluggish everywhere, not as a subtitle layer that is
+                // expensive. The scheduler's skipping already keeps the number
+                // of renders low; where they run is a separate question and it
+                // was answered wrong.
+                //
+                // Only the finished ImageBitmap crosses back, and the state
+                // write lands on the main thread where composition expects it.
+                val next: ImageBitmap? = withContext(Dispatchers.Default) {
+                    nextPicture(renderer, positionMs(), surface)
+                }
+
+                picture = next ?: picture
                 delay(POLL_INTERVAL_MS)
             }
         }
