@@ -11,15 +11,17 @@ package tv.nomercy.player.video.ui.chrome
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
-import tv.nomercy.player.core.device.FormFactor
-import tv.nomercy.player.core.player.PlayerConfig
-import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.core.ports.AudioTrack
+import tv.nomercy.player.core.ports.SubtitleTrack
+import tv.nomercy.player.video.tv.TvChapter
+import tv.nomercy.player.video.ui.chrome.menus.RecordingMenuCommands
+import tv.nomercy.player.video.ui.tv.TvChromeStrings
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -42,6 +44,14 @@ import kotlin.test.assertTrue
  * silently compares as "no differences" is the failure mode this exists inside.
  *
  * Written to `build/overlay-geometry.json` on every run of the suite.
+ *
+ * SIZES from this dump are comparable to the browser's; POSITIONS are not yet.
+ * It composes the transport bar alone, and the reference's bar sits on top of a
+ * scrubber row inside a padded stack — so every element comes back offset by the
+ * same 0.02 of the container. A uniform offset across every element is the
+ * signature of a fixture that places the thing differently, not of a layout that
+ * is wrong, and the way to close it is to compose the whole bottom stack here
+ * rather than to widen a tolerance until it passes.
  */
 @OptIn(ExperimentalTestApi::class)
 class OverlayGeometryDumpTest {
@@ -49,11 +59,21 @@ class OverlayGeometryDumpTest {
     @Test
     fun theComposedChromeReportsItsGeometry() = runComposeUiTest {
         setContent {
-            val player = NMVideoPlayer(RecordingVideoBackend())
-            LaunchedEffect(player) { player.setup(PlayerConfig()) }
-
-            Box(modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp)) {
-                VideoChrome(player, FormFactor.Desktop)
+            // Bottom-aligned, where the chrome puts it. Rendering the bar at
+            // the top of the box was the first form and every `top` came back
+            // as 0 against the reference's 0.92 — nineteen findings about a
+            // fixture, not a layout. A geometry comparison has to place the
+            // thing it measures where the real one sits.
+            Box(
+                modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp),
+                contentAlignment = Alignment.BottomStart,
+            ) {
+                TransportBar(
+                    state = FULLY_STOCKED,
+                    commands = RecordingMenuCommands(),
+                    strings = TvChromeStrings(),
+                    buttons = EVERY_BUTTON,
+                )
             }
         }
         waitForIdle()
@@ -102,6 +122,56 @@ class OverlayGeometryDumpTest {
     private companion object {
         const val WIDTH = 1280
         const val HEIGHT = 720
+
+        /**
+         * An item that can offer every control.
+         *
+         * A default-configured player drew seven of them, and the seven were
+         * the whole geometry comparison: chapter buttons, the quality menu,
+         * the audio menu and the playlist are all withheld from a bar whose
+         * item has no chapters, one rung, one audio track and a queue of one.
+         * That is correct behaviour and it made the measurement describe the
+         * fixture rather than the layout.
+         */
+        /**
+         * Every optional control asked for.
+         *
+         * Nine of the sixteen default to OFF — a consumer opts in to subtitles,
+         * quality, speed, playlist, theater and the rest — so a bar built from
+         * the defaults draws about half the reference's controls and a geometry
+         * comparison over it silently covers half the overlay.
+         */
+        val EVERY_BUTTON = ChromeButtons(
+            seekBack = true,
+            seekForward = true,
+            subtitles = true,
+            audio = true,
+            quality = true,
+            speed = true,
+            aspectRatio = true,
+            playlist = true,
+            theater = true,
+            pictureInPicture = true,
+        )
+
+        val FULLY_STOCKED = ChromeState(
+            durationSeconds = 1_800.0,
+            timeSeconds = 120.0,
+            chapters = listOf(
+                TvChapter(0.0, "Opening Credits"),
+                TvChapter(90.0, "Episode"),
+                TvChapter(1_400.0, "Ending"),
+            ),
+            qualityLevels = RecordingVideoBackend.LEVELS,
+            activeQuality = RecordingVideoBackend.LEVELS.firstOrNull(),
+            audioTracks = listOf(
+                AudioTrack(id = "en", language = "en", label = "English"),
+                AudioTrack(id = "nl", language = "nl", label = "Nederlands"),
+            ),
+            subtitleTracks = listOf(SubtitleTrack(id = "en", language = "en", label = "English")),
+            queueSize = 3,
+            queueIndex = 1,
+        )
 
         val TAGS: List<String> = listOf(
             TRANSPORT_BAR_TAG,
