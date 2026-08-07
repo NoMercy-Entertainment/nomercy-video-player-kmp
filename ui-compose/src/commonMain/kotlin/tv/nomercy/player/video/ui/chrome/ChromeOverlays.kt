@@ -264,15 +264,25 @@ internal fun BoxScope.PointerClickLayer(
     onActivity: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val menuOpen: Boolean = LocalMenuOpen.current
+
     Box(
         modifier = modifier
             .matchParentSize()
             .testTag(POINTER_CLICK_TAG)
-            .pointerInput(state.playing, state.fullscreen) {
+            .pointerInput(state.playing, state.fullscreen, menuOpen) {
                 detectTapGestures(
                     onTap = {
                         onActivity()
-                        commands.setPlaying(!state.playing)
+                        // A tap outside an open pane dismisses it, and does not
+                        // also toggle playback.
+                        //
+                        // This is the web's outside-click handler, which the
+                        // triggers bypass with stopPropagation. Without it,
+                        // clicking the picture to get rid of a menu paused the
+                        // film and left the menu where it was — two wrong
+                        // answers to one gesture.
+                        if (menuOpen) commands.closeMenu() else commands.setPlaying(!state.playing)
                     },
                     onDoubleTap = {
                         onActivity()
