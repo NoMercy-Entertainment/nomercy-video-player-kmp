@@ -190,7 +190,7 @@ public fun VideoChrome(
         ChromeMenuScope(keyboard = input.pointerDriven, menuOpen = menu != MenuState.Hidden) {
             ChromeLayers(
                 scene = ChromeScene(
-                    state, commands, controller, strings, rememberMenuStrings(), buttons, layout, formFactor,
+                    state, commands, controller, strings, rememberMenuStrings(), buttons, layout,
                 ),
                 host = ChromeHost(sprite, previewSprite, onClose, onBack, onCast, slots),
                 menu = menu,
@@ -341,11 +341,6 @@ internal data class ChromeScene(
     val menuStrings: MenuStrings,
     val buttons: ChromeButtons,
     val layout: ChromeLayout,
-    // What kind of screen this is. One overlay needs it — the centre play
-    // button is the desktop chrome's, and a phone gets touch zones in its
-    // place — and a scene field carries it without giving every layer function
-    // a fifth parameter.
-    val formFactor: FormFactor,
 )
 
 // What the host supplied, which the player knows nothing about: the sprite sheet
@@ -422,10 +417,6 @@ private fun ChromeLayers(
             host.slots,
         )
 
-        // The form factor, because one overlay belongs to the desktop chrome
-        // only: the reference builds its centre play button in desktop-ui, and
-        // a phone gets touch zones instead. Drawn on both, it sits on the
-        // centre gesture a phone owns.
         ChromeOverlays(scene)
 
         // Additive rather than replacing. A skip-intro button and a cast banner
