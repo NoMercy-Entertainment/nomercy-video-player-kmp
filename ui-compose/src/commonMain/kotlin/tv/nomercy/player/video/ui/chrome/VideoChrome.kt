@@ -516,6 +516,7 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .testTag(BOTTOM_STACK_TAG)
                 .bottomScrim()
                 // The gesture bar, for the same reason the top bar clears the
                 // cutout: the picture uses the whole screen and the controls
@@ -645,6 +646,18 @@ internal fun rememberVideoKeys(player: NMVideoPlayer, formFactor: FormFactor): V
 
 internal const val TOUCH_CHROME_TAG = "nm-touch-chrome"
 internal const val DESKTOP_CHROME_TAG = "nm-desktop-chrome"
+
+/**
+ * The scrubber row and the transport row together, which is what the web calls
+ * `#bottom-bar`.
+ *
+ * Untagged until a geometry comparison went looking for a counterpart and had
+ * to be pointed at the chrome ROOT instead — a full-bleed box against an
+ * eighty-pixel strip, reported as a top out by 0.889 and a height out by the
+ * same, which is the whole screen and not a layout defect at all. An element
+ * the reference addresses needs a name here or the comparison invents one.
+ */
+internal const val BOTTOM_STACK_TAG = "nm-bottom-stack"
 // How much of the bar the scrub bubble takes.
 //
 // A fraction rather than a size, so the preview grows with the player the way
