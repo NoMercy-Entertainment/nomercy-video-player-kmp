@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
+import kotlin.time.TimeSource
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +64,7 @@ public fun AssSubtitleLayer(
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
 ) {
+    var frameClock: TimeSource.Monotonic.ValueTimeMark = remember { TimeSource.Monotonic.markNow() }
     var surface: IntSize by remember { mutableStateOf(IntSize.Zero) }
     var frame: ImageBitmap? by remember { mutableStateOf(null) }
 
@@ -129,6 +132,28 @@ public fun AssSubtitleLayer(
                 // densest track measured 14ms when this was written and 3.5ms
                 // after the compositor was rewritten; at 14ms per frame asking
                 // for display rate would have been asking for a stall.
+                // Display rate, with a floor of its own.
+                //
+                // withFrameNanos is supposed to pace this: resume on the frame
+                // the toolkit is about to draw, so a moving cue advances once
+                // per drawn frame and a still one costs nothing. On a window
+                // that is not presenting it does not throttle at all — measured
+                // at 500-600 iterations a second, each hopping to
+                // Dispatchers.Default to rasterise a subtitle nobody can see
+                // ten times per displayed frame. The process burned four and a
+                // half cores and the UI thread starved: a window that responds,
+                // paints nothing, and reports its playhead ticking hundreds of
+                // times a second.
+                //
+                // So the loop keeps its own floor. Nothing is gained by
+                // rasterising faster than a panel can show — 60Hz is already
+                // more than a karaoke wipe needs — and a pacing primitive that
+                // silently stops pacing must not be the only thing standing
+                // between an overlay and every core on the machine.
+                val elapsed: Long = frameClock.elapsedNow().inWholeMilliseconds
+                if (elapsed < FRAME_FLOOR_MS) delay(FRAME_FLOOR_MS - elapsed)
+                frameClock = TimeSource.Monotonic.markNow()
+
                 withFrameNanos { }
             }
         }
@@ -243,3 +268,8 @@ internal expect class AssPictureSurface() {
 }
 
 internal const val ASS_SUBTITLE_TAG = "nm-ass-subtitles"
+
+// One frame at 60Hz. A cue that moves is smooth at this rate and a still one
+// costs nothing, because the renderer answers null for a frame that has not
+// changed.
+private const val FRAME_FLOOR_MS = 16L
