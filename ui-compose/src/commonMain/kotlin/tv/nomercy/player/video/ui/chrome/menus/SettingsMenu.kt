@@ -38,7 +38,8 @@ import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
-import tv.nomercy.player.core.ports.displayLanguage
+import tv.nomercy.player.core.i18n.languageDisplayName
+import tv.nomercy.player.video.ui.chrome.rememberChromeLocale
 import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.video.tv.TvChromeItem
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
@@ -308,12 +309,15 @@ private fun AudioMenu(
     commands: ChromeCommands,
     onMenuChange: (MenuState) -> Unit,
 ) {
+    // The locale that chose the header is the one that names the rows.
+    val locale: String = rememberChromeLocale()
+
     LazyColumn(
         contentPadding = MENU_LIST_PADDING,
         verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
     ) {
         itemsIndexed(state.audioTracks) { index, track ->
-            MenuRow(audioLabel(track, index), isCurrent = track == state.activeAudio) {
+            MenuRow(audioLabel(track, index, locale), isCurrent = track == state.activeAudio) {
                 commands.selectAudioTrack(track)
                 onMenuChange(MenuState.Hidden)
             }
@@ -328,6 +332,8 @@ private fun SubtitleMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
+    val locale: String = rememberChromeLocale()
+
     LazyColumn(
         contentPadding = MENU_LIST_PADDING,
         verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
@@ -343,7 +349,7 @@ private fun SubtitleMenu(
         }
 
         itemsIndexed(state.subtitleTracks) { index, track ->
-            MenuRow(subtitleLabel(track, index), isCurrent = track == state.activeSubtitle) {
+            MenuRow(subtitleLabel(track, index, locale), isCurrent = track == state.activeSubtitle) {
                 commands.selectSubtitleTrack(track)
                 onMenuChange(MenuState.Hidden)
             }
@@ -393,21 +399,27 @@ private fun SpeedMenu(
  * chose between rows called "und" where the browser offers "Nederlands" and
  * "Track 2".
  */
-internal fun audioLabel(track: AudioTrack, index: Int): String =
-    trackLabel(track.label, track.language, index)
+internal fun audioLabel(track: AudioTrack, index: Int, locale: String): String =
+    trackLabel(track.label, track.language, index, locale)
 
-internal fun subtitleLabel(track: SubtitleTrack, index: Int): String =
-    trackLabel(track.label, track.language, index)
+internal fun subtitleLabel(track: SubtitleTrack, index: Int, locale: String): String =
+    trackLabel(track.label, track.language, index, locale)
 
 // The chain itself, shared because a subtitle row and an audio row are the same
 // question about two track types - and because the two panes had drifted, one
 // reading `label` through a helper and the other reading it directly.
-private fun trackLabel(label: String?, language: String?, index: Int): String {
+private fun trackLabel(label: String?, language: String?, index: Int, locale: String): String {
     val named: String? = label?.takeIf { it.isNotBlank() && !it.equals(UNKNOWN_LANGUAGE, ignoreCase = true) }
     if (named != null && !named.equals(language, ignoreCase = true)) return named
 
     val tag: String? = language?.takeIf { it.isNotBlank() && !it.equals(UNKNOWN_LANGUAGE, ignoreCase = true) }
-    val spelled: String? = tag?.let { displayLanguage(it).takeIf { name -> name.isNotBlank() } }
+    // Named in the CHROME's language, not the operating system's.
+    //
+    // `displayLanguage(tag)` takes no locale, so it answered from the platform
+    // default: a Dutch menu headed `Ondertiteling` listed `English (Full)` and
+    // `Croatian (Full)` on a machine whose OS is English. The locale that picked
+    // the header is the one that must name the rows.
+    val spelled: String? = tag?.let { languageDisplayName(it, locale) }
 
     return spelled ?: tag ?: "Track ${index + 1}"
 }

@@ -32,13 +32,19 @@ class TrackLabelTest {
 
     @Test
     fun aTrackThatNamesItselfKeepsItsName() {
-        assertEquals("Director's commentary", audioLabel(audio("Director's commentary", "en"), 0))
+        assertEquals("Director's commentary", audioLabel(audio("Director's commentary", "en"), 0, "en"))
     }
 
     @Test
     fun aTrackNamedOnlyByItsCodeIsSpelledOut() {
         // The row the desktop drew as "nl". A viewer reads a language, not a tag.
-        assertEquals("Nederlands", audioLabel(audio("nl", "nl"), 0))
+        //
+        // Named in the CHROME's locale, which is the change: this expected the
+        // autonym "Nederlands" because displayLanguage(tag) took no locale and
+        // spelled every language in itself. The reference names them in the UI
+        // language, so an English chrome says "Dutch" and a Dutch one says
+        // "Nederlands" — and the test below asserts that second half.
+        assertEquals("Dutch", audioLabel(audio("nl", "nl"), 0, "en"))
     }
 
     @Test
@@ -46,7 +52,7 @@ class TrackLabelTest {
         // "und" is libVLC's answer for a track that declares nothing, and it
         // reached the menu verbatim - twice over on a file with two such tracks,
         // which is a list nobody can choose from.
-        assertEquals("Track 2", audioLabel(audio("und", "und"), 1))
+        assertEquals("Track 2", audioLabel(audio("und", "und"), 1, "en"))
     }
 
     @Test
@@ -55,6 +61,24 @@ class TrackLabelTest {
         // helper and the subtitle pane read the field directly.
         val track = SubtitleTrack(id = "3", language = "und", label = "und", format = "subrip")
 
-        assertEquals("Track 1", subtitleLabel(track, 0))
+        assertEquals("Track 1", subtitleLabel(track, 0, "en"))
+    }
+
+    @Test
+    fun aRowIsNamedInTheChromesLanguageNotTheSystems() {
+        // The defect on screen: a menu headed `Ondertiteling` listing
+        // `English (Full)` and `Croatian (Full)`, because the labeller called
+        // displayLanguage(tag) — which takes no locale and answered from the
+        // operating system's, not the one that chose the header.
+        assertEquals(
+            "Engels",
+            subtitleLabel(SubtitleTrack(id = "0", language = "eng", label = ""), 0, "nl"),
+            "a Dutch chrome names English 'Engels'",
+        )
+        assertEquals(
+            "Nederlands",
+            audioLabel(AudioTrack(id = "0", language = "nld", label = ""), 0, "nl"),
+            "a Dutch chrome names Dutch 'Nederlands'",
+        )
     }
 }
