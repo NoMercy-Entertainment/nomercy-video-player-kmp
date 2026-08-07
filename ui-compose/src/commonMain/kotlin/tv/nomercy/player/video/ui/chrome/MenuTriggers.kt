@@ -93,7 +93,14 @@ internal fun MenuTriggerButton(spec: MenuTriggerSpec, close: () -> Unit) {
     PlayerIconButton(
         icon = spec.icon,
         description = spec.description,
-        onClick = trigger.open,
+        // A trigger toggles. Pressing the button that opened a pane closes it.
+        //
+        // This was `trigger.open` unconditionally, so the only way out of a menu
+        // was to click elsewhere — and the trigger is the first place anybody
+        // presses, because it is the control they just used. The semantics
+        // modifier two lines down already knew both halves and offered `collapse`
+        // to a screen reader while the pointer had no way to do the same thing.
+        onClick = { if (spec.expanded) close() else trigger.open() },
         focusRequester = trigger.requester,
         // `.btn.is-active` — a trigger whose pane is open is drawn the way a
         // trigger under the pointer is, which is what tells a viewer which of

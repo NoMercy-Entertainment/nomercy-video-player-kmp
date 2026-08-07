@@ -18,6 +18,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
@@ -78,6 +79,28 @@ abstract class MenuTriggerGate {
         onNodeWithTag(SETTINGS_TAG).performSemanticsAction(SemanticsActions.Expand)
 
         assertTrue("openSettingsMenu" in commands.calls, "expand must open the settings menu")
+    }
+
+    @Test
+    fun pressingAnOpenTriggerClosesItsPane() = runComposeUiTest {
+        // The pointer's half of the toggle, which the semantics actions above
+        // already had and the click did not: onClick was `open` unconditionally,
+        // so pressing the button that opened a pane re-opened the same pane and
+        // the only way out was to click somewhere else.
+        mount(ChromeState(menu = MenuState.Main))
+
+        onNodeWithTag(SETTINGS_TAG).performClick()
+
+        assertTrue("closeMenu" in commands.calls, "pressing an open trigger must close its pane")
+    }
+
+    @Test
+    fun pressingAClosedTriggerStillOpensIt() = runComposeUiTest {
+        mount(ChromeState())
+
+        onNodeWithTag(SETTINGS_TAG).performClick()
+
+        assertTrue("openSettingsMenu" in commands.calls, "pressing a closed trigger must open it")
     }
 
     @Test
