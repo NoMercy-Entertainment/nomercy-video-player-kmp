@@ -381,8 +381,12 @@ abstract interface tv.nomercy.player.video.item/VideoPlaylistItem : tv.nomercy.p
         open fun <get-chapters>(): kotlin.collections/List<tv.nomercy.player.core.media/Chapter> // tv.nomercy.player.video.item/VideoPlaylistItem.chapters.<get-chapters>|<get-chapters>(){}[0]
     open val description // tv.nomercy.player.video.item/VideoPlaylistItem.description|{}description[0]
         open fun <get-description>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.description.<get-description>|<get-description>(){}[0]
+    open val episode // tv.nomercy.player.video.item/VideoPlaylistItem.episode|{}episode[0]
+        open fun <get-episode>(): kotlin/Int? // tv.nomercy.player.video.item/VideoPlaylistItem.episode.<get-episode>|<get-episode>(){}[0]
     open val image // tv.nomercy.player.video.item/VideoPlaylistItem.image|{}image[0]
         open fun <get-image>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.image.<get-image>|<get-image>(){}[0]
+    open val playlistType // tv.nomercy.player.video.item/VideoPlaylistItem.playlistType|{}playlistType[0]
+        open fun <get-playlistType>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.playlistType.<get-playlistType>|<get-playlistType>(){}[0]
     open val poster // tv.nomercy.player.video.item/VideoPlaylistItem.poster|{}poster[0]
         open fun <get-poster>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.poster.<get-poster>|<get-poster>(){}[0]
     open val season // tv.nomercy.player.video.item/VideoPlaylistItem.season|{}season[0]
@@ -393,6 +397,8 @@ abstract interface tv.nomercy.player.video.item/VideoPlaylistItem : tv.nomercy.p
         open fun <get-subtitles>(): kotlin.collections/List<tv.nomercy.player.core.ports/SubtitleTrack> // tv.nomercy.player.video.item/VideoPlaylistItem.subtitles.<get-subtitles>|<get-subtitles>(){}[0]
     open val thumbnail // tv.nomercy.player.video.item/VideoPlaylistItem.thumbnail|{}thumbnail[0]
         open fun <get-thumbnail>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.thumbnail.<get-thumbnail>|<get-thumbnail>(){}[0]
+    open val videoType // tv.nomercy.player.video.item/VideoPlaylistItem.videoType|{}videoType[0]
+        open fun <get-videoType>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.videoType.<get-videoType>|<get-videoType>(){}[0]
 }
 
 abstract interface tv.nomercy.player.video.subtitles/AssRenderer { // tv.nomercy.player.video.subtitles/AssRenderer|null[0]

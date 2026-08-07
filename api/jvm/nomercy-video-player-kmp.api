@@ -1064,25 +1064,31 @@ public abstract interface class tv/nomercy/player/video/item/VideoPlaylistItem :
 	public fun getChapters ()Ljava/util/List;
 	public fun getDescription ()Ljava/lang/String;
 	public abstract fun getDurationSeconds ()Ljava/lang/Double;
+	public fun getEpisode ()Ljava/lang/Integer;
 	public fun getImage ()Ljava/lang/String;
+	public fun getPlaylistType ()Ljava/lang/String;
 	public fun getPoster ()Ljava/lang/String;
 	public abstract fun getProgress ()Ltv/nomercy/player/video/item/WatchProgress;
 	public fun getSeason ()Ljava/lang/Integer;
 	public fun getShow ()Ljava/lang/String;
 	public fun getSubtitles ()Ljava/util/List;
 	public fun getThumbnail ()Ljava/lang/String;
+	public fun getVideoType ()Ljava/lang/String;
 }
 
 public final class tv/nomercy/player/video/item/VideoPlaylistItem$DefaultImpls {
 	public static fun getChapterFile (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getChapters (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/util/List;
 	public static fun getDescription (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
+	public static fun getEpisode (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/Integer;
 	public static fun getImage (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
+	public static fun getPlaylistType (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getPoster (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getSeason (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/Integer;
 	public static fun getShow (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getSubtitles (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/util/List;
 	public static fun getThumbnail (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
+	public static fun getVideoType (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 }
 
 public final class tv/nomercy/player/video/item/WatchProgress {
