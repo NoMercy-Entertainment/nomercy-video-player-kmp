@@ -96,13 +96,20 @@ public val CHROME_PRIORITY: List<ChromeControl> = listOf(
     // that can only go backwards. Forward is also the one that earns the place —
     // skipping an intro is what the gesture is for.
     ChromeControl.SEEK_FORWARD,
+    // Subtitles and audio outrank seekBack, theater, pip and speed.
+    //
+    // A narrow bar that keeps a picture-in-picture button and drops the subtitle
+    // menu has kept a convenience and lost the control some viewers cannot watch
+    // without. Subtitles sit above audio because a track nobody can read is worse
+    // than a language nobody can change, and both sit above the four framing and
+    // pacing controls, every one of which is a preference rather than access.
+    ChromeControl.QUALITY,
+    ChromeControl.SUBTITLES,
+    ChromeControl.AUDIO,
     ChromeControl.SEEK_BACK,
     ChromeControl.THEATER,
     ChromeControl.PIP,
     ChromeControl.SPEED,
-    ChromeControl.QUALITY,
-    ChromeControl.SUBTITLES,
-    ChromeControl.AUDIO,
     ChromeControl.ASPECT_RATIO,
     ChromeControl.PLAYLIST,
 )
