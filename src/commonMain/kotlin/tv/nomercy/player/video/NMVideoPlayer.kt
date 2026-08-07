@@ -345,13 +345,18 @@ public open class NMVideoPlayer(
     // Everything built from what the engine reports, once it reports it.
     private fun announceEngineLists() {
         if (listsAnnounced) return
-        if (qualityLevels().isEmpty() && audioTracks().isEmpty() && subtitles().isEmpty()) return
+        if (engineReportsNothing()) return
 
         listsAnnounced = true
         announceLevels()
         announceAudioTracks()
         playerScope.launch { applyDefaultTracks() }
     }
+
+    // Named, because three emptiness checks in one condition is three things a
+    // reader holds at once.
+    private fun engineReportsNothing(): Boolean =
+        qualityLevels().isEmpty() && audioTracks().isEmpty() && subtitles().isEmpty()
 
     private fun announceLevels() {
         val ladder: List<QualityLevel> = qualityLevels()
