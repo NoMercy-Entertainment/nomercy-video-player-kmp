@@ -175,7 +175,15 @@ internal fun BoxScope.ChromeOverlays(scene: ChromeScene) {
     // so the two never appear in the same place and a viewer learns where to
     // look. Gated on a real chapter list: an item without chapters offers
     // nothing, which is most films.
-    skipOffer(scene.state)?.takeIf { !scene.state.autoSkipChapters }?.let { offer ->
+    // Not while a pane is open, which is the same rule the tooltips follow.
+    //
+    // The prompt is bottom-anchored and a menu grows up from the bar into
+    // exactly that space, so "Skip outro" drew ON TOP of the settings rows —
+    // over the row a viewer was reaching for. A menu is a deliberate act and the
+    // prompt is an offer; the offer waits.
+    skipOffer(scene.state)
+        ?.takeIf { !scene.state.autoSkipChapters && !LocalMenuOpen.current }
+        ?.let { offer ->
         SkipButton(
             kind = offer,
             label = if (offer == SkipKind.Intro) scene.strings.skipIntro else scene.strings.skipOutro,
