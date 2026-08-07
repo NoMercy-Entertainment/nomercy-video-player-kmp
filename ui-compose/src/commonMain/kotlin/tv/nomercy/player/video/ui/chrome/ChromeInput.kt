@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.onKeyEvent
+import tv.nomercy.player.core.input.KeyHandlerScope
 import tv.nomercy.player.core.input.KeyCombo
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.video.NMVideoPlayer
@@ -112,7 +113,32 @@ internal class ChromeInput(
     fun keyModifier(): Modifier {
         val handler: VideoKeyHandlerPlugin = keys ?: return Modifier
 
+        // Kept under BOTH scopes, and it does not double-handle.
+        //
+        // The window hook consumes what it acts on — AWT stops dispatching a
+        // press the moment a dispatcher claims it — so this only ever sees what
+        // the window route declined. Gating it off under Window scope instead
+        // was the first form and it left the chrome deaf wherever no global hook
+        // exists: on Android, and in every Compose test, where the shipped
+        // shortcut test went from passing to failing without the shipped
+        // behaviour changing at all.
         return Modifier.onKeyEvent { event -> handlePress(handler, keyComboOf(event)) }
+    }
+
+    /**
+     * Presses from the whole window, for the scope the reference defaults to.
+     *
+     * Composed rather than returned as a modifier because there is no node to
+     * hang it on: that is the point of the scope. A press nobody has bound is
+     * refused, so the window's own shortcuts still work.
+     */
+    @Composable
+    fun WindowKeys() {
+        val handler: VideoKeyHandlerPlugin = keys ?: return
+
+        WindowKeyEvents(enabled = handler.scope == KeyHandlerScope.Window) { combo ->
+            handlePress(handler, combo)
+        }
     }
 
     private fun handlePress(handler: VideoKeyHandlerPlugin, combo: KeyCombo?): Boolean {

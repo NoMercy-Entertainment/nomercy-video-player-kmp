@@ -11,6 +11,7 @@ package tv.nomercy.player.video.input
 import tv.nomercy.player.core.device.DeviceCapabilities
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.input.KeyHandlerPlugin
+import tv.nomercy.player.core.input.KeyHandlerScope
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.core.input.keyCombo
 import tv.nomercy.player.core.plugin.PluginManifest
@@ -32,8 +33,12 @@ import tv.nomercy.player.core.plugin.PluginManifest
 public open class VideoKeyHandlerPlugin(
     protected val commands: PlayerCommands,
     protected val capabilities: DeviceCapabilities,
+    // Before nowMs, so a caller writing the clock as a trailing lambda still
+    // binds it to the clock. Added after it, every existing call site silently
+    // handed its lambda to this parameter instead.
+    scope: KeyHandlerScope = KeyHandlerScope.Window,
     nowMs: () -> Long,
-) : KeyHandlerPlugin<Unit>(nowMs) {
+) : KeyHandlerPlugin<Unit>(nowMs, scope) {
 
     public companion object Manifest : PluginManifest {
         override val id: String = "key-handler"

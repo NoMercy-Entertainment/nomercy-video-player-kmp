@@ -279,6 +279,11 @@ private fun ChromeFrame(
                 .then(input.keyModifier())
                 .then(input.pointerModifier()),
         ) {
+            // Window-scoped keys, which is what the reference defaults to. A
+            // no-op under Container scope, and a no-op on a platform that
+            // already delivers presses without focus.
+            input.WindowKeys()
+
             // The surface and the cues on it, under everything else — which is
             // where `.subtitle-overlay` sits at `z-index: 0`. Above the tap zones
             // would put a cue in front of the control a finger is reaching for;

@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.input
 
 import tv.nomercy.player.core.device.DeviceCapabilities
+import tv.nomercy.player.core.input.KeyHandlerScope
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.core.input.asCombo
 import tv.nomercy.player.core.plugin.PluginManifest
@@ -33,7 +34,12 @@ public open class TvKeyHandlerPlugin(
     capabilities: DeviceCapabilities,
     nowMs: () -> Long,
     tvOptions: TvKeyHandlerOptions = TvKeyHandlerOptions(),
-) : VideoKeyHandlerPlugin(commands, capabilities, nowMs) {
+    // A television is the one place Container scope is the right default: the
+    // remote's arrows move focus through a grid of rows, and a player that
+    // claimed them from anywhere in the window would swallow navigation the
+    // moment it was mounted behind something else.
+    scope: KeyHandlerScope = KeyHandlerScope.Container,
+) : VideoKeyHandlerPlugin(commands, capabilities, scope, nowMs) {
 
     public companion object Manifest : PluginManifest {
         override val id: String = "tv-key-handler"
