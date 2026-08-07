@@ -283,9 +283,16 @@ public class SubtitlePlugin(
             val attached: MutableList<String> = mutableListOf()
             val seen: MutableSet<String> = mutableSetOf()
             for (font in fonts) {
-                if (!seen.add(font.family.lowercase())) continue
+                // Under every name the face answers to, and the dedupe is per
+                // name rather than per file. One file carries a full name and a
+                // family, a style line names one of the two, and registering
+                // only the winner is how a script asking for "Fontin Sans Rg"
+                // got a face registered as "FontinSans-Bold" and drew in
+                // something else entirely.
+                val fresh: List<String> = font.families.filter { seen.add(it.lowercase()) }
+                if (fresh.isEmpty()) continue
 
-                renderer.addFont(font.family, font.bytes)
+                for (name in fresh) renderer.addFont(name, font.bytes)
                 // By file name, which is what loadedFonts has always meant and
                 // what a host pre-warming a cache matches against. The family is
                 // what libass is told; the file name is what the manifest said.
@@ -370,14 +377,18 @@ public class SubtitlePlugin(
                 continue
             }
 
-            // Under the family, not the filename. libass matches the family an
-            // ASS script asks for against the name the font reports, and a file
-            // called Skeleton.ttf can hold a family called anything.
-            val family: String = cached?.registerName
-                ?: TtfNameParser.extractFontName(bytes, TtfNameParser.fallbackNameFor(fileName))
+            // Under the names the font reports, not the filename. libass
+            // matches the family an ASS script asks for against the name the
+            // font reports, and a file called Skeleton.ttf can hold a family
+            // called anything.
+            //
+            // Read from the bytes even when the cache has a name for them: the
+            // cache stores one, and one is what this defect was.
+            val families: List<String> =
+                TtfNameParser.extractFontNames(bytes, TtfNameParser.fallbackNameFor(fileName))
 
             if (cached == null) fontCache?.put(fileName, bytes)
-            resolved += ResolvedFont(fileName = fileName, family = family, bytes = bytes)
+            resolved += ResolvedFont(fileName = fileName, families = families, bytes = bytes)
         }
         return resolved
     }
@@ -393,13 +404,13 @@ public class SubtitlePlugin(
     // Reloading is cheap and visible. Not reloading is a film that plays to the
     // end in a fallback typeface with nothing reporting why.
     public suspend fun addFontLate(fileName: String, data: ByteArray) {
-        val family: String = TtfNameParser.extractFontName(data, TtfNameParser.fallbackNameFor(fileName))
+        val families: List<String> = TtfNameParser.extractFontNames(data, TtfNameParser.fallbackNameFor(fileName))
 
         // The same critical section load() uses. Registering a font and handing
         // the track back is one operation to libass; split across another's,
         // the track is resolved against a font set still being written.
         nativeLock.withLock {
-            renderer.addFont(family, data)
+            for (name in families) renderer.addFont(name, data)
             loadedFonts = loadedFonts + fileName
 
             // Only when there is a track to reload. Before one exists this is
@@ -468,7 +479,7 @@ public class SubtitlePlugin(
 // families and broke a host matching against what it asked for.
 private class ResolvedFont(
     val fileName: String,
-    val family: String,
+    val families: List<String>,
     val bytes: ByteArray,
 )
 

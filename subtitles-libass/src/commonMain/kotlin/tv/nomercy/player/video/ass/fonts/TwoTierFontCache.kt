@@ -14,11 +14,18 @@ import okio.FileSystem
 import okio.Path
 import tv.nomercy.player.video.subtitles.TtfNameParser
 
-// A font, and the name libass should be told to call it.
+// A font, and every name libass should be told to call it.
+//
+// Names rather than a name. A face answers to its full name and to its family,
+// a style line names whichever the typesetter preferred, and a cache holding
+// one of the two silently loses every line that asked for the other.
 public data class CachedFont(
-    val registerName: String,
+    val registerNames: List<String>,
     val bytes: ByteArray,
 ) {
+    /** The best of them, for a caller that can only pass one. */
+    public val registerName: String get() = registerNames.first()
+
     // ByteArray compares by identity, so the generated equals would call two
     // entries holding the same font different — and a cache whose equality lies
     // is a cache that cannot be reasoned about.
@@ -26,10 +33,10 @@ public data class CachedFont(
         if (this === other) return true
         if (other !is CachedFont) return false
 
-        return registerName == other.registerName && bytes.contentEquals(other.bytes)
+        return registerNames == other.registerNames && bytes.contentEquals(other.bytes)
     }
 
-    override fun hashCode(): Int = HASH_FACTOR * registerName.hashCode() + bytes.contentHashCode()
+    override fun hashCode(): Int = HASH_FACTOR * registerNames.hashCode() + bytes.contentHashCode()
 }
 
 // Fonts, kept in memory and on disk, keyed by what is in them.
@@ -89,7 +96,7 @@ public class TwoTierFontCache(
 
         val key: String = normalise(displayName)
         index[key] = IndexEntry(path, assName, lastUsedMs = 0L)
-        memory[key] = CachedFont(canonicalFamily(displayName, bytes, assName), bytes)
+        memory[key] = CachedFont(canonicalFamilies(displayName, bytes, assName), bytes)
     }
 
     public fun get(displayName: String): CachedFont? {
@@ -106,7 +113,7 @@ public class TwoTierFontCache(
         }
 
         val bytes: ByteArray = fileSystem.read(entry.path) { readByteArray() }
-        val font = CachedFont(canonicalFamily(displayName, bytes, entry.assName), bytes)
+        val font = CachedFont(canonicalFamilies(displayName, bytes, entry.assName), bytes)
         memory[key] = font
         return font
     }
@@ -124,16 +131,20 @@ public class TwoTierFontCache(
     public fun registerInto(renderer: AssRenderer, requiredFamilies: Set<String>, nowMs: Long) {
         for (name in index.keys.toList()) {
             val font: CachedFont = get(name) ?: continue
-            val family: String = font.registerName
 
-            val wanted: Boolean = requiredFamilies.isEmpty() ||
-                requiredFamilies.any { normalise(it) == normalise(family) }
+            // Wanted if ANY of the names the face answers to was asked for. The
+            // test used to run against one name, so a script asking for the
+            // family of a font whose full name differs skipped the font it was
+            // asking for.
+            val wanted: Boolean = requiredFamilies.isEmpty() || font.registerNames.any { candidate ->
+                requiredFamilies.any { normalise(it) == normalise(candidate) }
+            }
             if (!wanted) continue
 
-            val token: String = normalise(family)
-            if (!registered.add(token)) continue
+            val fresh: List<String> = font.registerNames.filter { registered.add(normalise(it)) }
+            if (fresh.isEmpty()) continue
 
-            renderer.addFont(family, font.bytes)
+            for (family in fresh) renderer.addFont(family, font.bytes)
             index[name]?.lastUsedMs = nowMs
         }
     }
@@ -181,15 +192,28 @@ public class TwoTierFontCache(
 
     public fun families(): Set<String> = index.keys.toSet()
 
-    // The ASS-declared name wins when there is one.
+    // The ASS-declared name first when there is one, then the names the font
+    // reports about itself.
     //
     // A script says which family it wants, and that string is what libass will
-    // look for. The font's own name table is the fallback for an attachment that
-    // arrived without a declaration — correct far more often than the filename,
-    // which is what this replaced.
-    private fun canonicalFamily(displayName: String, bytes: ByteArray, assName: String?): String =
-        assName?.takeIf { it.isNotBlank() }
-            ?: TtfNameParser.extractFontName(bytes, TtfNameParser.fallbackNameFor(displayName))
+    // look for — so it leads. It no longer REPLACES the font's own names: a
+    // declaration answers the line that carried it and says nothing about the
+    // other lines in the same script, which is how one declared name used to
+    // hide the family every other style asked for.
+    private fun canonicalFamilies(displayName: String, bytes: ByteArray, assName: String?): List<String> {
+        val declared: String? = assName?.takeIf { it.isNotBlank() }
+        val fallback: String = TtfNameParser.fallbackNameFor(displayName)
+        val reported: List<String> = TtfNameParser.extractFontNames(bytes, fallback)
+
+        // The filename is a last resort, not an alias. It is what the parser
+        // hands back when the bytes carry no name table at all, and registering
+        // a face under it as WELL as under a declared name means two files
+        // declaring one family register four names — three of which resolve to
+        // nothing.
+        val real: List<String> = if (reported == listOf(fallback)) emptyList() else reported
+
+        return (listOfNotNull(declared) + real).distinct().ifEmpty { listOf(fallback) }
+    }
 
     private fun extensionOf(displayName: String): String {
         val dot: Int = displayName.lastIndexOf('.')

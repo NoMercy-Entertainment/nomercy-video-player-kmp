@@ -45,7 +45,27 @@ class TtfNameParserTest {
             return
         }
 
-        assertEquals("Arial Bold", TtfNameParser.extractFontName(bytes, ARIAL_BOLD_FALLBACK))
+        assertEquals(ARIAL_BOLD_NAME, TtfNameParser.extractFontName(bytes, ARIAL_BOLD_FALLBACK))
+    }
+
+    @Test
+    fun aFontAnswersToItsFullNameAndToItsFamily() {
+        // The defect this exists for. No Game No Life's styles ask for "Fontin
+        // Sans Rg", the file reports full name "FontinSans-Bold" and family
+        // "Fontin Sans Rg", and registering only the winner registered the one
+        // name the script never uses — libass fell back to a wider face and the
+        // dialogue ran off the frame, which read as a wrapping bug for weeks.
+        //
+        // Arial Bold has the same shape: full "Arial Bold", family "Arial".
+        val bytes: ByteArray = systemFont(ARIAL_BOLD) ?: run {
+            println("arialbd.ttf not installed — skipping the real-font name gate")
+            return
+        }
+
+        val names: List<String> = TtfNameParser.extractFontNames(bytes, ARIAL_BOLD_FALLBACK)
+
+        assertEquals(ARIAL_BOLD_NAME, names.first(), "the full name is no longer preferred")
+        assertTrue(names.contains(ARIAL_NAME), "the family was lost: $names")
     }
 
     @Test
@@ -64,7 +84,7 @@ class TtfNameParserTest {
     fun aFontWhoseFullNameEqualsItsFamilyStillReadsCleanly() {
         val bytes: ByteArray = systemFont(ARIAL) ?: return
 
-        assertEquals("Arial", TtfNameParser.extractFontName(bytes, ARIAL_FALLBACK))
+        assertEquals(ARIAL_NAME, TtfNameParser.extractFontName(bytes, ARIAL_FALLBACK))
     }
 
     @Test
@@ -85,7 +105,7 @@ class TtfNameParserTest {
 
         val name: String = TtfNameParser.extractFontName(half, ARIAL_FALLBACK)
 
-        assertTrue(name == "Arial" || name == "arial", "unexpected name from a truncated font: $name")
+        assertTrue(name == ARIAL_NAME || name == ARIAL_FALLBACK, "unexpected name from a truncated font: $name")
     }
 
     @Test
@@ -97,6 +117,8 @@ class TtfNameParserTest {
 }
 
 private const val ARIAL_BOLD = "arialbd.ttf"
+private const val ARIAL_BOLD_NAME = "Arial Bold"
+private const val ARIAL_NAME = "Arial"
 private const val ARIAL = "arial.ttf"
 private const val ARIAL_BOLD_FALLBACK = "arialbd"
 private const val ARIAL_FALLBACK = "arial"

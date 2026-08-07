@@ -1462,6 +1462,7 @@ public final class tv/nomercy/player/video/subtitles/SubtitlePaintKt {
 public final class tv/nomercy/player/video/subtitles/TtfNameParser {
 	public static final field INSTANCE Ltv/nomercy/player/video/subtitles/TtfNameParser;
 	public final fun extractFontName ([BLjava/lang/String;)Ljava/lang/String;
+	public final fun extractFontNames ([BLjava/lang/String;)Ljava/util/List;
 	public final fun fallbackNameFor (Ljava/lang/String;)Ljava/lang/String;
 }
 

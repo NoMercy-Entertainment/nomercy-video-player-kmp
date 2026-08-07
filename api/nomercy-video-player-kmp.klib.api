@@ -2203,6 +2203,7 @@ final object tv.nomercy.player.video.subtitles/FontManifest { // tv.nomercy.play
 
 final object tv.nomercy.player.video.subtitles/TtfNameParser { // tv.nomercy.player.video.subtitles/TtfNameParser|null[0]
     final fun extractFontName(kotlin/ByteArray, kotlin/String): kotlin/String // tv.nomercy.player.video.subtitles/TtfNameParser.extractFontName|extractFontName(kotlin.ByteArray;kotlin.String){}[0]
+    final fun extractFontNames(kotlin/ByteArray, kotlin/String): kotlin.collections/List<kotlin/String> // tv.nomercy.player.video.subtitles/TtfNameParser.extractFontNames|extractFontNames(kotlin.ByteArray;kotlin.String){}[0]
     final fun fallbackNameFor(kotlin/String): kotlin/String // tv.nomercy.player.video.subtitles/TtfNameParser.fallbackNameFor|fallbackNameFor(kotlin.String){}[0]
 }
 

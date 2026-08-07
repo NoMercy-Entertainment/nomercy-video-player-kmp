@@ -59,16 +59,10 @@ private class NameRecord(
     // Catalan Windows record reading "Arial Negreta", and a parser matching on
     // platform and encoding alone registers the font under that — so an English
     // script asking for "Arial Bold" finds nothing while the font sits loaded.
-    fun score(): Int {
-        if (nameId != NAME_ID_FULL && nameId != NAME_ID_FAMILY) return MISSING
-
-        val platformScore: Int = platformScore()
-        if (platformScore == MISSING) return MISSING
-
-        // The family name is a worse answer than any full name, so its penalty
-        // exceeds the whole platform range rather than nudging it.
-        return platformScore + if (nameId == NAME_ID_FAMILY) FAMILY_PENALTY else 0
-    }
+    // Which record within a name ID wins is a platform-and-language question;
+    // which ID is wanted is the caller's, because a face is registered under
+    // every one of them.
+    fun scoreFor(wantedNameId: Int): Int = if (nameId != wantedNameId) MISSING else platformScore()
 
     private fun platformScore(): Int = when {
         platform == PLATFORM_WINDOWS && encoding == ENCODING_WINDOWS_UNICODE && language == LANGUAGE_US_ENGLISH -> 0
@@ -114,11 +108,34 @@ public object TtfNameParser {
     // asking for "Arial Bold" gets nothing if the font registered itself as
     // "Arial" — libass matches the string. So name ID 4 wins over ID 1 whenever
     // both are present, which is the opposite of what most font tooling wants.
-    public fun extractFontName(fontBytes: ByteArray, fallbackName: String): String {
-        val font = FontBytes(fontBytes)
-        val table: IntRange = font.nameTable() ?: return fallbackName
+    public fun extractFontName(fontBytes: ByteArray, fallbackName: String): String =
+        extractFontNames(fontBytes, fallbackName).first()
 
-        return font.bestName(table) ?: fallbackName
+    /**
+     * Every name a script might call this face by, best first.
+     *
+     * One name is not enough, and the cost of believing it was is a whole film
+     * in the wrong typeface. `Fontin_Sans.otf` reports full name
+     * "FontinSans-Bold", family "Fontin Sans Rg" and typographic family
+     * "Fontin Sans"; No Game No Life's styles ask for "Fontin Sans Rg", so
+     * registering only the winner registered the one name the script never
+     * uses. libass then fell back to a wider face and the dialogue overran the
+     * frame — read as a wrapping bug for as long as it went unmeasured.
+     *
+     * Registering them all costs nothing: the same bytes under several names is
+     * how a font already answers to several names.
+     */
+    public fun extractFontNames(fontBytes: ByteArray, fallbackName: String): List<String> {
+        val font = FontBytes(fontBytes)
+        val table: IntRange = font.nameTable() ?: return listOf(fallbackName)
+
+        val names: List<String> = NAME_IDS_WORTH_REGISTERING
+            .mapNotNull { nameId -> font.bestNameFor(table, nameId) }
+            .map(String::trim)
+            .filter(String::isNotBlank)
+            .distinct()
+
+        return names.ifEmpty { listOf(fallbackName) }
     }
 
     public fun fallbackNameFor(filename: String): String = filename.substringBeforeLast('.').trim()
@@ -145,22 +162,16 @@ public object TtfNameParser {
         return if (fits) offset until (offset + length) else null
     }
 
-    private fun FontBytes.bestName(table: IntRange): String? {
+    private fun FontBytes.bestNameFor(table: IntRange, wantedNameId: Int): String? {
         val start: Int = table.first
         val recordCount: Int = uint16(start + RECORD_COUNT_FIELD)
         val stringsAt: Int = uint16(start + STRING_OFFSET_FIELD)
 
-        var best: String? = null
-        var bestScore: Int = Int.MAX_VALUE
-
-        for (index in 0 until recordCount) {
-            val record: NameRecord = recordAt(start + NAME_TABLE_HEADER_BYTES + index * NAME_RECORD_BYTES)
-            val text: String = record.betterThan(bestScore)?.textIn(this, start + stringsAt) ?: continue
-
-            best = text
-            bestScore = record.score()
-        }
-        return best
+        return (0 until recordCount)
+            .map { index -> recordAt(start + NAME_TABLE_HEADER_BYTES + index * NAME_RECORD_BYTES) }
+            .filter { record -> record.scoreFor(wantedNameId) != MISSING }
+            .sortedBy { record -> record.scoreFor(wantedNameId) }
+            .firstNotNullOfOrNull { record -> record.textIn(this, start + stringsAt) }
     }
 
     private fun FontBytes.recordAt(at: Int): NameRecord = NameRecord(
@@ -171,14 +182,6 @@ public object TtfNameParser {
         length = uint16(at + RECORD_LENGTH),
         offset = uint16(at + RECORD_OFFSET),
     )
-
-    // Itself when it is a candidate and an improvement, null otherwise — so the
-    // loop reads as one decision per record rather than as several exits.
-    private fun NameRecord.betterThan(bestScore: Int): NameRecord? {
-        val score: Int = score()
-
-        return if (score != MISSING && score < bestScore) this else null
-    }
 
     private fun NameRecord.textIn(font: FontBytes, stringsAt: Int): String? {
         val raw: ByteArray = font.slice(stringsAt + offset, length) ?: return null
@@ -193,6 +196,14 @@ private const val NAME_TABLE_TAG = 0x6E616D65
 private const val NAME_ID_FAMILY = 1
 private const val NAME_ID_FULL = 4
 
+// The typographic family, which is the name a family with more than four
+// weights reports and the one a style line for those weights asks for.
+private const val NAME_ID_TYPOGRAPHIC_FAMILY = 16
+
+// Best first, which is the order a caller registers them in and the order
+// `extractFontName` picks its single answer from.
+private val NAME_IDS_WORTH_REGISTERING = listOf(NAME_ID_FULL, NAME_ID_FAMILY, NAME_ID_TYPOGRAPHIC_FAMILY)
+
 private const val PLATFORM_UNICODE = 0
 private const val PLATFORM_MAC = 1
 private const val PLATFORM_WINDOWS = 3
@@ -203,9 +214,6 @@ private const val ENCODING_WINDOWS_UNICODE = 1
 // US English. Anything else is a translated name, which is not what a script
 // written in English is asking for.
 private const val LANGUAGE_US_ENGLISH = 0x0409
-
-// Larger than the platform range, so any full name beats any family name.
-private const val FAMILY_PENALTY = 10
 
 // Negative because every real offset, length and score is not. It reads as
 // "there is nothing here" at each of the three call sites without three types.
