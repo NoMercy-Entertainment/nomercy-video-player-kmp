@@ -11,6 +11,7 @@ package tv.nomercy.player.video.ui.chrome
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.video.ui.tv.PlayerIconButton
 import tv.nomercy.player.video.ui.tv.FluentIcons
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -139,8 +140,19 @@ internal fun BoxScope.ChromeOverlays(scene: ChromeScene) {
     // A ONE-SHOT. The reference's own note: "visible until the user clicks it
     // (or any touch zone triggers play). Once dismissed it stays hidden and the
     // touch zones own play/pause."
+    // Dismissed in an EFFECT, never in the composable body.
+    //
+    // `if (playing) offered = false` written inline writes a MutableState
+    // DURING composition, which schedules another composition, which writes
+    // again — an infinite recomposition loop. The window then reports
+    // Responding=True and paints nothing at all: no heading, no tabs, no
+    // picture, while the player's own coroutines keep ticking. That is what a
+    // recomposition loop looks like from outside, and it is indistinguishable
+    // from a dead renderer until you notice the process is healthy.
     var offered: Boolean by remember { mutableStateOf(true) }
-    if (scene.state.playing) offered = false
+    LaunchedEffect(scene.state.playing) {
+        if (scene.state.playing) offered = false
+    }
 
     if (offersCentrePlay(scene, offered)) {
         PlayerIconButton(
