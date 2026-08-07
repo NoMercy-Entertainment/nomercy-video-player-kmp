@@ -35,6 +35,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.ColorFilter
@@ -128,9 +131,15 @@ public fun PlayerIconButton(
     hoverFill: Color = Color.Transparent,
 ) {
     var focused: Boolean by remember { mutableStateOf(false) }
+    var pointerFocus: Boolean by remember { mutableStateOf(false) }
     val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
     val focus: FocusManager = LocalFocusManager.current
-    val filled: Boolean = focused && focusStyle == PlayerFocusStyle.Filled
+    // A television focus is always visible: a remote has no pointer, so every
+    // focus there arrived from a key and the ring is the only thing telling a
+    // viewer where they are. Suppressing it on a filled style would blind the
+    // D-pad.
+    val focusVisible: Boolean = focused && (!pointerFocus || focusStyle == PlayerFocusStyle.Filled)
+    val filled: Boolean = focusVisible && focusStyle == PlayerFocusStyle.Filled
     val hovered: Boolean by interaction.collectIsHoveredAsState()
 
     Box(
@@ -143,11 +152,33 @@ public fun PlayerIconButton(
             // hover or focus one.
             .requiredSize(buttonSize)
             .hoverPaint(hovered && enabled, hoverFill, shape)
-            .focusPaint(focused, focusStyle, shape)
+            .focusPaint(focusVisible, focusStyle, shape)
             .then(focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)
             .onFocusChanged {
                 focused = it.isFocused
+                // Cleared when focus LEAVES, so one mouse click does not
+                // suppress the ring for every keyboard focus that follows. The
+                // flag describes how THIS focus arrived, not that the button was
+                // ever clicked.
+                if (!it.isFocused) pointerFocus = false
                 onFocused(it.isFocused)
+            }
+            // Which INPUT gave this focus, because only a keyboard's shows.
+            //
+            // `:focus-visible`, which is the rule the web actually uses and the
+            // one this claimed to implement by clearing focus after a press.
+            // Clearing happens after the click, so a pointer press still took
+            // focus, painted the ring, and dropped it a frame later - a circle
+            // on every button anybody clicked. A pointer press marks the focus
+            // as not-visible BEFORE clickable can grant it, so the ring never
+            // paints; a key press leaves the flag alone and it does.
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (event.type == PointerEventType.Press) pointerFocus = true
+                    }
+                }
             }
             // One activation path for a remote, a keyboard and a finger. It was
             // key events only, which is correct on a television and means a
