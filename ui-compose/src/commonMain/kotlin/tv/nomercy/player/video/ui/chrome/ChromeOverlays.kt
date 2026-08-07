@@ -8,6 +8,12 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.core.device.FormFactor
+import tv.nomercy.player.video.ui.tv.PlayerIconButton
+import tv.nomercy.player.video.ui.tv.FluentIcons
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -117,6 +123,40 @@ private val MESSAGE_TEXT_SIZE = 14.sp
 // one function is allowed to be.
 @Composable
 internal fun BoxScope.ChromeOverlays(scene: ChromeScene) {
+    // The big play button, in the middle of the picture, once, on desktop.
+    //
+    // The reference builds one — `center-btn` with the bigPlay glyph — in its
+    // desktop-ui plugin, and this chrome had nothing there. It is the first
+    // control a viewer looks for on a film that has not started, and its
+    // absence was invisible to every count: it is not in the chrome's control
+    // list, so a controls report reads 19/19 without it, and an overlay report
+    // only sees it on a page measured before playback begins.
+    //
+    // Desktop only, because a phone gets touch zones instead — drawn on both it
+    // covers the centre gesture a phone owns, which is a working behaviour made
+    // worse by adding a control.
+    //
+    // A ONE-SHOT. The reference's own note: "visible until the user clicks it
+    // (or any touch zone triggers play). Once dismissed it stays hidden and the
+    // touch zones own play/pause."
+    var offered: Boolean by remember { mutableStateOf(true) }
+    if (scene.state.playing) offered = false
+
+    if (offersCentrePlay(scene, offered)) {
+        PlayerIconButton(
+            icon = FluentIcons.BigPlay,
+            description = scene.strings.play,
+            onClick = {
+                offered = false
+                scene.commands.setPlaying(true)
+            },
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(CENTER_BUTTON_SIZE)
+                .testTag(CENTER_PLAY_TAG),
+        )
+    }
+
         // The skip prompt, on the chapter the film is actually inside.
     //
     // Bottom-start for an opening and bottom-end for an ending, as his does,
@@ -294,3 +334,13 @@ private const val SPINNER_SWEEP = 286.5f
 // `animation: nm-spin 0.9s linear infinite`.
 private const val SPIN_MS = 900
 private const val FULL_TURN = 360f
+
+// `.center-btn { width: 80px; height: 80px }`, which is what the reference draws.
+private val CENTER_BUTTON_SIZE = 80.dp
+
+internal const val CENTER_PLAY_TAG = "nm-center-play"
+
+// One question, named, because three clauses in an `if` is three things a
+// reader has to hold at once and detekt counts them for the same reason.
+private fun offersCentrePlay(scene: ChromeScene, offered: Boolean): Boolean =
+    scene.formFactor == FormFactor.Desktop && offered && !scene.state.buffering
