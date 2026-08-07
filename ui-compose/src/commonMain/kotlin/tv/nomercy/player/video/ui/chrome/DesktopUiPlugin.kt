@@ -83,6 +83,23 @@ public class DesktopUiPlugin : Plugin<Unit>() {
      * Release one [holdChrome]. The auto-hide countdown resumes only once the
      * last hold is gone.
      */
+    /**
+     * Bring the controls up now, as a pointer moving would.
+     *
+     * [holdChrome] pins them against the auto-hide and does NOT show them: a
+     * consumer that called it on a chrome already faded out got a hold over
+     * nothing and no controls, which is a handle answering politely and doing
+     * nothing — the exact failure the controller binding exists to prevent.
+     */
+    public fun showChrome() {
+        controller?.bumpActivity()
+    }
+
+    /** Take them away now, subject to any hold still outstanding. */
+    public fun hideChrome() {
+        controller?.maybeHide()
+    }
+
     public fun releaseChrome() {
         controller?.releaseChrome()
     }
