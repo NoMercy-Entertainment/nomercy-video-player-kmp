@@ -85,3 +85,21 @@ data class ChromeTestItem(
     override val title: String = "The Quiet Earth",
     override val url: String = "file://one.mkv",
 ) : PlaylistItem
+
+/**
+ * An episode, for the chrome that draws two title lines instead of one.
+ *
+ * Separate from [ChromeTestItem] rather than folded into it: a film is the case
+ * where the second line is deliberately absent, and both belong in a suite that
+ * compares against a browser drawing one or the other.
+ */
+data class ChromeTestEpisode(
+    override val id: String = "s01e04",
+    override val title: String = "The Quiet Earth",
+    override val url: String = "file://one.mkv",
+    override val show: String? = "Rail Wars",
+    override val season: Int? = 1,
+    override val episode: Int? = 4,
+    override val durationSeconds: Double? = 1_800.0,
+    override val progress: tv.nomercy.player.video.item.WatchProgress? = null,
+) : tv.nomercy.player.video.item.VideoPlaylistItem

@@ -100,6 +100,16 @@ public fun ChromeTopBar(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
+            // Before the padding, not after.
+            //
+            // A testTag placed after `.padding(...)` names the INNER box, so
+            // this reported 51px where the browser's `#top-bar` is 115 — the
+            // sixteen above and forty-eight below, and the gradient drawn over
+            // both, all outside the thing being measured. The two title lines
+            // inside it matched the reference to the pixel the whole time,
+            // which is the signature of a box named at the wrong level rather
+            // than a layout that is wrong.
+            .testTag(CHROME_TOP_BAR_TAG)
             .background(Brush.verticalGradient(GRADIENT))
             // The cutout, and the status bar behind it.
             //
@@ -111,8 +121,7 @@ public fun ChromeTopBar(
             // the inset, so an embedded player halfway down a page does not get a
             // status bar's worth of empty space above its title.
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
-            .padding(start = BAR_PADDING, top = BAR_PADDING, end = BAR_PADDING, bottom = BAR_BOTTOM_PADDING)
-            .testTag(CHROME_TOP_BAR_TAG),
+            .padding(start = BAR_PADDING, top = BAR_PADDING, end = BAR_PADDING, bottom = BAR_BOTTOM_PADDING),
     ) {
         val width: Int = maxWidth.value.toInt()
 
@@ -234,6 +243,11 @@ private fun RowScope.TopBarTitle(
             style = TITLE_STYLE.copy(fontSize = (titleRemFor(widthDp) * REM).sp),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+            // Named, because the reference addresses it as `#title` and only the
+            // second line had a tag. A geometry comparison pairing them by what
+            // was available put the web's first line against the native's
+            // second and reported both as misplaced.
+            modifier = Modifier.testTag(CHROME_TITLE_TAG),
         )
 
         // Absent rather than blank on a film, whose name is already on the line
@@ -298,6 +312,9 @@ private fun TopBarButton(
 }
 
 internal const val CHROME_TOP_BAR_TAG = "nm-chrome-top-bar"
+
+/** The show title, the top bar's first line. The web's `#title`. */
+internal const val CHROME_TITLE_TAG = "nm-chrome-title"
 internal const val BACK_TAG = "nm-chrome-back"
 internal const val CAST_TAG = "nm-chrome-cast"
 internal const val CLOSE_TAG = "nm-chrome-close"

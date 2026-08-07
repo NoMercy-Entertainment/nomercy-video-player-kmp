@@ -113,4 +113,29 @@ public interface VideoPlaylistItem : PlaylistItem {
 
     /** Season number, 1-based. Rendered as the lock screen's album line. */
     public val season: Int? get() = null
+
+    /**
+     * Episode number within the season, 1-based.
+     *
+     * Without it the chrome's second title line cannot render at all:
+     * `episodeLabel` returns empty the moment this is null, so a series with a
+     * show name and a season still drew as though it were a film. The line has
+     * three breakpoints written for it and a test tag of its own, and no item
+     * could reach it.
+     */
+    public val episode: Int? get() = null
+
+    /**
+     * What kind of list this came from, and what kind of thing this is.
+     *
+     * Both, because the two sources disagree: a playlist says what kind of list
+     * it is and an item says what kind of thing it is, and a special can arrive
+     * labelled either way. They decide whether a position is numbered as a
+     * season and episode or on its own — a collection has no seasons, and
+     * numbering one like a series produces a season that does not exist.
+     */
+    public val playlistType: String? get() = null
+
+    /** @see playlistType */
+    public val videoType: String? get() = null
 }

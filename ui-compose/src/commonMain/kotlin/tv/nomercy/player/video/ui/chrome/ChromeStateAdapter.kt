@@ -219,6 +219,18 @@ public fun chromeItemOf(item: PlaylistItem?): TvChromeItem? {
     return TvChromeItem(
         title = item.title,
         id = item.id,
+        // The five fields the second title line is built from.
+        //
+        // None of them were carried across, so `episodeLabel` returned empty
+        // for every item any server could send and the top bar drew one line
+        // where the browser draws two — measured 0.104 of the container short.
+        // The line has three breakpoints and a test tag written for it and was
+        // unreachable the whole time.
+        show = video?.show,
+        season = video?.season,
+        episode = video?.episode,
+        playlistType = video?.playlistType,
+        videoType = video?.videoType,
         durationSeconds = video?.durationSeconds,
         progressPercent = progress?.percentage?.roundToInt(),
         // `readItemImage`: image, then poster, then thumbnail, first one present.

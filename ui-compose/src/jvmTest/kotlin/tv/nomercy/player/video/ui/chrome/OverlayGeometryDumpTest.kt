@@ -75,8 +75,13 @@ class OverlayGeometryDumpTest {
         setContent {
             LaunchedEffect(player) {
                 player.setup(PlayerConfig())
-                player.queue(listOf(ChromeTestItem(), ChromeTestItem(id = "two")))
-                player.load(ChromeTestItem())
+                player.queue(listOf(ChromeTestEpisode(), ChromeTestEpisode(id = "two")))
+                // An EPISODE, because the reference page is playing one and its top
+                // bar draws two title lines. Measured against a film the bar was
+                // one line short — 0.104 of the container — and that read as a
+                // layout defect rather than as two different things being
+                // compared.
+                player.load(ChromeTestEpisode())
                 // Playing, because a paused chrome holds itself open and half
                 // the overlay's behaviour is about what happens when it does
                 // not.
@@ -90,7 +95,18 @@ class OverlayGeometryDumpTest {
                 // overlay photographed against nothing is not the overlay.
                 modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp).background(Color.Black),
             ) {
-                VideoChrome(player, FormFactor.Desktop, buttons = EVERY_BUTTON)
+                VideoChrome(
+                    player,
+                    FormFactor.Desktop,
+                    buttons = EVERY_BUTTON,
+                    // A way out, because the top bar draws its controls only for
+                    // a callback that exists — nulling one IS hiding it. Without
+                    // this the bar collapsed to the title line alone, 22px
+                    // against the reference's 115, and the difference was read
+                    // as a layout defect rather than a fixture that asked for no
+                    // buttons.
+                    onClose = {},
+                )
             }
         }
         waitForIdle()
