@@ -10,6 +10,8 @@ package tv.nomercy.player.video.input
 
 import tv.nomercy.player.core.device.DeviceCapabilities
 import tv.nomercy.player.core.device.FormFactor
+import tv.nomercy.player.core.input.KeyBindingTable
+import tv.nomercy.player.core.input.KeyCombo
 import tv.nomercy.player.core.input.KeyHandlerPlugin
 import tv.nomercy.player.core.input.KeyHandlerScope
 import tv.nomercy.player.core.input.PlayerKey
@@ -37,8 +39,15 @@ public open class VideoKeyHandlerPlugin(
     // binds it to the clock. Added after it, every existing call site silently
     // handed its lambda to this parameter instead.
     scope: KeyHandlerScope = KeyHandlerScope.Window,
+    // The rest of the reference's options, passed straight through. A subclass
+    // that accepted only some of them would be a consumer's dead end: the base
+    // has them and there would be no way to reach it.
+    extend: Boolean = true,
+    cooldownMs: Long = KeyBindingTable.DEFAULT_COOLDOWN_MS,
+    gate: ((KeyCombo) -> Boolean)? = null,
+    disableMediaControls: Boolean = false,
     nowMs: () -> Long,
-) : KeyHandlerPlugin<Unit>(nowMs, scope) {
+) : KeyHandlerPlugin<Unit>(nowMs, scope, extend, cooldownMs, gate, disableMediaControls) {
 
     public companion object Manifest : PluginManifest {
         override val id: String = "key-handler"

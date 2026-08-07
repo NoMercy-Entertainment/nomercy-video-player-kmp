@@ -888,8 +888,8 @@ public final class tv/nomercy/player/video/input/TvKeyHandlerOptions {
 
 public class tv/nomercy/player/video/input/TvKeyHandlerPlugin : tv/nomercy/player/video/input/VideoKeyHandlerPlugin {
 	public static final field Manifest Ltv/nomercy/player/video/input/TvKeyHandlerPlugin$Manifest;
-	public fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/input/TvKeyHandlerOptions;Ltv/nomercy/player/core/input/KeyHandlerScope;)V
-	public synthetic fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/input/TvKeyHandlerOptions;Ltv/nomercy/player/core/input/KeyHandlerScope;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/input/TvKeyHandlerOptions;Ltv/nomercy/player/core/input/KeyHandlerScope;ZJLkotlin/jvm/functions/Function1;Z)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Lkotlin/jvm/functions/Function0;Ltv/nomercy/player/video/input/TvKeyHandlerOptions;Ltv/nomercy/player/core/input/KeyHandlerScope;ZJLkotlin/jvm/functions/Function1;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	protected fun addAspectRatioKeys ()V
 	protected fun addBookmarkKey ()V
 	protected fun addDefaults ()V
@@ -943,8 +943,8 @@ public final class tv/nomercy/player/video/input/TvPlaybackSummary {
 
 public class tv/nomercy/player/video/input/VideoKeyHandlerPlugin : tv/nomercy/player/core/input/KeyHandlerPlugin {
 	public static final field Manifest Ltv/nomercy/player/video/input/VideoKeyHandlerPlugin$Manifest;
-	public fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Ltv/nomercy/player/core/input/KeyHandlerScope;Lkotlin/jvm/functions/Function0;)V
-	public synthetic fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Ltv/nomercy/player/core/input/KeyHandlerScope;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Ltv/nomercy/player/core/input/KeyHandlerScope;ZJLkotlin/jvm/functions/Function1;ZLkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ltv/nomercy/player/video/input/PlayerCommands;Ltv/nomercy/player/core/device/DeviceCapabilities;Ltv/nomercy/player/core/input/KeyHandlerScope;ZJLkotlin/jvm/functions/Function1;ZLkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	protected fun addAspectRatioKeys ()V
 	protected fun addChapterKeys ()V
 	protected fun addDefaults ()V

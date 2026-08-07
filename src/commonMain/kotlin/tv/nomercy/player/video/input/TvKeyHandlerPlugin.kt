@@ -9,6 +9,8 @@
 package tv.nomercy.player.video.input
 
 import tv.nomercy.player.core.device.DeviceCapabilities
+import tv.nomercy.player.core.input.KeyBindingTable
+import tv.nomercy.player.core.input.KeyCombo
 import tv.nomercy.player.core.input.KeyHandlerScope
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.core.input.asCombo
@@ -39,7 +41,20 @@ public open class TvKeyHandlerPlugin(
     // claimed them from anywhere in the window would swallow navigation the
     // moment it was mounted behind something else.
     scope: KeyHandlerScope = KeyHandlerScope.Container,
-) : VideoKeyHandlerPlugin(commands, capabilities, scope, nowMs) {
+    extend: Boolean = true,
+    cooldownMs: Long = KeyBindingTable.DEFAULT_COOLDOWN_MS,
+    gate: ((KeyCombo) -> Boolean)? = null,
+    disableMediaControls: Boolean = false,
+) : VideoKeyHandlerPlugin(
+    commands,
+    capabilities,
+    scope,
+    extend,
+    cooldownMs,
+    gate,
+    disableMediaControls,
+    nowMs,
+) {
 
     public companion object Manifest : PluginManifest {
         override val id: String = "tv-key-handler"

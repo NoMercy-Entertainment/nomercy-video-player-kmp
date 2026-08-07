@@ -639,10 +639,12 @@ public final class tv/nomercy/player/video/ui/chrome/DesktopUiPlugin : tv/nomerc
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Lkotlin/Unit;
+	public final fun hideChrome ()V
 	public final fun holdChrome ()V
 	public final fun overlay ()Ljava/util/List;
 	public final fun releaseChrome ()V
 	public final fun removeOverlay (Lkotlin/jvm/functions/Function2;)V
+	public final fun showChrome ()V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/DesktopUiPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
