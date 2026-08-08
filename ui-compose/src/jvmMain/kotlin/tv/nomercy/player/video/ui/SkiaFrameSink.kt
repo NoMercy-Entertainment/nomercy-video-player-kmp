@@ -114,8 +114,13 @@ internal class SkiaFrameSink : VideoFrameSink {
         // rather than throwing anything catchable.
         // Every one of them. The canvas has been told there is nothing to draw,
         // so nothing it holds can be painted again.
-        held.forEach { (_, bitmap) -> bitmap.close(); closed += 1 }
-        held.clear()
+        val freed: List<Bitmap> = synchronized(held) {
+            val all: List<Bitmap> = held.map { it.second }
+            held.clear()
+            all
+        }
+        freed.forEach { bitmap -> bitmap.close() }
+        closed += freed.size
     }
 
     // The buffer is libVLC's and it reuses it, so the frame has to be copied out
@@ -190,8 +195,24 @@ internal class SkiaFrameSink : VideoFrameSink {
         // So nothing is guessed: [drawn] is called from the draw phase with the
         // version it painted, and only frames the canvas has already moved past
         // are released.
-        held += version.value + 1 to next
+        synchronized(held) { held += version.value + 1 to next }
+
+        // Said once, when the pile stops draining.
+        //
+        // A sink holding more than a handful of decoded pictures is a machine
+        // heading for a freeze at eight megabytes a frame, and the only earlier
+        // symptom is the fan. Once, because sixty times a second is not a log.
+        //
+        // And only while NOTHING has ever been released: a backlog builds in the
+        // ordinary way between the first frames and the first draw, and a warning
+        // that fires every single launch is a warning nobody reads by the third.
+        val backlog: Int = synchronized(held) { held.size }
+        if (backlog > BACKLOG_ALARM && closed == 0 && reportedBacklog.compareAndSet(false, true)) {
+            println("[frame-sink] $backlog frames held and not released — the canvas is not reporting draws")
+        }
     }
+
+    private val reportedBacklog = java.util.concurrent.atomic.AtomicBoolean(false)
 
     /**
      * The canvas reporting which frame it has painted.
@@ -237,5 +258,6 @@ internal class SkiaFrameSink : VideoFrameSink {
 
     private companion object {
         const val BYTES_PER_PIXEL = 4
+        const val BACKLOG_ALARM = 8
     }
 }
