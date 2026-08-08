@@ -286,9 +286,24 @@ internal fun rasterSize(source: AssSize?, surface: IntSize): IntSize {
     )
 }
 
-// 1080p, which is Android's largest tier and the resolution these tracks are
-// authored at.
-private const val MAX_RASTER_PIXELS: Long = 1920L * 1080L
+// 4K, because that is what a panel can be.
+//
+// This was 1080p, justified as "Android's largest tier and the resolution these
+// tracks are authored at" — and it made the cap the thing that decided
+// sharpness on any bigger screen. On Stoney's 4K display the video box is
+// 3840x2160 and the overlay was rasterised at 1920x1080 and doubled, which is
+// the softness that survived fixing the box: the fit was right and the ceiling
+// was low.
+//
+// The authored resolution is beside the point. Glyphs are outlines and libass
+// scales the layout by the storage ratio, so a 1280x720 script rasterises
+// perfectly well at 3840x2160 — that is the whole reason the storage size is
+// separate from the frame.
+//
+// Still capped rather than unbounded: eight million pixels is what a 4K panel
+// can show and nothing above it buys anything, while an unbounded frame on a
+// wall-sized surface would rasterise pixels nobody has.
+private const val MAX_RASTER_PIXELS: Long = 3840L * 2160L
 
 /**
  * Premultiplied ARGB pixels as the toolkit's own bitmap.

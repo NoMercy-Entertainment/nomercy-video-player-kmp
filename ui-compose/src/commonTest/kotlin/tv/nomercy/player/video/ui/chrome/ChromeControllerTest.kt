@@ -112,7 +112,14 @@ class ChromeControllerTest {
         chrome.setPlaying(false)
 
         assertTrue(chrome.ui.value.active)
-        assertEquals0(scheduler.outstanding)
+        // A pending check, not none. It used to be none, and that is precisely
+        // how a hold that passed left the chrome up forever — see
+        // aHoldThatPassesDoesNotKillTheAutohideForever. The check runs, sees the
+        // player still paused, and re-arms; nothing hides while it is held.
+        assertTrue(scheduler.outstanding > 0, "a paused chrome left no check pending")
+
+        scheduler.elapse(INACTIVITY)
+        assertTrue(chrome.ui.value.active, "the check hid a paused player")
     }
 
     @Test
@@ -263,6 +270,50 @@ class ChromeControllerTest {
         assertTrue(chrome.ui.value.active)
     }
 
+
+    @Test
+    fun aHoldThatPassesDoesNotKillTheAutohideForever() {
+        // The defect Stoney reported as "pressing a button in the bottom bar
+        // prevents the overlay from hiding on inactivity, requiring a defocus
+        // tap". Measured on the phone: the timer is armed on the wake and
+        // CANCELLED four tenths of a second later, and nothing ever arms it
+        // again —
+        //
+        //   [sched] schedule 4000ms active=true
+        //   [sched] cancel                        <- and then nothing, ever
+        //
+        // The cause is that restartTimer cancels first and returns when
+        // something holds the chrome open, while `isPlaying` is READ rather
+        // than subscribed to: a moment where the engine answers "not playing"
+        // kills the timer, and when it starts answering "playing" again there
+        // is no event to re-arm it. The chrome then stays up until the viewer
+        // touches something.
+        val chrome: ChromeController = controller(playing = true)
+
+        chrome.bumpActivity()
+        playing = false
+        chrome.bumpActivity()
+        playing = true
+
+        // No setPlaying() here ON PURPOSE. That is the whole point: nothing
+        // tells the controller the hold has passed, exactly as on the device.
+        scheduler.elapse(INACTIVITY)
+        scheduler.elapse(INACTIVITY)
+
+        assertFalse(chrome.ui.value.active, "the autohide never came back after a hold passed")
+    }
+
+    @Test
+    fun aChromeThatIsHeldOpenStillHasAPendingCheck() {
+        // The other half: while something genuinely holds the chrome — paused,
+        // a menu open — there must still be a check pending, or the hold
+        // passing has nothing to notice it.
+        val chrome: ChromeController = controller(playing = false)
+
+        chrome.bumpActivity()
+
+        assertTrue(scheduler.outstanding > 0, "a held chrome left no check pending")
+    }
 }
 
 private const val INACTIVITY = 4_000L

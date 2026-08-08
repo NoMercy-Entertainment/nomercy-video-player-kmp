@@ -77,7 +77,20 @@ public class ChromeController(
     // Rule two, on a timer rather than a frame loop: idle for long enough and
     // the picture is what somebody came for.
     public fun maybeHide() {
-        if (heldOpen()) return
+        // Held is a REASON TO WAIT, not a reason to stop waiting.
+        //
+        // This used to return and leave nothing pending, which is how the
+        // chrome came to stay up forever: `isPlaying` is read rather than
+        // subscribed to, so a moment where the engine answers "not playing"
+        // killed the timer, and when it answered "playing" again there was no
+        // event to arm a new one. Measured on the phone — the timer was armed
+        // on the wake and cancelled four tenths of a second later, and nothing
+        // followed it — and the viewer then had to tap somewhere to get the
+        // controls to go away.
+        if (heldOpen()) {
+            restartTimer()
+            return
+        }
 
         state.value = state.value.copy(active = false)
         cancelTimer()
@@ -179,15 +192,23 @@ public class ChromeController(
         if (heldOpen()) showAndHold() else restartTimer()
     }
 
+    // Shown, and checked again later. The check costs one wake-up per interval
+    // while something is holding — a paused film, an open menu — and it is what
+    // notices when the hold passes.
     private fun showAndHold() {
-        cancelTimer()
         state.value = state.value.copy(active = true)
+        armTimer()
     }
 
     private fun restartTimer() {
-        cancelTimer()
-        if (heldOpen()) return
+        armTimer()
+    }
 
+    // Always one pending check, never none. Whether it hides is maybeHide's
+    // decision, taken with the state as it is WHEN THE CHECK RUNS rather than
+    // as it was when the timer was armed.
+    private fun armTimer() {
+        cancelTimer()
         hideTimer = scheduler.schedule(inactivityMs) { maybeHide() }
     }
 

@@ -170,13 +170,25 @@ class AssSubtitleLayerTest {
     }
 
     @Test
-    fun aPaneLargerThanTheCapIsScaledDownRatherThanRefused() {
-        // A 4K pane is eight million pixels a frame for a line of text, and the
-        // panel cannot show the difference. The aspect survives the cap.
-        val huge = rasterSize(AssSize(1920, 1080), IntSize(3840, 2160))
+    fun a4kPaneRastersAt4kRatherThanBeingDoubledFrom1080p() {
+        // The cap used to be 1080p, so a 4K display got a 1920x1080 overlay
+        // stretched to twice the size — soft text on the one screen with the
+        // pixels to show it properly. Reported off Stoney's 4K panel after the
+        // box fit was already right.
+        val ultra = rasterSize(AssSize(1280, 720), IntSize(3840, 2160))
 
-        assertEquals(1920, huge.width)
-        assertEquals(1080, huge.height)
+        assertEquals(3840, ultra.width)
+        assertEquals(2160, ultra.height)
+    }
+
+    @Test
+    fun aPaneBeyondTheCapIsScaledDownRatherThanRefused() {
+        // Above 4K nothing is gained and the frame cost keeps climbing, so the
+        // aspect survives and the size stops.
+        val wall = rasterSize(AssSize(1920, 1080), IntSize(7680, 4320))
+
+        assertEquals(3840, wall.width)
+        assertEquals(2160, wall.height)
     }
 }
 
