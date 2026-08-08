@@ -45,7 +45,8 @@ public actual fun PlayerSurface(
     // already — Compose reports layout in pixels, so there is no density factor to
     // apply here the way the web multiplies by devicePixelRatio.
     FrameCanvas(
-        sink = surface.sink,
+        frame = surface.sink.frame.value,
+        version = surface.sink.version,
         modifier = modifier.onSizeChanged { size ->
             surface.backend?.surfaceSize(size.width, size.height)
         },

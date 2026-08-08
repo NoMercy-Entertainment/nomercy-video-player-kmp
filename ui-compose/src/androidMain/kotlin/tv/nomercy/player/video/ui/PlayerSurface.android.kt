@@ -41,7 +41,8 @@ public actual fun PlayerSurface(
         // already, so there is no density factor to apply the way the web
         // multiplies by devicePixelRatio.
         FrameCanvas(
-            sink = sink,
+            frame = sink.frame.value,
+            version = sink.version,
             modifier = modifier.onSizeChanged { size ->
                 surface.backend?.surfaceSize(size.width, size.height)
             },

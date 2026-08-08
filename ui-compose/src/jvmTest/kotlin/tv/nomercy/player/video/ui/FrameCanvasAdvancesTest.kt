@@ -40,7 +40,7 @@ class FrameCanvasAdvancesTest {
         sink.format(CANVAS_SIDE, CANVAS_SIDE)
 
         val scene = ImageComposeScene(width = CANVAS_SIDE, height = CANVAS_SIDE) {
-            FrameCanvas(sink, Modifier.fillMaxSize())
+            FrameCanvas(sink.frame.value, sink.version, Modifier.fillMaxSize())
         }
 
         try {

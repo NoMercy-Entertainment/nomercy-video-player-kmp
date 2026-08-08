@@ -31,7 +31,15 @@ import androidx.compose.ui.layout.ContentScale
  */
 @Composable
 internal fun FrameCanvas(
-    sink: ComposeFrameSink,
+    // The FRAME and its counter, not a particular sink type.
+    //
+    // There are two sinks now and they cannot be one: the desktop's is Skia and
+    // Android's is android.graphics, and the byte order each wants is opposite.
+    // What they have in common is exactly this — a bitmap and a number that
+    // changes when it does — so that is what the canvas takes, and neither
+    // platform's sink leaks into the other's artifact.
+    frame: ImageBitmap?,
+    version: IntState,
     modifier: Modifier,
     scale: ContentScale = ContentScale.Fit,
 ) {
@@ -58,12 +66,12 @@ internal fun FrameCanvas(
         // asComposeImageBitmap WRAPS rather than copies, so this costs one small
         // object per frame. toComposeImageBitmap is the one that allocates and
         // blits, and using it here is what once made the desktop a slideshow.
-        val current: ImageBitmap? = sink.frame.value
+        val current: ImageBitmap? = frame
         if (current != null) {
             Image(
                 bitmap = current,
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize().repaintOnEachFrame(sink.version),
+                modifier = Modifier.fillMaxSize().repaintOnEachFrame(version),
                 contentScale = scale,
             )
         }
