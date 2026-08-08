@@ -231,21 +231,38 @@ private class AssDrawing(
 // scaled into a few hundred thousand; the cap costs sharpness the display
 // cannot show anyway.
 //
-// Never larger than the space itself. Rendering a 720p script at 1080p asks
-// libass to invent detail and costs more than it can return.
+// The SURFACE decides the raster, not the script.
 //
-// The overlay's own size is the fallback, which is what this always did. It is
-// only reached before a track has loaded.
+// This used the script's own PlayRes — so a track authored at 1280x720 was
+// rasterised at 1280x720 and then stretched over a 1080p pane, and the text
+// came out soft. Reported as "the subtitle looks like 720p", which is exactly
+// what it was.
+//
+// The mistake was reading PlayRes as a resolution. It is a COORDINATE SPACE:
+// the numbers a script's positions, margins and font sizes are expressed in.
+// libass takes that separately as the storage size and scales the layout onto
+// whatever frame it is given, and glyphs are outlines — rasterising them larger
+// produces real detail rather than invented detail, which is the opposite of
+// what upscaling a bitmap does.
+//
+// So: storage stays the script's PlayRes (see NativeAssRenderer.applySize) and
+// the frame is the surface, capped so a 4K pane does not cost eight million
+// pixels a frame for a line of text.
 internal fun rasterSize(source: AssSize?, surface: IntSize): IntSize {
-    val space: AssSize = source?.takeIf { it.width > 0 && it.height > 0 } ?: return surface
+    // Before the pane has been measured there is nothing to follow, so the
+    // track's own space stands in — it is the only size known at that point.
+    if (surface.width <= 0 || surface.height <= 0) {
+        val space: AssSize = source?.takeIf { it.width > 0 && it.height > 0 } ?: return surface
+        return IntSize(space.width, space.height)
+    }
 
-    val area: Long = space.width.toLong() * space.height.toLong()
-    if (area <= MAX_RASTER_PIXELS) return IntSize(space.width, space.height)
+    val area: Long = surface.width.toLong() * surface.height.toLong()
+    if (area <= MAX_RASTER_PIXELS) return surface
 
     val scale: Double = sqrt(MAX_RASTER_PIXELS.toDouble() / area.toDouble())
     return IntSize(
-        (space.width * scale).toInt().coerceAtLeast(1),
-        (space.height * scale).toInt().coerceAtLeast(1),
+        (surface.width * scale).toInt().coerceAtLeast(1),
+        (surface.height * scale).toInt().coerceAtLeast(1),
     )
 }
 

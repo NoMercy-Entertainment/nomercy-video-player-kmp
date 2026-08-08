@@ -103,19 +103,35 @@ class AssSubtitleLayerTest {
     }
 
     @Test
-    fun aTrackIsRasterizedAtItsOwnResolutionRatherThanTheOverlays() = runComposeUiTest {
+    fun aTrackIsRasterizedAtTheSurfaceRatherThanAtItsOwnResolution() = runComposeUiTest {
         // The overlay here is 640x360 and the track was authored for 1080p.
-        // Rasterizing at the overlay's size keeps the glyphs proportional and
-        // not the outline, shadow or blur around them, so every cue in a
-        // windowed player comes out thick and blobby.
+        //
+        // This asserted the opposite until 2026-08-08, when Stoney reported the
+        // subtitles looking "a bit low quality, like 720p instead of 1080p" —
+        // which is exactly what a 1280x720-authored script rasterised at 720p
+        // and stretched over a 1080p pane looks like.
+        //
+        // The old rule read PlayRes as a resolution. It is a COORDINATE SPACE,
+        // and libass takes it separately as the storage size; the frame is what
+        // it rasterises into. Measured on No-Rin's own script with
+        // subtitles-libass:assGeometryProbe, storage pinned to its 1280x720
+        // PlayRes and the frame varied:
+        //
+        //   frame  640x360  ->  extent 104,17 .. 549,356    (549/640  = 0.858)
+        //   frame 1280x720  ->  extent 209,34 .. 1084,708   (1084/1280 = 0.847)
+        //   frame 1920x1080 ->  extent 314,51 .. 1619,1047  (1619/1920 = 0.843)
+        //
+        // The same layout at every size, outline and shadow included — that
+        // script sets ScaledBorderAndShadow: yes and libass scales them with the
+        // storage ratio. So the frame is free to follow the surface, and glyphs
+        // are outlines: rasterising them larger produces real detail rather than
+        // the invented detail an upscaled bitmap gives.
         val renderer = OneRunRenderer(space = AssSize(1920, 1080))
         var mounted: Boolean by mutableStateOf(true)
 
         // Mounted directly rather than through the chrome. What size the
         // renderer is asked for does not involve the chrome at all, and the
-        // test above already proves the slot is wired; carrying a whole player
-        // into this one only adds coroutines for its frame loop to compete
-        // with.
+        // test above already proves the slot is wired.
         setContent {
             if (mounted) {
                 Box(modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp)) {
@@ -129,9 +145,9 @@ class AssSubtitleLayerTest {
         waitForIdle()
 
         assertEquals(
-            AssSize(1920, 1080),
+            AssSize(WIDTH, HEIGHT),
             AssSize(renderer.width, renderer.height),
-            "the track's own space was ignored and the cue was rasterized at the overlay's size",
+            "the cue was rasterised at the track's space rather than at the pixels on screen",
         )
     }
 }
