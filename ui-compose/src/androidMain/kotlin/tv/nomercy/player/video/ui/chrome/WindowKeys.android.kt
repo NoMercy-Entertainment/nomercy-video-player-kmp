@@ -20,5 +20,6 @@ import tv.nomercy.player.core.input.KeyCombo
  * deliver every press twice.
  */
 @Composable
+@Suppress("EmptyFunctionBlock") // Nothing to do here is the decision, not an omission.
 internal actual fun WindowKeyEvents(enabled: Boolean, onKey: (KeyCombo) -> Boolean) {
 }

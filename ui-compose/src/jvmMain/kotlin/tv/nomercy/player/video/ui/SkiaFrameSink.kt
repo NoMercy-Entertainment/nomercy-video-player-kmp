@@ -207,7 +207,8 @@ internal class SkiaFrameSink : VideoFrameSink {
         // ordinary way between the first frames and the first draw, and a warning
         // that fires every single launch is a warning nobody reads by the third.
         val backlog: Int = synchronized(held) { held.size }
-        if (backlog > BACKLOG_ALARM && closed == 0 && reportedBacklog.compareAndSet(false, true)) {
+        val stuck: Boolean = backlog > BACKLOG_ALARM && closed == 0
+        if (stuck && reportedBacklog.compareAndSet(false, true)) {
             println("[frame-sink] $backlog frames held and not released — the canvas is not reporting draws")
         }
     }

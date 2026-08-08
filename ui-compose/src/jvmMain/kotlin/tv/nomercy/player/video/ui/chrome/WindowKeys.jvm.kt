@@ -34,19 +34,24 @@ internal actual fun WindowKeyEvents(enabled: Boolean, onKey: (KeyCombo) -> Boole
     val current: State<(KeyCombo) -> Boolean> = rememberUpdatedState(onKey)
 
     DisposableEffect(enabled) {
-        if (!enabled) return@DisposableEffect onDispose { }
-
+        // Presses only. AWT reports pressed, released and typed for one stroke,
+        // and acting on all three runs a binding three times — one tap on the
+        // space bar toggling playback back to where it started.
         val dispatcher = KeyEventDispatcher { event ->
-            // Presses only. AWT reports pressed, released and typed for one
-            // stroke, and acting on all three runs a binding three times — one
-            // tap on the space bar toggling playback back to where it started.
-            if (event.id != KeyEvent.KEY_PRESSED) return@KeyEventDispatcher false
-            awtKeyCombo(event)?.let(current.value) ?: false
+            when (event.id) {
+                KeyEvent.KEY_PRESSED -> awtKeyCombo(event)?.let(current.value) ?: false
+                else -> false
+            }
         }
 
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(dispatcher)
+        // The same manager for the add and the remove. It was fetched fresh in
+        // each, and getCurrentKeyboardFocusManager is per app context — a
+        // dispatcher removed from a manager it was never added to stays
+        // registered, and keeps answering keys for a player that is gone.
+        val manager = KeyboardFocusManager.getCurrentKeyboardFocusManager()
+        if (enabled) manager.addKeyEventDispatcher(dispatcher)
         onDispose {
-            KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(dispatcher)
+            if (enabled) manager.removeKeyEventDispatcher(dispatcher)
         }
     }
 }

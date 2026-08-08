@@ -134,13 +134,13 @@ public fun PlayerIconButton(
     var pointerFocus: Boolean by remember { mutableStateOf(false) }
     val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
     val focus: FocusManager = LocalFocusManager.current
-    // A television focus is always visible: a remote has no pointer, so every
-    // focus there arrived from a key and the ring is the only thing telling a
-    // viewer where they are. Suppressing it on a filled style would blind the
-    // D-pad.
-    val focusVisible: Boolean = focused && (!pointerFocus || focusStyle == PlayerFocusStyle.Filled)
+    val focusVisible: Boolean = focusRingShows(focused, pointerFocus, focusStyle)
     val filled: Boolean = focusVisible && focusStyle == PlayerFocusStyle.Filled
     val hovered: Boolean by interaction.collectIsHoveredAsState()
+    // A disabled control is not hovered, however the pointer is sitting on it:
+    // `.btn:disabled:hover` inherits the disabled rule, not the hover one. Said
+    // once, because three places asked and a fourth would eventually forget.
+    val pointedAt: Boolean = hovered && enabled
 
     Box(
         contentAlignment = Alignment.Center,
@@ -151,35 +151,19 @@ public fun PlayerIconButton(
             // 40x32 box is an OVAL, which is what a viewer sees the moment they
             // hover or focus one.
             .requiredSize(buttonSize)
-            .hoverPaint(hovered && enabled, hoverFill, shape)
+            .hoverPaint(pointedAt, hoverFill, shape)
             .focusPaint(focusVisible, focusStyle, shape)
             .then(focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier)
-            .onFocusChanged {
-                focused = it.isFocused
+            .onFocusChanged { state ->
+                focused = state.isFocused
                 // Cleared when focus LEAVES, so one mouse click does not
                 // suppress the ring for every keyboard focus that follows. The
-                // flag describes how THIS focus arrived, not that the button was
-                // ever clicked.
-                if (!it.isFocused) pointerFocus = false
-                onFocused(it.isFocused)
+                // flag describes how THIS focus arrived, not that the button
+                // was ever clicked.
+                if (!state.isFocused) pointerFocus = false
+                onFocused(state.isFocused)
             }
-            // Which INPUT gave this focus, because only a keyboard's shows.
-            //
-            // `:focus-visible`, which is the rule the web actually uses and the
-            // one this claimed to implement by clearing focus after a press.
-            // Clearing happens after the click, so a pointer press still took
-            // focus, painted the ring, and dropped it a frame later - a circle
-            // on every button anybody clicked. A pointer press marks the focus
-            // as not-visible BEFORE clickable can grant it, so the ring never
-            // paints; a key press leaves the flag alone and it does.
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Initial)
-                        if (event.type == PointerEventType.Press) pointerFocus = true
-                    }
-                }
-            }
+            .markingPointerFocus { pointerFocus = true }
             // One activation path for a remote, a keyboard and a finger. It was
             // key events only, which is correct on a television and means a
             // pointer click does nothing — the same button is used by the touch
@@ -204,18 +188,13 @@ public fun PlayerIconButton(
                 indication = null,
                 onClick = pressHandler(onClick, focusStyle, focus),
             )
-            // Announced as disabled, not merely drawn dim. A screen reader that
-            // read this as an ordinary button would send somebody to press it.
-            .semantics {
-                contentDescription = description
-                if (!enabled) disabled()
-            },
+            .announcedAs(description, enabled),
     ) {
         Glyph(
-            glyphFor(icon, (hovered || active) && enabled),
+            glyphFor(icon, pointedAt || (active && enabled)),
             iconSize,
             glyphTint(enabled, filled),
-            hovered && enabled,
+            pointedAt,
         )
 
         // `wireTooltips` attaches one of these to all eighteen controls. The
@@ -228,6 +207,43 @@ public fun PlayerIconButton(
         ControlTooltip(text = description, visible = rememberTooltipVisible(interaction))
     }
 }
+
+// Whether the focus ring paints.
+//
+// A television focus is always visible: a remote has no pointer, so every focus
+// there arrived from a key, and the ring is the only thing telling a viewer
+// where they are. Suppressing it on a filled style would blind the D-pad.
+private fun focusRingShows(
+    focused: Boolean,
+    fromPointer: Boolean,
+    style: PlayerFocusStyle,
+): Boolean = focused && (!fromPointer || style == PlayerFocusStyle.Filled)
+
+// Announced as disabled, not merely drawn dim. A screen reader that read this as
+// an ordinary button would send somebody to press it.
+private fun Modifier.announcedAs(description: String, enabled: Boolean): Modifier =
+    semantics {
+        contentDescription = description
+        if (!enabled) disabled()
+    }
+
+// Which INPUT gave this focus, because only a keyboard's shows.
+//
+// `:focus-visible`, which is the rule the web actually uses and the one this
+// claimed to implement by clearing focus after a press. Clearing happens after
+// the click, so a pointer press still took focus, painted the ring, and dropped
+// it a frame later — a circle on every button anybody clicked. Marking the focus
+// as not-visible BEFORE clickable can grant it means the ring never paints for a
+// pointer; a key press leaves the flag alone and it does.
+private fun Modifier.markingPointerFocus(onPress: () -> Unit): Modifier =
+    pointerInput(Unit) {
+        awaitPointerEventScope {
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                if (event.type == PointerEventType.Press) onPress()
+            }
+        }
+    }
 
 // Which of the two drawings of a control is on screen.
 //

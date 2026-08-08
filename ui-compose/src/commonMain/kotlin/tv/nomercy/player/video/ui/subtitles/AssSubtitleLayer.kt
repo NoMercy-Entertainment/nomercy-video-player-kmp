@@ -63,7 +63,6 @@ public fun AssSubtitleLayer(
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
 ) {
-    var frameClock: TimeSource.Monotonic.ValueTimeMark = remember { TimeSource.Monotonic.markNow() }
     var surface: IntSize by remember { mutableStateOf(IntSize.Zero) }
     var frame: ImageBitmap? by remember { mutableStateOf(null) }
 
@@ -72,89 +71,9 @@ public fun AssSubtitleLayer(
     // libass spent rasterising the glyphs that go on it.
     val drawing: AssDrawing = remember { AssDrawing(AssFrameCompositor(), AssPictureSurface()) }
 
-
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
-            var target: IntSize = IntSize.Zero
-
-            while (coroutineContext.isActive) {
-                // Re-asked rather than set once, because the size to draw at is
-                // the TRACK's, and the track arrives after the layer does. A
-                // frame size fixed on the first composition is the overlay's
-                // size forever, and the overlay is usually smaller than the
-                // video.
-                val next: IntSize = rasterSize(renderer.storageSize(), surface)
-                if (next != target) {
-                    target = next
-                    // Sizing is native work too, and it happens on every resize.
-                    withContext(Dispatchers.Default) { renderer.frameSize(target.width, target.height) }
-                }
-
-                // Rasterising OFF the composition thread, which is the whole
-                // point of this line.
-                //
-                // A LaunchedEffect body runs on the main dispatcher, so this
-                // loop was calling into libass — glyph shaping, blending and a
-                // full-surface bitmap copy — on the thread Compose recomposes
-                // and handles input on. Every poll blocked the frame it was
-                // trying to draw into, which reads as a player that is slow and
-                // sluggish everywhere, not as a subtitle layer that is
-                // expensive. The scheduler's skipping already keeps the number
-                // of renders low; where they run is a separate question and it
-                // was answered wrong.
-                //
-                // Only the finished ImageBitmap crosses back, and the state
-                // write lands on the main thread where composition expects it.
-                val drawn: ImageBitmap? = withContext(Dispatchers.Default) {
-                    nextPicture(renderer, drawing, positionMs(), target)
-                }
-
-                frame = drawn ?: frame
-
-                // Paced by the display, not by a timer.
-                //
-                // This was delay(42), which is twenty-four updates a second no
-                // matter what the screen is doing, and a subtitle that MOVES —
-                // a karaoke wipe, a \move sign, a fade — steps rather than
-                // slides at that rate. On a 120Hz panel it is one update per
-                // five frames.
-                //
-                // withFrameNanos resumes on the frame the toolkit is about to
-                // draw, so a moving cue advances once per drawn frame and a
-                // still one costs nothing, because the renderer answers null
-                // for a frame that has not changed. It also self-limits: if a
-                // frame ever costs more than the budget the loop simply misses
-                // the next callback instead of queueing work behind itself,
-                // which a fixed delay does.
-                //
-                // Affordable now and not before. Compositing a frame of the
-                // densest track measured 14ms when this was written and 3.5ms
-                // after the compositor was rewritten; at 14ms per frame asking
-                // for display rate would have been asking for a stall.
-                // Display rate, with a floor of its own.
-                //
-                // withFrameNanos is supposed to pace this: resume on the frame
-                // the toolkit is about to draw, so a moving cue advances once
-                // per drawn frame and a still one costs nothing. On a window
-                // that is not presenting it does not throttle at all — measured
-                // at 500-600 iterations a second, each hopping to
-                // Dispatchers.Default to rasterise a subtitle nobody can see
-                // ten times per displayed frame. The process burned four and a
-                // half cores and the UI thread starved: a window that responds,
-                // paints nothing, and reports its playhead ticking hundreds of
-                // times a second.
-                //
-                // So the loop keeps its own floor. Nothing is gained by
-                // rasterising faster than a panel can show — 60Hz is already
-                // more than a karaoke wipe needs — and a pacing primitive that
-                // silently stops pacing must not be the only thing standing
-                // between an overlay and every core on the machine.
-                val elapsed: Long = frameClock.elapsedNow().inWholeMilliseconds
-                if (elapsed < FRAME_FLOOR_MS) delay(FRAME_FLOOR_MS - elapsed)
-                frameClock = TimeSource.Monotonic.markNow()
-
-                withFrameNanos { }
-            }
+            renderer.rasterise(drawing, surface, positionMs) { drawn -> frame = drawn }
         }
     }
 
@@ -176,6 +95,105 @@ public fun AssSubtitleLayer(
                 modifier = Modifier.fillMaxSize(),
             )
         }
+    }
+}
+
+/**
+ * The rasterising loop, off the composition thread.
+ *
+ * Lifted out of the LaunchedEffect body so the composable reads as what it is —
+ * a surface, a frame and a loop that fills it — rather than eighty lines of
+ * pacing rationale between the two.
+ */
+private suspend fun AssRenderer.rasterise(
+    drawing: AssDrawing,
+    surface: IntSize,
+    positionMs: () -> Long,
+    onFrame: (ImageBitmap) -> Unit,
+) {
+    var frameClock: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
+    var target: IntSize = IntSize.Zero
+
+    while (coroutineContext.isActive) {
+        // Re-asked rather than set once, because the size to draw at is
+        // the TRACK's, and the track arrives after the layer does. A
+        // frame size fixed on the first composition is the overlay's
+        // size forever, and the overlay is usually smaller than the
+        // video.
+        val next: IntSize = rasterSize(storageSize(), surface)
+        if (next != target) {
+            target = next
+            // Sizing is native work too, and it happens on every resize.
+            withContext(Dispatchers.Default) { frameSize(target.width, target.height) }
+        }
+
+        // Rasterising OFF the composition thread, which is the whole
+        // point of this line.
+        //
+        // A LaunchedEffect body runs on the main dispatcher, so this
+        // loop was calling into libass — glyph shaping, blending and a
+        // full-surface bitmap copy — on the thread Compose recomposes
+        // and handles input on. Every poll blocked the frame it was
+        // trying to draw into, which reads as a player that is slow and
+        // sluggish everywhere, not as a subtitle layer that is
+        // expensive. The scheduler's skipping already keeps the number
+        // of renders low; where they run is a separate question and it
+        // was answered wrong.
+        //
+        // Only the finished ImageBitmap crosses back, and the state
+        // write lands on the main thread where composition expects it.
+        val drawn: ImageBitmap? = withContext(Dispatchers.Default) {
+            nextPicture(this@rasterise, drawing, positionMs(), target)
+        }
+
+        // Only a NEW picture is published. The renderer answers null for a
+        // frame that has not changed, and pushing that through would clear
+        // a cue that is still on screen.
+        drawn?.let(onFrame)
+
+        // Paced by the display, not by a timer.
+        //
+        // This was delay(42), which is twenty-four updates a second no
+        // matter what the screen is doing, and a subtitle that MOVES —
+        // a karaoke wipe, a \move sign, a fade — steps rather than
+        // slides at that rate. On a 120Hz panel it is one update per
+        // five frames.
+        //
+        // withFrameNanos resumes on the frame the toolkit is about to
+        // draw, so a moving cue advances once per drawn frame and a
+        // still one costs nothing, because the renderer answers null
+        // for a frame that has not changed. It also self-limits: if a
+        // frame ever costs more than the budget the loop simply misses
+        // the next callback instead of queueing work behind itself,
+        // which a fixed delay does.
+        //
+        // Affordable now and not before. Compositing a frame of the
+        // densest track measured 14ms when this was written and 3.5ms
+        // after the compositor was rewritten; at 14ms per frame asking
+        // for display rate would have been asking for a stall.
+        // Display rate, with a floor of its own.
+        //
+        // withFrameNanos is supposed to pace this: resume on the frame
+        // the toolkit is about to draw, so a moving cue advances once
+        // per drawn frame and a still one costs nothing. On a window
+        // that is not presenting it does not throttle at all — measured
+        // at 500-600 iterations a second, each hopping to
+        // Dispatchers.Default to rasterise a subtitle nobody can see
+        // ten times per displayed frame. The process burned four and a
+        // half cores and the UI thread starved: a window that responds,
+        // paints nothing, and reports its playhead ticking hundreds of
+        // times a second.
+        //
+        // So the loop keeps its own floor. Nothing is gained by
+        // rasterising faster than a panel can show — 60Hz is already
+        // more than a karaoke wipe needs — and a pacing primitive that
+        // silently stops pacing must not be the only thing standing
+        // between an overlay and every core on the machine.
+        val elapsed: Long = frameClock.elapsedNow().inWholeMilliseconds
+        if (elapsed < FRAME_FLOOR_MS) delay(FRAME_FLOOR_MS - elapsed)
+        frameClock = TimeSource.Monotonic.markNow()
+
+        withFrameNanos { }
     }
 }
 

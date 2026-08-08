@@ -143,9 +143,9 @@ class OverlayGeometryDumpTest {
 
         val out = File("build/overlay-geometry.json")
         out.parentFile?.mkdirs()
-        out.writeText(
-            """{"container":{"width":${frame.width},"height":${frame.height}},"elements":[${rows.joinToString(",")}]}""",
-        )
+        val container = """{"width":${frame.width},"height":${frame.height}}"""
+        val elements: String = rows.joinToString(",")
+        out.writeText("""{"container":$container,"elements":[$elements]}""")
 
         // The frame the numbers above describe, from the same composition.
         //
