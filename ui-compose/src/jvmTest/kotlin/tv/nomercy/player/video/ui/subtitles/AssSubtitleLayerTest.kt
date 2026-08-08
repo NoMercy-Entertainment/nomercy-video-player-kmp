@@ -170,25 +170,16 @@ class AssSubtitleLayerTest {
     }
 
     @Test
-    fun a4kPaneRastersAt4kRatherThanBeingDoubledFrom1080p() {
-        // The cap used to be 1080p, so a 4K display got a 1920x1080 overlay
-        // stretched to twice the size — soft text on the one screen with the
-        // pixels to show it properly. Reported off Stoney's 4K panel after the
-        // box fit was already right.
-        val ultra = rasterSize(AssSize(1280, 720), IntSize(3840, 2160))
-
-        assertEquals(3840, ultra.width)
-        assertEquals(2160, ultra.height)
-    }
-
-    @Test
-    fun aPaneBeyondTheCapIsScaledDownRatherThanRefused() {
-        // Above 4K nothing is gained and the frame cost keeps climbing, so the
-        // aspect survives and the size stops.
-        val wall = rasterSize(AssSize(1920, 1080), IntSize(7680, 4320))
-
-        assertEquals(3840, wall.width)
-        assertEquals(2160, wall.height)
+    fun theRasterFollowsThePanelHoweverBigItIs() {
+        // There is no ceiling. A cap can only throttle the case where the panel
+        // HAS the pixels — 4K, ultrawide, whatever comes next — and the box is
+        // already bounded by the pane, so nothing needs protecting from it.
+        //
+        // 16:9 4K, 21:9 at 4K height, and 8K: each gets the video's box at the
+        // panel's own resolution.
+        assertEquals(IntSize(3840, 2160), rasterSize(AssSize(1280, 720), IntSize(3840, 2160)))
+        assertEquals(IntSize(3840, 2160), rasterSize(AssSize(1920, 1080), IntSize(5120, 2160)))
+        assertEquals(IntSize(7680, 4320), rasterSize(AssSize(1920, 1080), IntSize(7680, 4320)))
     }
 }
 

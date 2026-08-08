@@ -35,7 +35,6 @@ import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.subtitles.AssFrameCompositor
 import tv.nomercy.player.video.subtitles.AssSurfaceFrame
 import kotlin.coroutines.coroutineContext
-import kotlin.math.sqrt
 
 /**
  * Draws what libass rasterized.
@@ -276,34 +275,16 @@ internal fun rasterSize(source: AssSize?, surface: IntSize): IntSize {
         (space.height * scale).toInt().coerceAtLeast(1),
     )
 
-    val area: Long = fitted.width.toLong() * fitted.height.toLong()
-    if (area <= MAX_RASTER_PIXELS) return fitted
-
-    val capped: Double = sqrt(MAX_RASTER_PIXELS.toDouble() / area.toDouble())
-    return IntSize(
-        (fitted.width * capped).toInt().coerceAtLeast(1),
-        (fitted.height * capped).toInt().coerceAtLeast(1),
-    )
+    // No ceiling. The box is already bounded by the pane, so a cap can only
+    // ever throttle the one case where the panel HAS the pixels — a 4K display,
+    // an ultrawide, whatever comes next. Stoney, on being told it capped at 4K:
+    // "What 4k?? 16:9 only 4k or also 21:9 4k? Why cap if the device has the
+    // rendering power????" Exactly right: 3840x2160 is one shape of one panel,
+    // and the arithmetic above already refuses to ask for more pixels than are
+    // on screen.
+    return fitted
 }
 
-// 4K, because that is what a panel can be.
-//
-// This was 1080p, justified as "Android's largest tier and the resolution these
-// tracks are authored at" — and it made the cap the thing that decided
-// sharpness on any bigger screen. On Stoney's 4K display the video box is
-// 3840x2160 and the overlay was rasterised at 1920x1080 and doubled, which is
-// the softness that survived fixing the box: the fit was right and the ceiling
-// was low.
-//
-// The authored resolution is beside the point. Glyphs are outlines and libass
-// scales the layout by the storage ratio, so a 1280x720 script rasterises
-// perfectly well at 3840x2160 — that is the whole reason the storage size is
-// separate from the frame.
-//
-// Still capped rather than unbounded: eight million pixels is what a 4K panel
-// can show and nothing above it buys anything, while an unbounded frame on a
-// wall-sized surface would rasterise pixels nobody has.
-private const val MAX_RASTER_PIXELS: Long = 3840L * 2160L
 
 /**
  * Premultiplied ARGB pixels as the toolkit's own bitmap.
