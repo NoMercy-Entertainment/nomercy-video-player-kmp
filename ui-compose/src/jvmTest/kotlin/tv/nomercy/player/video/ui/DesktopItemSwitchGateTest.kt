@@ -11,7 +11,11 @@ package tv.nomercy.player.video.ui
 import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.coroutines.runBlocking
 import tv.nomercy.player.core.ports.LoadOptions
-import tv.nomercy.player.core.ports.VlcjVideoBackend
+import tv.nomercy.player.core.ports.FrameSourceBackend
+import tv.nomercy.player.core.ports.MpvVideoBackend
+import tv.nomercy.player.core.ports.VideoBackend
+import tv.nomercy.player.core.ports.engines.EngineSelection
+import tv.nomercy.player.core.ports.engines.VideoEngines
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,31 +40,40 @@ class DesktopItemSwitchGateTest {
 
     @Test
     fun theSecondItemsPictureReplacesTheFirsts() {
-        if (!VlcjVideoBackend.isAvailable()) {
-            println("skipped: ${VlcjVideoBackend.whyUnavailable()}")
+        // The registry's engine, so this gate covers whichever one the desktop
+        // actually ships with rather than the one that was current when it was
+        // written.
+        val decision: EngineSelection = VideoEngines.select()
+        if (decision is EngineSelection.None) {
+            println("skipped: ${decision.reason}")
             return
         }
 
         val temp: String = System.getProperty("java.io.tmpdir")
         val first: File = writeTestVideo("$temp/nomercy-switch-first.y4m")
         val second: File = writeTestVideo("$temp/nomercy-switch-second.y4m", SECOND_WIDTH, SECOND_HEIGHT)
-        val backend = VlcjVideoBackend()
+        val backend: VideoBackend = (decision as EngineSelection.Chosen).provider.create()
         val sink = ComposeFrameSink()
 
         try {
-            backend.embeddedPlayer.videoFrameSink(sink)
+            (backend as FrameSourceBackend).videoFrameSink(sink)
             playAndAwait(backend, sink, first, FRAME_WIDTH)
             playAndAwait(backend, sink, second, SECOND_WIDTH)
         } finally {
-            backend.release()
+            // release() is not on the contract — it is not a playback call —
+            // so the gate names the engine rather than leaving one alive with
+            // its threads for the next test to inherit.
+            (backend as? MpvVideoBackend)?.release()
             first.delete()
             second.delete()
         }
     }
 
-    private fun playAndAwait(backend: VlcjVideoBackend, sink: ComposeFrameSink, media: File, width: Int) {
+    private fun playAndAwait(backend: VideoBackend, sink: ComposeFrameSink, media: File, width: Int) {
         runBlocking {
-            backend.load(media.toURI().toString(), LoadOptions())
+            // A path, not a file: URI. mpv opens either and libVLC opened
+            // either; the path is the form both take without argument.
+            backend.load(media.absolutePath, LoadOptions())
             backend.play()
         }
         assertEquals(width, awaitWidth(sink, width), "the picture never became ${media.name}'s")

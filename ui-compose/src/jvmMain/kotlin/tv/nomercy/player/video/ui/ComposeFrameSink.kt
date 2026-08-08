@@ -18,7 +18,7 @@ import org.jetbrains.skia.Bitmap
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.ImageInfo
-import tv.nomercy.player.core.natives.libvlc.VlcVideoFrameSink
+import tv.nomercy.player.core.ports.VideoFrameSink
 import java.nio.ByteBuffer
 
 // libVLC's frames, turned into something Compose can draw.
@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 // controls the same way it composites everything else, and there is no Swing in
 // the window. It costs a copy per frame, which is the price of compositing at
 // all — but only a copy, and that is the whole subject of this file.
-internal class ComposeFrameSink : VlcVideoFrameSink {
+internal class ComposeFrameSink : VideoFrameSink {
 
     /**
      * The frame Compose draws, republished on every one.

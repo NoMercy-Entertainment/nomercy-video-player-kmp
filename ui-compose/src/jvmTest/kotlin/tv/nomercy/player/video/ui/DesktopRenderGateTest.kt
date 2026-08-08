@@ -24,7 +24,6 @@ import kotlinx.coroutines.runBlocking
 import tv.nomercy.player.core.ports.LoadOptions
 import tv.nomercy.player.core.ports.FrameSourceBackend
 import tv.nomercy.player.core.ports.MpvVideoBackend
-import tv.nomercy.player.core.ports.VlcjVideoBackend
 import tv.nomercy.player.core.ports.VideoBackend
 import tv.nomercy.player.core.ports.engines.EngineSelection
 import tv.nomercy.player.core.ports.engines.VideoEngines
@@ -135,11 +134,7 @@ class DesktopRenderGateTest {
     // the gate names both rather than leaving a live engine and its threads
     // behind for the next test to inherit.
     private fun releaseEngine(backend: VideoBackend) {
-        when (backend) {
-            is MpvVideoBackend -> backend.release()
-            is VlcjVideoBackend -> backend.release()
-            else -> Unit
-        }
+        (backend as? MpvVideoBackend)?.release()
     }
 
     private fun sample(width: Int, height: Int): Sequence<Pair<Int, Int>> = sequence {
