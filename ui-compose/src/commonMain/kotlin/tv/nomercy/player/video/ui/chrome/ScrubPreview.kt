@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isUnspecified
 import androidx.compose.ui.unit.sp
-import tv.nomercy.player.video.tv.formatTime
+import tv.nomercy.player.core.format.formatSeconds
 
 /**
  * What the web calls `.slider-pop`: the frame under the viewer's thumb, the
@@ -89,7 +89,7 @@ public fun ScrubPreview(
         // its own width as the digits change, so the bubble twitches while a
         // viewer is trying to read it.
         BasicText(
-            text = formatTime(seconds),
+            text = formatSeconds(seconds),
             style = POP_TEXT,
             modifier = Modifier.padding(horizontal = TEXT_INSET).testTag(SCRUB_TIME_TAG),
         )

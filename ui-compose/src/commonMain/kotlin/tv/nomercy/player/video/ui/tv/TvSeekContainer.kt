@@ -51,11 +51,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import tv.nomercy.player.core.cues.SpriteCue
+import tv.nomercy.player.core.format.formatSeconds
 import tv.nomercy.player.video.thumbnails.frameIndexAt
 import tv.nomercy.player.video.thumbnails.spriteFrameAspect
 import tv.nomercy.player.video.tv.TvChromeCallbacks
 import tv.nomercy.player.video.tv.TvTransportState
-import tv.nomercy.player.video.tv.formatTime
 import tv.nomercy.player.video.ui.chrome.rememberChromeStrings
 import tv.nomercy.player.video.ui.thumbnails.PreviewSprite
 import tv.nomercy.player.video.ui.thumbnails.SpriteFramePreview
@@ -113,7 +113,7 @@ public fun TvSeekContainer(
                 dispatch(pressed, callbacks, onCommit, onCancel)
                 pressed.outcome != SeekOutcome.IGNORED
             }
-            .semantics { contentDescription = formatTime(cursor.seconds) },
+            .semantics { contentDescription = formatSeconds(cursor.seconds) },
     ) {
         // Centred by padding the row by half the leftover width, as he does, so
         // the selected tile sits under the ring wherever it is in the sheet —
@@ -204,7 +204,7 @@ private fun SeekFrame(
             .clip(RoundedCornerShape(FRAME_RADIUS))
             // Every tile says which moment it is, so a screen reader walking the
             // strip reads times rather than "image, image, image".
-            .semantics { contentDescription = "$label ${formatTime(frame.start)}" },
+            .semantics { contentDescription = "$label ${formatSeconds(frame.start)}" },
     ) {
         SpriteFramePreview(sprite = sprite, seconds = frame.start, width = FRAME_WIDTH)
     }

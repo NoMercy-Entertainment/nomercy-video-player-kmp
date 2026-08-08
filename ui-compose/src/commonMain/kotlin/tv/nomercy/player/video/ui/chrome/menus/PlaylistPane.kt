@@ -52,8 +52,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import tv.nomercy.player.core.format.formatDuration
 import tv.nomercy.player.video.tv.TvChromeItem
-import tv.nomercy.player.video.tv.formatTime
 import tv.nomercy.player.video.tv.sidebarSeasons
 import tv.nomercy.player.video.ui.chrome.ChromeArtwork
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
@@ -353,7 +353,13 @@ private fun BoxScope.ThumbnailOverlay(strings: MenuStrings, item: TvChromeItem, 
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             BasicText(text = episodeToken(strings, item, index), style = OVERLAY_TEXT, maxLines = 1)
-            BasicText(text = durationText(item), style = OVERLAY_TEXT, maxLines = 1)
+            // An empty string rather than "0:00" when the duration is missing —
+            // a card reading "0:00" claims the episode is empty.
+            BasicText(
+                text = formatDuration(item.durationSeconds),
+                style = OVERLAY_TEXT,
+                maxLines = 1,
+            )
         }
 
         // Absent rather than empty without progress. `.slider-container` is
@@ -434,15 +440,6 @@ private fun RowScope.CardText(cards: CardLayout, item: TvChromeItem, index: Int)
             )
         }
     }
-}
-
-// `formatDuration(item.duration)` — the web's display wrapper around
-// `formatSeconds`, which answers an empty string rather than "0:00" for a missing
-// or non-positive duration. A card reading "0:00" claims the episode is empty.
-private fun durationText(item: TvChromeItem): String {
-    val seconds: Double = item.durationSeconds ?: return ""
-
-    return if (seconds > 0.0) formatTime(seconds) else ""
 }
 
 // ── The numbers, every one off a `.playlist-*` or `.episode-*` rule ───────────

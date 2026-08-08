@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import tv.nomercy.player.core.format.formatSeconds
 import tv.nomercy.player.video.ui.chrome.ChromeTranslations
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +26,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.video.tv.TvChromeCallbacks
 import tv.nomercy.player.video.tv.TvTransportState
-import tv.nomercy.player.video.tv.formatTime
 
 // The transport row along the bottom.
 //
@@ -53,7 +53,7 @@ public fun TvBottomBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(BUTTON_GAP),
         ) {
-            BasicText(text = formatTime(state.timeSeconds), style = TextStyle(color = Color.White))
+            BasicText(text = formatSeconds(state.timeSeconds), style = TextStyle(color = Color.White))
 
             TvIconButton(
                 icon = FluentIcons.Restart,
@@ -79,7 +79,7 @@ public fun TvBottomBar(
             // Remaining rather than total. Somebody deciding whether to start
             // another episode is asking how much is left, not how long it was.
             BasicText(
-                text = "-" + formatTime((state.durationSeconds - state.timeSeconds).coerceAtLeast(0.0)),
+                text = "-" + formatSeconds((state.durationSeconds - state.timeSeconds).coerceAtLeast(0.0)),
                 style = TextStyle(color = Color.White),
             )
         }

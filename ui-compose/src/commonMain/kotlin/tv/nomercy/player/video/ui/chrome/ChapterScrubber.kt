@@ -38,9 +38,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.cues.SpriteCue
+import tv.nomercy.player.core.format.formatSeconds
 import tv.nomercy.player.core.media.Chapter
 import tv.nomercy.player.video.thumbnails.frameAt
-import tv.nomercy.player.video.tv.formatTime
 
 // Dragging a finger or a pointer along the film.
 //
@@ -118,7 +118,7 @@ public fun ChapterScrubber(
             // reachability one.
             .onSizeChanged { track.width = it.width.toFloat().coerceAtLeast(1f) }
             .scrubPointers(duration, sprite, scrubGestures(track, commands, report, onScrubbing))
-            .semantics { contentDescription = formatTime(track.drag ?: state.timeSeconds) },
+            .semantics { contentDescription = formatSeconds(track.drag ?: state.timeSeconds) },
     ) {
         ScrubberBar(state, track, barHeight)
     }

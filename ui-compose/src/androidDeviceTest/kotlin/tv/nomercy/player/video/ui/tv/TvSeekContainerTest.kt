@@ -18,9 +18,9 @@ import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import tv.nomercy.player.core.format.formatSeconds
 import tv.nomercy.player.video.tv.TvChromeCallbacks
 import tv.nomercy.player.video.tv.TvTransportState
-import tv.nomercy.player.video.tv.formatTime
 
 // Scrubbing with a remote, on a remote.
 //
@@ -124,7 +124,7 @@ class TvSeekContainerTest {
         press(Key.DirectionRight)
         press(Key.DirectionRight)
 
-        assertEquals(formatTime(WHOLE_FILM), shown())
+        assertEquals(formatSeconds(WHOLE_FILM), shown())
     }
 
     @Test

@@ -8,7 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
-import tv.nomercy.player.video.tv.formatTime
+import tv.nomercy.player.core.format.formatSeconds
 
 // The right-hand clock, which has THREE answers and drew one.
 //
@@ -35,13 +35,13 @@ public fun remainingReadout(
 ): String {
     // No sign, because there is no quantity to be negative. This is the live
     // stream case and the before-metadata case, and they read the same way.
-    if (durationSeconds <= 0.0) return formatTime(0.0)
+    if (durationSeconds <= 0.0) return formatSeconds(0.0)
 
-    if (!showRemaining) return formatTime(durationSeconds)
+    if (!showRemaining) return formatSeconds(durationSeconds)
 
     // Clamped, because an engine reporting a position past a duration it has not
     // refreshed yet is ordinary at the end of an item.
-    return REMAINING_SIGN + formatTime((durationSeconds - timeSeconds).coerceAtLeast(0.0))
+    return REMAINING_SIGN + formatSeconds((durationSeconds - timeSeconds).coerceAtLeast(0.0))
 }
 
 private const val REMAINING_SIGN = "-"

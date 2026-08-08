@@ -1782,10 +1782,6 @@ public final class tv/nomercy/player/video/tv/FeedbackStrings {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class tv/nomercy/player/video/tv/FormatTimeKt {
-	public static final fun formatTime (D)Ljava/lang/String;
-}
-
 public abstract interface class tv/nomercy/player/video/tv/Scheduler {
 	public abstract fun schedule (JLkotlin/jvm/functions/Function0;)Ltv/nomercy/player/video/tv/Cancellable;
 }

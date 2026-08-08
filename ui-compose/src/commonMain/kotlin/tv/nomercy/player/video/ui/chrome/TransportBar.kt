@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.core.format.formatSeconds
 import tv.nomercy.player.video.ui.rememberDeviceCapabilities
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +38,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import tv.nomercy.player.video.tv.formatTime
 import tv.nomercy.player.video.tv.nextChapterStart
 import tv.nomercy.player.video.tv.previousChapterStart
 import tv.nomercy.player.video.ui.chrome.menus.MenuState
@@ -403,7 +403,7 @@ private fun RowScope.TimeReadout(
     // `.current-time { margin-left: 8px }` — the clock does not sit hard against
     // the volume button, and the row's 2px gap is not that space.
     BasicText(
-        text = formatTime(state.timeSeconds),
+        text = formatSeconds(state.timeSeconds),
         style = readout,
         modifier = Modifier.padding(start = TIME_EDGE_MARGIN),
     )
