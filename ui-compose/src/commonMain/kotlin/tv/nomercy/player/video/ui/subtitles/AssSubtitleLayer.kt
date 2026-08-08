@@ -249,20 +249,40 @@ private class AssDrawing(
 // the frame is the surface, capped so a 4K pane does not cost eight million
 // pixels a frame for a line of text.
 internal fun rasterSize(source: AssSize?, surface: IntSize): IntSize {
-    // Before the pane has been measured there is nothing to follow, so the
+    // Before the pane has been measured there is nothing to fit into, so the
     // track's own space stands in — it is the only size known at that point.
-    if (surface.width <= 0 || surface.height <= 0) {
-        val space: AssSize = source?.takeIf { it.width > 0 && it.height > 0 } ?: return surface
-        return IntSize(space.width, space.height)
-    }
+    val space: AssSize = source?.takeIf { it.width > 0 && it.height > 0 } ?: return surface
+    if (surface.width <= 0 || surface.height <= 0) return IntSize(space.width, space.height)
 
-    val area: Long = surface.width.toLong() * surface.height.toLong()
-    if (area <= MAX_RASTER_PIXELS) return surface
+    // The video's BOX, in screen pixels: the script's aspect, as large as fits.
+    //
+    // Both halves matter and each was shipped alone. Rasterising at the script's
+    // own PlayRes keeps the geometry right and comes out soft — a 1280x720
+    // script stretched over a 1080p pane, which Stoney read immediately as
+    // "like 720p instead of 1080p". Rasterising at the whole surface is sharp
+    // and puts the cues in the wrong place: a 16:9 script laid out over a 9:20
+    // portrait pane sends a positioned sign into the letterbox above the picture
+    // and the dialogue below it, which is what his phone showed.
+    //
+    // The web has never had either problem because it maps the overlay onto the
+    // video's displayed rect. This is that rect, and the ContentScale.Fit below
+    // centres it exactly where the picture is.
+    val scale: Double = minOf(
+        surface.width.toDouble() / space.width.toDouble(),
+        surface.height.toDouble() / space.height.toDouble(),
+    )
+    val fitted = IntSize(
+        (space.width * scale).toInt().coerceAtLeast(1),
+        (space.height * scale).toInt().coerceAtLeast(1),
+    )
 
-    val scale: Double = sqrt(MAX_RASTER_PIXELS.toDouble() / area.toDouble())
+    val area: Long = fitted.width.toLong() * fitted.height.toLong()
+    if (area <= MAX_RASTER_PIXELS) return fitted
+
+    val capped: Double = sqrt(MAX_RASTER_PIXELS.toDouble() / area.toDouble())
     return IntSize(
-        (surface.width * scale).toInt().coerceAtLeast(1),
-        (surface.height * scale).toInt().coerceAtLeast(1),
+        (fitted.width * capped).toInt().coerceAtLeast(1),
+        (fitted.height * capped).toInt().coerceAtLeast(1),
     )
 }
 

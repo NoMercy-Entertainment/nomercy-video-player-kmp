@@ -21,6 +21,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.runComposeUiTest
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.player.PlayerConfig
@@ -144,11 +145,38 @@ class AssSubtitleLayerTest {
         mounted = false
         waitForIdle()
 
+        // 640x360 pane, 16:9 track: the video's box IS the pane here, so the
+        // raster is the pane — sharp, and in the right place.
         assertEquals(
             AssSize(WIDTH, HEIGHT),
             AssSize(renderer.width, renderer.height),
             "the cue was rasterised at the track's space rather than at the pixels on screen",
         )
+    }
+
+    @Test
+    fun aPortraitPaneRastersTheVideosBoxAndNotTheWholeScreen() {
+        // The regression this pair exists to prevent, in the direction that
+        // shipped for an hour: a 16:9 script laid out over a 9:20 phone pane
+        // put a positioned sign in the letterbox above the picture and the
+        // dialogue below it. Photographed on Stoney's phone.
+        //
+        // Pure, because it is arithmetic — mounting a composable to check a
+        // rectangle would only add a frame loop to wait for.
+        val portrait = rasterSize(AssSize(1280, 720), IntSize(1080, 2400))
+
+        assertEquals(1080, portrait.width, "the raster did not span the pane's width")
+        assertEquals(607, portrait.height, "the raster was not the video's box: 1080 / (1280/720) = 607")
+    }
+
+    @Test
+    fun aPaneLargerThanTheCapIsScaledDownRatherThanRefused() {
+        // A 4K pane is eight million pixels a frame for a line of text, and the
+        // panel cannot show the difference. The aspect survives the cap.
+        val huge = rasterSize(AssSize(1920, 1080), IntSize(3840, 2160))
+
+        assertEquals(1920, huge.width)
+        assertEquals(1080, huge.height)
     }
 }
 
