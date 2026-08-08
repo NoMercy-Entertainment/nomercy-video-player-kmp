@@ -11,6 +11,7 @@ package tv.nomercy.player.video.ui
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.test.Test
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -76,6 +77,52 @@ class SkiaFrameSinkLeakTest {
         sink.clear()
 
         assertTrue(sink.liveBitmaps() <= 1, "clear left ${sink.liveBitmaps()} bitmaps alive")
+    }
+
+    /**
+     * Publishing and draining at the same time, from two threads, because that
+     * is the only arrangement in which this has ever failed.
+     *
+     * The engine renders on its own loop and the canvas draws on the UI thread.
+     * With a plain list between them the drain threw ConcurrentModification out
+     * of Itr.remove on its first pass, every pass, into a thread nothing watches
+     * — so nothing was ever released, memory climbed at eight megabytes a frame,
+     * the picture looked perfect and the single-threaded tests above stayed
+     * green. They could not have gone red: they have one thread.
+     */
+    @Test
+    fun publishingAndDrawingAtOnceStillReleases() {
+        val sink = SkiaFrameSink()
+        sink.format(width, height)
+
+        val failure = java.util.concurrent.atomic.AtomicReference<Throwable?>(null)
+        val stop = java.util.concurrent.atomic.AtomicBoolean(false)
+
+        val canvas = Thread {
+            try {
+                while (!stop.get()) sink.drawn(sink.version.intValue)
+            } catch (thrown: Throwable) {
+                failure.set(thrown)
+            }
+        }
+
+        canvas.start()
+        try {
+            repeat(FRAMES) { sink.display(frame()) }
+        } finally {
+            stop.set(true)
+            canvas.join()
+        }
+
+        assertNull(failure.get(), "the drain threw: ${failure.get()}")
+
+        // Drained once more from this thread, because the canvas may have
+        // stopped mid-run; what matters is that the pile is not the whole film.
+        sink.drawn(sink.version.intValue)
+        assertTrue(
+            sink.liveBitmaps() <= CEILING,
+            "after $FRAMES concurrent frames the sink holds ${sink.liveBitmaps()} bitmaps",
+        )
     }
 
     private companion object {

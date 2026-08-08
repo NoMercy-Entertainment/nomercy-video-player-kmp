@@ -222,15 +222,23 @@ internal class SkiaFrameSink : VideoFrameSink {
      * a picture is provably safe rather than probably safe.
      */
     fun drawn(painted: Int) {
-        val iterator = held.iterator()
-        while (iterator.hasNext()) {
-            val (published, bitmap) = iterator.next()
-            if (published >= painted) continue
-
-            bitmap.close()
-            closed += 1
-            iterator.remove()
+        // Locked, because the two ends of this list are two threads: the engine
+        // publishes from its render loop and the canvas drains from the UI
+        // thread. Unsynchronised, this threw ConcurrentModificationException out
+        // of Itr.remove on its first pass every pass, into a thread nothing
+        // watches — so nothing was released, memory climbed at eight megabytes a
+        // frame, and the picture looked perfect throughout.
+        //
+        // Copied out under the lock and closed outside it: close() is a native
+        // call and holding a lock across one blocks the decoder on the renderer.
+        val freed: List<Bitmap> = synchronized(held) {
+            val done: List<Bitmap> = held.filter { (published, _) -> published < painted }.map { it.second }
+            held.removeAll { (published, _) -> published < painted }
+            done
         }
+
+        freed.forEach { bitmap -> bitmap.close() }
+        closed += freed.size
     }
 
     // The two bitmaps behind the one being published. Not a pool being reused —
