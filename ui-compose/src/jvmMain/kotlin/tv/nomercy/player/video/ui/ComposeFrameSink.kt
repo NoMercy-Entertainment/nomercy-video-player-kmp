@@ -72,7 +72,15 @@ internal class ComposeFrameSink : VlcVideoFrameSink {
     val version: MutableIntState = mutableIntStateOf(0)
 
     private var pixels: ByteArray = ByteArray(0)
-    private var info: ImageInfo = ImageInfo(0, 0, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
+    // OPAQUE, not PREMUL, and the difference is a whole picture.
+    //
+    // Decoded video has no transparency on either engine, and the fourth byte
+    // of each pixel is padding rather than alpha — libVLC's RV32 happens to
+    // leave 0xFF there and mpv's `bgr0` leaves 0. Read as PREMUL that makes
+    // every mpv pixel fully transparent, so a correctly decoded frame arrives,
+    // Skia composites nothing, and the pane is black with the frame counter
+    // climbing. OPAQUE tells Skia to ignore the byte, which is true of both.
+    private var info: ImageInfo = ImageInfo(0, 0, ColorType.BGRA_8888, ColorAlphaType.OPAQUE)
     private var rowBytes: Int = 0
 
     // The engine delivers RV32, which is BGRA in memory on a little-endian
@@ -85,7 +93,7 @@ internal class ComposeFrameSink : VlcVideoFrameSink {
     override fun format(width: Int, height: Int) {
         rowBytes = width * BYTES_PER_PIXEL
         pixels = ByteArray(rowBytes * height)
-        info = ImageInfo(width, height, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
+        info = ImageInfo(width, height, ColorType.BGRA_8888, ColorAlphaType.OPAQUE)
         FrameStats.format(width, height)
     }
 

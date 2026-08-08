@@ -135,3 +135,15 @@ mavenPublishing {
         signAllPublications()
     }
 }
+
+// Which engine the desktop gates run against, forwarded from the command line.
+//
+// In THIS file rather than the root's: `tasks.withType<Test>()` at the root
+// configures the root project's tasks, and the desktop gates are this
+// subproject's — so the flag was accepted, ignored, and the gate reported
+// "engine: mpv" while being asked for vlc.
+tasks.withType<Test>().configureEach {
+    for (name in listOf("nomercy.video.engine", "jna.library.path")) {
+        providers.gradleProperty(name).orNull?.let { value -> systemProperty(name, value) }
+    }
+}

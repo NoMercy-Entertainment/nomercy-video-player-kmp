@@ -22,7 +22,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.toPixelMap
 import kotlinx.coroutines.runBlocking
 import tv.nomercy.player.core.ports.LoadOptions
+import tv.nomercy.player.core.ports.FrameSourceBackend
+import tv.nomercy.player.core.ports.MpvVideoBackend
 import tv.nomercy.player.core.ports.VlcjVideoBackend
+import tv.nomercy.player.core.ports.VideoBackend
+import tv.nomercy.player.core.ports.engines.EngineSelection
+import tv.nomercy.player.core.ports.engines.VideoEngines
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -38,32 +43,46 @@ private const val POLL_MS = 50L
 // rather than a fill, everything downstream is Compose drawing an ImageBitmap,
 // which is not a thing that silently fails.
 //
-// Nothing is stubbed. Real libVLC decodes a real file through the real callback
-// surface into the real sink the composable draws from.
+// Nothing is stubbed. The REGISTRY's engine — mpv where its payload is present,
+// libVLC where it is not — decodes a real file through the real frame path into
+// the real sink the composable draws from.
+//
+// The engine used to be named here, which meant the desktop's own render gate
+// covered exactly one of the two engines that can draw on it. Pick the other
+// with -Dnomercy.video.engine to run the same gate against it.
 @OptIn(ExperimentalComposeUiApi::class)
 class DesktopRenderGateTest {
 
-    private fun requireVlc(): Boolean = VlcjVideoBackend.isAvailable()
+    // The engine the registry picks, or null with the reason printed. A gate
+    // that skips silently on a machine with no engine says the desktop works
+    // everywhere it was never run.
+    private fun engineOrSkip(): VideoBackend? = when (val decision = VideoEngines.select()) {
+        is EngineSelection.None -> {
+            println("skipped: ${decision.reason}")
+            null
+        }
+
+        is EngineSelection.Chosen -> {
+            println("engine: ${decision.provider.id}")
+            decision.provider.create()
+        }
+    }
 
     @Test
     fun aRealEngineDeliversRealFramesToTheComposeSink() {
-        if (!requireVlc()) {
-            println("skipped: ${VlcjVideoBackend.whyUnavailable()}")
-            return
-        }
+        val backend: VideoBackend = engineOrSkip() ?: return
 
         val media: File = writeTestVideo("${System.getProperty("java.io.tmpdir")}/nomercy-render-gate.y4m")
-        val backend = VlcjVideoBackend()
         val sink = ComposeFrameSink()
 
         try {
-            backend.embeddedPlayer.videoFrameSink(sink)
+            (backend as FrameSourceBackend).videoFrameSink(sink)
             runBlocking {
-                backend.load(media.toURI().toString(), LoadOptions())
+                backend.load(media.absolutePath, LoadOptions())
                 backend.play()
             }
 
-            // A picture, not merely a frame. libVLC's first callbacks can land
+            // A picture, not merely a frame. An engine's first callbacks can land
             // before it has decoded anything, so waiting for "a frame arrived"
             // would pass on a blank one and prove nothing.
             val frame: ImageBitmap = awaitPicture(sink)
@@ -74,7 +93,7 @@ class DesktopRenderGateTest {
 
             assertTrue(frame.width > 0 && frame.height > 0, "frame was ${frame.width}x${frame.height}")
         } finally {
-            backend.release()
+            releaseEngine(backend)
             media.delete()
         }
     }
@@ -111,6 +130,18 @@ class DesktopRenderGateTest {
         return seen.size
     }
 
+    // Neither engine declares release() on the contract — it is not a playback
+    // call and a consumer that never tears an engine down never needs it — so
+    // the gate names both rather than leaving a live engine and its threads
+    // behind for the next test to inherit.
+    private fun releaseEngine(backend: VideoBackend) {
+        when (backend) {
+            is MpvVideoBackend -> backend.release()
+            is VlcjVideoBackend -> backend.release()
+            else -> Unit
+        }
+    }
+
     private fun sample(width: Int, height: Int): Sequence<Pair<Int, Int>> = sequence {
         for (y in 0 until height step SAMPLE_STEP) {
             for (x in 0 until width step SAMPLE_STEP) {
@@ -121,25 +152,21 @@ class DesktopRenderGateTest {
 
     @Test
     fun theControlDrawsOverTheVideoRatherThanBehindIt() {
-        // The failure this whole approach exists to avoid. An embedded libVLC
-        // surface paints into its own native window, above everything the
-        // toolkit draws, and the play button would be underneath it —
+        // The failure this whole approach exists to avoid. An embedded native
+        // surface paints into its own window, above everything the toolkit
+        // draws, and the play button would be underneath it —
         // unclickable, and invisible on a black frame. Rendering the view and
         // finding control pixels in front of decoded video is what says the
         // compositing actually happened.
-        if (!requireVlc()) {
-            println("skipped: ${VlcjVideoBackend.whyUnavailable()}")
-            return
-        }
+        val backend: VideoBackend = engineOrSkip() ?: return
 
         val media: File = writeTestVideo("${System.getProperty("java.io.tmpdir")}/nomercy-composite-gate.y4m")
-        val backend = VlcjVideoBackend()
         val sink = ComposeFrameSink()
 
         try {
-            backend.embeddedPlayer.videoFrameSink(sink)
+            (backend as FrameSourceBackend).videoFrameSink(sink)
             runBlocking {
-                backend.load(media.toURI().toString(), LoadOptions())
+                backend.load(media.absolutePath, LoadOptions())
                 backend.play()
             }
             val video: ImageBitmap = awaitPicture(sink) ?: error("no video to composite over")
@@ -151,7 +178,7 @@ class DesktopRenderGateTest {
                 "the control is not in the composited output: the video is drawing over it",
             )
         } finally {
-            backend.release()
+            releaseEngine(backend)
             media.delete()
         }
     }
