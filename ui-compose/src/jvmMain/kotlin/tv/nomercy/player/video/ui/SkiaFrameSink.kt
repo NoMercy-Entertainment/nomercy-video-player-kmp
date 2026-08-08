@@ -34,7 +34,7 @@ import java.nio.ByteBuffer
 // controls the same way it composites everything else, and there is no Swing in
 // the window. It costs a copy per frame, which is the price of compositing at
 // all — but only a copy, and that is the whole subject of this file.
-internal class ComposeFrameSink : VideoFrameSink {
+internal class SkiaFrameSink : VideoFrameSink {
 
     /**
      * The frame Compose draws, republished on every one.

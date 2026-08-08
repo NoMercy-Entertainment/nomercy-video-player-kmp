@@ -60,9 +60,31 @@ kotlin {
             implementation(libs.compose.ui)
             implementation(libs.kotlinx.coroutines.core)
         }
-        androidMain.dependencies {
-            implementation(libs.androidx.media3.ui)
-            implementation(libs.androidx.media3.exoplayer)
+        // The frame path, shared by the two targets that have one.
+        //
+        // A software-decoded engine hands over a buffer of pixels and something
+        // has to turn that into an ImageBitmap every frame. The bitmap differs —
+        // Skia on the desktop, android.graphics on the phone — but the sink, the
+        // reuse discipline and the canvas that draws it do not, and the parts
+        // that went wrong invisibly here (the byte order, the stride, whether a
+        // reused bitmap repaints at all) are exactly the parts a second copy
+        // would get wrong again. Apple stays out of it: AVPlayer renders into a
+        // layer and has no frames to receive.
+        val jvmSharedMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.compose.runtime)
+                implementation(libs.compose.foundation)
+                implementation(libs.compose.ui)
+            }
+        }
+        jvmMain { dependsOn(jvmSharedMain) }
+        androidMain {
+            dependsOn(jvmSharedMain)
+            dependencies {
+                implementation(libs.androidx.media3.ui)
+                implementation(libs.androidx.media3.exoplayer)
+            }
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
