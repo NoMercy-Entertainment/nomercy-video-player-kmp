@@ -41,6 +41,13 @@ internal fun FrameCanvas(
     frame: ImageBitmap?,
     version: IntState,
     modifier: Modifier,
+    // Called from the DRAW phase with the frame number it just painted.
+    //
+    // The sink cannot know when a picture stops being needed — Compose keeps no
+    // hook for it — and guessing was a crash: the ImageBitmap wraps the Skia
+    // bitmap rather than copying it, so freeing one the renderer still holds
+    // reads freed memory. This is the report that makes freeing exact.
+    onPainted: (Int) -> Unit = {},
     scale: ContentScale = ContentScale.Fit,
 ) {
     // Black, because the alternative is the window's background showing through
@@ -71,7 +78,7 @@ internal fun FrameCanvas(
             Image(
                 bitmap = current,
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize().repaintOnEachFrame(version),
+                modifier = Modifier.fillMaxSize().repaintOnEachFrame(version, onPainted),
                 contentScale = scale,
             )
         }
@@ -92,8 +99,12 @@ internal fun FrameCanvas(
  * every frame would rebuild the painter and re-measure the layout to arrive at
  * the same size it already was.
  */
-private fun Modifier.repaintOnEachFrame(version: IntState): Modifier =
+private fun Modifier.repaintOnEachFrame(version: IntState, onPainted: (Int) -> Unit): Modifier =
     drawWithContent {
-        FrameStats.painted(version.intValue)
+        val painted: Int = version.intValue
+        FrameStats.painted(painted)
         drawContent()
+        // AFTER the content, so the picture has been handed to the renderer
+        // before anything older than it is released.
+        onPainted(painted)
     }

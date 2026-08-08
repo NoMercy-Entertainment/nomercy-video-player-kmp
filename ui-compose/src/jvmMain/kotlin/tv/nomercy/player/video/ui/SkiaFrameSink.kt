@@ -105,6 +105,17 @@ internal class SkiaFrameSink : VideoFrameSink {
     override fun clear() {
         frame.value = null
         version.value += 1
+
+        // Both of them, because an item change is where a whole picture's worth
+        // of native memory would otherwise sit until the next film happened to
+        // publish two frames. `displayed` is dropped without closing: the canvas
+        // may still hold the ImageBitmap wrapping it for one more draw, and
+        // closing a bitmap out from under a live draw crashes the renderer
+        // rather than throwing anything catchable.
+        // Every one of them. The canvas has been told there is nothing to draw,
+        // so nothing it holds can be painted again.
+        held.forEach { (_, bitmap) -> bitmap.close(); closed += 1 }
+        held.clear()
     }
 
     // The buffer is libVLC's and it reuses it, so the frame has to be copied out
@@ -152,6 +163,7 @@ internal class SkiaFrameSink : VideoFrameSink {
         // copies a MUTABLE bitmap, which would put a full-frame allocation back,
         // this time on the render thread.
         val next = Bitmap()
+        allocated += 1
         next.installPixels(info, pixels, rowBytes)
         next.setImmutable()
 
@@ -159,7 +171,69 @@ internal class SkiaFrameSink : VideoFrameSink {
         // allocates a second bitmap and blits the picture into it, and using it
         // here is what once made the desktop a slideshow.
         frame.value = next.asComposeImageBitmap()
+
+        // Held until the canvas says it has drawn past them.
+        //
+        // installPixels copies into a native pixel ref — eight megabytes for
+        // 1080p, thirty-three for 4K — and a Skia Bitmap frees that only when
+        // its Java wrapper is collected. The wrapper is a few dozen bytes, so
+        // the heap barely moves, the collector never sees a reason to run, and
+        // the native side climbs without limit: twenty gigabytes and a frozen
+        // machine.
+        //
+        // Freeing on a frame count instead was a crash, not a fix.
+        // asComposeImageBitmap WRAPS the Bitmap rather than copying it, so a
+        // closed bitmap leaves the render thread reading freed memory —
+        // EXCEPTION_ACCESS_VIOLATION outside the JVM, which no catch reaches.
+        // Two frames of slack looked like plenty and is still a race.
+        //
+        // So nothing is guessed: [drawn] is called from the draw phase with the
+        // version it painted, and only frames the canvas has already moved past
+        // are released.
+        held += version.value + 1 to next
     }
+
+    /**
+     * The canvas reporting which frame it has painted.
+     *
+     * Everything older than that is unreachable — the canvas draws one frame at
+     * a time and never goes back — so this is the only moment at which freeing
+     * a picture is provably safe rather than probably safe.
+     */
+    fun drawn(painted: Int) {
+        val iterator = held.iterator()
+        while (iterator.hasNext()) {
+            val (published, bitmap) = iterator.next()
+            if (published >= painted) continue
+
+            bitmap.close()
+            closed += 1
+            iterator.remove()
+        }
+    }
+
+    // The two bitmaps behind the one being published. Not a pool being reused —
+    // Compose caches the Skia image it derives against the ImageBitmap INSTANCE,
+    // so refilling one already published is a picture that stops moving while
+    // every counter climbs. These are kept only so they can be freed.
+    // Published frames the canvas has not yet reported painting past, newest
+    // last. Bounded in practice by how far the renderer trails the decoder,
+    // which is one or two frames.
+    private val held: MutableList<Pair<Int, Bitmap>> = mutableListOf()
+
+    // How many decoded pictures this sink is still holding native memory for.
+    //
+    // A count rather than a byte total, because a byte total measures the
+    // collector's mood — it may free nothing and still be correct — while the
+    // number of undead bitmaps is exactly what went wrong and is exact.
+    internal fun liveBitmaps(): Int = allocated - closed
+
+    // Counted at the two places that change it rather than derived from the two
+    // references, because the references are bounded by construction and a test
+    // reading them could never go red — which is the shape of check that let
+    // this ship.
+    private var allocated: Int = 0
+    private var closed: Int = 0
 
     private companion object {
         const val BYTES_PER_PIXEL = 4

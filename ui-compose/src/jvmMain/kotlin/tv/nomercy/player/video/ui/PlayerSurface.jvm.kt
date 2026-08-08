@@ -47,6 +47,7 @@ public actual fun PlayerSurface(
     FrameCanvas(
         frame = surface.sink.frame.value,
         version = surface.sink.version,
+        onPainted = surface.sink::drawn,
         modifier = modifier.onSizeChanged { size ->
             surface.backend?.surfaceSize(size.width, size.height)
         },

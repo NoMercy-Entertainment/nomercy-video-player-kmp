@@ -37,4 +37,16 @@ internal expect class ComposeFrameSink() : VideoFrameSink {
      * nothing repaints unless something it IS watching moves.
      */
     val version: MutableIntState
+
+    /**
+     * The canvas reporting the frame number it has painted.
+     *
+     * Declared for both platforms although only one has anything to do with it:
+     * the desktop sink allocates a native picture per frame and this is the only
+     * moment at which releasing an older one is provably safe, while Android
+     * refills one bitmap and has nothing to release. A platform-specific call
+     * site would mean the canvas knowing which sink it has, which is the coupling
+     * this expect/actual pair exists to remove.
+     */
+    fun drawn(painted: Int)
 }

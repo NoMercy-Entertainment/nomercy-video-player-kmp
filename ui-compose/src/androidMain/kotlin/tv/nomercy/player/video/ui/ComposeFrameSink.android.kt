@@ -90,4 +90,10 @@ internal actual class ComposeFrameSink actual constructor() : VideoFrameSink {
     private companion object {
         const val BYTES_PER_PIXEL = 4
     }
+    // Nothing to release: one bitmap is refilled for the whole of a playback,
+    // so there is no pile of decoded pictures waiting for somebody to free them.
+    @Suppress("EmptyFunctionBlock")
+    actual fun drawn(painted: Int) {
+    }
+
 }

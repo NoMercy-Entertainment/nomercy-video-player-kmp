@@ -33,12 +33,9 @@ public actual class VideoSurface internal constructor(
     public val exoPlayer: ExoPlayer?,
 ) {
 
-    // Android's own sink, not the desktop's. That one is Skia, which Compose on
-    // Android does not draw through, and it asks the engine for BGRA where an
-    // ARGB_8888 bitmap wants RGBA.
-    internal val sink: AndroidFrameSink? =
+    internal val sink: ComposeFrameSink? =
         (backend as? FrameSourceBackend)?.let { source ->
-            AndroidFrameSink().also(source::videoFrameSink)
+            ComposeFrameSink().also(source::videoFrameSink)
         }
 }
 
