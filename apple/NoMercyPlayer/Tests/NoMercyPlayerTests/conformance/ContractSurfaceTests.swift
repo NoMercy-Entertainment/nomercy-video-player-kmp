@@ -29,6 +29,21 @@ final class ContractSurfaceTests: XCTestCase {
         let errors: [String]
     }
 
+    // Codes a native stack raises and a browser has no counterpart for, waived
+    // by name. The Kotlin gate in core keeps the same list for the same reason;
+    // this is its Apple half rather than a second opinion, and the file says so.
+    private struct NativeOnly: Decodable {
+        let codes: Set<String>
+    }
+
+    private func nativeOnly() throws -> NativeOnly {
+        let url = try XCTUnwrap(
+            Bundle.module.url(forResource: "native-only-errors", withExtension: "json"),
+            "the native-only waiver is not in the test bundle — check Package.swift resources"
+        )
+        return try JSONDecoder().decode(NativeOnly.self, from: Data(contentsOf: url))
+    }
+
     private func contract() throws -> Contract {
         let url = try XCTUnwrap(
             Bundle.module.url(forResource: "contract", withExtension: "json"),
@@ -70,9 +85,22 @@ final class ContractSurfaceTests: XCTestCase {
 
     func testTheFrameworkInventsNoErrorCode() throws {
         let documented = Set(try contract().errors)
-        let stray = Set(ContractSurfaceExport.shared.errorCodes).subtracting(documented)
+        let stray = Set(ContractSurfaceExport.shared.errorCodes)
+            .subtracting(documented)
+            .subtracting(try nativeOnly().codes)
 
         XCTAssertTrue(stray.isEmpty, "error codes no other client recognises: \(stray.sorted())")
+    }
+
+    func testEveryWaivedCodeIsStillOneTheFrameworkRaises() throws {
+        // The waiver is the dangerous half of the gate above: a list that grows
+        // quietly turns "invents nothing" into "invents whatever is listed". A
+        // code the framework no longer declares has no business being excused,
+        // and a waiver nobody deletes is how the next invention gets in.
+        let declared = Set(ContractSurfaceExport.shared.errorCodes)
+        let orphaned = try nativeOnly().codes.subtracting(declared)
+
+        XCTAssertTrue(orphaned.isEmpty, "waived and then never raised — delete these: \(orphaned.sorted())")
     }
 
     func testTheCatalogueIsActuallyPopulated() {

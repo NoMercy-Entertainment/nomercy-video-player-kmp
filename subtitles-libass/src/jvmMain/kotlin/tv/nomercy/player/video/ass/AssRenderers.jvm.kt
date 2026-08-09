@@ -35,7 +35,20 @@ public actual object AssRenderers {
 
     public actual fun create(context: AssPlatformContext): AssRenderer? {
         val lib: LibAss = loaded() ?: return null
-        val library = lib.ass_library_init() ?: return null
+
+        // Recorded, not swallowed. A library that loads and then refuses to
+        // initialise made these two methods contradict each other: create()
+        // answered null while whyUnavailable() answered "nothing is wrong",
+        // so every caller -- the gates included -- got a renderer that does not
+        // exist on a platform reporting itself fine, and no sentence saying
+        // why. It is a real state: the DLL is present and its dependencies
+        // resolve, and libass still declines, which is a different fix from a
+        // missing package.
+        val library = lib.ass_library_init() ?: run {
+            initFailure = "libass loaded from ${loadedFrom ?: "an unrecorded path"} " +
+                "and ass_library_init returned nothing"
+            return null
+        }
         return NativeAssRenderer(lib, library, DESKTOP_GLYPH_MAX, DESKTOP_BITMAP_CACHE_MEGABYTES)
     }
 
@@ -47,13 +60,19 @@ public actual object AssRenderers {
     // manager when the actual answer was a 404 on the archive. The distinction
     // is the whole diagnosis, and it was being thrown away.
     public actual fun whyUnavailable(): String? {
-        if (loaded() != null) return null
+        if (loaded() != null) return initFailure
         return NativeRuntimes.whyUnavailable(NativeRuntimeKind.LIB_ASS)
             ?.let { payload -> "$payload (and no system libass: $loadFailure)" }
             ?: loadFailure
     }
 
     private var loadFailure: String? = null
+
+    // Set when the library is there and libass still will not start, and named
+    // in the message so the reader knows which copy declined.
+    private var initFailure: String? = null
+
+    private var loadedFrom: String? = null
 
     // Loaded once and remembered. JNA reports a missing library by throwing from
     // the load itself, and letting that escape a question like "is this
@@ -94,7 +113,7 @@ public actual object AssRenderers {
 
     @Suppress("TooGenericExceptionCaught")
     private fun attempt(location: String): LibAss? = try {
-        Native.load(location, LibAss::class.java)
+        Native.load(location, LibAss::class.java).also { loadedFrom = location }
     } catch (missing: UnsatisfiedLinkError) {
         recordFailure("libass is not installed on this machine", missing.message)
         null

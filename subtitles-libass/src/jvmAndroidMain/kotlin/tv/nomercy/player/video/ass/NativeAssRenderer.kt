@@ -201,7 +201,14 @@ internal class NativeAssRenderer(
         val created: Pointer = lib.ass_renderer_init(library) ?: return null
         // Not optional. Without a font provider libass renders nothing, and
         // every other call still succeeds.
-        lib.ass_set_fonts(created, null, "sans-serif", FONT_PROVIDER_AUTODETECT, null, 1)
+        // The carried face as the fallback, and the system provider on top of it.
+        //
+        // A machine whose provider answers nothing renders every cue as no
+        // glyphs at all, silently. Passing a path here is what makes the
+        // difference: with it, all three render gates draw; without it they
+        // fail with "failed to find any fallback with glyph 0x0" on a box
+        // where fontconfig resolves the same family perfectly at the shell.
+        lib.ass_set_fonts(created, FallbackFont.path, "sans-serif", FONT_PROVIDER_AUTODETECT, null, 1)
 
         // Before anything is drawn. libass defaults to 128MB of bitmap cache,
         // which is a number chosen for a desktop with headroom to spare — and

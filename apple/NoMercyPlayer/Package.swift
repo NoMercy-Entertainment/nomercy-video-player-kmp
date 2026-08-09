@@ -66,6 +66,7 @@ let package = Package(
             resources: [
                 .copy("conformance/Resources/contract.json"),
                 .copy("conformance/Resources/scenarios.json"),
+                .copy("conformance/Resources/native-only-errors.json"),
             ]
         ),
     ]

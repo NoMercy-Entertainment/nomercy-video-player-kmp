@@ -121,16 +121,30 @@ class JvmAssRenderGateTest {
         val renderer: AssRenderer = rendererOrSkip() ?: return
         renderer.release()
 
-        val named: List<AssImage> = draw(SKELETON_FONT)
-        val other: List<AssImage> = draw("Courier New")
+        // Both faces attached here, by name, rather than asked of the machine.
+        //
+        // This used to name two fonts it hoped were installed. On a host with a
+        // fallback and nothing else -- which is every CI machine, and the whole
+        // reason the library carries one -- every name resolves to the one face
+        // it has, so the two renders are identical and the assertion fails while
+        // the product is behaving exactly as designed. Worse in the other
+        // direction: on a developer's machine with both fonts present it passes
+        // without ever proving the request reached libass rather than the OS.
+        //
+        // Two embedded faces with obviously different shapes settle it with no
+        // opinion from the host at all.
+        val serifRender: List<AssImage> = draw(SERIF_FACE)
+        val sansRender: List<AssImage> = draw(SANS_FACE)
 
-        assertTrue(named.isNotEmpty() && other.isNotEmpty(), "one of the renders drew nothing")
-        assertTrue(named != other, "asking for a different font changed nothing")
+        assertTrue(serifRender.isNotEmpty() && sansRender.isNotEmpty(), "one of the renders drew nothing")
+        assertTrue(serifRender != sansRender, "asking for a different font changed nothing")
     }
 
     private fun draw(font: String): List<AssImage> {
         val renderer: AssRenderer = AssRenderers.create(AssPlatformContext()) ?: return emptyList()
         try {
+            renderer.addFont(SANS_FACE, faceBytes("TestFaceSans.ttf"))
+            renderer.addFont(SERIF_FACE, faceBytes("TestFaceSerif.ttf"))
             renderer.frameSize(FRAME_WIDTH, FRAME_HEIGHT)
             renderer.loadTrack(skeletonAss(font))
             return renderer.render(INSIDE_CUE_MILLIS)?.images.orEmpty()
@@ -138,4 +152,15 @@ class JvmAssRenderGateTest {
             renderer.release()
         }
     }
+
+    private fun faceBytes(name: String): ByteArray =
+        assertNotNull(
+            javaClass.getResourceAsStream(name),
+            "the test face $name is not on the test classpath",
+        ).use { it.readBytes() }
 }
+
+// DejaVu Sans and DejaVu Serif, under the Bitstream Vera licence. Test
+// resources: they are on the test classpath and in no published artifact.
+private const val SANS_FACE = "DejaVu Sans"
+private const val SERIF_FACE = "DejaVu Serif"
