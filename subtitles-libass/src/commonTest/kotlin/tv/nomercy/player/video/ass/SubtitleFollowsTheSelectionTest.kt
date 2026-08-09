@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.ass
 
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.events.CoreEvents
@@ -38,13 +40,15 @@ class SubtitleFollowsTheSelectionTest {
     @Test
     fun choosingTheStyledTrackAgainBringsItBack() = runTest {
         val player = play()
-        val plugin = SubtitlePlugin(RecordingRenderer())
+        val plugin = SubtitlePlugin(RecordingRenderer()).also { it.dispatcher = StandardTestDispatcher(testScheduler) }
         player.addPlugin(plugin)
         announceTracks(player)
 
         select(player, index = 1)
         select(player, index = null)
         select(player, index = 1)
+
+        advanceUntilIdle()
 
         assertEquals(ASS_URL, plugin.subtitle())
     }
@@ -52,12 +56,14 @@ class SubtitleFollowsTheSelectionTest {
     @Test
     fun choosingTheWebvttTrackTakesTheStyledOneDown() = runTest {
         val player = play()
-        val plugin = SubtitlePlugin(RecordingRenderer())
+        val plugin = SubtitlePlugin(RecordingRenderer()).also { it.dispatcher = StandardTestDispatcher(testScheduler) }
         player.addPlugin(plugin)
         announceTracks(player)
 
         select(player, index = 1)
         select(player, index = 0)
+
+        advanceUntilIdle()
 
         assertNull(plugin.subtitle(), "a WebVTT selection left the styled track drawn")
     }
@@ -65,12 +71,14 @@ class SubtitleFollowsTheSelectionTest {
     @Test
     fun turningCaptionsOffTakesItDown() = runTest {
         val player = play()
-        val plugin = SubtitlePlugin(RecordingRenderer())
+        val plugin = SubtitlePlugin(RecordingRenderer()).also { it.dispatcher = StandardTestDispatcher(testScheduler) }
         player.addPlugin(plugin)
         announceTracks(player)
 
         select(player, index = 1)
         select(player, index = null)
+
+        advanceUntilIdle()
 
         assertNull(plugin.subtitle())
     }

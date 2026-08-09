@@ -15,6 +15,7 @@ import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.FetchResponse
 import tv.nomercy.player.video.subtitles.AssFontNames
 import tv.nomercy.player.video.subtitles.FontManifest
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -103,13 +104,29 @@ public class SubtitlePlugin(
      * track, which is what turning captions off means.
      */
     public suspend fun clear() {
+        currentSubtitleUrl = null
+        clearTrack()
+    }
+
+    // The teardown without the bookkeeping, for the caller that has already
+    // recorded what is wanted.
+    //
+    // `clear()` used to write the url null AFTER awaiting the native lock, and
+    // that write is a claim about the present made by a coroutine that started
+    // in the past. Turning captions off and straight back on: the teardown
+    // reached the lock, the reselection wrote the styled url, the teardown
+    // finished and set null over it, and the reconcile that would have loaded
+    // the track then read a url that no longer matched its own target and did
+    // nothing. Captions off then on left the screen dark and the menu ticking
+    // nothing -- the same defect this class was written for, arriving through
+    // the one door it did not cover.
+    private suspend fun clearTrack() {
         nativeLock.withLock {
             renderer.clearFonts()
             // An empty track is how this renderer is told to draw nothing;
             // there is no separate reset on the contract.
             renderer.loadTrack("")
         }
-        currentSubtitleUrl = null
         loadedFonts = emptyList()
     }
 
@@ -222,7 +239,7 @@ public class SubtitlePlugin(
                 // The last word wins. An older reconcile that waited its turn
                 // must not undo the selection made while it waited.
                 if (currentSubtitleUrl != target) return@withLock
-                if (target == null) clear() else load(target, manifestUrl)
+                if (target == null) clearTrack() else loadTrack(target, manifestUrl)
             }
         }
     }
@@ -238,15 +255,41 @@ public class SubtitlePlugin(
     // and nothing reports a problem.
     private var manifestUrl: String? = null
 
+    // Where the reconcile coroutines run.
+    //
+    // Settable, and internal rather than a constructor parameter: a parameter
+    // would change the public constructor for every consumer to serve a
+    // question only this module's own tests ask, and the dump says so — the
+    // signature moves and every compiled call site with it.
+    //
+    // It has to be settable at all because Dispatchers.Default is a scheduler no
+    // test can drive. The selection tests emitted, asserted, and were right only
+    // if the launched work happened to have run by then; that landed badly about
+    // one CI run in five, on a different assertion each time, which is what a
+    // race looks like from the outside. Given the test dispatcher,
+    // `advanceUntilIdle()` means what it says.
+    internal var dispatcher: CoroutineDispatcher = Dispatchers.Default
+
+    // Built on first use, so setting the dispatcher before the first event is
+    // enough. Constructing it eagerly would capture Dispatchers.Default before a
+    // test could say otherwise, which is the whole point of the property.
+    //
     // Launched rather than called: clear() suspends because it enters libass
     // under the lock, and an event listener that could suspend would colour
     // every emitter on this bus.
-    private val pluginScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val pluginScope: CoroutineScope by lazy { CoroutineScope(SupervisorJob() + dispatcher) }
 
     private var currentSubtitleUrl: String? = null
 
     public suspend fun load(subtitleUrl: String, fontManifestUrl: String?): Boolean {
         currentSubtitleUrl = subtitleUrl
+        return loadTrack(subtitleUrl, fontManifestUrl)
+    }
+
+    // The load without the bookkeeping. Same reason as [clearTrack]: what is
+    // wanted is decided before the work starts, and a coroutine that has been
+    // waiting has nothing current to say about it.
+    private suspend fun loadTrack(subtitleUrl: String, fontManifestUrl: String?): Boolean {
         // Remembered, so a reselection inside the same film reloads with the
         // faces the consumer named rather than without them.
         manifestUrl = fontManifestUrl
