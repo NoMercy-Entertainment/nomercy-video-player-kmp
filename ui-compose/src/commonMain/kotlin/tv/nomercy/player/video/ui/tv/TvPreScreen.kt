@@ -42,6 +42,12 @@ public fun TvPreScreen(
     callbacks: TvChromeCallbacks,
     strings: TvChromeStrings,
     onOpen: (TvDialog) -> Unit,
+    // Both go through the controller rather than straight to the engine.
+    // Starting playback is only half of what these rows mean; the other half is
+    // this screen getting out of the way, and a row wired to `callbacks::play`
+    // did the first and never the second.
+    onResume: () -> Unit,
+    onRestart: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val resume: FocusRequester = remember { FocusRequester() }
@@ -62,9 +68,9 @@ public fun TvPreScreen(
             BasicText(text = subtitle, style = TextStyle(color = Color.LightGray, fontSize = SUBTITLE_SIZE))
         }
 
-        TvMenuItem(label = strings.resume, focusRequester = resume, onSelect = callbacks::play)
+        TvMenuItem(label = strings.resume, focusRequester = resume, onSelect = onResume)
 
-        TvMenuItem(label = strings.restart, onSelect = callbacks::restart)
+        TvMenuItem(label = strings.restart, onSelect = onRestart)
 
         // Only where there is more than one. A film with a single entry showing
         // an episode list is a row that opens onto itself.

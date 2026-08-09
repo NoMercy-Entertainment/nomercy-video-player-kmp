@@ -127,6 +127,8 @@ private fun TvChromeLayers(ui: TvChromeUi, scene: TvScene) {
             callbacks = scene.controller.callbacks,
             strings = scene.strings,
             onOpen = scene.controller::openDialog,
+            onResume = scene.controller::resume,
+            onRestart = scene.controller::restart,
             modifier = Modifier.tvSafeArea(),
         )
     }

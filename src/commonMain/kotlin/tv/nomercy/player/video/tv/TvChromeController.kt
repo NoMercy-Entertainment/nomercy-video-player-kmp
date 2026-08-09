@@ -225,6 +225,28 @@ public class TvChromeController(
         state.value = state.value.copy(preScreenVisible = false)
     }
 
+    /**
+     * Resume from the pre-screen: start playing AND get out of the way.
+     *
+     * The two halves have to happen together and did not. The menu's Resume row
+     * called `callbacks.play()` directly, so the film started — media session
+     * PLAYING, playhead advancing, audio in the room — behind a menu that never
+     * moved. [dismissPreScreen] existed the whole time and nothing called it.
+     *
+     * Measured on a Nokia Streaming Box: position advancing past 34 seconds with
+     * the start menu still filling the screen and no picture ever shown.
+     */
+    public fun resume() {
+        callbacks.play()
+        dismissPreScreen()
+    }
+
+    /** The same for Restart, which had the same half of the job missing. */
+    public fun restart() {
+        callbacks.restart()
+        dismissPreScreen()
+    }
+
     public fun commitSeek(toSeconds: Float) {
         callbacks.seek(toSeconds)
         callbacks.overrideTime(null)

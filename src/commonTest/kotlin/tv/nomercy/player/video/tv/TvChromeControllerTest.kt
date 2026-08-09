@@ -66,6 +66,33 @@ class TvChromeControllerTest {
         return controller
     }
 
+    // Both halves, because doing one of them is what shipped.
+    //
+    // Resume called the engine directly and never touched the chrome, so the
+    // film started behind a menu that stayed on screen: measured on a Nokia
+    // Streaming Box as a media session PLAYING with the position past thirty
+    // seconds and no picture ever drawn. A test on `play` alone stays green
+    // through exactly that.
+    @Test
+    fun resumingFromTheStartMenuPlaysAndClosesIt() {
+        val controller = TvChromeController(callbacks, scheduler, playing = false, startOnPreScreen = true)
+
+        controller.resume()
+
+        assertEquals(listOf("play"), callbacks.calls)
+        assertFalse(controller.ui.value.preScreenVisible, "the start menu stayed up over a film that was playing")
+    }
+
+    @Test
+    fun restartingFromTheStartMenuAlsoClosesIt() {
+        val controller = TvChromeController(callbacks, scheduler, playing = false, startOnPreScreen = true)
+
+        controller.restart()
+
+        assertEquals(listOf("restart"), callbacks.calls)
+        assertFalse(controller.ui.value.preScreenVisible, "the start menu stayed up over a film that was playing")
+    }
+
     @Test
     fun asidewaysPressStartsScrubbingAndStopsTheFilm() {
         // Letting it run while somebody hunts for a moment turns a careful search
