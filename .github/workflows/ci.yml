@@ -138,8 +138,14 @@ jobs:
       # libmpv payload out of the Homebrew keg. Without mpv here the payload
       # step fails with "no libmpv.dylib under /opt/homebrew/opt/mpv/lib",
       # which names a path rather than a missing dependency.
+      # By absolute path. The runner is a launchd service, not a login shell,
+      # so /opt/homebrew/bin is not on its PATH and `brew` was `command not
+      # found` — the job failed on the step that installs a dependency rather
+      # than on anything it was meant to check.
       - name: Install mpv
-        run: brew list mpv >/dev/null 2>&1 || brew install mpv
+        run: |
+          brew=/opt/homebrew/bin/brew
+          $brew list mpv >/dev/null 2>&1 || $brew install mpv
 
       # The Kotlin/Native toolchain and its prebuilt platform libraries.
       #
@@ -217,7 +223,7 @@ jobs:
           # /opt/homebrew/opt/mpv/lib".
           - name: macos
             runner: [self-hosted, macOS, ARM64, xcode]
-            install: brew install libass mpv
+            install: "yes"
             require: "1"
           - name: windows
             runner: [self-hosted, Windows, X64]
@@ -247,7 +253,9 @@ jobs:
       # manager run against a box other jobs are using.
       - name: Install libass
         if: matrix.install != ''
-        run: brew list libass >/dev/null 2>&1 && brew list mpv >/dev/null 2>&1 || ${{ matrix.install }}
+        run: |
+          brew=/opt/homebrew/bin/brew
+          $brew list libass >/dev/null 2>&1 && $brew list mpv >/dev/null 2>&1 || $brew install libass mpv
 
       - name: Desktop subtitle gate
         working-directory: packages-native/nomercy-video-player-kmp
