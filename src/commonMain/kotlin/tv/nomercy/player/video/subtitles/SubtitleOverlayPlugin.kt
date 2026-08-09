@@ -48,7 +48,7 @@ public open class SubtitleOverlayPlugin(
         override val id: String = "subtitle-overlay"
 
         // Two, matching the web plugin this mirrors.
-        override val version: String = "2.0.0"
+        override val version: String = "1.0.0"
     }
 
     override val manifest: PluginManifest get() = Manifest

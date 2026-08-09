@@ -19,7 +19,8 @@ import tv.nomercy.player.video.NMVideoPlayer
 // than not having one.
 @Composable
 internal fun HoldChromePlugin(player: NMVideoPlayer, controller: ChromeController) {
-    val plugin: DesktopUiPlugin? = remember(player) { player.getPlugin(DesktopUiPlugin.id) as? DesktopUiPlugin }
+    val plugin: VideoUiPlugin? =
+        remember(player) { player.getPlugin(VideoUiPlugin.id) as? VideoUiPlugin }
     DisposableEffect(plugin, controller) {
         plugin?.controller = controller
         onDispose { if (plugin?.controller === controller) plugin?.controller = null }

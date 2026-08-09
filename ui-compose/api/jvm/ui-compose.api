@@ -623,34 +623,6 @@ public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoC
 	public final fun getLambda$1091680879$ui_compose ()Lkotlin/jvm/functions/Function2;
 }
 
-public final class tv/nomercy/player/video/ui/chrome/DesktopUiPlugin : tv/nomercy/player/core/plugin/Plugin {
-	public static final field $stable I
-	public static final field Manifest Ltv/nomercy/player/video/ui/chrome/DesktopUiPlugin$Manifest;
-	public fun <init> ()V
-	public final fun addOverlay (Lkotlin/jvm/functions/Function2;)V
-	public fun dispose ()V
-	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
-	public synthetic fun getOptions ()Ljava/lang/Object;
-	public fun getOptions ()Lkotlin/Unit;
-	public final fun hideChrome ()V
-	public final fun holdChrome ()V
-	public final fun overlay ()Ljava/util/List;
-	public final fun releaseChrome ()V
-	public final fun removeOverlay (Lkotlin/jvm/functions/Function2;)V
-	public final fun showChrome ()V
-}
-
-public final class tv/nomercy/player/video/ui/chrome/DesktopUiPlugin$Manifest : tv/nomercy/player/core/plugin/PluginManifest {
-	public fun getContributions ()Ljava/util/List;
-	public fun getId ()Ljava/lang/String;
-	public fun getMinCoreVersion ()Ljava/lang/String;
-	public fun getPriority ()I
-	public fun getReplaces ()Ljava/util/List;
-	public fun getRequires ()Ljava/util/List;
-	public fun getTranslations ()Ljava/util/Map;
-	public fun getVersion ()Ljava/lang/String;
-}
-
 public final class tv/nomercy/player/video/ui/chrome/PlaybackErrorMessage {
 	public static final field $stable I
 	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/PlaybackErrorMessage;
@@ -895,14 +867,22 @@ public class tv/nomercy/player/video/ui/chrome/VideoUiPlugin : tv/nomercy/player
 	public static final field Manifest Ltv/nomercy/player/video/ui/chrome/VideoUiPlugin$Manifest;
 	public fun <init> (Ltv/nomercy/player/video/ui/chrome/VideoUiOptions;)V
 	public fun Content (Ltv/nomercy/player/video/NMVideoPlayer;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;I)V
+	public final fun addOverlay (Lkotlin/jvm/functions/Function2;)V
+	public fun dispose ()V
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Ltv/nomercy/player/video/ui/chrome/VideoUiOptions;
 	public fun handleBack ()Z
+	public final fun hideChrome ()V
 	public fun hidePreScreen ()V
+	public final fun holdChrome ()V
 	public fun isPreScreenVisible ()Z
 	public final fun onBackPressed (Lkotlin/jvm/functions/Function0;)V
 	public fun optionFields ()Ljava/util/List;
+	public final fun overlay ()Ljava/util/List;
+	public final fun releaseChrome ()V
+	public final fun removeOverlay (Lkotlin/jvm/functions/Function2;)V
+	public final fun showChrome ()V
 	public fun showPreScreen ()V
 }
 
