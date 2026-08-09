@@ -38,6 +38,20 @@ import tv.nomercy.player.video.subtitles.AssSurfaceFrame
 internal actual class AssPictureSurface actual constructor() {
 
     private var buffers: Array<ByteArray> = emptyArray()
+
+    // One Skia bitmap per compositor slot, for the same reason there is one
+    // byte buffer per slot: a fresh Bitmap() every frame is a NATIVE allocation
+    // per frame, and at display rate that is where the desktop's memory went —
+    // 1080p subtitles sawtoothing between 0.9 and 2.2 GB while the byte buffers
+    // beside them were being reused correctly. Skia's cleaner reclaims them
+    // eventually, and eventually is not fast enough at sixty a second.
+    //
+    // Per SLOT rather than one shared: asComposeImageBitmap WRAPS the bitmap,
+    // so the composition may still be painting the previous frame. A slot only
+    // comes back round every other frame, which is exactly the guarantee that
+    // makes rewriting its pixels safe — the same guarantee the byte buffers
+    // already rely on.
+    private var bitmaps: Array<Bitmap> = emptyArray()
     private var generation: Int = -1
     private var width: Int = 0
     private var height: Int = 0
@@ -60,7 +74,7 @@ internal actual class AssPictureSurface actual constructor() {
         }
 
         val info = ImageInfo(frameWidth, frameHeight, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
-        val bitmap = Bitmap()
+        val bitmap: Bitmap = bitmaps[frame.slot]
         bitmap.installPixels(info, bytes, frameWidth * BYTES_PER_PIXEL)
 
         return bitmap.asComposeImageBitmap()
@@ -75,6 +89,12 @@ internal actual class AssPictureSurface actual constructor() {
         width = frameWidth
         height = frameHeight
         buffers = Array(BUFFER_COUNT) { ByteArray(frameWidth * frameHeight * BYTES_PER_PIXEL) }
+
+        // The old ones go with their buffers. Closed rather than dropped: a
+        // Skia bitmap holds native memory that the JVM heap does not account
+        // for, so leaving them to the cleaner is what this change is undoing.
+        bitmaps.forEach { old -> old.close() }
+        bitmaps = Array(BUFFER_COUNT) { Bitmap() }
         return true
     }
 
