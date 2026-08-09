@@ -43,7 +43,15 @@ jobs:
       # runner means the whole desktop subtitle surface is untested while the
       # build stays green. Installing it is what turns that skip into a check.
       - name: Install libass
-        run: sudo apt-get update && sudo apt-get install -y libass9
+        # Fonts as well as the library. libass rasterises GLYPHS, and a bare
+        # runner has none — so the render gate asked for "Courier New", got
+        # nothing, asked for a sans fallback, got nothing, and failed on the two
+        # being identical. Liberation is metric-compatible with the Microsoft
+        # families the fixtures name, which is what makes those two differ here
+        # the way they differ on a real machine.
+        run: >-
+          sudo apt-get update &&
+          sudo apt-get install -y libass9 fontconfig fonts-liberation fonts-dejavu-core
 
       # First, and on its own, because drift from the ecosystem contract is the
       # one failure whose cause is not in this repo's diff. Named, so a red run

@@ -235,9 +235,11 @@ internal const val FONT_PROVIDER_AUTODETECT: Int = 1
 private const val APPLE_GLYPH_MAX: Int = 4_000
 private const val APPLE_BITMAP_CACHE_MEGABYTES: Int = 1
 
-    private companion object {
-        // Every ASS header ends well inside this; [Events] on the densest track
-        // here is line 40.
-        const val HEADER_LINES = 200
-    }
-}
+// Every ASS header ends well inside this; [Events] on the densest track here is
+// line 40.
+//
+// A top-level constant beside its neighbours. It was a `private companion
+// object` sitting OUTSIDE the class it belonged to, which is a syntax error —
+// and one only macOS could see, because appleMain compiles nowhere else. It
+// reached CI as "Name expected" and had never failed a local build.
+private const val HEADER_LINES: Int = 200
