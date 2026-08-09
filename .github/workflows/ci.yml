@@ -49,9 +49,20 @@ jobs:
         # being identical. Liberation is metric-compatible with the Microsoft
         # families the fixtures name, which is what makes those two differ here
         # the way they differ on a real machine.
+        #
+        # fc-cache afterwards, and fc-match to prove it. Installing font
+        # PACKAGES is not the same as fontconfig being able to find them: the
+        # cue names "Skeleton Sans", which exists nowhere on purpose, so every
+        # one of these gates depends on the fallback resolving. On a runner with
+        # no cache built there is nothing to fall back to, libass lays the cue
+        # out and rasterises no glyphs, and the failure reads as a broken
+        # renderer rather than as a machine with no fonts.
         run: >-
           sudo apt-get update &&
-          sudo apt-get install -y libass9 fontconfig fonts-liberation fonts-dejavu-core
+          sudo apt-get install -y libass9 fontconfig fonts-liberation fonts-dejavu-core &&
+          sudo fc-cache -f &&
+          fc-match sans &&
+          fc-match "Skeleton Sans"
 
       # First, and on its own, because drift from the ecosystem contract is the
       # one failure whose cause is not in this repo's diff. Named, so a red run
@@ -109,6 +120,13 @@ jobs:
           java-version: 21
 
       - uses: gradle/actions/setup-gradle@v4
+
+      # This job builds core as a composite, and core assembles its macOS
+      # libmpv payload out of the Homebrew keg. Without mpv here the payload
+      # step fails with "no libmpv.dylib under /opt/homebrew/opt/mpv/lib",
+      # which names a path rather than a missing dependency.
+      - name: Install mpv
+        run: brew install mpv
 
       # The Kotlin/Native toolchain and its prebuilt platform libraries.
       #
@@ -179,8 +197,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # mpv as well as libass. This job builds core as a composite, and
+          # core assembles the macOS libmpv payload from the Homebrew keg — so
+          # with only libass here it got past the Windows and Linux payloads it
+          # correctly skips and died on its own with "no libmpv.dylib under
+          # /opt/homebrew/opt/mpv/lib".
           - os: macos-latest
-            install: brew install libass
+            install: brew install libass mpv
             require: "1"
           - os: windows-latest
             install: ""
