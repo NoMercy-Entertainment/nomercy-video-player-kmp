@@ -156,6 +156,9 @@ jobs:
         run: |
           brew=/opt/homebrew/bin/brew
           $brew list mpv >/dev/null 2>&1 || $brew install mpv
+          # GNU tar, because the payload script sorts and stamps the archive to
+          # keep its digest reproducible and bsdtar has neither flag.
+          $brew list gnu-tar >/dev/null 2>&1 || $brew install gnu-tar
 
       # The Kotlin/Native toolchain and its prebuilt platform libraries.
       #
@@ -265,7 +268,7 @@ jobs:
         if: matrix.install != ''
         run: |
           brew=/opt/homebrew/bin/brew
-          $brew list libass >/dev/null 2>&1 && $brew list mpv >/dev/null 2>&1 || $brew install libass mpv
+          $brew list libass >/dev/null 2>&1 && $brew list mpv >/dev/null 2>&1 && $brew list gnu-tar >/dev/null 2>&1 || $brew install libass mpv gnu-tar
 
       - name: Desktop subtitle gate
         working-directory: packages-native/nomercy-video-player-kmp
