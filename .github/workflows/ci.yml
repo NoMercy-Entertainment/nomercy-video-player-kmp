@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, beast-unit]
     # A cap, because the failure mode this job actually had was not a red test —
     # it was Kotlin/Native sitting on a toolchain it did not have until the
     # six-hour default ran out. A job that hangs reads as a job that is working.
@@ -34,6 +34,11 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+
+      # The Android SDK, which a GitHub-hosted ubuntu image carried and a
+      # self-hosted runner does not. Without it every Android target fails to
+      # configure, and the message names a licence rather than a missing SDK.
+      - uses: android-actions/setup-android@v3
 
       # Without this every run downloads the Kotlin/Native distribution, the
       # Android SDK components and the whole dependency graph from cold.
@@ -57,12 +62,20 @@ jobs:
         # no cache built there is nothing to fall back to, libass lays the cue
         # out and rasterises no glyphs, and the failure reads as a broken
         # renderer rather than as a machine with no fonts.
-        run: >-
-          sudo apt-get update &&
-          sudo apt-get install -y libass9 fontconfig fonts-liberation fonts-dejavu-core &&
-          sudo fc-cache -f &&
-          fc-match sans &&
-          fc-match "Skeleton Sans"
+        #
+        # Installed only when missing, because this is a PERSISTENT machine
+        # rather than a fresh VM: apt-get on every push is a package manager run
+        # against a box other jobs are using, and a runner without passwordless
+        # sudo would fail the build on a step that had nothing to do.
+        run: |
+          set -e
+          if ! ldconfig -p | grep -q libass; then
+            sudo apt-get update
+            sudo apt-get install -y libass9 fontconfig fonts-liberation fonts-dejavu-core
+            sudo fc-cache -f
+          fi
+          echo "sans     -> $(fc-match sans)"
+          echo "skeleton -> $(fc-match 'Skeleton Sans')"
 
       # First, and on its own, because drift from the ecosystem contract is the
       # one failure whose cause is not in this repo's diff. Named, so a red run
@@ -90,7 +103,7 @@ jobs:
   # when driven on a simulator. The Compose half is measured on Linux; this half
   # cannot be.
   apple:
-    runs-on: macos-latest
+    runs-on: [self-hosted, macOS, ARM64, xcode]
 
     # Seventy-five, not forty-five.
     #
@@ -126,7 +139,7 @@ jobs:
       # step fails with "no libmpv.dylib under /opt/homebrew/opt/mpv/lib",
       # which names a path rather than a missing dependency.
       - name: Install mpv
-        run: brew install mpv
+        run: brew list mpv >/dev/null 2>&1 || brew install mpv
 
       # The Kotlin/Native toolchain and its prebuilt platform libraries.
       #
@@ -202,13 +215,15 @@ jobs:
           # with only libass here it got past the Windows and Linux payloads it
           # correctly skips and died on its own with "no libmpv.dylib under
           # /opt/homebrew/opt/mpv/lib".
-          - os: macos-latest
+          - name: macos
+            runner: [self-hosted, macOS, ARM64, xcode]
             install: brew install libass mpv
             require: "1"
-          - os: windows-latest
+          - name: windows
+            runner: [self-hosted, Windows, X64]
             install: ""
             require: "0"
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -227,9 +242,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Only when missing, for the same reason the Linux job checks first: this
+      # is a persistent machine, and `brew install` on every push is a package
+      # manager run against a box other jobs are using.
       - name: Install libass
         if: matrix.install != ''
-        run: ${{ matrix.install }}
+        run: brew list libass >/dev/null 2>&1 && brew list mpv >/dev/null 2>&1 || ${{ matrix.install }}
 
       - name: Desktop subtitle gate
         working-directory: packages-native/nomercy-video-player-kmp
