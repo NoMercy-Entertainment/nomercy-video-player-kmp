@@ -1,7 +1,0 @@
-{
-	"origin": "nomercy-player-core-kmp/src/jvmTest/kotlin/tv/nomercy/player/core/conformance/ErrorCatalogConformanceTest.kt (NATIVE_ONLY_CODES)",
-	"why": "Failures a native stack has and a browser never surfaces. Listed one code at a time rather than allowed by namespace, because a free-for-all prefix is how a port starts inventing codes nobody else can match. Only codes this build actually declares belong here — the Kotlin list also carries the DRM codes, which this port has not reached, and a waiver for something unraised is a waiver nobody can check.",
-	"codes": [
-		"core:stream/no-video-track"
-	]
-}

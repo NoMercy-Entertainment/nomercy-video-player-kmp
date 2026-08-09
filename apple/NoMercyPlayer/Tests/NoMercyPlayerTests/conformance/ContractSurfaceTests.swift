@@ -29,20 +29,22 @@ final class ContractSurfaceTests: XCTestCase {
         let errors: [String]
     }
 
-    // Codes a native stack raises and a browser has no counterpart for, waived
-    // by name. The Kotlin gate in core keeps the same list for the same reason;
-    // this is its Apple half rather than a second opinion, and the file says so.
-    private struct NativeOnly: Decodable {
-        let codes: Set<String>
-    }
-
-    private func nativeOnly() throws -> NativeOnly {
-        let url = try XCTUnwrap(
-            Bundle.module.url(forResource: "native-only-errors", withExtension: "json"),
-            "the native-only waiver is not in the test bundle — check Package.swift resources"
-        )
-        return try JSONDecoder().decode(NativeOnly.self, from: Data(contentsOf: url))
-    }
+    // Codes a native stack raises and a browser has no counterpart for.
+    //
+    // Source rather than a bundled resource, deliberately: shipped as JSON it
+    // did not reach the test bundle on the runner and every assertion that
+    // consulted it failed on the unwrap, turning a waiver into an outage. A
+    // constant cannot fail to load, and a waiver that is unreadable is worse
+    // than one that is merely hand-written.
+    //
+    // The Kotlin gate in core keeps the same list, one code at a time rather
+    // than a `core:drm/` free-for-all, because a wildcard prefix is how a port
+    // starts inventing codes nobody else can match. Core's copy also carries the
+    // DRM codes; this port has not reached DRM, and the test below refuses to
+    // waive anything this build does not actually raise.
+    private let nativeOnlyCodes: Set<String> = [
+        "core:stream/no-video-track",
+    ]
 
     private func contract() throws -> Contract {
         let url = try XCTUnwrap(
@@ -87,18 +89,18 @@ final class ContractSurfaceTests: XCTestCase {
         let documented = Set(try contract().errors)
         let stray = Set(ContractSurfaceExport.shared.errorCodes)
             .subtracting(documented)
-            .subtracting(try nativeOnly().codes)
+            .subtracting(nativeOnlyCodes)
 
         XCTAssertTrue(stray.isEmpty, "error codes no other client recognises: \(stray.sorted())")
     }
 
-    func testEveryWaivedCodeIsStillOneTheFrameworkRaises() throws {
+    func testEveryWaivedCodeIsStillOneTheFrameworkRaises() {
         // The waiver is the dangerous half of the gate above: a list that grows
         // quietly turns "invents nothing" into "invents whatever is listed". A
         // code the framework no longer declares has no business being excused,
         // and a waiver nobody deletes is how the next invention gets in.
         let declared = Set(ContractSurfaceExport.shared.errorCodes)
-        let orphaned = try nativeOnly().codes.subtracting(declared)
+        let orphaned = nativeOnlyCodes.subtracting(declared)
 
         XCTAssertTrue(orphaned.isEmpty, "waived and then never raised — delete these: \(orphaned.sorted())")
     }

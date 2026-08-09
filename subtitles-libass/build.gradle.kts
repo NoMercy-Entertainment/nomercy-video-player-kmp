@@ -215,6 +215,23 @@ tasks.matching { it.name.startsWith("cinteropLibass") }.configureEach {
     dependsOn(fetchAppleLibass)
 }
 
+// A failing gate here has to say WHY on the machine that failed.
+//
+// Gradle's default console prints the top stack frame in the test's own file
+// and nothing else, so eight Windows gates reported "AssertionError at
+// JvmAssRenderGateTest.kt:40" -- the line where a helper is DECLARED -- while
+// the sentence that named the cause was thrown one frame further in and never
+// printed. Every one of these failures is a question about the machine rather
+// than about the code, and the answer was being dropped on the floor.
+tasks.withType<Test>().configureEach {
+    testLogging {
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+    }
+}
+
 // The klib surface check runs on macOS only, for this module alone.
 //
 // Its Apple targets bind to a C library through cinterop, which needs the Xcode
