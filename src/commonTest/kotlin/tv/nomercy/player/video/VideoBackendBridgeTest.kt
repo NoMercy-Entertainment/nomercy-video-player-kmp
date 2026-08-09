@@ -32,6 +32,7 @@ private class ScriptableBackend : MediaBackend {
     override suspend fun play() = Unit
     override fun pause() = Unit
     override fun stop() = Unit
+    override fun release() = Unit
     override fun currentTime(): Double = 0.0
     override fun currentTime(seconds: Double) = Unit
     override fun duration(): Double = 0.0

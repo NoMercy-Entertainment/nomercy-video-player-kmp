@@ -17,6 +17,8 @@ import kotlinx.coroutines.delay
 import kotlin.time.TimeSource
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.setValue
@@ -66,6 +68,12 @@ public fun AssSubtitleLayer(
     var surface: IntSize by remember { mutableStateOf(IntSize.Zero) }
     var frame: ImageBitmap? by remember { mutableStateOf(null) }
 
+    // Which published picture this composition is showing. Counted here rather
+    // than read off the surface because the number has to be captured with the
+    // frame it belongs to: the draw phase runs later, and by then the surface
+    // has published more.
+    var shown: Int by remember { mutableIntStateOf(0) }
+
     // One compositor for the life of the layer, holding the buffers it draws
     // into. A fresh eight-megabyte surface per frame was costing more than
     // libass spent rasterising the glyphs that go on it.
@@ -73,7 +81,10 @@ public fun AssSubtitleLayer(
 
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
-            renderer.rasterise(drawing, surface, positionMs) { drawn -> frame = drawn }
+            renderer.rasterise(drawing, surface, positionMs) { drawn ->
+                frame = drawn
+                shown += 1
+            }
         }
     }
 
@@ -92,7 +103,17 @@ public fun AssSubtitleLayer(
                 // does and the only way an outline authored for 1080p stays
                 // proportional in a smaller window.
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize(),
+                // The report the surface frees on, made from the DRAW phase and
+                // naming the picture that was actually painted. Everything older
+                // is unreachable — the canvas draws one frame at a time and
+                // never goes back — so this is the only moment at which freeing
+                // is provably safe rather than probably safe.
+                modifier = Modifier
+                    .fillMaxSize()
+                    .drawWithContent {
+                        drawContent()
+                        drawing.picture.painted(shown)
+                    },
             )
         }
     }
@@ -316,6 +337,23 @@ internal fun rasterSize(source: AssSize?, surface: IntSize): IntSize {
  */
 internal expect class AssPictureSurface() {
     fun bitmap(frame: AssSurfaceFrame, frameWidth: Int, frameHeight: Int): ImageBitmap
+
+    /**
+     * The canvas reporting that it has painted every picture up to [painted].
+     *
+     * A published picture cannot be freed on a guess. The ImageBitmap WRAPS the
+     * platform bitmap rather than copying it, so releasing one the composition
+     * still holds is a read of freed memory — which took this process down
+     * through skiko when the surface tried to reuse a slot instead. Compose
+     * offers no completion hook, so the draw phase says so itself and that is
+     * the only moment at which freeing is provably safe.
+     *
+     * Without it the surface holds every picture it has ever drawn: a native
+     * allocation per displayed frame, which the JVM heap does not account for
+     * and the collector therefore never runs for. `SkiaFrameSink` carries the
+     * same ledger for the video picture, for the same reason.
+     */
+    fun painted(painted: Int)
 }
 
 internal const val ASS_SUBTITLE_TAG = "nm-ass-subtitles"

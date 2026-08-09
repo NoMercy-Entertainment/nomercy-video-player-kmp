@@ -38,6 +38,7 @@ private class RecordingBackend : MediaBackend {
     override suspend fun play() { playCount += 1 }
     override fun pause() = Unit
     override fun stop() = Unit
+    override fun release() = Unit
     override fun currentTime(): Double = time
     override fun currentTime(seconds: Double) { seekedTo += seconds; time = seconds }
     override fun duration(): Double = 0.0

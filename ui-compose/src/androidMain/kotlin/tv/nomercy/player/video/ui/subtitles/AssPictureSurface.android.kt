@@ -33,4 +33,11 @@ internal actual class AssPictureSurface actual constructor() {
         bitmap.copyPixelsFromBuffer(IntBuffer.wrap(frame.pixels))
         return bitmap.asImageBitmap()
     }
+
+    // Nothing to free, and that is a property of this platform rather than an
+    // omission. An android.graphics.Bitmap is an ordinary Java object whose
+    // pixels have counted against the heap since API 26, so the collector sees
+    // the cost and runs for it. Skia's do not, which is why the desktop keeps a
+    // ledger and this does not.
+    actual fun painted(painted: Int): Unit = Unit
 }

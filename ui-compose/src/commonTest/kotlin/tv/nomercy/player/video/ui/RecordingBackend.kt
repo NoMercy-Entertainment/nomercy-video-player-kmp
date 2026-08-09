@@ -49,6 +49,11 @@ open class RecordingBackend : MediaBackend {
         emit(BackendEvents.PAUSE)
     }
 
+    override fun release() {
+        stop()
+        listeners.clear()
+    }
+
     override fun currentTime(): Double = 0.0
     override fun currentTime(seconds: Double): Unit = Unit
     override fun duration(): Double = DURATION_SECONDS

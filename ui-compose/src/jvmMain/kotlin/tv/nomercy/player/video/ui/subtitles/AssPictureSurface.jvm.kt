@@ -39,22 +39,34 @@ internal actual class AssPictureSurface actual constructor() {
 
     private var buffers: Array<ByteArray> = emptyArray()
 
-    // One Skia bitmap per compositor slot, for the same reason there is one
-    // byte buffer per slot: a fresh Bitmap() every frame is a NATIVE allocation
-    // per frame, and at display rate that is where the desktop's memory went —
-    // 1080p subtitles sawtoothing between 0.9 and 2.2 GB while the byte buffers
-    // beside them were being reused correctly. Skia's cleaner reclaims them
-    // eventually, and eventually is not fast enough at sixty a second.
+    // A FRESH bitmap per frame, deliberately, and it is not an oversight that it
+    // is not pooled the way the byte buffers beside it are.
     //
-    // Per SLOT rather than one shared: asComposeImageBitmap WRAPS the bitmap,
-    // so the composition may still be painting the previous frame. A slot only
-    // comes back round every other frame, which is exactly the guarantee that
-    // makes rewriting its pixels safe — the same guarantee the byte buffers
-    // already rely on.
-    private var bitmaps: Array<Bitmap> = emptyArray()
+    // Pooling one per compositor slot was tried, on the reasoning that a slot
+    // only comes back round every other frame and that this is the same
+    // guarantee the byte buffers rely on. It is not the same guarantee. A byte
+    // buffer rewritten under a reader yields a torn image; a Skia bitmap whose
+    // pixels are reinstalled while the composition is inside
+    // `Image.makeFromBitmap` on it is a use-after-free, and it took the whole
+    // process down through skiko with the subtitle simply gone in the frames
+    // before it. `asComposeImageBitmap` WRAPS, so Compose holds this object for
+    // as long as it likes and tells us nothing about when it is done.
+    //
+    // The cost is real and is not being denied: this is a native allocation per
+    // displayed frame and it is where a large part of the desktop's memory
+    // goes. That is a separate problem, and it does not get solved by handing
+    // the compositor a bitmap somebody else is reading.
     private var generation: Int = -1
     private var width: Int = 0
     private var height: Int = 0
+
+    // Published pictures the canvas has not reported painting past, oldest
+    // first. Two threads touch this — the rasteriser publishes and the draw
+    // phase drains — and unsynchronised it threw out of the iterator into a
+    // thread nobody watches, which is a leak whose only symptom is the picture
+    // looking perfect while memory climbs.
+    private val held: MutableList<Pair<Int, Bitmap>> = mutableListOf()
+    private var published: Int = 0
 
     actual fun bitmap(frame: AssSurfaceFrame, frameWidth: Int, frameHeight: Int): ImageBitmap {
         val fresh: Boolean = adopt(frame.generation, frameWidth, frameHeight)
@@ -74,11 +86,49 @@ internal actual class AssPictureSurface actual constructor() {
         }
 
         val info = ImageInfo(frameWidth, frameHeight, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
-        val bitmap: Bitmap = bitmaps[frame.slot]
+        val bitmap = Bitmap()
         bitmap.installPixels(info, bytes, frameWidth * BYTES_PER_PIXEL)
+
+        // Immutable before it is published, which is what lets the draw SHARE
+        // these pixels instead of copying them: Skia's makeFromBitmap copies a
+        // mutable bitmap, putting a full-frame allocation back on the render
+        // thread. SkiaFrameSink beside this does the same for the picture.
+        bitmap.setImmutable()
+
+        // Held until the canvas says it has drawn past it. installPixels copies
+        // into a native pixel ref that the JVM heap does not account for, so
+        // nothing here is collected on pressure — the wrapper is a few dozen
+        // bytes and the pixels are megabytes.
+        published += 1
+        synchronized(held) { held += published to bitmap }
 
         return bitmap.asComposeImageBitmap()
     }
+
+    actual fun painted(painted: Int) {
+        // Strictly older, never the one named. [painted] is the picture the
+        // canvas has just drawn and is still holding; freeing it here would be
+        // the same read of freed memory this ledger exists to prevent, only
+        // arriving one frame later and therefore harder to attribute.
+        //
+        // Copied out under the lock and closed outside it: close() is a native
+        // call, and holding the lock across one blocks the rasteriser on the
+        // composition thread.
+        val freed: List<Bitmap> = synchronized(held) {
+            val done: List<Bitmap> = held.filter { (version, _) -> version < painted }.map { it.second }
+            held.removeAll { (version, _) -> version < painted }
+            done
+        }
+
+        freed.forEach { bitmap -> bitmap.close() }
+    }
+
+    // How many pictures this surface is still holding native memory for.
+    //
+    // Read from the ledger rather than counted separately: the list IS the set
+    // of undead bitmaps, so a count beside it could disagree with it and the
+    // disagreement would read as the leak being fixed.
+    internal fun liveBitmaps(): Int = synchronized(held) { held.size }
 
     // True when the buffers were just replaced, which is a resize or the first
     // frame.
@@ -89,12 +139,6 @@ internal actual class AssPictureSurface actual constructor() {
         width = frameWidth
         height = frameHeight
         buffers = Array(BUFFER_COUNT) { ByteArray(frameWidth * frameHeight * BYTES_PER_PIXEL) }
-
-        // The old ones go with their buffers. Closed rather than dropped: a
-        // Skia bitmap holds native memory that the JVM heap does not account
-        // for, so leaving them to the cleaner is what this change is undoing.
-        bitmaps.forEach { old -> old.close() }
-        bitmaps = Array(BUFFER_COUNT) { Bitmap() }
         return true
     }
 
