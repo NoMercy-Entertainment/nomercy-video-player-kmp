@@ -61,9 +61,27 @@ public final class TvChromeModel: ObservableObject {
 
     public func togglePlay() { actions.onTogglePlay() }
 
-    public func play() { actions.onPlay() }
+    /// Resume: start the film AND get this screen out of the way.
+    ///
+    /// The dismissal is done here rather than left to whoever wires `onPlay`,
+    /// because leaving it to them is what shipped. The action is bound to the
+    /// engine's `play()` by every host that has one, so the film started and
+    /// the menu stayed — measured on Android, where the Kotlin controller had
+    /// the identical split, as a session reporting PLAYING with the position
+    /// past thirty seconds and no picture ever drawn.
+    ///
+    /// `apply(preScreen:...)` still wins: this is the optimistic half, and the
+    /// controller's own state overwrites it on the next push. A consumer whose
+    /// controller decides the menu belongs up keeps it up.
+    public func play() {
+        preScreenVisible = false
+        actions.onPlay()
+    }
 
-    public func restart() { actions.onRestart() }
+    public func restart() {
+        preScreenVisible = false
+        actions.onRestart()
+    }
 
     public func openEpisodes() { actions.onOpenEpisodes() }
 

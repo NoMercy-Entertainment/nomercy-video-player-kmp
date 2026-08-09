@@ -1869,6 +1869,8 @@ public final class tv/nomercy/player/video/tv/TvChromeController {
 	public final fun onKey (Ltv/nomercy/player/core/input/PlayerKey;)Z
 	public final fun onPlaybackChanged (Z)V
 	public final fun openDialog (Ltv/nomercy/player/video/tv/TvDialog;)V
+	public final fun restart ()V
+	public final fun resume ()V
 	public final fun setTopBarFocus (Z)V
 	public final fun showVolume ()V
 }

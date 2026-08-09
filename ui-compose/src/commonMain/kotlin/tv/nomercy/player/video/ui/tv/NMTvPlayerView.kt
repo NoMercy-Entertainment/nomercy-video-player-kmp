@@ -124,11 +124,12 @@ private fun TvChromeLayers(ui: TvChromeUi, scene: TvScene) {
     AnimatedVisibility(visible = ui.preScreenVisible) {
         TvPreScreen(
             content = scene.content,
-            callbacks = scene.controller.callbacks,
             strings = scene.strings,
-            onOpen = scene.controller::openDialog,
-            onResume = scene.controller::resume,
-            onRestart = scene.controller::restart,
+            actions = TvPreScreenActions(
+                resume = scene.controller::resume,
+                restart = scene.controller::restart,
+                open = scene.controller::openDialog,
+            ),
             modifier = Modifier.tvSafeArea(),
         )
     }

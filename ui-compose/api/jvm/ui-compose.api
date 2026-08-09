@@ -1378,8 +1378,16 @@ public final class tv/nomercy/player/video/ui/tv/TvMenuItemKt {
 	public static final fun TvMenuItem (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;ZLandroidx/compose/ui/focus/FocusRequester;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class tv/nomercy/player/video/ui/tv/TvPreScreenActions {
+	public static final field $stable I
+	public fun <init> (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;)V
+	public final fun getOpen ()Lkotlin/jvm/functions/Function1;
+	public final fun getRestart ()Lkotlin/jvm/functions/Function0;
+	public final fun getResume ()Lkotlin/jvm/functions/Function0;
+}
+
 public final class tv/nomercy/player/video/ui/tv/TvPreScreenKt {
-	public static final fun TvPreScreen (Ltv/nomercy/player/video/tv/TvChromeContent;Ltv/nomercy/player/video/tv/TvChromeCallbacks;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun TvPreScreen (Ltv/nomercy/player/video/tv/TvChromeContent;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ltv/nomercy/player/video/ui/tv/TvPreScreenActions;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/tv/TvSafeAreaKt {

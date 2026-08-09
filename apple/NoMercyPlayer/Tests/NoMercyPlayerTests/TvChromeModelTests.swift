@@ -38,6 +38,38 @@ final class TvChromeModelTests: XCTestCase {
         return TvChromeModel(actions: actions)
     }
 
+    /// Both halves, because doing one of them is what shipped.
+    ///
+    /// Hosts bind `onPlay` to their engine's play, so a model that only fired
+    /// the action left the film running behind a menu that never moved.
+    func testResumingStartsTheFilmAndClosesTheStartMenu() {
+        let subject = model()
+
+        subject.play()
+
+        XCTAssertEqual(pressed, ["play"])
+        XCTAssertFalse(subject.preScreenVisible, "the start menu stayed up over a film that was playing")
+    }
+
+    func testRestartingAlsoClosesTheStartMenu() {
+        let subject = model()
+
+        subject.restart()
+
+        XCTAssertEqual(pressed, ["restart"])
+        XCTAssertFalse(subject.preScreenVisible, "the start menu stayed up over a film that was playing")
+    }
+
+    /// The controller still wins. This is the optimistic half.
+    func testThePushedStateOverwritesTheOptimisticDismissal() {
+        let subject = model()
+
+        subject.play()
+        subject.apply(preScreen: true, controls: false, seeking: false, playing: true)
+
+        XCTAssertTrue(subject.preScreenVisible)
+    }
+
     func testEveryDirectionReachesTheSharedController() {
         let subject = model()
 

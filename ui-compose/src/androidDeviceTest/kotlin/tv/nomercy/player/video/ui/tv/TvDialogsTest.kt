@@ -66,9 +66,12 @@ class TvDialogsTest {
         compose.setContent {
             TvPreScreen(
                 content = content,
-                callbacks = callbacks,
                 strings = strings,
-                onOpen = { opened = it },
+                actions = TvPreScreenActions(
+                    resume = { callbacks.play() },
+                    restart = { callbacks.restart() },
+                    open = { opened = it },
+                ),
             )
         }
     }

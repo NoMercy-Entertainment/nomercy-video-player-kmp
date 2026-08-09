@@ -1506,6 +1506,8 @@ final class tv.nomercy.player.video.tv/TvChromeController { // tv.nomercy.player
     final fun onKey(tv.nomercy.player.core.input/PlayerKey): kotlin/Boolean // tv.nomercy.player.video.tv/TvChromeController.onKey|onKey(tv.nomercy.player.core.input.PlayerKey){}[0]
     final fun onPlaybackChanged(kotlin/Boolean) // tv.nomercy.player.video.tv/TvChromeController.onPlaybackChanged|onPlaybackChanged(kotlin.Boolean){}[0]
     final fun openDialog(tv.nomercy.player.video.tv/TvDialog) // tv.nomercy.player.video.tv/TvChromeController.openDialog|openDialog(tv.nomercy.player.video.tv.TvDialog){}[0]
+    final fun restart() // tv.nomercy.player.video.tv/TvChromeController.restart|restart(){}[0]
+    final fun resume() // tv.nomercy.player.video.tv/TvChromeController.resume|resume(){}[0]
     final fun setTopBarFocus(kotlin/Boolean) // tv.nomercy.player.video.tv/TvChromeController.setTopBarFocus|setTopBarFocus(kotlin.Boolean){}[0]
     final fun showVolume() // tv.nomercy.player.video.tv/TvChromeController.showVolume|showVolume(){}[0]
 }
