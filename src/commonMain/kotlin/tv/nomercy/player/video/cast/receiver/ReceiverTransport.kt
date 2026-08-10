@@ -30,6 +30,13 @@ public interface ReceiverTransport {
     // session can release whoever it was holding for. Mirrors
     // ReceiverSession.release; called by the transport, never assumed by it.
     public fun onDisconnect(handler: (senderId: String) -> Unit)
+
+    // P22b Task 4 — the direction TvControlServer's /events SSE stream
+    // covers: told once, sent to everyone currently connected. Whichever
+    // sender is controlling and whichever is only watching both see the same
+    // snapshot; ReceiverSession's WRONG_SENDER rule governs who may command
+    // the television, never who may be told what it is doing.
+    public fun broadcast(event: ReceiverStateEvent)
 }
 
 // No transport is listening — the receiver has not been started, or exists
@@ -46,5 +53,9 @@ public object NoReceiverTransport : ReceiverTransport {
 
     override fun onDisconnect(handler: (senderId: String) -> Unit) {
         // No connections to lose.
+    }
+
+    override fun broadcast(event: ReceiverStateEvent) {
+        // Nobody listening.
     }
 }

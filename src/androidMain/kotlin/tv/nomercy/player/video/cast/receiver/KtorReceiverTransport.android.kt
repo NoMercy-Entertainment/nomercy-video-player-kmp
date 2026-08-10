@@ -16,16 +16,23 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.routing
+import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.webSocket
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.util.concurrent.CopyOnWriteArrayList
 import tv.nomercy.player.video.cast.RemoteQualityLevel
 
 // P22b Task 3 — the WebSocket half of ReceiverTransport, for senders that
@@ -51,9 +58,17 @@ public class KtorReceiverTransport(
 
     private var engine: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
     private val disconnectHandlers = MutableStateFlow<List<(String) -> Unit>>(emptyList())
+    private val sessions = CopyOnWriteArrayList<DefaultWebSocketServerSession>()
+
+    // Its own scope rather than borrowing a session's — a session's
+    // coroutine ends the moment that socket closes, and a broadcast fired
+    // between two connections (or to the nine still open when a tenth
+    // drops) must not ride on one particular sender's lifetime.
+    private var broadcastScope: CoroutineScope? = null
 
     override fun start(commandHandler: (senderId: String, command: ReceiverCommand) -> ReceiverOutcome) {
         if (engine != null) return
+        broadcastScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         engine = embeddedServer(Netty, port = port, host = "0.0.0.0") {
             install(WebSockets)
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
@@ -64,6 +79,7 @@ public class KtorReceiverTransport(
                         close(io.ktor.websocket.CloseReason(io.ktor.websocket.CloseReason.Codes.VIOLATED_POLICY, "unauthorized"))
                         return@webSocket
                     }
+                    sessions += this
                     try {
                         for (frame in incoming) {
                             if (frame !is Frame.Text) continue
@@ -75,6 +91,7 @@ public class KtorReceiverTransport(
                             send(Frame.Text(Json.encodeToString(WireOutcome.serializer(), WireOutcome.from(outcome))))
                         }
                     } finally {
+                        sessions -= this
                         disconnectHandlers.value.forEach { it(senderId) }
                     }
                 }
@@ -85,10 +102,22 @@ public class KtorReceiverTransport(
     override fun stop() {
         engine?.stop(gracePeriodMillis = 500, timeoutMillis = 2_000)
         engine = null
+        broadcastScope?.cancel()
+        broadcastScope = null
+        sessions.clear()
     }
 
     override fun onDisconnect(handler: (senderId: String) -> Unit) {
         disconnectHandlers.update { it + handler }
+    }
+
+    override fun broadcast(event: ReceiverStateEvent) {
+        val scope = broadcastScope ?: return
+        val frame = Frame.Text(Json.encodeToString(WireStateEvent.serializer(), WireStateEvent.from(event)))
+        // A dead socket refusing a frame is that sender's problem, already
+        // reported through onDisconnect once incoming{} unwinds — it must
+        // not stop the snapshot reaching everyone else still connected.
+        sessions.forEach { session -> scope.launch { runCatching { session.send(frame) } } }
     }
 
     public companion object {
@@ -144,5 +173,38 @@ private data class WireOutcome(
             is ReceiverOutcome.Accepted -> WireOutcome(accepted = true)
             is ReceiverOutcome.Refused -> WireOutcome(accepted = false, refusalReason = outcome.reason)
         }
+    }
+}
+
+@Serializable
+private data class WireStateEvent(
+    val playbackState: String,
+    val positionMs: Long,
+    val durationMs: Long,
+    val itemId: String? = null,
+    val itemTitle: String? = null,
+    val audioTrackId: String? = null,
+    val subtitleTrackId: String? = null,
+    val qualityLabel: String,
+    val volumeLevel: Int,
+    val muted: Boolean,
+    val playlistLength: Int,
+    val playlistActiveIndex: Int,
+) {
+    companion object {
+        fun from(event: ReceiverStateEvent): WireStateEvent = WireStateEvent(
+            playbackState = event.playbackState,
+            positionMs = event.positionMs,
+            durationMs = event.durationMs,
+            itemId = event.itemId,
+            itemTitle = event.itemTitle,
+            audioTrackId = event.audioTrackId,
+            subtitleTrackId = event.subtitleTrackId,
+            qualityLabel = event.qualityLabel,
+            volumeLevel = event.volumeLevel,
+            muted = event.muted,
+            playlistLength = event.playlistLength,
+            playlistActiveIndex = event.playlistActiveIndex,
+        )
     }
 }

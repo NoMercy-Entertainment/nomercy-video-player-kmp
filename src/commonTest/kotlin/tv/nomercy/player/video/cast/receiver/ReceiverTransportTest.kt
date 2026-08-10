@@ -37,6 +37,11 @@ private class FakeReceiverTransport : ReceiverTransport {
         disconnectHandler = handler
     }
 
+    val broadcasts: MutableList<ReceiverStateEvent> = mutableListOf()
+    override fun broadcast(event: ReceiverStateEvent) {
+        broadcasts += event
+    }
+
     fun deliver(senderId: String, command: ReceiverCommand): ReceiverOutcome =
         handler?.invoke(senderId, command) ?: error("transport not started")
 
@@ -110,5 +115,56 @@ class ReceiverTransportTest {
         NoReceiverTransport.stop()
 
         assertEquals(false, invoked)
+    }
+
+    @Test
+    fun aBroadcastReachesWhicheverTransportIsListeningRegardlessOfWhoControls() {
+        // Told, not asked: broadcast has no senderId, because who receives a
+        // state snapshot is not the rule WRONG_SENDER governs.
+        val playback = TransportRecordingPlayback()
+        val session = ReceiverSession(playback)
+        val transport = FakeReceiverTransport()
+        transport.start { senderId, command -> session.handle(senderId, command) }
+        val snapshot = ReceiverStateEvent(
+            playbackState = "playing",
+            positionMs = 1_000,
+            durationMs = 60_000,
+            itemId = "a",
+            itemTitle = "A",
+            audioTrackId = null,
+            subtitleTrackId = null,
+            qualityLabel = "auto",
+            volumeLevel = 100,
+            muted = false,
+            playlistLength = 1,
+            playlistActiveIndex = 0,
+        )
+
+        transport.broadcast(snapshot)
+
+        assertEquals(listOf(snapshot), transport.broadcasts)
+    }
+
+    @Test
+    fun noReceiverTransportBroadcastsToNobody() {
+        // No assertion beyond "does not throw" is possible without a
+        // listener to record it — which is exactly the point: there is
+        // nobody for NoReceiverTransport to tell.
+        NoReceiverTransport.broadcast(
+            ReceiverStateEvent(
+                playbackState = "idle",
+                positionMs = 0,
+                durationMs = 0,
+                itemId = null,
+                itemTitle = null,
+                audioTrackId = null,
+                subtitleTrackId = null,
+                qualityLabel = "auto",
+                volumeLevel = 0,
+                muted = false,
+                playlistLength = 0,
+                playlistActiveIndex = -1,
+            ),
+        )
     }
 }
