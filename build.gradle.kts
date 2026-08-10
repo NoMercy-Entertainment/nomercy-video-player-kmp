@@ -57,6 +57,15 @@ kotlin {
         }
     }
 
+    // cast-web's target. Backend here is MediaSource + <video> — a browser
+    // sandbox has no libmpv/Media3 — the same decode boundary the JS
+    // nomercy-video-player library already uses; core's state machine, ABR
+    // and event contract stay authoritative above it.
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
+
     val videoXcf: XCFrameworkConfig = XCFramework("NoMercyVideoPlayer")
     listOf(
         iosArm64(),
@@ -110,6 +119,13 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.startup)
+            // The receiver's own server (P22b) — Netty + WebSockets, mirroring
+            // TvControlServer's own choice. Android-only: no other target
+            // hosts a receiver yet.
+            implementation(libs.ktor.server.core)
+            implementation(libs.ktor.server.netty)
+            implementation(libs.ktor.server.websockets)
+            implementation(libs.ktor.server.content.negotiation)
             // The Android engine. Media3 is what every Android client already
             // uses, and reimplementing its buffering would be worse than
             // anything gained by owning it.
