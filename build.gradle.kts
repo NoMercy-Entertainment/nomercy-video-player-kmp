@@ -119,6 +119,11 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.startup)
+            // The Chromecast-wake port (P22.7) — route-select and CEC One-Touch-Play
+            // only, never RemoteMediaClient/loadMedia. Android-only: Desktop/Apple
+            // reach the TV directly over /v1 and answer UnsupportedCastWaker.
+            implementation(libs.gms.play.services.cast.framework)
+            implementation(libs.androidx.mediarouter)
             // The receiver's own server (P22b) — Netty + WebSockets, mirroring
             // TvControlServer's own choice. Android-only: no other target
             // hosts a receiver yet.

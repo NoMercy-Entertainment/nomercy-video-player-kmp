@@ -10,13 +10,17 @@ package tv.nomercy.player.video.cast
 
 import tv.nomercy.player.core.ports.PlatformEnvironment
 
-// Waking a panel through a Chromecast is not built yet, and it is the one part
-// of casting that needs hardware to prove: a receiver application id, a real
-// Chromecast on the network, and a television that is actually asleep. Until it
-// exists, an Android caller is told the wake is unsupported rather than being
-// told it succeeded — a set that never woke and a phone that thinks it did is
-// the worst of the available answers.
-public actual fun defaultCastWaker(): CastWaker = UnsupportedCastWaker()
+// Waking a panel through a Chromecast — the `PhoneCastSenderImpl` port
+// (`ChromecastCastWaker`) when the library has a context to hold a multicast
+// lock and drive `MediaRouter` with, `UnsupportedCastWaker` otherwise. That
+// happens in a host test, and a browse is not a reason for a player to refuse
+// to start.
+public actual fun defaultCastWaker(): CastWaker =
+    if (PlatformEnvironment.isInstalled()) {
+        ChromecastCastWaker(PlatformEnvironment.requireContext().androidContext)
+    } else {
+        UnsupportedCastWaker()
+    }
 
 // Discovery is built, and falls back to nothing when the library has not been
 // given a context. That happens in a host test, and a browse is not a reason for

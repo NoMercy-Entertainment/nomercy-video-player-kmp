@@ -40,6 +40,11 @@ mavenPublish = "0.37.0"
 skie = "0.10.13"
 junit = "5.11.4"
 junitLauncher = "1.11.4"
+# Pinned to nomercy-app-kmp's PhoneCastSenderImpl.kt, the port's oracle — a
+# newer Cast SDK the app has not proven yet is not something this port should
+# be first to find out about.
+playServicesCastFramework = "22.2.0"
+androidxMediarouter = "1.8.1"
 
 [libraries]
 nomercy-player-core = { module = "tv.nomercy:nomercy-player-core-kmp", version.ref = "nomercyPlayerCore" }
@@ -94,6 +99,10 @@ androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version = "1.11.2" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitLauncher" }
+# The Chromecast-wake port (P22.7), androidMain-only — route-select and CEC
+# One-Touch-Play, never RemoteMediaClient/loadMedia.
+gms-play-services-cast-framework = { module = "com.google.android.gms:play-services-cast-framework", version.ref = "playServicesCastFramework" }
+androidx-mediarouter = { module = "androidx.mediarouter:mediarouter", version.ref = "androidxMediarouter" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
