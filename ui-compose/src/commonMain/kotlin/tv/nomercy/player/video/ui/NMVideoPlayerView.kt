@@ -119,6 +119,7 @@ public fun NMVideoPlayerView(
                 strings = strings,
                 modifier = modifier,
                 sprite = chrome.sprite,
+                player = player,
                 surface = picture,
             )
         }

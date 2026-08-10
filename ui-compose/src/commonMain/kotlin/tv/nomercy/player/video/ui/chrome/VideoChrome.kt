@@ -70,6 +70,7 @@ import tv.nomercy.player.video.subtitles.CueBox
 import tv.nomercy.player.video.subtitles.SubtitleOverlayPlugin
 import tv.nomercy.player.core.input.KeyCombo
 import tv.nomercy.player.core.player.PlayState
+import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoEvents
 import tv.nomercy.player.video.input.VideoKeyHandlerPlugin
@@ -195,6 +196,7 @@ public fun VideoChrome(
                 host = ChromeHost(sprite, previewSprite, onClose, onBack, onCast, slots),
                 menu = menu,
                 onMenuChange = { menu = it },
+                player = player,
             )
 
             ShortcutsLayer(panel)
@@ -378,6 +380,7 @@ private fun ChromeLayers(
     host: ChromeHost,
     menu: MenuState,
     onMenuChange: (MenuState) -> Unit,
+    player: ComposedPlayer,
 ) {
     val ui: ChromeUi by scene.controller.ui.collectAsState()
 
@@ -437,6 +440,13 @@ private fun ChromeLayers(
         // are the host's features, and a slot that swallowed the chrome to draw
         // one would be a host choosing between its feature and the controls.
         host.slots.overlays?.invoke(scene.state, scene.commands)
+
+        // The same slot, for a plugin rather than a host. ChromeSlots above is
+        // an application furnishing its own composable; this is a plugin the
+        // application installed on the player answering ChromeContribution's
+        // manifest instead, which is the seam PluginRegistry.contributions()
+        // has always offered with nothing on this side ever calling it.
+        PluginOverlayContributions(player)
     }
 }
 

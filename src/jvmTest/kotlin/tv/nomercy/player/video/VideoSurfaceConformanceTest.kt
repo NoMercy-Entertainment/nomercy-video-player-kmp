@@ -155,6 +155,12 @@ class VideoSurfaceConformanceTest {
             // The video half of the engine bridge, which the web infers from
             // the media element's own events.
             "videoBridge",
+            // The reference reaches AirPlay through transferTo(AIRPLAY) — see
+            // core's MethodSurfaceConformanceTest for the full reasoning. An
+            // AirPlay route has no item or position to hand over and must not
+            // pause first, where a CastSender transfer must, so it cannot
+            // share transferTo's guard.
+            "transferToExternal",
         )
     }
 }

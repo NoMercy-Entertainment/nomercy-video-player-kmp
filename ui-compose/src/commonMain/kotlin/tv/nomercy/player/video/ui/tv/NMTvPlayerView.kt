@@ -29,7 +29,9 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.input.PlayerKey
+import tv.nomercy.player.video.ui.chrome.PluginOverlayContributions
 import tv.nomercy.player.video.ui.thumbnails.PreviewSprite
 import tv.nomercy.player.video.tv.TvChromeContent
 import tv.nomercy.player.video.tv.TvChromeController
@@ -59,6 +61,14 @@ public fun NMTvPlayerView(
      * the same scrub on a phone showed the scene being hunted for.
      */
     sprite: PreviewSprite? = null,
+    /**
+     * Reaches a plugin's [ComposeChromeContribution], the same as the phone
+     * and desktop chrome. Null draws nothing here — the state machine and its
+     * widgets take state and callbacks rather than a player everywhere else in
+     * this file, and a caller that has not wired a player through yet gets the
+     * television it had before this parameter existed rather than a crash.
+     */
+    player: ComposedPlayer? = null,
     onUnhandledKey: (PlayerKey) -> Boolean = { false },
     surface: @Composable () -> Unit = {},
 ) {
@@ -89,7 +99,7 @@ public fun NMTvPlayerView(
     ) {
         surface()
 
-        TvChromeLayers(ui, TvScene(controller, transport, content, strings, sprite))
+        TvChromeLayers(ui, TvScene(controller, transport, content, strings, sprite, player))
     }
 }
 
@@ -120,6 +130,11 @@ private fun TvChromeLayers(ui: TvChromeUi, scene: TvScene) {
     AnimatedVisibility(visible = ui.seekMode) {
         TvSeekLayer(scene)
     }
+
+    // Additive rather than replacing, and drawn regardless of the three
+    // visibility conditions above — a cast banner or a skip-intro button is
+    // not part of the transport chrome those gate.
+    PluginOverlayContributions(scene.player)
 
     AnimatedVisibility(visible = ui.preScreenVisible) {
         TvPreScreen(
@@ -191,6 +206,7 @@ private data class TvScene(
     val content: TvChromeContent,
     val strings: TvChromeStrings,
     val sprite: PreviewSprite?,
+    val player: ComposedPlayer?,
 )
 
 @Composable
