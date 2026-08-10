@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.net.ServerSocket
 import java.util.concurrent.CopyOnWriteArrayList
 import tv.nomercy.player.video.cast.RemoteQualityLevel
 
@@ -66,10 +67,17 @@ public class KtorReceiverTransport(
     // drops) must not ride on one particular sender's lifetime.
     private var broadcastScope: CoroutineScope? = null
 
+    // Where this receiver actually bound, once [start] has run — TvControlServer
+    // shares the same fallback range, so both servers finding it worth logging
+    // when they land somewhere other than [port] is the same call this makes.
+    public var boundPort: Int = port
+        private set
+
     override fun start(commandHandler: (senderId: String, command: ReceiverCommand) -> ReceiverOutcome) {
         if (engine != null) return
+        boundPort = findFreePort(port)
         broadcastScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-        engine = embeddedServer(Netty, port = port, host = "0.0.0.0") {
+        engine = embeddedServer(Netty, port = boundPort, host = "0.0.0.0") {
             install(WebSockets)
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
             routing {
@@ -120,8 +128,25 @@ public class KtorReceiverTransport(
         sessions.forEach { session -> scope.launch { runCatching { session.send(frame) } } }
     }
 
+    // The same fallback TvControlServer's own `findFreePort` runs: this
+    // receiver and that server can end up sharing a process (P22b.3's
+    // still-open app wiring runs both side by side), so a fixed port with no
+    // fallback would make the second one to start simply fail to bind.
+    private fun findFreePort(preferred: Int): Int {
+        if (isPortFree(preferred)) return preferred
+        for (candidate in (preferred + 1)..PORT_RANGE_END) {
+            if (isPortFree(candidate)) return candidate
+        }
+        return preferred
+    }
+
+    private fun isPortFree(candidate: Int): Boolean = runCatching {
+        ServerSocket(candidate).use { true }
+    }.getOrDefault(false)
+
     public companion object {
         public const val DEFAULT_PORT: Int = 7626
+        private const val PORT_RANGE_END: Int = 7699
     }
 }
 
