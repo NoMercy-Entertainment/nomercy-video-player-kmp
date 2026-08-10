@@ -47,10 +47,7 @@ public fun interface ComposeChromeContribution {
 // [ChromeSlot.Overlay] is the slot this is safe for by construction: a
 // skip-intro button and a cast banner are the host's features sitting over
 // the picture, not a takeover of it. A slot where `replaces` matters (the top
-// bar, the transport row) needs the calling chrome to check the first
-// binding's `replaces` before drawing its own default, which is a decision
-// left to whichever slot grows a real replacing contribution first rather
-// than guessed at here.
+// bar, the transport row) goes through [ChromeSlotResolution] instead.
 @Composable
 public fun PluginOverlayContributions(
     player: ComposedPlayer?,
@@ -66,5 +63,47 @@ public fun PluginOverlayContributions(
         val renderer: ComposeChromeContribution =
             player.getPlugin(binding.pluginId) as? ComposeChromeContribution ?: continue
         renderer.Render(player)
+    }
+}
+
+// P26.14/P27.14 — the three tiers a slot like TopBar or Transport resolves
+// through, in precedence order: an application's own [hostOverride] wins
+// outright (it is an explicit choice the app made about its own screen, and
+// a plugin the app also chose to install has no claim over that); failing
+// that, a plugin's [ChromeContribution.replaces] takes the built-in over;
+// failing that, [default] — the chrome's own widget, unchanged.
+//
+// A slot with no host-override concept at all (SettingsMenu has no field on
+// [ChromeSlots]) calls this with `hostOverride = null` and gets the same
+// plugin-vs-built-in resolution without a host tier to check first.
+//
+// A `replaces` contribution whose plugin has no [ComposeChromeContribution]
+// renderer on this platform falls through to [default] rather than drawing
+// nothing — the same "skip rather than crash" rule [PluginOverlayContributions]
+// already applies, because a slot that vanished because a plugin is real on
+// every platform but this one is worse than the built-in nobody asked to
+// replace showing instead.
+@Composable
+public fun ChromeSlotResolution(
+    player: ComposedPlayer?,
+    slot: ChromeSlot,
+    hostOverride: (@Composable (ChromeState, ChromeCommands) -> Unit)?,
+    state: ChromeState,
+    commands: ChromeCommands,
+    default: @Composable () -> Unit,
+) {
+    if (hostOverride != null) {
+        hostOverride(state, commands)
+        return
+    }
+
+    val replacing: ContributionBinding? = player?.contributions(slot).orEmpty().firstOrNull { it.contribution.replaces }
+    val renderer: ComposeChromeContribution? =
+        replacing?.let { player?.getPlugin(it.pluginId) as? ComposeChromeContribution }
+
+    if (renderer != null && player != null) {
+        renderer.Render(player)
+    } else {
+        default()
     }
 }

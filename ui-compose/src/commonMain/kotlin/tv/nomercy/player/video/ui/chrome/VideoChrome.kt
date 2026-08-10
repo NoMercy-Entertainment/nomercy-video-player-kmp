@@ -402,17 +402,26 @@ private fun ChromeLayers(
         AnimatedVisibility(visible = ui.active, enter = fadeIn(), exit = fadeOut()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Box(modifier = Modifier.align(Alignment.TopCenter)) {
-                    host.slots.topBar?.invoke(scene.state, scene.commands) ?: ChromeTopBar(
-                        item = scene.state.item,
-                        strings = scene.strings,
-                        buttons = scene.buttons,
-                        exits = ChromeExits(host.onBack, host.onCast, host.onClose),
-                        hideTitle = scene.layout.hideTitle,
-                        pip = scene.state.pip,
+                    ChromeSlotResolution(
+                        player = player,
+                        slot = tv.nomercy.player.core.plugin.ChromeSlot.TopBar,
+                        hostOverride = host.slots.topBar,
+                        state = scene.state,
+                        commands = scene.commands,
+                        default = {
+                            ChromeTopBar(
+                                item = scene.state.item,
+                                strings = scene.strings,
+                                buttons = scene.buttons,
+                                exits = ChromeExits(host.onBack, host.onCast, host.onClose),
+                                hideTitle = scene.layout.hideTitle,
+                                pip = scene.state.pip,
+                            )
+                        },
                     )
                 }
 
-                ChromeBottom(scene, host, Modifier.align(Alignment.BottomCenter))
+                ChromeBottom(scene, host, Modifier.align(Alignment.BottomCenter), player)
             }
         }
 
@@ -522,7 +531,7 @@ internal fun ScrubBubble(scene: ChromeScene, host: ChromeHost, scrub: Double?, b
 }
 
 @Composable
-private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifier) {
+private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifier, player: ComposedPlayer) {
     var scrub: Double? by remember { mutableStateOf(null) }
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
@@ -540,17 +549,26 @@ private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifie
                 .padding(bottom = BOTTOM_STACK_PADDING),
             verticalArrangement = Arrangement.spacedBy(BOTTOM_STACK_GAP),
         ) {
-            ChromeStrip(scene, host, rowWidth) { scrub = it }
+            ChromeStrip(scene, host, rowWidth, { scrub = it }, player)
 
-            host.slots.transport?.invoke(scene.state, scene.commands) ?: TransportBar(
+            ChromeSlotResolution(
+                player = player,
+                slot = tv.nomercy.player.core.plugin.ChromeSlot.Transport,
+                hostOverride = host.slots.transport,
                 state = scene.state,
                 commands = scene.commands,
-                strings = scene.strings,
-                buttons = scene.buttons,
-                priority = scene.layout.priority,
-                portraitHidden = scene.layout.portraitHidden,
-                volumeSlider = scene.layout.volumeSlider,
-                buttonOrder = scene.layout.buttonOrder,
+                default = {
+                    TransportBar(
+                        state = scene.state,
+                        commands = scene.commands,
+                        strings = scene.strings,
+                        buttons = scene.buttons,
+                        priority = scene.layout.priority,
+                        portraitHidden = scene.layout.portraitHidden,
+                        volumeSlider = scene.layout.volumeSlider,
+                        buttonOrder = scene.layout.buttonOrder,
+                    )
+                },
             )
         }
     }

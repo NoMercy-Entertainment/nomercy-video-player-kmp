@@ -63,6 +63,7 @@ internal fun ChromeStrip(
     host: ChromeHost,
     rowWidth: Dp,
     onScrub: (Double?) -> Unit,
+    player: tv.nomercy.player.core.controllers.ComposedPlayer,
 ) {
     // Both derived from the row's width rather than passed alongside it: the
     // inset and the strip's own width are functions of the same container query,
@@ -86,26 +87,35 @@ internal fun ChromeStrip(
                 // BAR, not of what can be pressed.
                 .height(STRIP_ROW_HEIGHT),
         ) {
-            host.slots.scrubber?.invoke(scene.state, scene.commands) ?: ChapterScrubber(
+            ChromeSlotResolution(
+                player = player,
+                slot = tv.nomercy.player.core.plugin.ChromeSlot.Scrubber,
+                hostOverride = host.slots.scrubber,
                 state = scene.state,
                 commands = scene.commands,
-                sprite = host.sprite,
-                onScrubbing = scene.controller::setScrubbing,
-                onScrub = {
-                    scrub = it
-                    onScrub(it)
+                default = {
+                    ChapterScrubber(
+                        state = scene.state,
+                        commands = scene.commands,
+                        sprite = host.sprite,
+                        onScrubbing = scene.controller::setScrubbing,
+                        onScrub = {
+                            scrub = it
+                            onScrub(it)
+                        },
+                        // Overflows the row rather than setting it.
+                        //
+                        // The strip is 8dp of picture inside a 32dp target — a
+                        // three-pixel drag target is one nobody hits with a finger.
+                        // Taking that 32dp as LAYOUT height put 12dp of nothing
+                        // above the bar and 12 below, which pushed the strip most of
+                        // an icon's height further from the controls than the
+                        // browser puts it. The web has the same shape and the same
+                        // answer: `.slider-bar` grows to 12px inside a row that
+                        // stays 8 and simply overflows it.
+                        modifier = Modifier.requiredHeight(SCRUBBER_TOUCH_HEIGHT),
+                    )
                 },
-                // Overflows the row rather than setting it.
-                //
-                // The strip is 8dp of picture inside a 32dp target — a
-                // three-pixel drag target is one nobody hits with a finger.
-                // Taking that 32dp as LAYOUT height put 12dp of nothing
-                // above the bar and 12 below, which pushed the strip most of
-                // an icon's height further from the controls than the
-                // browser puts it. The web has the same shape and the same
-                // answer: `.slider-bar` grows to 12px inside a row that
-                // stays 8 and simply overflows it.
-                modifier = Modifier.requiredHeight(SCRUBBER_TOUCH_HEIGHT),
             )
 
             // `position: absolute; bottom: 24px` — an OVERLAY on the strip
