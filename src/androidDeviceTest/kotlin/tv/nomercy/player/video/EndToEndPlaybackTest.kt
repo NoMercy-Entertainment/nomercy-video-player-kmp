@@ -136,7 +136,7 @@ class EndToEndPlaybackTest {
             assertEquals(fromEngine + 1, player.subtitles().size, "the sidecar track did not join the list")
             assertTrue(player.subtitles().any { it.id == "sidecar-nl" })
 
-            player.removeSubtitleTrack("sidecar-nl")
+            runBlocking { player.removeSubtitleTrack("sidecar-nl") }
             assertEquals(fromEngine, player.subtitles().size, "removing the sidecar left it behind")
         }
     }
@@ -186,6 +186,39 @@ class EndToEndPlaybackTest {
     }
 
     @Test
+    fun chapterNavigationMovesRealPlaybackTimeThroughTheWholeStack() {
+        // P20.8 — chapters proven against the real engine, not a fake clock.
+        // The 8-second fixture gets three chapters at 0/3/6s; seekToChapter is
+        // the library's own transport, so if this passes, a chapter menu built
+        // on it moves the actual decoder rather than a number nobody is
+        // watching.
+        playing("e2e-chapters.mp4") { player, backend ->
+            player.chapters(
+                listOf(
+                    tv.nomercy.player.core.media.Chapter(startTime = 0.0, title = "Open"),
+                    tv.nomercy.player.core.media.Chapter(startTime = 3.0, title = "Middle"),
+                    tv.nomercy.player.core.media.Chapter(startTime = 6.0, title = "Close"),
+                ),
+            )
+
+            runBlocking { player.seekToChapter(2) }
+            Thread.sleep(SETTLE_MS)
+            assertTrue(
+                backend.currentTime() >= 6.0 - SEEK_TOLERANCE_S,
+                "seekToChapter(2) landed at ${backend.currentTime()}, expected close to 6.0",
+            )
+            assertEquals("Close", player.chapter()?.title, "the library's own chapter() disagrees with where seekToChapter put the engine")
+
+            runBlocking { player.previousChapter() }
+            Thread.sleep(SETTLE_MS)
+            assertTrue(
+                backend.currentTime() >= 3.0 - SEEK_TOLERANCE_S && backend.currentTime() < 6.0,
+                "previousChapter from the third chapter landed at ${backend.currentTime()}, expected close to 3.0",
+            )
+        }
+    }
+
+    @Test
     fun theTransportSurvivesTheWholeStack() {
         // Play and pause through the library rather than the backend, so the
         // controllers between them are in the path. State is read back off the
@@ -212,6 +245,7 @@ private const val READY_TIMEOUT_S = 20L
 private const val SETTLE_MS = 1_200L
 private const val PLAY_MS = 2_000L
 private const val EXPECTED_DUBS = 2
+private const val SEEK_TOLERANCE_S = 0.5
 
 // The order a consumer builds behaviour on. Loadstart is not in it because it
 // fires before this gate can subscribe — the load is what makes the engine
