@@ -78,15 +78,23 @@ public class ComposedPlayerReceiverPlayback(
             }
 
             is ReceiverCommand.SetQuality -> scope.launch {
+                // LOW/MEDIUM/HIGH pick a position within this height>0
+                // (video-only) subset, but qualityMode(index) indexes the
+                // UNFILTERED qualityLevels() — the same mismatch the web's
+                // ce8f389 already fixed. Resolving to the actual QualityLevel
+                // first and re-deriving its real index against the
+                // unfiltered list (the idiom NMVideoPlayer.kt:720 already
+                // uses) is what keeps the two lists from silently
+                // disagreeing again, including with the audio-only h=0
+                // entries mpv's HLS editions produce.
                 val levels = player.qualityLevels().filter { it.height > 0 }
-                val index = when (command.level) {
+                val pick = when (command.level) {
                     tv.nomercy.player.video.cast.RemoteQualityLevel.AUTO -> null
-                    tv.nomercy.player.video.cast.RemoteQualityLevel.LOW -> levels.indices.firstOrNull()
-                    tv.nomercy.player.video.cast.RemoteQualityLevel.MEDIUM -> levels.indices.firstOrNull()
-                        ?.let { levels.size / 2 }
-                    tv.nomercy.player.video.cast.RemoteQualityLevel.HIGH -> levels.indices.lastOrNull()
+                    tv.nomercy.player.video.cast.RemoteQualityLevel.LOW -> levels.firstOrNull()
+                    tv.nomercy.player.video.cast.RemoteQualityLevel.MEDIUM -> levels.getOrNull(levels.size / 2)
+                    tv.nomercy.player.video.cast.RemoteQualityLevel.HIGH -> levels.lastOrNull()
                 }
-                player.qualityMode(index)
+                player.qualityMode(pick?.let { player.qualityLevels().indexOf(it) })
             }
         }
     }
