@@ -74,10 +74,7 @@ internal class NativeAssRenderer(
 
     override fun loadTrack(assContent: String): Unit = synchronized(lock) {
         if (released) return
-        // Rejects content with no recognisable ASS structure before it can
-        // reach ass_read_memory below — see AssContentGuard. Dropped the same
-        // way a queue advancing to a track-less item already is: no track
-        // loaded, hasTrack() false, nothing drawn.
+        // Structural gate before ass_read_memory — see AssContentGuard.
         if (!looksLikeAssScript(assContent)) {
             trackContent = null
             disposeTrack()
@@ -236,10 +233,7 @@ internal class NativeAssRenderer(
         track?.let { return it }
 
         val content: ByteArray = trackContent?.encodeToByteArray() ?: return null
-        // The content already passed looksLikeAssScript, which rules out
-        // garbage but not everything libass itself might reject. JNA
-        // exceptions are catchable (unlike a native trap on Kotlin/Native),
-        // so this is a real backstop, not a formality.
+        // Backstop for whatever looksLikeAssScript doesn't catch — JNA exceptions are catchable here.
         val loaded: Pointer = runCatching {
             lib.ass_read_memory(library, content, content.size, null)
         }.getOrNull() ?: return null

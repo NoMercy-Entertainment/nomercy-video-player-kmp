@@ -8,17 +8,9 @@
 
 package tv.nomercy.player.video.ass
 
-// A bare-minimum structural gate in front of every native libass call this
-// module makes, checked before content ever reaches ass_read_memory.
-//
-// Not a parser — libass's own parser is far more capable than anything worth
-// duplicating here. This exists only to catch content with no recognisable
-// ASS structure at all (a bad download, a truncated sync, a hand-edited file
-// missing its own header) before it reaches a native call with no exception
-// boundary. On the JVM/Android binding that call is additionally wrapped in
-// runCatching for whatever JNA can still throw; on Kotlin/Native a trap
-// inside libass itself generally cannot be caught, so this check is that
-// binding's only line of defence, not a redundant one.
+// Structural gate before any native ass_read_memory call — not a parser,
+// just rejects content with no recognisable ASS header before it reaches
+// a native call that Kotlin/Native can't always guard with runCatching.
 internal fun looksLikeAssScript(content: String): Boolean {
     if (content.isBlank()) return false
     var sawScriptInfo = false
@@ -32,7 +24,5 @@ internal fun looksLikeAssScript(content: String): Boolean {
     return false
 }
 
-// Same bound the header field readers in each renderer already scan by —
-// every ASS header ends well inside this; [Events] on the densest track
-// measured here is line 40.
+// Same bound the header field readers already scan by; densest measured track's [Events] is line 40.
 private const val ASS_HEADER_SCAN_LINES = 200

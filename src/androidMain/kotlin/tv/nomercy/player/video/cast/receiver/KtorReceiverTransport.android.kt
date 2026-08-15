@@ -96,12 +96,7 @@ public class KtorReceiverTransport(
                                 ?.toDomain()
                                 ?: continue
                             val outcome = commandHandler(senderId, command)
-                            // Guarded the same way broadcast() below guards every
-                            // send against a dead socket. A sender that disconnects
-                            // between issuing this command and this reply makes
-                            // send() throw; the outer try/finally already unwinds
-                            // correctly either way, but an unguarded throw here
-                            // skipped straight past this reply with nothing logged.
+                            // Guarded like broadcast() below, against a dead socket.
                             runCatching {
                                 send(Frame.Text(Json.encodeToString(WireOutcome.serializer(), WireOutcome.from(outcome))))
                             }
