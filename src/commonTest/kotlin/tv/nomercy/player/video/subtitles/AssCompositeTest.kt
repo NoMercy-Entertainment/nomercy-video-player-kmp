@@ -36,14 +36,14 @@ class AssCompositeTest {
     )
 
     @Test
-    fun `divide by 255 is exact across every product of two bytes`() {
+    fun divideBy255IsExactAcrossEveryProductOfTwoBytes() {
         for (value in 0..(255 * 255)) {
             assertEquals(value / 255, div255(value), "div255($value)")
         }
     }
 
     @Test
-    fun `an opaque run is written at full colour`() {
+    fun anOpaqueRunIsWrittenAtFullColour() {
         val pixels: IntArray = compositeAssFrame(
             listOf(run(At(0, 0, 2, 2), libassColour(0x40, 0x80, 0xC0, 255), 255)),
             2,
@@ -56,7 +56,7 @@ class AssCompositeTest {
     // The whole point of the change: the toolkit is handed pixels already
     // multiplied by their alpha. Half-covered white is half-grey, not white.
     @Test
-    fun `a half covered run is premultiplied`() {
+    fun aHalfCoveredRunIsPremultiplied() {
         val pixels: IntArray = compositeAssFrame(
             listOf(run(At(0, 0, 1, 1), libassColour(0xFF, 0xFF, 0xFF, 255), 128)),
             1,
@@ -70,7 +70,7 @@ class AssCompositeTest {
     }
 
     @Test
-    fun `a fully transparent run draws nothing`() {
+    fun aFullyTransparentRunDrawsNothing() {
         val pixels: IntArray = compositeAssFrame(
             listOf(run(At(0, 0, 2, 2), libassColour(0xFF, 0x00, 0x00, 0), 255)),
             2,
@@ -83,7 +83,7 @@ class AssCompositeTest {
     // Runs arrive back-to-front. An outline drawn over the glyph it outlines is
     // the visible failure of getting this backwards.
     @Test
-    fun `a later run covers an earlier one`() {
+    fun aLaterRunCoversAnEarlierOne() {
         val pixels: IntArray = compositeAssFrame(
             listOf(
                 run(At(0, 0, 1, 1), libassColour(0xFF, 0x00, 0x00, 255), 255),
@@ -97,7 +97,7 @@ class AssCompositeTest {
     }
 
     @Test
-    fun `a run reaching past the surface is clipped rather than throwing`() {
+    fun aRunReachingPastTheSurfaceIsClippedRatherThanThrowing() {
         val pixels: IntArray = compositeAssFrame(
             listOf(run(At(-1, -1, 4, 4), libassColour(0xFF, 0xFF, 0xFF, 255), 255)),
             2,
@@ -108,7 +108,7 @@ class AssCompositeTest {
     }
 
     @Test
-    fun `a run declaring more rows than it carries is skipped`() {
+    fun aRunDeclaringMoreRowsThanItCarriesIsSkipped() {
         val short = AssImage(
             x = 0,
             y = 0,
@@ -125,7 +125,7 @@ class AssCompositeTest {
     // The buffer is reused, so the frame before it has to be gone. It was not
     // possible to get this wrong when every frame allocated.
     @Test
-    fun `a reused compositor does not leak the previous frame`() {
+    fun aReusedCompositorDoesNotLeakThePreviousFrame() {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
@@ -142,7 +142,7 @@ class AssCompositeTest {
     // The frame handed out last is on screen and being drawn from. Writing the
     // next one into it repaints a frame the toolkit already owns.
     @Test
-    fun `consecutive frames are different buffers`() {
+    fun consecutiveFramesAreDifferentBuffers() {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
@@ -157,7 +157,7 @@ class AssCompositeTest {
     // buffer wherever the new frame does not reach, which on screen is a
     // subtitle that has gone still showing.
     @Test
-    fun `the changed region covers what was cleared as well as what was drawn`() {
+    fun theChangedRegionCoversWhatWasClearedAsWellAsWhatWasDrawn() {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
@@ -178,7 +178,7 @@ class AssCompositeTest {
     // lyric in the other are enclosed by the entire screen, and a surface
     // copying that rectangle pays for the empty middle on every frame.
     @Test
-    fun `two distant runs leave the rows between them untouched`() {
+    fun twoDistantRunsLeaveTheRowsBetweenThemUntouched() {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
@@ -198,7 +198,7 @@ class AssCompositeTest {
 
     // A row's span is the extent of everything on it, not of the last thing.
     @Test
-    fun `a row touched by two runs spans both`() {
+    fun aRowTouchedByTwoRunsSpansBoth() {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
@@ -213,7 +213,7 @@ class AssCompositeTest {
     }
 
     @Test
-    fun `a frame that drew nothing into a clean buffer reports no changed region`() {
+    fun aFrameThatDrewNothingIntoACleanBufferReportsNoChangedRegion() {
         val compositor = AssFrameCompositor()
 
         compositor.render(emptyList(), 8, 8)
@@ -223,7 +223,7 @@ class AssCompositeTest {
     }
 
     @Test
-    fun `consecutive frames report different slots`() {
+    fun consecutiveFramesReportDifferentSlots() {
         val compositor = AssFrameCompositor()
 
         val first: AssSurfaceFrame = compositor.render(emptyList(), 8, 8)
@@ -236,7 +236,7 @@ class AssCompositeTest {
     // resize. Comparing sizes would miss a resize that came back to the same
     // one.
     @Test
-    fun `a resize advances the generation`() {
+    fun aResizeAdvancesTheGeneration() {
         val compositor = AssFrameCompositor()
 
         val before: AssSurfaceFrame = compositor.render(emptyList(), 8, 8)
@@ -252,7 +252,7 @@ class AssCompositeTest {
     // straddling several band boundaries is the case that catches a band
     // applying runs out of order or sharing a colour table with its neighbour.
     @Test
-    fun `compositing in bands draws the same pixels as compositing in one pass`() = runTest {
+    fun compositingInBandsDrawsTheSamePixelsAsCompositingInOnePass() = runTest {
         val images: List<AssImage> = listOf(
             run(At(0, 0, 40, 40), libassColour(0xFF, 0x00, 0x00, 255), 200),
             run(At(10, 8, 40, 40), libassColour(0x00, 0xFF, 0x00, 180), 255),
@@ -267,7 +267,7 @@ class AssCompositeTest {
     }
 
     @Test
-    fun `compositing in bands reports the same changed rows`() = runTest {
+    fun compositingInBandsReportsTheSameChangedRows() = runTest {
         val images: List<AssImage> = listOf(
             run(At(2, 3, 8, 8), libassColour(0xFF, 0xFF, 0xFF, 255), 255),
             run(At(40, 50, 8, 8), libassColour(0xFF, 0x00, 0x00, 255), 255),
@@ -285,7 +285,7 @@ class AssCompositeTest {
     }
 
     @Test
-    fun `a resized surface starts from a clean buffer`() {
+    fun aResizedSurfaceStartsFromACleanBuffer() {
         val compositor = AssFrameCompositor()
         val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
 
