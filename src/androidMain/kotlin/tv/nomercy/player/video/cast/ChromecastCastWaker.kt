@@ -125,7 +125,12 @@ public open class ChromecastCastWaker(private val context: Context) : CastWaker 
             .getSystemService(Context.WIFI_SERVICE) as? WifiManager
         val lock = wifiManager?.createMulticastLock("NoMercyCastWake")
         try {
-            lock?.acquire()
+            // Guarded: acquire() can throw SecurityException — confirmed live,
+            // real device, 2026-08-15 (CHANGE_WIFI_MULTICAST_STATE missing).
+            // A denied lock makes mDNS resolution flakier during negotiation,
+            // which is what this lock exists to prevent — not a reason to
+            // crash a wake attempt that might still succeed without it.
+            runCatching { lock?.acquire() }
             return block()
         } finally {
             runCatching { if (lock?.isHeld == true) lock.release() }
@@ -145,10 +150,7 @@ public open class ChromecastCastWaker(private val context: Context) : CastWaker 
     ): Boolean? = withTimeoutOrNull(WAKE_TIMEOUT_MS) {
         suspendCancellableCoroutine { cont ->
             val mediaRouter = MediaRouter.getInstance(context)
-            // Guarded like withMulticastLock's own release above: this loop is
-            // not inside wake()'s outer runCatching, and the GMS Cast APIs it
-            // polls are not exception-free. Left unguarded, one throw here
-            // takes down the whole process rather than just failing this wake.
+            // Not inside wake()'s outer runCatching — guarded separately.
             val pollJob = CoroutineScope(Dispatchers.Main).launch {
                 while (isActive) {
                     val connected = runCatching {
