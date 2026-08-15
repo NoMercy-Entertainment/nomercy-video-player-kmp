@@ -385,6 +385,11 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeMessageKt {
 	public static final fun rememberChromeMessage (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/runtime/Composer;I)Ltv/nomercy/player/video/ui/chrome/ChromeMessage;
 }
 
+public final class tv/nomercy/player/video/ui/chrome/ChromePluginContributionsKt {
+	public static final fun ChromeSlotResolution (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/core/plugin/ChromeSlot;Lkotlin/jvm/functions/Function4;Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+	public static final fun PluginOverlayContributions (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/core/plugin/ChromeSlot;Landroidx/compose/runtime/Composer;II)V
+}
+
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromePresentationCommands {
 	public abstract fun cycleAspectRatio ()V
 	public abstract fun dismissMessage ()V
@@ -621,6 +626,10 @@ public final class tv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoC
 	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/ComposableSingletons$VideoChromeKt;
 	public fun <init> ()V
 	public final fun getLambda$1091680879$ui_compose ()Lkotlin/jvm/functions/Function2;
+}
+
+public abstract interface class tv/nomercy/player/video/ui/chrome/ComposeChromeContribution {
+	public abstract fun Render (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/runtime/Composer;I)V
 }
 
 public final class tv/nomercy/player/video/ui/chrome/PlaybackErrorMessage {
@@ -1124,7 +1133,7 @@ public final class tv/nomercy/player/video/ui/thumbnails/SpriteTileSource_jvmKt 
 public final class tv/nomercy/player/video/ui/tv/ComposableSingletons$NMTvPlayerViewKt {
 	public static final field INSTANCE Ltv/nomercy/player/video/ui/tv/ComposableSingletons$NMTvPlayerViewKt;
 	public fun <init> ()V
-	public final fun getLambda$68845221$ui_compose ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-1189296890$ui_compose ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class tv/nomercy/player/video/ui/tv/FluentIcons {
@@ -1235,7 +1244,7 @@ public final class tv/nomercy/player/video/ui/tv/GamepadInputKt {
 }
 
 public final class tv/nomercy/player/video/ui/tv/NMTvPlayerViewKt {
-	public static final fun NMTvPlayerView (Ltv/nomercy/player/video/tv/TvChromeController;Ltv/nomercy/player/video/tv/TvTransportState;Ltv/nomercy/player/video/tv/TvChromeContent;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/thumbnails/PreviewSprite;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun NMTvPlayerView (Ltv/nomercy/player/video/tv/TvChromeController;Ltv/nomercy/player/video/tv/TvTransportState;Ltv/nomercy/player/video/tv/TvChromeContent;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/video/ui/thumbnails/PreviewSprite;Ltv/nomercy/player/core/controllers/ComposedPlayer;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/tv/NoGamepad : tv/nomercy/player/video/ui/tv/GamepadInput {
