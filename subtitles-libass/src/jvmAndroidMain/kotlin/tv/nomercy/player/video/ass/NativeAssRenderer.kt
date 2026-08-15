@@ -74,6 +74,15 @@ internal class NativeAssRenderer(
 
     override fun loadTrack(assContent: String): Unit = synchronized(lock) {
         if (released) return
+        // Rejects content with no recognisable ASS structure before it can
+        // reach ass_read_memory below — see AssContentGuard. Dropped the same
+        // way a queue advancing to a track-less item already is: no track
+        // loaded, hasTrack() false, nothing drawn.
+        if (!looksLikeAssScript(assContent)) {
+            trackContent = null
+            disposeTrack()
+            return
+        }
         trackContent = assContent
         // Primed from the script, because one title ships tracks authored in
         // different spaces — No Game No Life's alternative track is 1280x720
@@ -227,7 +236,13 @@ internal class NativeAssRenderer(
         track?.let { return it }
 
         val content: ByteArray = trackContent?.encodeToByteArray() ?: return null
-        val loaded: Pointer = lib.ass_read_memory(library, content, content.size, null) ?: return null
+        // The content already passed looksLikeAssScript, which rules out
+        // garbage but not everything libass itself might reject. JNA
+        // exceptions are catchable (unlike a native trap on Kotlin/Native),
+        // so this is a real backstop, not a formality.
+        val loaded: Pointer = runCatching {
+            lib.ass_read_memory(library, content, content.size, null)
+        }.getOrNull() ?: return null
         track = loaded
         return loaded
     }
