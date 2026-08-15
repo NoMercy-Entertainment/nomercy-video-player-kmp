@@ -12,6 +12,7 @@ import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.mediarouter.media.MediaRouter
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastSession
@@ -144,9 +145,21 @@ public open class ChromecastCastWaker(private val context: Context) : CastWaker 
     ): Boolean? = withTimeoutOrNull(WAKE_TIMEOUT_MS) {
         suspendCancellableCoroutine { cont ->
             val mediaRouter = MediaRouter.getInstance(context)
+            // Guarded like withMulticastLock's own release above: this loop is
+            // not inside wake()'s outer runCatching, and the GMS Cast APIs it
+            // polls are not exception-free. Left unguarded, one throw here
+            // takes down the whole process rather than just failing this wake.
             val pollJob = CoroutineScope(Dispatchers.Main).launch {
                 while (isActive) {
-                    if (mediaRouter.selectedRoute?.id == routeId && sessionManager.currentCastSession?.isConnected == true) {
+                    val connected = runCatching {
+                        mediaRouter.selectedRoute?.id == routeId &&
+                            sessionManager.currentCastSession?.isConnected == true
+                    }.getOrElse { e ->
+                        Log.w("nm-cast-waker", "session poll failed: ${e.message}")
+                        if (cont.isActive) cont.resume(false)
+                        return@launch
+                    }
+                    if (connected) {
                         if (cont.isActive) cont.resume(true)
                         return@launch
                     }
