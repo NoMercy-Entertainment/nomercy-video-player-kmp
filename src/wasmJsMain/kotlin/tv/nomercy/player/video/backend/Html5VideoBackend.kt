@@ -67,6 +67,9 @@ public class Html5VideoBackend internal constructor(
     private var released: Boolean = false
     private var loadStarted: Boolean = false
     private var hadError: Boolean = false
+
+    /** Where the pending load should begin, applied once the element has metadata. */
+    private var pendingStartSeconds: Double? = null
     private var lastMuteVolume: Double = 1.0
 
     private val listeners: MutableList<Pair<String, (JsAny) -> Unit>> = mutableListOf()
@@ -93,9 +96,11 @@ public class Html5VideoBackend internal constructor(
             // load() call before the element has settled from the reset above.
         }
 
-        if (opts.startPositionMs > 0L) {
-            element.currentTime = opts.startPositionMs / MILLIS_PER_SECOND
-        }
+        // Held until the element has metadata. A currentTime written while the
+        // element is still empty is discarded by every engine, so a resumed
+        // item began at zero — and against a live transcode that means asking
+        // for media the encoder was never told to produce.
+        pendingStartSeconds = (opts.startPositionMs / MILLIS_PER_SECOND).takeIf { opts.startPositionMs > 0L }
 
         if (opts.autoplay) play()
     }
@@ -330,7 +335,13 @@ public class Html5VideoBackend internal constructor(
 
     private fun wireElementEvents() {
         track(CanonicalBackendEvent.LOAD_START)
-        track(CanonicalBackendEvent.LOADED_METADATA)
+        track(CanonicalBackendEvent.LOADED_METADATA) {
+            pendingStartSeconds?.let { seconds ->
+                element.currentTime = seconds
+                pendingStartSeconds = null
+            }
+            null
+        }
         track(CanonicalBackendEvent.CAN_PLAY)
         track(CanonicalBackendEvent.PLAY)
         track(CanonicalBackendEvent.PLAYING)
