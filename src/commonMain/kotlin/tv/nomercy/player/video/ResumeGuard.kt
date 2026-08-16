@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video
 
+import tv.nomercy.player.video.item.VideoPlaylistItem
+
 // Whether a saved position is close enough to the end to treat as finished.
 //
 // Ported from the deprecated app's `VideoPlayer.resumeGuardMs` (R6: "the
@@ -39,5 +41,22 @@ public object ResumeGuard {
         val nearEnd: Boolean = savedSeconds >= durationSeconds - TRAILING_SECONDS
         val highPercent: Boolean = percentComplete >= PERCENT_THRESHOLD
         return if (nearEnd || highPercent) 0L else savedSeconds * 1000L
+    }
+
+    /**
+     * The same answer for an item that carries its own progress and runtime.
+     *
+     * Here rather than at each call site because more than one thing needs it
+     * and they have to agree: the player starts the engine here, and a consumer
+     * resolving a server-side transcode has to ask the encoder to begin at the
+     * very same second. Two copies of this rule would disagree the first time
+     * one of them was tuned.
+     */
+    public fun startPositionMs(item: VideoPlaylistItem): Long {
+        val saved: Double = item.progress?.time ?: return 0L
+        val duration: Double = item.durationSeconds ?: return 0L
+        if (saved <= 0.0 || duration <= 0.0) return 0L
+
+        return startPositionMs(saved.toLong(), duration.toLong())
     }
 }

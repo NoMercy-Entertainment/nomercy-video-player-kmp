@@ -96,6 +96,18 @@ public interface VideoPlaylistItem : PlaylistItem {
      * segments and a next-chapter button that moved nothing. The reference reads
      * them off the item.
      */
+    /** The item's font manifest, for a styled subtitle that names faces the
+     *  device does not have. Null leaves the renderer on its own fallback. */
+    public val fontManifestUrl: String? get() = null
+
+    /**
+     * The server's id for the FILE behind this item, which is not [id].
+     *
+     * `LiveSourcePlugin` asks the server what this device should be sent, and
+     * the endpoint keys on the video file rather than the playlist entry.
+     */
+    public val videoFileId: String? get() = null
+
     public val chapters: List<Chapter> get() = emptyList()
 
     /**

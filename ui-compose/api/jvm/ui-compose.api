@@ -374,6 +374,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeMessage {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeMessage$Kind : java/lang/Enum {
+	public static final field Failure Ltv/nomercy/player/video/ui/chrome/ChromeMessage$Kind;
 	public static final field Feedback Ltv/nomercy/player/video/ui/chrome/ChromeMessage$Kind;
 	public static final field Host Ltv/nomercy/player/video/ui/chrome/ChromeMessage$Kind;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
@@ -636,6 +637,10 @@ public final class tv/nomercy/player/video/ui/chrome/PlaybackErrorMessage {
 	public static final field $stable I
 	public static final field INSTANCE Ltv/nomercy/player/video/ui/chrome/PlaybackErrorMessage;
 	public final fun forError (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/ui/chrome/PlayerMessageOverlayKt {
+	public static final fun PlayerMessageOverlay (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 }
 
 public abstract interface class tv/nomercy/player/video/ui/chrome/PlayerUiPlugin {
@@ -1093,6 +1098,20 @@ public final class tv/nomercy/player/video/ui/subtitles/AssSubtitleLayerKt {
 	public static final fun AssSubtitleLayer (Ltv/nomercy/player/video/subtitles/AssRenderer;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
 }
 
+public final class tv/nomercy/player/video/ui/subtitles/PlainSubtitleLayerKt {
+	public static final fun PlainSubtitleLayer (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/core/events/SubtitleStyle;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun getDefaultPlainSubtitleStyle ()Landroidx/compose/ui/text/TextStyle;
+}
+
+public final class tv/nomercy/player/video/ui/subtitles/SubtitleTextStyleKt {
+	public static final field SubtitleOutlineRatio F
+	public static final fun toAreaColor (Ltv/nomercy/player/core/events/SubtitleStyle;)J
+	public static final fun toBackgroundColor (Ltv/nomercy/player/core/events/SubtitleStyle;)J
+	public static final fun toOutlineStyle (Ltv/nomercy/player/core/events/SubtitleStyle;Landroidx/compose/ui/text/TextStyle;F)Landroidx/compose/ui/text/TextStyle;
+	public static final fun toTextStyle (Ltv/nomercy/player/core/events/SubtitleStyle;FLkotlin/jvm/functions/Function1;)Landroidx/compose/ui/text/TextStyle;
+	public static synthetic fun toTextStyle$default (Ltv/nomercy/player/core/events/SubtitleStyle;FLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Landroidx/compose/ui/text/TextStyle;
+}
+
 public class tv/nomercy/player/video/ui/thumbnails/PreviewSprite {
 	public static final field $stable I
 	public fun <init> (Ljava/util/List;Ltv/nomercy/player/video/ui/thumbnails/SpriteTileSource;)V
@@ -1295,8 +1314,8 @@ public final class tv/nomercy/player/video/ui/tv/TvChromeKt {
 public final class tv/nomercy/player/video/ui/tv/TvChromeStrings {
 	public static final field $stable I
 	public fun <init> ()V
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Ljava/lang/String;
 	public final fun component11 ()Ljava/lang/String;
@@ -1328,14 +1347,15 @@ public final class tv/nomercy/player/video/ui/tv/TvChromeStrings {
 	public final fun component35 ()Ljava/lang/String;
 	public final fun component36 ()Ljava/lang/String;
 	public final fun component37 ()Ljava/lang/String;
+	public final fun component38 ()Ljava/lang/String;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6 ()Ljava/lang/String;
 	public final fun component7 ()Ljava/lang/String;
 	public final fun component8 ()Ljava/lang/String;
 	public final fun component9 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
-	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/ui/tv/TvChromeStrings;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IILjava/lang/Object;)Ltv/nomercy/player/video/ui/tv/TvChromeStrings;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAspectRatio ()Ljava/lang/String;
 	public final fun getBack ()Ljava/lang/String;
@@ -1353,6 +1373,7 @@ public final class tv/nomercy/player/video/ui/tv/TvChromeStrings {
 	public final fun getMute ()Ljava/lang/String;
 	public final fun getMutedMessage ()Ljava/lang/String;
 	public final fun getNext ()Ljava/lang/String;
+	public final fun getOffValue ()Ljava/lang/String;
 	public final fun getPause ()Ljava/lang/String;
 	public final fun getPictureInPicture ()Ljava/lang/String;
 	public final fun getPlay ()Ljava/lang/String;

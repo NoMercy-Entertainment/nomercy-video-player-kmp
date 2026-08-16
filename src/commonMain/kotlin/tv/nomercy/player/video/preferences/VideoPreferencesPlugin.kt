@@ -19,6 +19,7 @@ import tv.nomercy.player.core.plugin.PluginOptionField
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
+import tv.nomercy.player.core.ports.subtitleKindOf
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoEvents
 
@@ -98,7 +99,20 @@ public open class VideoPreferencesPlugin(
         // asking the player which track is selected cannot disagree with the
         // player. Resolving the index here would be a second answer to a
         // question that already has one.
-        on(CoreEvents.Subtitle) { remember { store.saveSubtitle(player.subtitle()?.language) } }
+        on(CoreEvents.Subtitle) {
+            remember {
+                val track: SubtitleTrack? = player.subtitle()
+                store.saveSubtitle(
+                    track?.let {
+                        SavedSubtitle(
+                            language = it.language,
+                            kind = subtitleKindOf(it.label),
+                            format = it.format,
+                        )
+                    },
+                )
+            }
+        }
         on(CoreEvents.AudioTrack) { remember { store.saveAudio(player.audioTrack()?.language) } }
 
         // The viewer's choice, not the ladder's. `quality:requested` fires on an
@@ -107,7 +121,10 @@ public open class VideoPreferencesPlugin(
         // having left it.
         on(VideoEvents.QualityRequested) { remember { store.saveQuality(chosenQuality()) } }
 
-        on(CoreEvents.Item) { remember { restore() } }
+        // MediaReady, not Item. Item fires when the CURSOR moves — before the new
+        // source is loaded — so subtitles() was still empty and every restore on
+        // an episode change silently found nothing to select.
+        on(CoreEvents.MediaReady) { remember { restore() } }
 
         remember {
             applyStyle()
@@ -154,9 +171,23 @@ public open class VideoPreferencesPlugin(
         if (store.muted() == true) player.mute(restored)
     }
 
+    // Narrowest match first. A ladder filtered by device capability can drop the
+    // exact variant, and a viewer is better served by the same language in a
+    // different flavour than by no captions at all.
     private suspend fun restoreSubtitle() {
-        val language: String = store.subtitle() ?: return
-        val track: SubtitleTrack = player.subtitles().firstOrNull { it.language == language } ?: return
+        val saved: SavedSubtitle = store.subtitle() ?: return
+        val available: List<SubtitleTrack> = player.subtitles()
+
+        val track: SubtitleTrack = available.firstOrNull {
+            it.language == saved.language &&
+                subtitleKindOf(it.label) == saved.kind &&
+                it.format == saved.format
+        } ?: available.firstOrNull {
+            it.language == saved.language && subtitleKindOf(it.label) == saved.kind
+        } ?: available.firstOrNull {
+            it.language == saved.language
+        } ?: return
+
         player.subtitle(track)
     }
 

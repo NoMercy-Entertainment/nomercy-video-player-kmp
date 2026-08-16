@@ -47,6 +47,15 @@ public data class ChromeMessage(
 
         /** The host asked for these words to be on screen. */
         Host,
+
+        /**
+         * Playback failed, and this does NOT clear on a time tick.
+         *
+         * An unsupported video codec keeps its audio running, so `Time` kept
+         * firing and wiped the failure the instant it was reported — a black
+         * picture with no explanation, measured on an SM-A137F.
+         */
+        Failure,
     }
 }
 
@@ -99,7 +108,10 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
             player.on(CoreEvents.Item) { feedback(strings.loading) },
             player.on(CoreEvents.Playing) { clearFeedback() },
             player.on(CoreEvents.Time) { clearFeedback() },
-            player.on(CoreEvents.Error) { feedback(strings.error) },
+            player.on(CoreEvents.Error) {
+                message = ChromeMessage(strings.error, ChromeMessage.Kind.Failure)
+                expiresAfterMs = null
+            },
             player.on(VideoEvents.DisplayMessage) { asked ->
                 message = ChromeMessage(asked.text, ChromeMessage.Kind.Host)
                 expiresAfterMs = asked.ms?.takeIf { it > 0.0 }
@@ -122,6 +134,17 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
             player.on(CoreEvents.Mute) { change ->
                 timed(if (change.muted) strings.mutedMessage else strings.unmutedMessage)
             },
+
+            // A track change, named. Master says so on every audio and subtitle
+            // switch and this channel carried neither, so selecting a styled
+            // subtitle — fetched, then its fonts, then rasterised — showed
+            // nothing at all until the first cue arrived seconds later.
+            player.on(CoreEvents.Subtitle) { change ->
+                timed(trackMessage(strings.subtitles, player.subtitles(), change.track, strings.offValue) { it.label })
+            },
+            player.on(CoreEvents.AudioTrack) { change ->
+                timed(trackMessage(strings.language, player.audioTracks(), change.id, strings.offValue) { it.label })
+            },
         )
 
         onDispose { subscriptions.forEach(Subscription::dispose) }
@@ -142,6 +165,16 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
 
     return message
 }
+
+/**
+ * "Subtitles: English (Full)", the shape the volume notice already uses.
+ *
+ * Both track events carry an INDEX rather than an id — `ComposedPlayer` emits
+ * `indexIn(audioTracks(), track)` — and a null or out-of-range one is the track
+ * being turned off.
+ */
+internal fun <T> trackMessage(kind: String, tracks: List<T>, index: Double?, off: String, name: (T) -> String): String =
+    "$kind: ${index?.toInt()?.let(tracks::getOrNull)?.let(name) ?: off}"
 
 // The web's `{level}` placeholder, and its 1200ms for a notice that says what
 // just happened rather than what is happening.

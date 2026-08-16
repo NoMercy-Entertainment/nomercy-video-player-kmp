@@ -148,6 +148,11 @@ private suspend fun AssRenderer.rasterise(
             withContext(Dispatchers.Default) { frameSize(target.width, target.height) }
         }
 
+        // On the composition thread, not inside the block below: an engine's
+        // own position is main-thread-only, so reading it there forced the
+        // consumer to pass a cached snapshot and cues landed frames late.
+        val now: Long = positionMs()
+
         // Rasterising OFF the composition thread, which is the whole
         // point of this line.
         //
@@ -164,7 +169,7 @@ private suspend fun AssRenderer.rasterise(
         // Only the finished ImageBitmap crosses back, and the state
         // write lands on the main thread where composition expects it.
         val drawn: ImageBitmap? = withContext(Dispatchers.Default) {
-            nextPicture(this@rasterise, drawing, positionMs(), target)
+            nextPicture(this@rasterise, drawing, now, target)
         }
 
         // Only a NEW picture is published. The renderer answers null for a

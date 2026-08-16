@@ -396,6 +396,8 @@ abstract interface tv.nomercy.player.video.item/VideoPlaylistItem : tv.nomercy.p
         open fun <get-description>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.description.<get-description>|<get-description>(){}[0]
     open val episode // tv.nomercy.player.video.item/VideoPlaylistItem.episode|{}episode[0]
         open fun <get-episode>(): kotlin/Int? // tv.nomercy.player.video.item/VideoPlaylistItem.episode.<get-episode>|<get-episode>(){}[0]
+    open val fontManifestUrl // tv.nomercy.player.video.item/VideoPlaylistItem.fontManifestUrl|{}fontManifestUrl[0]
+        open fun <get-fontManifestUrl>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.fontManifestUrl.<get-fontManifestUrl>|<get-fontManifestUrl>(){}[0]
     open val image // tv.nomercy.player.video.item/VideoPlaylistItem.image|{}image[0]
         open fun <get-image>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.image.<get-image>|<get-image>(){}[0]
     open val playlistType // tv.nomercy.player.video.item/VideoPlaylistItem.playlistType|{}playlistType[0]
@@ -410,6 +412,8 @@ abstract interface tv.nomercy.player.video.item/VideoPlaylistItem : tv.nomercy.p
         open fun <get-subtitles>(): kotlin.collections/List<tv.nomercy.player.core.ports/SubtitleTrack> // tv.nomercy.player.video.item/VideoPlaylistItem.subtitles.<get-subtitles>|<get-subtitles>(){}[0]
     open val thumbnail // tv.nomercy.player.video.item/VideoPlaylistItem.thumbnail|{}thumbnail[0]
         open fun <get-thumbnail>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.thumbnail.<get-thumbnail>|<get-thumbnail>(){}[0]
+    open val videoFileId // tv.nomercy.player.video.item/VideoPlaylistItem.videoFileId|{}videoFileId[0]
+        open fun <get-videoFileId>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.videoFileId.<get-videoFileId>|<get-videoFileId>(){}[0]
     open val videoType // tv.nomercy.player.video.item/VideoPlaylistItem.videoType|{}videoType[0]
         open fun <get-videoType>(): kotlin/String? // tv.nomercy.player.video.item/VideoPlaylistItem.videoType.<get-videoType>|<get-videoType>(){}[0]
 }
@@ -1223,6 +1227,38 @@ final class tv.nomercy.player.video.preferences/SavedQuality { // tv.nomercy.pla
 
     final object Companion { // tv.nomercy.player.video.preferences/SavedQuality.Companion|null[0]
         final fun serializer(): kotlinx.serialization/KSerializer<tv.nomercy.player.video.preferences/SavedQuality> // tv.nomercy.player.video.preferences/SavedQuality.Companion.serializer|serializer(){}[0]
+    }
+}
+
+final class tv.nomercy.player.video.preferences/SavedSubtitle { // tv.nomercy.player.video.preferences/SavedSubtitle|null[0]
+    constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/String? = ...) // tv.nomercy.player.video.preferences/SavedSubtitle.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String?){}[0]
+
+    final val format // tv.nomercy.player.video.preferences/SavedSubtitle.format|{}format[0]
+        final fun <get-format>(): kotlin/String? // tv.nomercy.player.video.preferences/SavedSubtitle.format.<get-format>|<get-format>(){}[0]
+    final val kind // tv.nomercy.player.video.preferences/SavedSubtitle.kind|{}kind[0]
+        final fun <get-kind>(): kotlin/String? // tv.nomercy.player.video.preferences/SavedSubtitle.kind.<get-kind>|<get-kind>(){}[0]
+    final val language // tv.nomercy.player.video.preferences/SavedSubtitle.language|{}language[0]
+        final fun <get-language>(): kotlin/String // tv.nomercy.player.video.preferences/SavedSubtitle.language.<get-language>|<get-language>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.preferences/SavedSubtitle.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // tv.nomercy.player.video.preferences/SavedSubtitle.component2|component2(){}[0]
+    final fun component3(): kotlin/String? // tv.nomercy.player.video.preferences/SavedSubtitle.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/String? = ...): tv.nomercy.player.video.preferences/SavedSubtitle // tv.nomercy.player.video.preferences/SavedSubtitle.copy|copy(kotlin.String;kotlin.String?;kotlin.String?){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.preferences/SavedSubtitle.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.preferences/SavedSubtitle.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.preferences/SavedSubtitle.toString|toString(){}[0]
+
+    final object $serializer : kotlinx.serialization.internal/GeneratedSerializer<tv.nomercy.player.video.preferences/SavedSubtitle> { // tv.nomercy.player.video.preferences/SavedSubtitle.$serializer|null[0]
+        final val descriptor // tv.nomercy.player.video.preferences/SavedSubtitle.$serializer.descriptor|{}descriptor[0]
+            final fun <get-descriptor>(): kotlinx.serialization.descriptors/SerialDescriptor // tv.nomercy.player.video.preferences/SavedSubtitle.$serializer.descriptor.<get-descriptor>|<get-descriptor>(){}[0]
+
+        final fun childSerializers(): kotlin/Array<kotlinx.serialization/KSerializer<*>> // tv.nomercy.player.video.preferences/SavedSubtitle.$serializer.childSerializers|childSerializers(){}[0]
+        final fun deserialize(kotlinx.serialization.encoding/Decoder): tv.nomercy.player.video.preferences/SavedSubtitle // tv.nomercy.player.video.preferences/SavedSubtitle.$serializer.deserialize|deserialize(kotlinx.serialization.encoding.Decoder){}[0]
+        final fun serialize(kotlinx.serialization.encoding/Encoder, tv.nomercy.player.video.preferences/SavedSubtitle) // tv.nomercy.player.video.preferences/SavedSubtitle.$serializer.serialize|serialize(kotlinx.serialization.encoding.Encoder;tv.nomercy.player.video.preferences.SavedSubtitle){}[0]
+    }
+
+    final object Companion { // tv.nomercy.player.video.preferences/SavedSubtitle.Companion|null[0]
+        final fun serializer(): kotlinx.serialization/KSerializer<tv.nomercy.player.video.preferences/SavedSubtitle> // tv.nomercy.player.video.preferences/SavedSubtitle.Companion.serializer|serializer(){}[0]
     }
 }
 
@@ -2351,6 +2387,7 @@ final object tv.nomercy.player.video/ResumeGuard { // tv.nomercy.player.video/Re
         final fun <get-TRAILING_SECONDS>(): kotlin/Long // tv.nomercy.player.video/ResumeGuard.TRAILING_SECONDS.<get-TRAILING_SECONDS>|<get-TRAILING_SECONDS>(){}[0]
 
     final fun startPositionMs(kotlin/Long, kotlin/Long, kotlin/Float = ...): kotlin/Long // tv.nomercy.player.video/ResumeGuard.startPositionMs|startPositionMs(kotlin.Long;kotlin.Long;kotlin.Float){}[0]
+    final fun startPositionMs(tv.nomercy.player.video.item/VideoPlaylistItem): kotlin/Long // tv.nomercy.player.video/ResumeGuard.startPositionMs|startPositionMs(tv.nomercy.player.video.item.VideoPlaylistItem){}[0]
 }
 
 final object tv.nomercy.player.video/VideoEvents { // tv.nomercy.player.video/VideoEvents|null[0]

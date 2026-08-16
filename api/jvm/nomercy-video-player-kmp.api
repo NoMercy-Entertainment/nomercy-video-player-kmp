@@ -127,6 +127,7 @@ public final class tv/nomercy/player/video/ResumeGuard {
 	public static final field PERCENT_THRESHOLD F
 	public static final field TRAILING_SECONDS J
 	public final fun startPositionMs (JJF)J
+	public final fun startPositionMs (Ltv/nomercy/player/video/item/VideoPlaylistItem;)J
 	public static synthetic fun startPositionMs$default (Ltv/nomercy/player/video/ResumeGuard;JJFILjava/lang/Object;)J
 }
 
@@ -1293,6 +1294,7 @@ public abstract interface class tv/nomercy/player/video/item/VideoPlaylistItem :
 	public fun getDescription ()Ljava/lang/String;
 	public abstract fun getDurationSeconds ()Ljava/lang/Double;
 	public fun getEpisode ()Ljava/lang/Integer;
+	public fun getFontManifestUrl ()Ljava/lang/String;
 	public fun getImage ()Ljava/lang/String;
 	public fun getPlaylistType ()Ljava/lang/String;
 	public fun getPoster ()Ljava/lang/String;
@@ -1301,6 +1303,7 @@ public abstract interface class tv/nomercy/player/video/item/VideoPlaylistItem :
 	public fun getShow ()Ljava/lang/String;
 	public fun getSubtitles ()Ljava/util/List;
 	public fun getThumbnail ()Ljava/lang/String;
+	public fun getVideoFileId ()Ljava/lang/String;
 	public fun getVideoType ()Ljava/lang/String;
 }
 
@@ -1309,6 +1312,7 @@ public final class tv/nomercy/player/video/item/VideoPlaylistItem$DefaultImpls {
 	public static fun getChapters (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/util/List;
 	public static fun getDescription (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getEpisode (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/Integer;
+	public static fun getFontManifestUrl (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getImage (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getPlaylistType (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getPoster (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
@@ -1316,6 +1320,7 @@ public final class tv/nomercy/player/video/item/VideoPlaylistItem$DefaultImpls {
 	public static fun getShow (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getSubtitles (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/util/List;
 	public static fun getThumbnail (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
+	public static fun getVideoFileId (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getVideoType (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 }
 
@@ -1398,6 +1403,38 @@ public final synthetic class tv/nomercy/player/video/preferences/SavedQuality$$s
 }
 
 public final class tv/nomercy/player/video/preferences/SavedQuality$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/preferences/SavedSubtitle {
+	public static final field Companion Ltv/nomercy/player/video/preferences/SavedSubtitle$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/preferences/SavedSubtitle;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/preferences/SavedSubtitle;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/preferences/SavedSubtitle;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFormat ()Ljava/lang/String;
+	public final fun getKind ()Ljava/lang/String;
+	public final fun getLanguage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class tv/nomercy/player/video/preferences/SavedSubtitle$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ltv/nomercy/player/video/preferences/SavedSubtitle$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ltv/nomercy/player/video/preferences/SavedSubtitle;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ltv/nomercy/player/video/preferences/SavedSubtitle;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/preferences/SavedSubtitle$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 

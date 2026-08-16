@@ -205,6 +205,12 @@ public open class NMVideoPlayer(
         register(this)
         backend?.let { videoBridge.attach(it) }
 
+        // Resume where the viewer left off, as a START position rather than a
+        // seek afterwards. [ResumeGuard] was written for exactly this and was
+        // called by nothing but its own tests, so a progressed episode always
+        // began at zero.
+        context.startPositionFor = { item -> resumePositionMs(item) }
+
         // Once the engine has populated its lists, which is what mediaReady
         // says. Asking any earlier reads two empty lists and picks nothing.
         context.on(CoreEvents.MediaReady) {
@@ -745,6 +751,16 @@ public open class NMVideoPlayer(
     public open fun clearMessage() {
         emit(VideoEvents.RemoveMessage, Unit)
     }
+
+    /**
+     * Where [item] should start, from its own saved progress.
+     *
+     * Zero for anything that is not a video item, and for progress
+     * [ResumeGuard] reads as finished — a nearly-complete episode resumed at
+     * its end hits end-of-stream immediately, and so does every play after it.
+     */
+    private fun resumePositionMs(item: PlaylistItem): Long =
+        (item as? VideoPlaylistItem)?.let(ResumeGuard::startPositionMs) ?: 0L
 
     public companion object {
         private val live: MutableList<NMVideoPlayer> = mutableListOf()
