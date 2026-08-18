@@ -14,6 +14,8 @@ import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssImage
 import com.sun.jna.Pointer
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 // libass on the JVM, over JNA.
 //
@@ -36,7 +38,11 @@ internal class NativeAssRenderer(
     private val bitmapCacheMegabytes: Int,
 ) : AssRenderer {
 
-    private val lock = Any()
+    // A ReentrantLock, not `synchronized`, because [render] needs `tryLock` —
+    // see there for why. Every other call still takes it unconditionally: they
+    // run off the frame-render path (from the plugin's own suspend functions),
+    // so blocking briefly there costs nothing a viewer can see.
+    private val lock = ReentrantLock()
 
     private var renderer: Pointer? = null
     private var track: Pointer? = null
@@ -50,7 +56,7 @@ internal class NativeAssRenderer(
     private var hostStorage: Boolean = false
     private var released: Boolean = false
 
-    override fun addFont(name: String, data: ByteArray): Unit = synchronized(lock) {
+    override fun addFont(name: String, data: ByteArray): Unit = lock.withLock {
         if (released) return
         lib.ass_add_font(library, name, data, data.size)
         disposeRenderer()
@@ -60,7 +66,7 @@ internal class NativeAssRenderer(
     // own attached fonts otherwise resolves against the previous one's, and that
     // failure is silent — the cue renders in a face that exists rather than the
     // one the disc carried.
-    override fun clearFonts(): Unit = synchronized(lock) {
+    override fun clearFonts(): Unit = lock.withLock {
         if (released) return
         lib.ass_clear_fonts(library)
         disposeRenderer()
@@ -70,9 +76,9 @@ internal class NativeAssRenderer(
     // script is how this renderer is told to draw nothing, and without a way to
     // ask, the layer could not tell "no cue due" from "no track at all" and kept
     // the last rasterised frame painted over the next film.
-    override fun hasTrack(): Boolean = synchronized(lock) { !trackContent.isNullOrBlank() }
+    override fun hasTrack(): Boolean = lock.withLock { !trackContent.isNullOrBlank() }
 
-    override fun loadTrack(assContent: String): Unit = synchronized(lock) {
+    override fun loadTrack(assContent: String): Unit = lock.withLock {
         if (released) return
         // Structural gate before ass_read_memory — see AssContentGuard.
         if (!looksLikeAssScript(assContent)) {
@@ -97,11 +103,11 @@ internal class NativeAssRenderer(
         renderer?.let { applySize(it) }
     }
 
-    override fun storageSize(): AssSize? = synchronized(lock) {
+    override fun storageSize(): AssSize? = lock.withLock {
         if (storageWidth > 0 && storageHeight > 0) AssSize(storageWidth, storageHeight) else null
     }
 
-    override fun storageSize(width: Int, height: Int): Unit = synchronized(lock) {
+    override fun storageSize(width: Int, height: Int): Unit = lock.withLock {
         if (released) return
         // A host that knows the decoded size outranks the script, and keeps
         // outranking it: the next track must not quietly take the answer back.
@@ -119,24 +125,39 @@ internal class NativeAssRenderer(
             .firstOrNull { it.trimStart().startsWith(key, ignoreCase = true) }
             ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
 
-    override fun frameSize(width: Int, height: Int): Unit = synchronized(lock) {
+    override fun frameSize(width: Int, height: Int): Unit = lock.withLock {
         if (released) return
         this.width = width.coerceAtLeast(1)
         this.height = height.coerceAtLeast(1)
         renderer?.let { applySize(it) }
     }
 
-    override fun render(timeMillis: Long): AssFrame? = synchronized(lock) {
-        if (released) return null
-        val target: Pointer = activeRenderer() ?: return null
-        val loaded: Pointer = activeTrack() ?: return null
+    // Called every drawn frame, on the same dispatcher a subtitle switch's
+    // clearFonts()+addFont()×N+loadTrack() runs on — and that sequence can hold
+    // the lock for real wall-clock time (parsing a script, decoding fonts over
+    // JNI). Blocking here waited for it, which starved every other frame queued
+    // on the same pool behind this call and read on screen as playback
+    // stuttering on every subtitle switch, ASS or VTT alike (a VTT selection
+    // still calls clearTrack(), same lock). `tryLock` instead: a frame that
+    // lands mid-switch is answered `changed = false`, which the caller already
+    // treats as "keep what's on screen" — exactly right for one dropped
+    // subtitle redraw, and it costs the video nothing.
+    override fun render(timeMillis: Long): AssFrame? {
+        if (!lock.tryLock()) return AssFrame(images = emptyList(), changed = false)
+        try {
+            if (released) return null
+            val target: Pointer = activeRenderer() ?: return null
+            val loaded: Pointer = activeTrack() ?: return null
 
-        val changed = IntArray(1)
-        val head: Pointer? = lib.ass_render_frame(target, loaded, timeMillis, changed)
-        return AssFrame(
-            images = if (head == null) emptyList() else walk(head),
-            changed = changed[0] != 0,
-        )
+            val changed = IntArray(1)
+            val head: Pointer? = lib.ass_render_frame(target, loaded, timeMillis, changed)
+            return AssFrame(
+                images = if (head == null) emptyList() else walk(head),
+                changed = changed[0] != 0,
+            )
+        } finally {
+            lock.unlock()
+        }
     }
 
     // libass returns a linked list it owns, valid until the next render. Copying
@@ -255,7 +276,7 @@ internal class NativeAssRenderer(
         renderer = null
     }
 
-    override fun release(): Unit = synchronized(lock) {
+    override fun release(): Unit = lock.withLock {
         if (released) return
         released = true
         disposeRenderer()
