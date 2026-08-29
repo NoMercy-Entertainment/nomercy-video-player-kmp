@@ -52,10 +52,14 @@ internal fun SubtitleSettingsMenu(
 
     Column {
         SubtitleSetting.entries.forEach { setting ->
+            // The value belongs in the row's tail, where every other menu puts
+            // it. Concatenated into the label it read as one long left-aligned
+            // string and these rows alone looked unlike the rest of the card.
             MenuRow(
-                "${strings.subtitleSettingLabel(setting)}  ${setting.valueOf(style)}",
+                strings.subtitleSettingLabel(setting),
                 tag = "$ROW_SUBTITLE_SETTING${setting.property}",
                 opensSubMenu = true,
+                subLabel = setting.valueOf(style),
             ) {
                 open = setting
             }

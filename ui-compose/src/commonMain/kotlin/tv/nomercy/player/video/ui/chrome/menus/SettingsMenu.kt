@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -114,7 +115,12 @@ public fun SettingsMenu(
     // `max-width: calc(100% - 2rem)` is a percentage of the player, and the 16px
     // start inset is what enforces it: the card is right-aligned, so it can grow
     // leftwards until 16px from the far edge and no further.
-    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+    // Fills the player, not just its width. With a wrap-content height there is
+    // no room below the card for `BottomEnd` to push it into, so the panel hung
+    // from the top of the player instead of sitting above the settings button —
+    // and `maxHeight`, which decides portrait vs landscape and the card's size,
+    // was measuring the card rather than the picture.
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         // The web reads `(orientation: portrait)` off the window and writes it
         // onto the container as `data-orientation`; the player's own box is the
         // nearest thing this composable can measure.
@@ -122,7 +128,7 @@ public fun SettingsMenu(
         val panel: PanelBox = panelBoxOf(menu, state.queue, maxWidth, maxHeight, portrait)
 
         Box(
-            modifier = Modifier.fillMaxWidth().padding(panelInsets(panel)),
+            modifier = Modifier.fillMaxSize().padding(panelInsets(panel)),
             contentAlignment = Alignment.BottomEnd,
         ) {
             SettingsPanel(panel, MenuHeaderSpec(strings, menu, onMenuChange, state.queue)) {

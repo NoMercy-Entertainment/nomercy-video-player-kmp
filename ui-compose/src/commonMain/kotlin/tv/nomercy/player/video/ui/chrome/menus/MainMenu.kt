@@ -200,6 +200,10 @@ private fun MenuRows(rows: @Composable () -> Unit) {
 }
 
 
-// `.main-menu { max-height: 60vh }` — the settings list, inside a frame the
-// stylesheet caps separately at `calc(100% - 2rem)`.
-private const val ROWS_MAX_HEIGHT_SHARE = 0.6f
+// `.main-menu { max-height: 60vh }` is a desktop rule, and it starves a phone.
+// A browser window at 60vh still has room for a dozen rows; a handset held
+// sideways is barely 400dp tall, and six tenths of that is four rows with a
+// scrollbar. The frame around this is still capped at `calc(100% - 2rem)`, so
+// raising the list's own share cannot push the card past the player's edge —
+// it only stops the card ending well short of a ceiling that already exists.
+private const val ROWS_MAX_HEIGHT_SHARE = 0.85f
