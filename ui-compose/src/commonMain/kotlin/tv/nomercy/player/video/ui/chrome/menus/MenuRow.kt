@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.sp
 // time. Clickable rather than key-handled so a finger, a pointer and a remote
 // all reach it: clickable already answers the centre of a pad and enter.
 @Composable
-internal fun MenuRow(
+public fun MenuRow(
     label: String,
     modifier: Modifier = Modifier,
     isCurrent: Boolean = false,

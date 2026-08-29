@@ -158,8 +158,12 @@ internal class VideoChromeCommands(
 //
 // Its own function so the assembly reads as a list of parts — and so the scope
 // lives exactly as long as the commands that use it.
+//
+// Public because every host that draws the chrome's menus needs one, and the
+// only alternative is each app writing the same forty forwards to the player.
+// That is how a client's menus drift away from the library's.
 @Composable
-internal fun rememberVideoCommands(
+public fun rememberVideoCommands(
     player: NMVideoPlayer,
     autoSkip: AutoSkipPreference,
     clock: ClockPreference,

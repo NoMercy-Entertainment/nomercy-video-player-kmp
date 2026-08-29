@@ -44,6 +44,7 @@ import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.video.tv.TvChromeItem
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
+import tv.nomercy.player.video.ui.chrome.ChromeSlot
 import tv.nomercy.player.video.ui.chrome.ChromeSlots
 import tv.nomercy.player.video.ui.chrome.ChromeState
 import tv.nomercy.player.video.ui.chrome.LocalChromeSlots
@@ -129,7 +130,8 @@ public fun SettingsMenu(
                     MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
                     MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
                     MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
-                    MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
+                    MenuState.Subtitle ->
+                        SubtitleMenu(state, commands, strings, onMenuChange, slots.subtitleExtras)
                     MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
                     MenuState.Playlist ->
                         PlaylistPane(state, commands, strings, onMenuChange, slots.artwork, portrait)
@@ -331,6 +333,7 @@ private fun SubtitleMenu(
     commands: ChromeCommands,
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
+    extras: ChromeSlot? = null,
 ) {
     val locale: String = rememberChromeLocale()
 
@@ -354,6 +357,10 @@ private fun SubtitleMenu(
                 onMenuChange(MenuState.Hidden)
             }
         }
+
+        // Last, under the tracks the item already carries: anything the host can
+        // add to that list belongs after it, not competing with it.
+        if (extras != null) item { extras(state, commands) }
     }
 }
 
