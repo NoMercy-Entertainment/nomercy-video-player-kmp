@@ -69,14 +69,16 @@ import tv.nomercy.player.video.ui.chrome.ChromeState
  * be drawn from a list the rule calls flat.
  *
  *     .playlist-cols  { display: flex; flex-direction: row; flex: 1 }
- *     .seasons-pane   { flex: 1; min-width: 16rem; border-right: 2px solid … }
- *     .episode-menu   { flex: 1; min-width: 36rem }
+ *     .seasons-pane   { flex: 1 1 16rem; min-width: 0; border-right: 2px solid … }
+ *     .episode-menu   { flex: 1 1 36rem; min-width: 0 }
  *     .playlist-flat .seasons-pane { display: none }
  *
- * Both rails are `flex: 1` over a floor, which is `weight(1f)` over a `widthIn`
- * here. Below 16rem + 36rem of room the floors win and the right rail is clipped,
- * which is what the browser does as well — `.playlist-cols` carries
- * `overflow: hidden`.
+ * The two widths are a BASIS on both sides, not a floor. They were `min-width`
+ * on the web until a flex child's minimum was found outranking the menu frame's
+ * `max-width`: the menu grew past its own cap, covered the picture and cut each
+ * card's overview off at the right edge. A Compose `widthIn(min = …)` inside a
+ * bounded Row cannot do that — it is clamped by the incoming constraints — so
+ * this side never showed the fault and does not change.
  */
 @Composable
 internal fun PlaylistPane(
@@ -118,9 +120,9 @@ private fun SeasonedRails(picks: PlaylistPicks, seasons: List<Int>, state: Chrom
         // Weighted 16:36, not 1:1.
         //
         // `flex: 1` with `flex-basis: 0` splits the free space evenly, and the
-        // two mins are what pull it apart: the card caps at 52rem and the mins
-        // add up to exactly that, so on the web the rails land on 16rem and
-        // 36rem precisely. `weight(1f)` splits evenly too, but a Compose `min`
+        // two widths are what pull it apart: the web asks for 16rem and 36rem
+        // as each rail's basis, and they add up to the 52rem the frame caps at.
+        // `weight(1f)` splits evenly too, but a Compose `min`
         // only raises a child that fell under it — so on a rail wider than the
         // card's cap the seasons column kept half the width and the episodes
         // were squeezed into the rest. The ratio the mins produce is the rule.
