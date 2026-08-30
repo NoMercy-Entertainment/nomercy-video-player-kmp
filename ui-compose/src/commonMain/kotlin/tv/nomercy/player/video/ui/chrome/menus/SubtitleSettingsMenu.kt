@@ -19,6 +19,9 @@ import androidx.compose.ui.platform.testTag
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.video.ui.chrome.ChromeState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 
 // Nine properties and a reset, in the web's SETTING_ROWS order.
 //
@@ -36,8 +39,16 @@ internal fun SubtitleSettingsMenu(
 
     val chosen: SubtitleSetting? = open
     if (chosen != null) {
-        Column(modifier = Modifier.testTag(SUBTITLE_PROPERTY_TAG)) {
-            chosen.choices().forEach { choice ->
+        // A scrolling list with the same padding and gaps as every other pane.
+        // A plain Column gave the font list none of either, so it sat flush to
+        // the card's edges and ran past its bottom with no way to reach the
+        // faces underneath.
+        LazyColumn(
+            modifier = Modifier.testTag(SUBTITLE_PROPERTY_TAG),
+            contentPadding = MENU_LIST_PADDING,
+            verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
+        ) {
+            items(chosen.choices()) { choice ->
                 MenuRow(choice, isCurrent = choice == chosen.valueOf(style)) {
                     commands.setSubtitleStyle(chosen.applied(style, choice))
                     // Back to the list rather than out of the menu. Somebody
@@ -50,8 +61,11 @@ internal fun SubtitleSettingsMenu(
         return
     }
 
-    Column {
-        SubtitleSetting.entries.forEach { setting ->
+    LazyColumn(
+        contentPadding = MENU_LIST_PADDING,
+        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
+    ) {
+        items(SubtitleSetting.entries) { setting ->
             // The value belongs in the row's tail, where every other menu puts
             // it. Concatenated into the label it read as one long left-aligned
             // string and these rows alone looked unlike the rest of the card.
@@ -67,8 +81,10 @@ internal fun SubtitleSettingsMenu(
 
         // The tenth row, which is not a property: it writes the defaults back
         // and has no pane and no chevron.
-        MenuRow(strings.reset, tag = ROW_SUBTITLE_RESET) {
-            commands.setSubtitleStyle(SubtitleStyle())
+        item {
+            MenuRow(strings.reset, tag = ROW_SUBTITLE_RESET) {
+                commands.setSubtitleStyle(SubtitleStyle())
+            }
         }
     }
 }

@@ -115,7 +115,16 @@ private fun SeasonedRails(picks: PlaylistPicks, seasons: List<Int>, state: Chrom
     }
 
     Row(modifier = Modifier.fillMaxWidth()) {
-        SeasonsRail(picks, seasons, chosen, Modifier.weight(1f).widthIn(min = SEASONS_MIN_WIDTH)) {
+        // Weighted 16:36, not 1:1.
+        //
+        // `flex: 1` with `flex-basis: 0` splits the free space evenly, and the
+        // two mins are what pull it apart: the card caps at 52rem and the mins
+        // add up to exactly that, so on the web the rails land on 16rem and
+        // 36rem precisely. `weight(1f)` splits evenly too, but a Compose `min`
+        // only raises a child that fell under it — so on a rail wider than the
+        // card's cap the seasons column kept half the width and the episodes
+        // were squeezed into the rest. The ratio the mins produce is the rule.
+        SeasonsRail(picks, seasons, chosen, Modifier.weight(SEASONS_WEIGHT).widthIn(min = SEASONS_MIN_WIDTH)) {
             chosen = it
         }
 
@@ -124,7 +133,7 @@ private fun SeasonedRails(picks: PlaylistPicks, seasons: List<Int>, state: Chrom
         // out of the row rather than out of the rail's own width.
         Box(Modifier.width(RAIL_BORDER).fillMaxHeight().background(RAIL_BORDER_COLOR))
 
-        EpisodeRail(picks, episodeRows(state.queue, chosen), Modifier.weight(1f).widthIn(min = EPISODES_MIN_WIDTH))
+        EpisodeRail(picks, episodeRows(state.queue, chosen), Modifier.weight(EPISODES_WEIGHT).widthIn(min = EPISODES_MIN_WIDTH))
     }
 }
 
@@ -451,6 +460,11 @@ private fun RowScope.CardText(cards: CardLayout, item: TvChromeItem, index: Int)
 // `.seasons-pane { min-width: 16rem }` and `.episode-menu { min-width: 36rem }`.
 internal val SEASONS_MIN_WIDTH = 256.dp
 internal val EPISODES_MIN_WIDTH = 576.dp
+
+// The proportions `.seasons-pane`'s 16rem and `.episode-menu`'s 36rem produce
+// where the web's card cap makes both mins bind at once.
+private const val SEASONS_WEIGHT = 16f
+private const val EPISODES_WEIGHT = 36f
 
 // `.seasons-pane { border-right: 2px solid rgba(107, 114, 128, 0.2) }` — and in
 // portrait the same two pixels turn under the rail as `border-bottom`.
