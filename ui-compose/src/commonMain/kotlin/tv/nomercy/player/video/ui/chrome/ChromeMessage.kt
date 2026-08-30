@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.core.player.PlayerPhase
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -60,6 +61,17 @@ public data class ChromeMessage(
 }
 
 /**
+ * Whether a wait for data is worth telling the viewer about.
+ *
+ * Playing was the only thing that took the buffering notice down, and a viewer
+ * who pauses and then seeks gets a Waiting for the seek with no Playing after
+ * it, because the player is never going to start. The notice then sat on a
+ * still frame for as long as they left it there. A paused player is not waiting
+ * for data, it is waiting for them.
+ */
+internal fun waitIsWorthAnnouncing(phase: PlayerPhase): Boolean = phase != PlayerPhase.PAUSED
+
+/**
  * Subscribes the chrome to every message the web's plugin listens for.
  *
  * Buffering is reported as a message rather than only as a spinner because that
@@ -103,11 +115,17 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
         feedback(strings.loading)
 
         val subscriptions: List<Subscription> = listOf(
-            player.on(VideoEvents.Waiting) { feedback(strings.buffering) },
-            player.on(VideoEvents.Stalled) { feedback(strings.buffering) },
+            player.on(VideoEvents.Waiting) {
+                if (waitIsWorthAnnouncing(player.phase())) feedback(strings.buffering)
+            },
+            player.on(VideoEvents.Stalled) {
+                if (waitIsWorthAnnouncing(player.phase())) feedback(strings.buffering)
+            },
             player.on(CoreEvents.Item) { feedback(strings.loading) },
             player.on(CoreEvents.Playing) { clearFeedback() },
             player.on(CoreEvents.Time) { clearFeedback() },
+            // And a pause takes down whatever is already up.
+            player.on(CoreEvents.Pause) { clearFeedback() },
             player.on(CoreEvents.Error) {
                 message = ChromeMessage(strings.error, ChromeMessage.Kind.Failure)
                 expiresAfterMs = null
