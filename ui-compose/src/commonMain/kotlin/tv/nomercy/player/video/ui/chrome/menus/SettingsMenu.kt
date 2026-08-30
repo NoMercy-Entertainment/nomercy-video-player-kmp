@@ -70,7 +70,6 @@ public enum class MenuState {
     Playlist,
     AspectRatio,
     SubtitleSettings,
-    AutoSkip,
 }
 
 // The settings surface: a main list that opens the others.
@@ -133,7 +132,7 @@ public fun SettingsMenu(
         ) {
             SettingsPanel(panel, MenuHeaderSpec(strings, menu, onMenuChange, state.queue)) {
                 when (menu) {
-                    MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
+                    MenuState.Main -> MainMenu(state, commands, strings, buttons, onMenuChange)
                     MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
                     MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
                     MenuState.Subtitle ->
@@ -143,7 +142,6 @@ public fun SettingsMenu(
                         PlaylistPane(state, commands, strings, onMenuChange, slots.artwork, portrait)
                     MenuState.AspectRatio -> AspectRatioMenu(state, commands, strings, onMenuChange)
                     MenuState.SubtitleSettings -> SubtitleSettingsMenu(state, commands, strings)
-                    MenuState.AutoSkip -> AutoSkipMenu(state, commands, strings, onMenuChange)
                     MenuState.Hidden -> Unit
                 }
             }
@@ -460,8 +458,6 @@ internal const val ROW_SUBTITLE_SETTINGS = "nm-row-subtitle-settings"
 internal const val ROW_SUBTITLE_SETTING = "nm-subtitle-setting-"
 internal const val ROW_SUBTITLE_RESET = "nm-subtitle-reset"
 internal const val ROW_AUTO_SKIP = "nm-row-auto-skip"
-internal const val ROW_AUTO_SKIP_ON = "nm-row-auto-skip-on"
-internal const val ROW_AUTO_SKIP_OFF = "nm-row-auto-skip-off"
 internal const val SUBTITLE_PROPERTY_TAG = "nm-subtitle-property"
 
 // Stretching.entries would read the same and is not: the enum's order is the

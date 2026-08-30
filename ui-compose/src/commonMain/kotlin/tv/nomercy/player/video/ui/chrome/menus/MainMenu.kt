@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
+import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.video.ui.chrome.ChromeState
 import tv.nomercy.player.video.ui.tv.FluentIcons
 
@@ -44,6 +45,7 @@ import tv.nomercy.player.video.ui.tv.FluentIcons
 @Composable
 internal fun MainMenu(
     state: ChromeState,
+    commands: ChromeCommands,
     strings: MenuStrings,
     buttons: ChromeButtons,
     onMenuChange: (MenuState) -> Unit,
@@ -82,14 +84,20 @@ internal fun MainMenu(
         // because the seven above are gated against the web's own list and a
         // library that added one to everybody would fail that check for a good
         // reason.
+        //
+        // A row that toggles where it stands, not one that opens an On/Off
+        // list. The web mounts this through `settingsItems`, which draws the
+        // category row's chrome with the checkmark reflecting the bound state
+        // instead of a chevron, and flips it on click — no icon, no sub-menu.
+        // This had invented the sub-menu, so the same setting took two presses
+        // here and one there.
         if (buttons.autoSkipChapters) {
             MenuRow(
                 strings.autoSkipChapters,
                 tag = ROW_AUTO_SKIP,
-                icon = FluentIcons.ChapterForward,
-                opensSubMenu = true,
+                isCurrent = state.autoSkipChapters,
             ) {
-                onMenuChange(MenuState.AutoSkip)
+                commands.setAutoSkipChapters(!state.autoSkipChapters)
             }
         }
     }
