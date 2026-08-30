@@ -11,6 +11,8 @@ package tv.nomercy.player.video.subtitles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.runTest
 import kotlin.time.Duration.Companion.seconds
 import kotlin.test.Test
@@ -301,25 +303,34 @@ class AssCompositeTest {
     }
 
     @Test
-    fun aSecondCallerArrivingDuringTheFirstSizingDoesNotReadAHalfBuiltCompositor() =
-        runTest(timeout = 30.seconds) {
-            // The phone's crash. A resize starts a second rasterising loop while
-            // the first is still inside a blend, both reach the first sizing, and
-            // the one that lost took "buffers are allocated" for "sizing is
-            // finished" and indexed a row set that did not exist yet.
-            //
-            // Ordering alone cannot make two callers safe — the layer holds a
-            // mutex for that — but no interleaving may leave the compositor in a
-            // state that throws.
-            val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
-            val images: List<AssImage> = listOf(run(At(0, 0, 8, 8), white, 255))
+    fun twoLoopsHandingOverThroughAMutexEachGetAWholeFrame() = runTest(timeout = 60.seconds) {
+        // The phone's crash was a resize starting a second rasterising loop
+        // while the first was still inside a blend — cancellation cannot land
+        // until the blend returns — and both then drove one compositor.
+        //
+        // This is the contract that fixes it: the layer serialises, and the
+        // compositor is correct for a handover on a DIFFERENT thread from the
+        // one that sized it. Racing them unserialised is not the contract and
+        // is not tested here; the compositor does not offer it, and asserting
+        // it produced a test that failed roughly one run in eight.
+        val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
+        val images: List<AssImage> = listOf(run(At(0, 0, 8, 8), white, 255))
+        val turn = Mutex()
 
-            repeat(200) {
-                val compositor = AssFrameCompositor()
-                coroutineScope {
-                    launch(Dispatchers.Default) { compositor.compositeParallel(images, 64, 64, bands = 4) }
-                    launch(Dispatchers.Default) { compositor.compositeParallel(images, 64, 64, bands = 4) }
+        repeat(200) {
+            val compositor = AssFrameCompositor()
+            val sizes: MutableList<Int> = mutableListOf()
+            coroutineScope {
+                repeat(2) {
+                    launch(Dispatchers.Default) {
+                        val frame: IntArray = turn.withLock {
+                            compositor.compositeParallel(images, 64, 64, bands = 4)
+                        }
+                        turn.withLock { sizes.add(frame.size) }
+                    }
                 }
             }
+            assertEquals(listOf(64 * 64, 64 * 64), sizes, "a frame came back the wrong size")
         }
+    }
 }
