@@ -184,7 +184,19 @@ internal class NativeAssRenderer(
             val image = AssImageStruct(cursor)
             val size: Int = image.stride * image.h
             val pixels: ByteArray = borrow(run, size)
-            image.bitmap?.read(0, pixels, 0, size)
+
+            // libass owns `stride * (h - 1) + w` bytes, not `stride * h`: every
+            // row but the last is padded to the stride, and the last one stops
+            // at the glyph's width. Reading the declared rectangle walked past
+            // the end of that allocation and off the page — SIGSEGV in
+            // __memcpy_aarch64_simd, from inside a coroutine, on a real phone
+            // mid-episode.
+            //
+            // The array stays the declared size so every consumer can still
+            // index `y * stride + x`; only the copy stops where the pixels do.
+            // The tail of the last row is padding nothing reads.
+            val readable: Int = readableBytes(image.stride, image.h, image.w)
+            if (readable > 0) image.bitmap?.read(0, pixels, 0, readable)
 
             images += AssImage(
                 x = image.dstX,
@@ -290,3 +302,14 @@ internal class NativeAssRenderer(
         const val HEADER_LINES = 200
     }
 }
+
+/**
+ * How many bytes of an `ASS_Image` bitmap libass actually owns.
+ *
+ * Every row but the last is padded out to the stride; the last one stops at the
+ * glyph's width. `stride * h` is the rectangle the struct describes and up to
+ * `stride - w` bytes more than the allocation, which on a bitmap that ends on a
+ * page boundary is a segfault rather than a stale byte.
+ */
+internal fun readableBytes(stride: Int, height: Int, width: Int): Int =
+    if (stride <= 0 || height <= 0 || width <= 0) 0 else stride * (height - 1) + width

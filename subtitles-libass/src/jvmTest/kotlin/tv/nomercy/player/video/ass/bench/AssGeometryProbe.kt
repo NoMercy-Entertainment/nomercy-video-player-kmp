@@ -16,6 +16,7 @@ import tv.nomercy.player.video.ass.LibAss
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
+import tv.nomercy.player.video.ass.readableBytes
 
 // Where a cue lands, at a given surface size, with storage set two different
 // ways.
@@ -88,7 +89,8 @@ object AssGeometryProbe {
         val size: Int = image.stride * image.h
         if (size <= 0) return
         val coverage = ByteArray(size)
-        image.bitmap?.read(0, coverage, 0, size)
+        // The allocation, not the rectangle — see readableBytes.
+        image.bitmap?.read(0, coverage, 0, readableBytes(image.stride, image.h, image.w))
 
         val red: Int = (image.color ushr 24) and 0xFF
         val green: Int = (image.color ushr 16) and 0xFF
