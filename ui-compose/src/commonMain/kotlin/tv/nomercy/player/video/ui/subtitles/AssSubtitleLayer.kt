@@ -29,6 +29,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.isActive
 import tv.nomercy.player.video.subtitles.AssFrame
@@ -145,7 +147,7 @@ private suspend fun AssRenderer.rasterise(
         if (next != target) {
             target = next
             // Sizing is native work too, and it happens on every resize.
-            withContext(Dispatchers.Default) { frameSize(target.width, target.height) }
+            withContext(Dispatchers.Default) { drawing.turn.withLock { frameSize(target.width, target.height) } }
         }
 
         // On the composition thread, not inside the block below: an engine's
@@ -169,7 +171,7 @@ private suspend fun AssRenderer.rasterise(
         // Only the finished ImageBitmap crosses back, and the state
         // write lands on the main thread where composition expects it.
         val drawn: ImageBitmap? = withContext(Dispatchers.Default) {
-            nextPicture(this@rasterise, drawing, now, target)
+            drawing.turn.withLock { nextPicture(this@rasterise, drawing, now, target) }
         }
 
         // Only a NEW picture is published. The renderer answers null for a
@@ -264,7 +266,19 @@ private suspend fun blank(drawing: AssDrawing, target: IntSize): ImageBitmap {
 private class AssDrawing(
     val compositor: AssFrameCompositor,
     val picture: AssPictureSurface,
-)
+) {
+    // Held for the whole of one frame, sizing included.
+    //
+    // The loop below is keyed on the surface, so a resize starts a second one
+    // while the first is still inside a blend — cancellation only lands at the
+    // next suspension point, and a blend has none. Both then drove the same
+    // compositor through its resize and the phone died on an index into buffers
+    // one of them had not finished replacing.
+    //
+    // Uncontended for every frame but those, which is what the compositor's own
+    // "no lock, there is no second caller" note assumed and was wrong about.
+    val turn: Mutex = Mutex()
+}
 
 // How big to rasterize, given what the track was authored against.
 //

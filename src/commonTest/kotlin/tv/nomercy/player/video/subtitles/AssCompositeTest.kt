@@ -8,7 +8,11 @@
 
 package tv.nomercy.player.video.subtitles
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import kotlin.time.Duration.Companion.seconds
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -295,4 +299,27 @@ class AssCompositeTest {
         assertEquals(16 * 16, resized.size)
         assertTrue(resized.all { it == 0 })
     }
+
+    @Test
+    fun aSecondCallerArrivingDuringTheFirstSizingDoesNotReadAHalfBuiltCompositor() =
+        runTest(timeout = 30.seconds) {
+            // The phone's crash. A resize starts a second rasterising loop while
+            // the first is still inside a blend, both reach the first sizing, and
+            // the one that lost took "buffers are allocated" for "sizing is
+            // finished" and indexed a row set that did not exist yet.
+            //
+            // Ordering alone cannot make two callers safe — the layer holds a
+            // mutex for that — but no interleaving may leave the compositor in a
+            // state that throws.
+            val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
+            val images: List<AssImage> = listOf(run(At(0, 0, 8, 8), white, 255))
+
+            repeat(200) {
+                val compositor = AssFrameCompositor()
+                coroutineScope {
+                    launch(Dispatchers.Default) { compositor.compositeParallel(images, 64, 64, bands = 4) }
+                    launch(Dispatchers.Default) { compositor.compositeParallel(images, 64, 64, bands = 4) }
+                }
+            }
+        }
 }

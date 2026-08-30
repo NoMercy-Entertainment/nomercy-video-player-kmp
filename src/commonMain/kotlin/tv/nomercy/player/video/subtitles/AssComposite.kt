@@ -66,9 +66,12 @@ public fun compositeAssFrame(
  * drawn from: writing into it would repaint a frame the toolkit already owns,
  * which is the tearing the per-call allocation was avoiding.
  *
- * NOT thread-safe, deliberately. One compositor belongs to one subtitle layer
- * and its frames are produced in order on one coroutine; a lock here would be
- * paid on every frame to guard against a caller that does not exist.
+ * NOT thread-safe. One compositor belongs to one subtitle layer and its frames
+ * are produced in order, so the serialising belongs to the layer and not to
+ * every frame here — but the second caller this used to say could not exist
+ * does: a resize starts a new rasterising loop while the old one is still
+ * inside a blend, and cancellation cannot land until that blend returns. The
+ * layer holds a mutex across the whole of one frame for that window.
  */
 public class AssFrameCompositor {
 
@@ -255,10 +258,14 @@ public class AssFrameCompositor {
 
         width = frameWidth
         height = frameHeight
-        buffers = Array(BUFFER_COUNT) { IntArray(frameWidth * frameHeight) }
+        // `buffers` last, because it is what the early return above reads. A
+        // second caller arriving mid-resize took that as "already sized" and
+        // indexed a `drawn` this had not reached yet, which is a crash rather
+        // than a wrong pixel.
         drawn = Array(BUFFER_COUNT) { AssChangedRows.forHeight(frameHeight) }
         changed = AssChangedRows.forHeight(frameHeight)
         current = 0
+        buffers = Array(BUFFER_COUNT) { IntArray(frameWidth * frameHeight) }
         // A surface holding a copy of the old size has to replace all of it,
         // not the band the last frame happened to touch. Counted rather than
         // compared: a resize that came back to the same dimensions is still a
