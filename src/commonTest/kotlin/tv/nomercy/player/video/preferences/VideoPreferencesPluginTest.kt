@@ -15,6 +15,9 @@ import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.testing.FakeVideoBackend
 import tv.nomercy.player.core.controllers.InMemoryStorage
+import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.ItemChange
+import tv.nomercy.player.core.events.TimeUpdate
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoItem
 import kotlin.test.Test
@@ -88,6 +91,40 @@ class VideoPreferencesPluginTest {
         rig.plugin.restore()
 
         assertEquals("nld", rig.player.audioTrack()?.language, "the restore followed the old index, not the language")
+    }
+
+    // The one that put an English viewer into Japanese.
+    //
+    // MediaReady means the source is loaded and will accept a seek; the engine
+    // publishes its track list when it has parsed it, which can be after. The
+    // restore ran on MediaReady, found no tracks and returned — silently, so the
+    // episode played in whatever language the file defaults to. The want has to
+    // outlive an empty list.
+    @Test
+    fun aTrackListThatArrivesAfterMediaReadyStillGetsTheSavedLanguage() = runTest {
+        val rig: Rig = rig()
+        rig.backend.audio = listOf(audioEnglish, audioDutch)
+        rig.player.audioTrack(audioEnglish)
+        rig.plugin.awaitWrites()
+
+        // A new item, whose tracks the engine has not parsed yet.
+        rig.backend.audio = emptyList()
+        rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
+        rig.player.emit(CoreEvents.MediaReady, Unit)
+        rig.plugin.awaitWrites()
+
+        // The engine parses them and starts on the file's own default, which on
+        // an anime episode is the Japanese dub and not what the viewer picked.
+        rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        rig.player.audioTrack(audioJapanese)
+        rig.player.emit(CoreEvents.Time, TimeUpdate(0.5, 1400.0, 0.0))
+        rig.plugin.awaitWrites()
+
+        assertEquals(
+            "eng",
+            rig.player.audioTrack()?.language,
+            "the restore gave up on the empty list and never came back",
+        )
     }
 
     // A language the new item does not have is left alone rather than guessed at.
@@ -167,6 +204,10 @@ private val german = SubtitleTrack(id = "s-deu", language = "deu", label = "Deut
 
 private val audioEnglish = AudioTrack(id = "a-eng", language = "eng", label = "English")
 private val audioDutch = AudioTrack(id = "a-nld", language = "nld", label = "Nederlands")
+
+// The dub an anime file declares as its default, which is what the engine
+// starts on before anybody's preference is applied.
+private val audioJapanese = AudioTrack(id = "a-jpn", language = "jpn", label = "日本語")
 
 private const val HD_HEIGHT = 720
 

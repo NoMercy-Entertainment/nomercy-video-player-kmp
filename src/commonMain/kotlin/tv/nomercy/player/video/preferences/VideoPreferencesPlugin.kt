@@ -100,6 +100,7 @@ public open class VideoPreferencesPlugin(
         // player. Resolving the index here would be a second answer to a
         // question that already has one.
         on(CoreEvents.Subtitle) {
+            if (restorePending) return@on
             remember {
                 val track: SubtitleTrack? = player.subtitle()
                 store.saveSubtitle(
@@ -113,7 +114,17 @@ public open class VideoPreferencesPlugin(
                 )
             }
         }
-        on(CoreEvents.AudioTrack) { remember { store.saveAudio(player.audioTrack()?.language) } }
+        // Not every selection is a choice. On an item change the engine starts on
+        // whatever the file declares as default — the Japanese dub, on an anime
+        // episode — and that arrives here as an AudioTrack event exactly like a
+        // tap on the menu. Saved, it overwrote the viewer's own language and the
+        // next episode "remembered" the dub they had never picked.
+        //
+        // So nothing is saved between a cursor move and the restore that answers
+        // it. After that the viewer is the only one selecting anything.
+        on(CoreEvents.AudioTrack) {
+            if (!restorePending) remember { store.saveAudio(player.audioTrack()?.language) }
+        }
 
         // The viewer's choice, not the ladder's. `quality:requested` fires on an
         // explicit pick; a level-switch event would persist whatever ABR landed
@@ -124,7 +135,23 @@ public open class VideoPreferencesPlugin(
         // MediaReady, not Item. Item fires when the CURSOR moves — before the new
         // source is loaded — so subtitles() was still empty and every restore on
         // an episode change silently found nothing to select.
+        //
+        // And MediaReady is still not late enough on every engine. It means the
+        // source is loaded and will accept a seek; the track list arrives when
+        // the engine has parsed it, which can be after. `restoreAudio` gave up
+        // silently on an empty list, so an episode opened in whatever language
+        // the file defaults to — Japanese, on a viewer who had chosen English.
+        // The want is held until a list exists to satisfy it.
+        on(CoreEvents.Item) { restorePending = true }
         on(CoreEvents.MediaReady) { remember { restore() } }
+        on(CoreEvents.Time) {
+            if (restorePending && player.audioTracks().isNotEmpty()) {
+                remember {
+                    restore()
+                    restorePending = false
+                }
+            }
+        }
 
         remember {
             applyStyle()
@@ -190,6 +217,9 @@ public open class VideoPreferencesPlugin(
 
         player.subtitle(track)
     }
+
+    // True from a cursor move until a track list has actually been offered one.
+    private var restorePending: Boolean = false
 
     private suspend fun restoreAudio() {
         val language: String = store.audio() ?: return
