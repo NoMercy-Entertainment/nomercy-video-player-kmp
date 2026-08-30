@@ -30,18 +30,19 @@ internal fun AutoSkipMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    Column(
-        modifier = Modifier.padding(MENU_LIST_PADDING),
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
-        MenuRow(strings.on, tag = ROW_AUTO_SKIP_ON, isCurrent = state.autoSkipChapters) {
-            commands.setAutoSkipChapters(true)
-            onMenuChange(MenuState.Main)
+    MenuPane {
+        item {
+            MenuRow(strings.on, tag = ROW_AUTO_SKIP_ON, isCurrent = state.autoSkipChapters) {
+                commands.setAutoSkipChapters(true)
+                onMenuChange(MenuState.Main)
+            }
         }
 
-        MenuRow(strings.off, tag = ROW_AUTO_SKIP_OFF, isCurrent = !state.autoSkipChapters) {
-            commands.setAutoSkipChapters(false)
-            onMenuChange(MenuState.Main)
+        item {
+            MenuRow(strings.off, tag = ROW_AUTO_SKIP_OFF, isCurrent = !state.autoSkipChapters) {
+                commands.setAutoSkipChapters(false)
+                onMenuChange(MenuState.Main)
+            }
         }
     }
 }

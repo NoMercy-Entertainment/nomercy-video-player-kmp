@@ -250,11 +250,8 @@ private fun AspectRatioMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    Column(
-        modifier = Modifier.padding(MENU_LIST_PADDING),
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
-        ASPECT_RATIOS.forEach { mode ->
+    MenuPane {
+        items(ASPECT_RATIOS) { mode ->
             MenuRow(
                 aspectLabel(mode, strings),
                 isCurrent = mode == state.aspectRatio,
@@ -284,10 +281,7 @@ private fun QualityMenu(
     val offerable: List<QualityLevel> =
         offerableRungs(state.qualityLevels, rememberDeviceCapabilities().hasHdrDisplay)
 
-    LazyColumn(
-        contentPadding = MENU_LIST_PADDING,
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
+    MenuPane {
         // Automatic first, because it is what most viewers should stay on and
         // the list below it exists for the ones who know they want otherwise.
         item {
@@ -320,10 +314,7 @@ private fun AudioMenu(
     // The locale that chose the header is the one that names the rows.
     val locale: String = rememberChromeLocale()
 
-    LazyColumn(
-        contentPadding = MENU_LIST_PADDING,
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
+    MenuPane {
         itemsIndexed(state.audioTracks) { index, track ->
             MenuRow(audioLabel(track, index, locale), isCurrent = track == state.activeAudio) {
                 commands.selectAudioTrack(track)
@@ -343,10 +334,7 @@ private fun SubtitleMenu(
 ) {
     val locale: String = rememberChromeLocale()
 
-    LazyColumn(
-        contentPadding = MENU_LIST_PADDING,
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
+    MenuPane {
         // Off is a row rather than an absence. A viewer turning subtitles off
         // has to be able to say so, and a list with no way back is one they
         // leave by restarting the film.
@@ -377,10 +365,7 @@ private fun SpeedMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    LazyColumn(
-        contentPadding = MENU_LIST_PADDING,
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
+    MenuPane {
         items(SPEEDS) { speed ->
             MenuRow(speedLabel(speed, strings), isCurrent = speed == state.rate, tag = "$ROW_SPEED_VALUE$speed") {
                 commands.setRate(speed)

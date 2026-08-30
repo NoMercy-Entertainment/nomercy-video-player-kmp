@@ -43,11 +43,7 @@ internal fun SubtitleSettingsMenu(
         // A plain Column gave the font list none of either, so it sat flush to
         // the card's edges and ran past its bottom with no way to reach the
         // faces underneath.
-        LazyColumn(
-            modifier = Modifier.testTag(SUBTITLE_PROPERTY_TAG),
-            contentPadding = MENU_LIST_PADDING,
-            verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-        ) {
+        MenuPane(modifier = Modifier.testTag(SUBTITLE_PROPERTY_TAG)) {
             items(chosen.choices()) { choice ->
                 MenuRow(choice, isCurrent = choice == chosen.valueOf(style)) {
                     commands.setSubtitleStyle(chosen.applied(style, choice))
@@ -61,10 +57,7 @@ internal fun SubtitleSettingsMenu(
         return
     }
 
-    LazyColumn(
-        contentPadding = MENU_LIST_PADDING,
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
+    MenuPane {
         items(SubtitleSetting.entries) { setting ->
             // The value belongs in the row's tail, where every other menu puts
             // it. Concatenated into the label it read as one long left-aligned
