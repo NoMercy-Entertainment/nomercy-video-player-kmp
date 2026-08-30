@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.video.ui.chrome.ChromeState
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 
 /**
  * On and off, as his `AutoSkipChapterMenu` draws them.
@@ -27,7 +30,10 @@ internal fun AutoSkipMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    Column {
+    Column(
+        modifier = Modifier.padding(MENU_LIST_PADDING),
+        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
+    ) {
         MenuRow(strings.on, tag = ROW_AUTO_SKIP_ON, isCurrent = state.autoSkipChapters) {
             commands.setAutoSkipChapters(true)
             onMenuChange(MenuState.Main)
