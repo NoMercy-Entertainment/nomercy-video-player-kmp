@@ -71,13 +71,18 @@ internal fun panelBoxOf(
 
     return PanelBox(
         width = contentWidthOf(menu, queue).coerceAtMost(widest).coerceAtLeast(PANEL_MIN_WIDTH),
-        // `.menu-frame { max-height: calc(100% - 2rem) }`, and nothing else.
+        // What `top: 16px` and `bottom: 52px` leave between them.
         //
-        // This took sixty per cent of the player as well, which is `.main-menu`'s
-        // rule and not the frame's — so every card, the playlist pane included,
-        // was forty per cent shorter than the browser's, while the settings list
-        // the share belongs to had no ceiling of its own. See MainMenu.kt.
-        maxHeight = if (roomHeight.value.isFinite()) roomHeight - FRAME_INSET * 2 else null,
+        // `.menu-frame` also carries `max-height: calc(100% - 2rem)`, but that
+        // cap never binds: the frame is positioned from both edges, so its
+        // height is already the smaller `100% - 16px - 52px`. Subtracting the
+        // 2rem instead let the card run 36dp past the bottom inset it is
+        // supposed to sit on, and its last rows fell off the player.
+        maxHeight = if (roomHeight.value.isFinite()) {
+            (roomHeight - FRAME_INSET - FRAME_BOTTOM_INSET).coerceAtLeast(0.dp)
+        } else {
+            null
+        },
     )
 }
 
