@@ -100,7 +100,7 @@ public open class VideoPreferencesPlugin(
         // player. Resolving the index here would be a second answer to a
         // question that already has one.
         on(CoreEvents.Subtitle) {
-            if (restorePending) return@on
+            if (subtitlePending) return@on
             remember {
                 val track: SubtitleTrack? = player.subtitle()
                 store.saveSubtitle(
@@ -123,7 +123,7 @@ public open class VideoPreferencesPlugin(
         // So nothing is saved between a cursor move and the restore that answers
         // it. After that the viewer is the only one selecting anything.
         on(CoreEvents.AudioTrack) {
-            if (!restorePending) remember { store.saveAudio(player.audioTrack()?.language) }
+            if (!audioPending) remember { store.saveAudio(player.audioTrack()?.language) }
         }
 
         // The viewer's choice, not the ladder's. `quality:requested` fires on an
@@ -142,15 +142,13 @@ public open class VideoPreferencesPlugin(
         // silently on an empty list, so an episode opened in whatever language
         // the file defaults to — Japanese, on a viewer who had chosen English.
         // The want is held until a list exists to satisfy it.
-        on(CoreEvents.Item) { restorePending = true }
-        on(CoreEvents.MediaReady) { remember { restore() } }
+        on(CoreEvents.Item) {
+            audioPending = true
+            subtitlePending = true
+        }
+        on(CoreEvents.MediaReady) { remember { restoreWhatIsOwed() } }
         on(CoreEvents.Time) {
-            if (restorePending && player.audioTracks().isNotEmpty()) {
-                remember {
-                    restore()
-                    restorePending = false
-                }
-            }
+            if (audioPending || subtitlePending) remember { restoreWhatIsOwed() }
         }
 
         remember {
@@ -186,6 +184,17 @@ public open class VideoPreferencesPlugin(
         if (opts.restoreQuality) restoreQuality()
     }
 
+    // The same restore, limited to the kinds still owed one.
+    //
+    // An item change asks for both and the two lists answer at different times,
+    // so a tick that already restored the audio must not walk over a language
+    // the viewer has since picked by hand.
+    private suspend fun restoreWhatIsOwed() {
+        if (opts.restoreSubtitle && subtitlePending) restoreSubtitle()
+        if (opts.restoreAudio && audioPending) restoreAudio()
+        if (opts.restoreQuality) restoreQuality()
+    }
+
     private suspend fun applyStyle() {
         if (!opts.restoreSubtitleStyle) return
         val style: SubtitleStyle = store.style() ?: return
@@ -202,8 +211,10 @@ public open class VideoPreferencesPlugin(
     // exact variant, and a viewer is better served by the same language in a
     // different flavour than by no captions at all.
     private suspend fun restoreSubtitle() {
-        val saved: SavedSubtitle = store.subtitle() ?: return
         val available: List<SubtitleTrack> = player.subtitles()
+        if (available.isEmpty()) return
+        subtitlePending = false
+        val saved: SavedSubtitle = store.subtitle() ?: return
 
         val track: SubtitleTrack = available.firstOrNull {
             it.language == saved.language &&
@@ -218,12 +229,19 @@ public open class VideoPreferencesPlugin(
         player.subtitle(track)
     }
 
-    // True from a cursor move until a track list has actually been offered one.
-    private var restorePending: Boolean = false
+    // True from a cursor move until that kind has had a real list to restore
+    // from. Held per kind rather than once: the two lists do not arrive
+    // together, and gating both on the audio list let a subtitle restore run
+    // against an empty list and count itself answered.
+    private var audioPending: Boolean = false
+    private var subtitlePending: Boolean = false
 
     private suspend fun restoreAudio() {
+        val available: List<AudioTrack> = player.audioTracks()
+        if (available.isEmpty()) return
+        audioPending = false
         val language: String = store.audio() ?: return
-        val track: AudioTrack = player.audioTracks().firstOrNull { it.language == language } ?: return
+        val track: AudioTrack = available.firstOrNull { it.language == language } ?: return
         player.audioTrack(track)
     }
 

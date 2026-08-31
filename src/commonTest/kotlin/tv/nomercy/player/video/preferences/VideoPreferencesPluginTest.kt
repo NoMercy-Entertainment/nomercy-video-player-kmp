@@ -127,6 +127,42 @@ class VideoPreferencesPluginTest {
         )
     }
 
+    // The two lists do not arrive together.
+    //
+    // One "restore is owed" flag, cleared as soon as the AUDIO list appeared,
+    // counted the subtitle restore as answered while the subtitle list was
+    // still empty — so captions came back in whatever the file defaults to.
+    @Test
+    fun aSubtitleListThatArrivesAfterTheAudioListStillGetsTheSavedLanguage() = runTest {
+        val rig: Rig = rig()
+        rig.backend.subtitleTracks = listOf(english, dutch)
+        rig.player.subtitle(dutch)
+        rig.plugin.awaitWrites()
+
+        rig.backend.subtitleTracks = emptyList()
+        rig.backend.audio = emptyList()
+        rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
+        rig.player.emit(CoreEvents.MediaReady, Unit)
+        rig.plugin.awaitWrites()
+
+        // Audio parses first. Subtitles are still a tick behind.
+        rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        rig.player.emit(CoreEvents.Time, TimeUpdate(0.5, 1400.0, 0.0))
+        rig.plugin.awaitWrites()
+
+        // Subtitles parse, and the engine starts on the file's own default.
+        rig.backend.subtitleTracks = listOf(german, english, dutch)
+        rig.player.subtitle(german)
+        rig.player.emit(CoreEvents.Time, TimeUpdate(1.0, 1400.0, 0.0))
+        rig.plugin.awaitWrites()
+
+        assertEquals(
+            "nld",
+            rig.player.subtitle()?.language,
+            "the audio list answered the subtitle restore and it never came back",
+        )
+    }
+
     // A language the new item does not have is left alone rather than guessed at.
     @Test
     fun aSavedLanguageTheNextItemDoesNotCarryChangesNothing() = runTest {
