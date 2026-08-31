@@ -99,8 +99,18 @@ public open class VideoPreferencesPlugin(
         // asking the player which track is selected cannot disagree with the
         // player. Resolving the index here would be a second answer to a
         // question that already has one.
+        // Saved on every selection, with no window and no guard.
+        //
+        // `subtitle` and `audioTrack` are emitted by the SETTER and by nothing
+        // else — an engine settling on the file's own default does not fire
+        // them. A guard against "the engine's default arriving like a tap" was
+        // therefore protecting against something that cannot happen, and what it
+        // actually dropped was the viewer's own pick: a language saved once
+        // could not be corrected, and which language an item opened in depended
+        // on what had been played before it. This is the shape the retired
+        // Android player used, which is the one that worked.
         on(CoreEvents.Subtitle) {
-            if (subtitlePending) return@on
+            if (applying) return@on
             remember {
                 val track: SubtitleTrack? = player.subtitle()
                 store.saveSubtitle(
@@ -114,16 +124,9 @@ public open class VideoPreferencesPlugin(
                 )
             }
         }
-        // Not every selection is a choice. On an item change the engine starts on
-        // whatever the file declares as default — the Japanese dub, on an anime
-        // episode — and that arrives here as an AudioTrack event exactly like a
-        // tap on the menu. Saved, it overwrote the viewer's own language and the
-        // next episode "remembered" the dub they had never picked.
-        //
-        // So nothing is saved between a cursor move and the restore that answers
-        // it. After that the viewer is the only one selecting anything.
         on(CoreEvents.AudioTrack) {
-            if (!audioPending) remember { store.saveAudio(player.audioTrack()?.language) }
+            if (applying) return@on
+            remember { store.saveAudio(player.audioTrack()?.language) }
         }
 
         // The viewer's choice, not the ladder's. `quality:requested` fires on an
@@ -249,15 +252,32 @@ public open class VideoPreferencesPlugin(
             it.language == saved.language
         } ?: return
 
-        player.subtitle(track)
+        applySelection { player.subtitle(track) }
     }
 
-    // True from a cursor move until that kind has had a real list to restore
-    // from. Held per kind rather than once: the two lists do not arrive
-    // together, and gating both on the audio list let a subtitle restore run
-    // against an empty list and count itself answered.
+    // Whether a restore is still owed for that kind, from the cursor move until
+    // a real list has been offered one. Held per kind because the two lists do
+    // not arrive together: gating both on the audio list let a subtitle restore
+    // run against an empty list and count itself answered.
     private var audioPending: Boolean = false
     private var subtitlePending: Boolean = false
+
+    // True only while the plugin itself is selecting a track.
+    //
+    // The restore goes through the same setter a viewer's tap does, and that
+    // setter is what announces a selection — so without this the plugin writes
+    // back what it has just read, and a write racing a tap can put the OLD
+    // language back on top of the new one.
+    private var applying: Boolean = false
+
+    private suspend fun applySelection(select: suspend () -> Unit) {
+        applying = true
+        try {
+            select()
+        } finally {
+            applying = false
+        }
+    }
 
     private suspend fun restoreAudio() {
         val available: List<AudioTrack> = player.audioTracks()
@@ -265,7 +285,7 @@ public open class VideoPreferencesPlugin(
         audioPending = false
         val language: String = store.audio() ?: return
         val track: AudioTrack = available.firstOrNull { it.language == language } ?: return
-        player.audioTrack(track)
+        applySelection { player.audioTrack(track) }
     }
 
     // Auto is a stored value, not the absence of one.

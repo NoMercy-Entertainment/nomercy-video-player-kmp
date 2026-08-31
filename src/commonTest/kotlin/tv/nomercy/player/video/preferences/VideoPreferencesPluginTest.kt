@@ -19,6 +19,8 @@ import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.ItemChange
 import tv.nomercy.player.core.events.TimeUpdate
 import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.AudioTracksChange
+import tv.nomercy.player.video.VideoEvents
 import tv.nomercy.player.video.VideoItem
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -115,8 +117,10 @@ class VideoPreferencesPluginTest {
 
         // The engine parses them and starts on the file's own default, which on
         // an anime episode is the Japanese dub and not what the viewer picked.
+        // Its own selection is not made through the setter — `audioTrack` is
+        // emitted by that setter and by nothing else — so the list changing
+        // under the player IS the engine settling on its default.
         rig.backend.audio = listOf(audioJapanese, audioEnglish)
-        rig.player.audioTrack(audioJapanese)
         rig.player.emit(CoreEvents.Time, TimeUpdate(0.5, 1400.0, 0.0))
         rig.plugin.awaitWrites()
 
@@ -150,9 +154,11 @@ class VideoPreferencesPluginTest {
         rig.player.emit(CoreEvents.Time, TimeUpdate(0.5, 1400.0, 0.0))
         rig.plugin.awaitWrites()
 
-        // Subtitles parse, and the engine starts on the file's own default.
+        // Subtitles parse, and the engine starts on the file's own default. Its
+        // own choice is not made through the setter and announces nothing, so it
+        // is written straight onto the backend.
         rig.backend.subtitleTracks = listOf(german, english, dutch)
-        rig.player.subtitle(german)
+        rig.backend.chosenSubtitle = german
         rig.player.emit(CoreEvents.Time, TimeUpdate(1.0, 1400.0, 0.0))
         rig.plugin.awaitWrites()
 
@@ -160,6 +166,63 @@ class VideoPreferencesPluginTest {
             "nld",
             rig.player.subtitle()?.language,
             "the audio list answered the subtitle restore and it never came back",
+        )
+    }
+
+    // A pick the viewer makes is never dropped, whatever order the engine
+    // announced things in.
+    //
+    // The window that keeps the engine's own default out of storage was closed
+    // by the track list arriving. An engine that announces its list BEFORE the
+    // cursor move re-opened it and closed it never, so every pick after that was
+    // dropped as the engine's — a language saved once could not be corrected,
+    // and the item switched back to it moments after playback started. Reported
+    // from a real phone on 2026-08-31: "it starts on english and then switches
+    // after the playback started".
+    @Test
+    fun aPickMadeAfterTheListWasAnnouncedOutOfOrderIsStillSaved() = runTest {
+        val rig: Rig = rig()
+        rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        rig.player.audioTrack(audioJapanese)
+        rig.plugin.awaitWrites()
+
+        // The cursor moves while the engine has nothing parsed yet, so the
+        // restore this item is owed cannot run and goes on being owed.
+        rig.backend.audio = emptyList()
+        rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
+        rig.plugin.awaitWrites()
+
+        // The list appears without an announcement, and the viewer picks English
+        // from it. A guard that waits for the restore before it will trust a
+        // selection drops this one and keeps the old language for ever.
+        rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        rig.player.audioTrack(audioEnglish)
+        rig.plugin.awaitWrites()
+        assertEquals("eng", rig.plugin.savedAudioLanguage(), "the viewer's pick was never written down")
+
+        // The engine announces the new item's list, and only then does the cursor
+        // move arrive.
+        rig.player.emit(VideoEvents.AudioTracks, AudioTracksChange(emptyList()))
+        rig.plugin.awaitWrites()
+        rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
+        // The item has settled before anyone touches the menu.
+        rig.plugin.awaitWrites()
+
+        // The viewer opens the menu and picks English.
+        rig.player.audioTrack(audioEnglish)
+        rig.plugin.awaitWrites()
+        rig.plugin.awaitWrites()
+
+        // A new item, whose engine starts on its own default.
+        rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
+        rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        rig.player.emit(CoreEvents.MediaReady, Unit)
+        rig.plugin.awaitWrites()
+
+        assertEquals(
+            "eng",
+            rig.player.audioTrack()?.language,
+            "the viewer's own pick was dropped as the engine's default",
         )
     }
 
