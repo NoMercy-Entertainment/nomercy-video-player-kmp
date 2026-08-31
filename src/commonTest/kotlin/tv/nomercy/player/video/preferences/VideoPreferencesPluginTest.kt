@@ -325,6 +325,29 @@ class VideoPreferencesPluginTest {
         )
     }
 
+    // An engine that never announces its list must not be told the same thing
+    // on every tick: the setter announces, and the chrome puts a notice on the
+    // picture for each one — which is a track name that never goes away.
+    @Test
+    fun aTickDoesNotReSelectTheLanguageThatIsAlreadyPlaying() = runTest {
+        val rig: Rig = rig()
+        rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        rig.player.audioTrack(audioEnglish)
+        rig.plugin.awaitWrites()
+
+        var announced = 0
+        rig.player.on(CoreEvents.AudioTrack) { announced++ }
+
+        rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
+        rig.plugin.awaitWrites()
+        repeat(3) {
+            rig.player.emit(CoreEvents.Time, TimeUpdate(it.toDouble(), 1400.0, 0.0))
+            rig.plugin.awaitWrites()
+        }
+
+        assertEquals(0, announced, "the track already playing was selected again, once per tick")
+    }
+
     @Test
     fun aRestoreTurnedOffLeavesTheTrackWhereTheItemPutIt() = runTest {
         val rig: Rig = rig(VideoPreferencesOptions(restoreSubtitle = false))

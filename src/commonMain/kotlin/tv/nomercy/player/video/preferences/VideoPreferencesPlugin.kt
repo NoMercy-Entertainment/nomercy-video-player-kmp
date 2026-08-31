@@ -241,6 +241,7 @@ public open class VideoPreferencesPlugin(
         val available: List<SubtitleTrack> = player.subtitles()
         if (available.isEmpty()) return false
         val saved: SavedSubtitle = store.subtitle() ?: return true
+        if (matches(player.subtitle(), saved)) return true
 
         val track: SubtitleTrack = available.firstOrNull {
             it.language == saved.language &&
@@ -279,12 +280,22 @@ public open class VideoPreferencesPlugin(
         }
     }
 
+    // Nothing is re-selected once the choice is already in effect: the setter
+    // announces, and a tick that re-applies it says so again on the picture.
+    //
     // True once a list exists to decide against, whether or not it holds the
     // saved language. False only while there is no list at all.
+    private fun matches(track: SubtitleTrack?, saved: SavedSubtitle): Boolean =
+        track != null &&
+            track.language == saved.language &&
+            subtitleKindOf(track.label) == saved.kind &&
+            track.format == saved.format
+
     private suspend fun restoreAudio(): Boolean {
         val available: List<AudioTrack> = player.audioTracks()
         if (available.isEmpty()) return false
         val language: String = store.audio() ?: return true
+        if (player.audioTrack()?.language == language) return true
         val track: AudioTrack = available.firstOrNull { it.language == language } ?: return true
         applySelection { player.audioTrack(track) }
         return true
