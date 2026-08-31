@@ -135,30 +135,21 @@ public open class VideoPreferencesPlugin(
         // having left it.
         on(VideoEvents.QualityRequested) { remember { store.saveQuality(chosenQuality()) } }
 
-        // MediaReady, not Item. Item fires when the CURSOR moves — before the new
-        // source is loaded — so subtitles() was still empty and every restore on
-        // an episode change silently found nothing to select.
-        //
-        // And MediaReady is still not late enough on every engine. It means the
-        // source is loaded and will accept a seek; the track list arrives when
-        // the engine has parsed it, which can be after. `restoreAudio` gave up
-        // silently on an empty list, so an episode opened in whatever language
-        // the file defaults to — Japanese, on a viewer who had chosen English.
-        // The want is held until a list exists to satisfy it.
+        // Records what is owed and restores nothing: the cursor moves while the
+        // outgoing item is still loaded, so the engine still answers with ITS
+        // track list.
         on(CoreEvents.Item) {
             audioPending = true
             subtitlePending = true
-            // An item carries its own sidecar subtitles, so that list can already
-            // be there. The audio list comes from the manifest and is not.
-            remember { restoreWhatIsOwed() }
         }
+        // A list's ANNOUNCEMENT answers the want, because it is also when the
+        // engine has finished choosing for itself. Anything applied earlier is
+        // overwritten by the dub the new file declares.
+        on(CoreEvents.Subtitles) { remember { subtitlePending = !restoreSubtitle() && subtitlePending } }
+        on(VideoEvents.AudioTracks) { remember { audioPending = !restoreAudio() && audioPending } }
+        // The ladder, for the same reason: it is parsed after the source loads.
+        on(VideoEvents.Levels) { remember { restoreQuality() } }
         on(CoreEvents.MediaReady) { remember { restoreWhatIsOwed() } }
-        // The lists themselves, which is when a restore can actually succeed.
-        // Waiting for the clock instead left the want open on a player that was
-        // paused, and every pick made while it was open was dropped as if it had
-        // been the engine's.
-        on(CoreEvents.Subtitles) { remember { restoreWhatIsOwed() } }
-        on(VideoEvents.AudioTracks) { remember { restoreWhatIsOwed() } }
         on(CoreEvents.Time) {
             if (audioPending || subtitlePending) remember { restoreWhatIsOwed() }
         }
@@ -222,11 +213,9 @@ public open class VideoPreferencesPlugin(
         if (opts.restoreQuality) restoreQuality()
     }
 
-    // The same restore, limited to the kinds still owed one.
-    //
-    // An item change asks for both and the two lists answer at different times,
-    // so a tick that already restored the audio must not walk over a language
-    // the viewer has since picked by hand.
+    // An attempt that leaves the want standing, for an engine that parses a
+    // list without announcing one. Limited to the kinds still owed one, so it
+    // cannot walk over a language the viewer has since picked by hand.
     private suspend fun restoreWhatIsOwed() {
         if (opts.restoreSubtitle && subtitlePending) restoreSubtitle()
         if (opts.restoreAudio && audioPending) restoreAudio()
@@ -248,11 +237,10 @@ public open class VideoPreferencesPlugin(
     // Narrowest match first. A ladder filtered by device capability can drop the
     // exact variant, and a viewer is better served by the same language in a
     // different flavour than by no captions at all.
-    private suspend fun restoreSubtitle() {
+    private suspend fun restoreSubtitle(): Boolean {
         val available: List<SubtitleTrack> = player.subtitles()
-        if (available.isEmpty()) return
-        subtitlePending = false
-        val saved: SavedSubtitle = store.subtitle() ?: return
+        if (available.isEmpty()) return false
+        val saved: SavedSubtitle = store.subtitle() ?: return true
 
         val track: SubtitleTrack = available.firstOrNull {
             it.language == saved.language &&
@@ -262,15 +250,15 @@ public open class VideoPreferencesPlugin(
             it.language == saved.language && subtitleKindOf(it.label) == saved.kind
         } ?: available.firstOrNull {
             it.language == saved.language
-        } ?: return
+        } ?: return true
 
         applySelection { player.subtitle(track) }
+        return true
     }
 
-    // Whether a restore is still owed for that kind, from the cursor move until
-    // a real list has been offered one. Held per kind because the two lists do
-    // not arrive together: gating both on the audio list let a subtitle restore
-    // run against an empty list and count itself answered.
+    // Owed from the cursor move until that kind's list is ANNOUNCED. Per kind,
+    // because the two lists do not arrive together, and cleared nowhere else:
+    // every other caller restores against a list belonging to another item.
     private var audioPending: Boolean = false
     private var subtitlePending: Boolean = false
 
@@ -291,13 +279,15 @@ public open class VideoPreferencesPlugin(
         }
     }
 
-    private suspend fun restoreAudio() {
+    // True once a list exists to decide against, whether or not it holds the
+    // saved language. False only while there is no list at all.
+    private suspend fun restoreAudio(): Boolean {
         val available: List<AudioTrack> = player.audioTracks()
-        if (available.isEmpty()) return
-        audioPending = false
-        val language: String = store.audio() ?: return
-        val track: AudioTrack = available.firstOrNull { it.language == language } ?: return
+        if (available.isEmpty()) return false
+        val language: String = store.audio() ?: return true
+        val track: AudioTrack = available.firstOrNull { it.language == language } ?: return true
         applySelection { player.audioTrack(track) }
+        return true
     }
 
     // Auto is a stored value, not the absence of one.

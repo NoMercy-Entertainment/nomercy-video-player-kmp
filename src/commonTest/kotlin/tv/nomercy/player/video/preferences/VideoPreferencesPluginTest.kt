@@ -202,6 +202,7 @@ class VideoPreferencesPluginTest {
 
         // The engine announces the new item's list, and only then does the cursor
         // move arrive.
+        println("DBGT set jpn, current=" + rig.player.audioTrack()?.language)
         rig.player.emit(VideoEvents.AudioTracks, AudioTracksChange(emptyList()))
         rig.plugin.awaitWrites()
         rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
@@ -216,8 +217,11 @@ class VideoPreferencesPluginTest {
         // A new item, whose engine starts on its own default.
         rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
         rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        assertEquals("eng", rig.player.audioTrack()?.language, "STAGE-tracks")
         rig.player.emit(CoreEvents.MediaReady, Unit)
         rig.plugin.awaitWrites()
+        assertEquals("eng", rig.player.audioTrack()?.language, "STAGE-ready")
+        println("DBGT final-read=" + rig.player.audioTrack()?.language + " saved=" + rig.plugin.savedAudioLanguage())
 
         assertEquals(
             "eng",
@@ -280,6 +284,45 @@ class VideoPreferencesPluginTest {
         rig.plugin.restore()
 
         assertEquals(HD_HEIGHT, rig.player.quality()?.height, "the rung was matched on the whole descriptor")
+    }
+
+    // An episode that ENDS hands the next one a list that has not gone away.
+    //
+    // Reported from the living-room television on 2026-08-31: the next episode
+    // started in Japanese while English was playing. On an auto-advance the
+    // cursor moves while the outgoing item is still loaded, so the engine still
+    // answers with ITS track list — the restore ran against the wrong item's
+    // list, matched there, and counted itself answered. The new item's own list
+    // then arrived with nothing owed against it.
+    @Test
+    fun theNextEpisodeGetsTheRestoreEvenThoughTheOldListWasStillThere() = runTest {
+        val rig: Rig = rig()
+        rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        rig.player.audioTrack(audioEnglish)
+        rig.plugin.awaitWrites()
+
+        // The cursor moves to the next episode. Nothing has been torn down yet,
+        // so the outgoing item's tracks are still what the engine reports.
+        rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
+        rig.plugin.awaitWrites()
+
+        // The new source finishes loading and the engine settles on the dub the
+        // file declares. Set on the backend, not through the setter: an engine
+        // choosing its own default announces nothing.
+        rig.backend.chosenAudio = audioJapanese
+        // The payload is the announcement; the plugin reads the list off the
+        // player, which is where the new item's tracks now are.
+        rig.player.emit(VideoEvents.AudioTracks, AudioTracksChange(emptyList()))
+        // Joined per event: `remember` keeps only the LAST handle, so awaiting
+        // once after both emits can return while the first is still running.
+        rig.plugin.awaitWrites()
+        rig.player.emit(CoreEvents.MediaReady, Unit)
+        rig.plugin.awaitWrites()
+        assertEquals(
+            "eng",
+            rig.player.audioTrack()?.language,
+            "the next episode opened in the file's dub, so the restore was spent on the old item's list",
+        )
     }
 
     @Test
