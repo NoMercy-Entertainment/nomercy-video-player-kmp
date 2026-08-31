@@ -181,6 +181,18 @@ public open class VideoPreferencesPlugin(
      */
     public suspend fun savedAudioLanguage(): String? = store.audio()
 
+    /**
+     * Adopt a language chosen on another device as this one's choice.
+     *
+     * A handoff carries the language the viewer was listening to, and the device
+     * taking over has to know it before it opens its own transcode session —
+     * which is before there is any track list to restore against.
+     */
+    public suspend fun rememberAudioLanguage(language: String?) {
+        if (language.isNullOrBlank()) return
+        store.saveAudio(language)
+    }
+
     /** The caption choice the viewer last made, for the same reason. */
     public suspend fun savedSubtitle(): SavedSubtitle? = store.subtitle()
 
