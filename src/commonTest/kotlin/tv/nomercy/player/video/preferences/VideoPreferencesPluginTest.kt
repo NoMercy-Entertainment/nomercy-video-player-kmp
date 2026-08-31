@@ -17,6 +17,8 @@ import tv.nomercy.player.testing.FakeVideoBackend
 import tv.nomercy.player.core.controllers.InMemoryStorage
 import tv.nomercy.player.core.events.AudioTrackPayload
 import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.SubtitlePayload
+import tv.nomercy.player.core.events.SubtitlesPayload
 import tv.nomercy.player.core.events.ItemChange
 import tv.nomercy.player.core.events.TimeUpdate
 import tv.nomercy.player.video.NMVideoPlayer
@@ -373,6 +375,24 @@ class VideoPreferencesPluginTest {
         )
     }
 
+    // The caption half of the same lag.
+    @Test
+    fun theSubtitleSavedIsTheOneChosenAndNotTheOneStillShowing() = runTest {
+        val rig: Rig = rig()
+        rig.backend.subtitleTracks = listOf(english, dutch)
+        rig.backend.chosenSubtitle = english
+        rig.plugin.awaitWrites()
+
+        rig.player.emit(CoreEvents.Subtitle, SubtitlePayload(track = 1.0))
+        rig.plugin.awaitWrites()
+
+        assertEquals(
+            "nld",
+            rig.plugin.savedSubtitle()?.language,
+            "the caption being replaced was saved instead of the one chosen",
+        )
+    }
+
     // A switch is not a cursor move, and only a cursor move owes a restore.
     //
     // Every track switch makes the engine publish its list again. With nothing
@@ -403,6 +423,34 @@ class VideoPreferencesPluginTest {
         rig.plugin.awaitWrites()
 
         assertEquals(0, announced, "the announcement after a switch selected a track of its own")
+    }
+
+    // And the caption half of that one.
+    @Test
+    fun aSubtitleListAnnouncedAfterTheItemSettledSelectsNothing() = runTest {
+        val rig: Rig = rig()
+        rig.backend.subtitleTracks = listOf(english, dutch)
+        rig.player.subtitle(english)
+        rig.plugin.awaitWrites()
+
+        rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
+        rig.plugin.awaitWrites()
+        rig.player.emit(CoreEvents.Subtitles, SubtitlesPayload(emptyList()))
+        rig.plugin.awaitWrites()
+
+        // The viewer switches to Dutch, and the engine has not caught up: it
+        // still reports English while the list is published again.
+        rig.player.subtitle(dutch)
+        rig.plugin.awaitWrites()
+        rig.backend.chosenSubtitle = english
+
+        var announced = 0
+        rig.player.on(CoreEvents.Subtitle) { announced++ }
+
+        rig.player.emit(CoreEvents.Subtitles, SubtitlesPayload(emptyList()))
+        rig.plugin.awaitWrites()
+
+        assertEquals(0, announced, "the announcement after a switch selected a caption of its own")
     }
 
     @Test
