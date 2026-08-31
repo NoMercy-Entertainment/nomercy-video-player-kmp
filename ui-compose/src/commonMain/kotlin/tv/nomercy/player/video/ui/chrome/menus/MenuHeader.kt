@@ -145,6 +145,7 @@ private fun menuTitle(strings: MenuStrings, menu: MenuState, queue: List<TvChrom
         MenuState.Playlist -> playlistTitle(strings, queue)
         MenuState.AspectRatio -> strings.aspectRatio
         MenuState.SubtitleSettings -> strings.subtitleSettings
+        MenuState.AutoSkip -> strings.autoSkipChapters
         MenuState.Main, MenuState.Hidden -> strings.settings
     }
 

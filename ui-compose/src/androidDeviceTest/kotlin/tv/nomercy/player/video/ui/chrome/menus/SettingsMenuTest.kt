@@ -9,7 +9,6 @@
 package tv.nomercy.player.video.ui.chrome.menus
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -20,7 +19,6 @@ import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.DynamicRange
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
-import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
 import tv.nomercy.player.video.ui.chrome.ChromeState
 import tv.nomercy.player.video.ui.chrome.RecordingChromeCommands
@@ -55,20 +53,6 @@ class SettingsMenuTest {
         menu = open
         compose.setContent {
             SettingsMenu(state, commands, menu, onMenuChange = { menu = it }, strings = strings)
-        }
-    }
-
-    private fun renderWithAutoSkip(state: ChromeState, open: MenuState) {
-        menu = open
-        compose.setContent {
-            SettingsMenu(
-                state,
-                commands,
-                menu,
-                onMenuChange = { menu = it },
-                strings = strings,
-                buttons = ChromeButtons(autoSkipChapters = true),
-            )
         }
     }
 
@@ -173,36 +157,5 @@ class SettingsMenuTest {
         render(ChromeState(rate = 1.5f), MenuState.Speed)
 
         compose.onNodeWithContentDescription("1.5x").assertIsDisplayed()
-    }
-
-    // The web mounts auto-skip through `settingsItems`: a category-shaped row
-    // whose checkmark reflects the bound state, flipped on click. This had a
-    // chevron onto an On/Off list, so the same setting cost two presses here
-    // and one in the browser.
-    @Test
-    fun autoSkipFlipsWhereItStandsRatherThanOpeningAList() {
-        renderWithAutoSkip(ChromeState(autoSkipChapters = false), MenuState.Main)
-
-        compose.onNodeWithTag(ROW_AUTO_SKIP).performClick()
-
-        assertTrue(commands.calls.contains("setAutoSkipChapters:true"))
-        assertEquals(MenuState.Main, menu)
-    }
-
-    @Test
-    fun autoSkipOffAgainSendsFalse() {
-        renderWithAutoSkip(ChromeState(autoSkipChapters = true), MenuState.Main)
-
-        compose.onNodeWithTag(ROW_AUTO_SKIP).performClick()
-
-        assertTrue(commands.calls.contains("setAutoSkipChapters:false"))
-    }
-
-    // The check is the whole affordance once the chevron is gone.
-    @Test
-    fun theAutoSkipRowCarriesItsOwnState() {
-        renderWithAutoSkip(ChromeState(autoSkipChapters = true), MenuState.Main)
-
-        compose.onNodeWithTag(ROW_AUTO_SKIP).assertIsSelected()
     }
 }

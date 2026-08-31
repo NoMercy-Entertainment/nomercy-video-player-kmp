@@ -8,7 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
-import tv.nomercy.player.core.events.SubtitleStyle
+import tv.nomercy.player.video.ui.chrome.menus.SubtitleStyle
 import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel

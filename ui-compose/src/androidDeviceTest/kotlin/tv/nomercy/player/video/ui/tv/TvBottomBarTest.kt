@@ -60,7 +60,7 @@ class TvBottomBarTest {
     }
 
     private fun reportedProgress(): Float =
-        compose.onNodeWithTag(TV_PROGRESS_TAG)
+        compose.onNodeWithTag(PROGRESS_TAG)
             .fetchSemanticsNode()
             .config[SemanticsProperties.ProgressBarRangeInfo]
             .current
