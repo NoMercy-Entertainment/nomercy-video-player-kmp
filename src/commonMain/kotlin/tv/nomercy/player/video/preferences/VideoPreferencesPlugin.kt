@@ -167,6 +167,20 @@ public open class VideoPreferencesPlugin(
         }
     }
 
+    /**
+     * The audio language the viewer last chose, before any track list exists.
+     *
+     * A server that transcodes on demand decides which rendition it marks
+     * default, and it decides that when the SESSION opens — before the player
+     * has a list to restore against. A consumer asking for that session has to
+     * be able to say which language, or the choice is made for it and the
+     * restore is left correcting an item that opened in the wrong one.
+     */
+    public suspend fun savedAudioLanguage(): String? = store.audio()
+
+    /** The caption choice the viewer last made, for the same reason. */
+    public suspend fun savedSubtitle(): SavedSubtitle? = store.subtitle()
+
     // Writing is fire-and-forget, and the handle is kept so it can be waited on.
     //
     // A viewer never waits for a preference to be written — the choice has
