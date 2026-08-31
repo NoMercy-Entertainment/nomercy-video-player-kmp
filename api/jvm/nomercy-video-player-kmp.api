@@ -1467,7 +1467,10 @@ public class tv/nomercy/player/video/preferences/VideoPreferencesPlugin : tv/nom
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;
 	public fun optionFields ()Ljava/util/List;
+	public final fun rememberAudioLanguage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun restore (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun savedAudioLanguage (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun savedSubtitle (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun use ()V
 }
 

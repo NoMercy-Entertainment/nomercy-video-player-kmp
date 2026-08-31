@@ -2164,6 +2164,9 @@ open class tv.nomercy.player.video.preferences/VideoPreferencesPlugin : tv.nomer
     open val options // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.options|{}options[0]
         open fun <get-options>(): tv.nomercy.player.video.preferences/VideoPreferencesOptions // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.options.<get-options>|<get-options>(){}[0]
 
+    final suspend fun rememberAudioLanguage(kotlin/String?) // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.rememberAudioLanguage|rememberAudioLanguage(kotlin.String?){}[0]
+    final suspend fun savedAudioLanguage(): kotlin/String? // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.savedAudioLanguage|savedAudioLanguage(){}[0]
+    final suspend fun savedSubtitle(): tv.nomercy.player.video.preferences/SavedSubtitle? // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.savedSubtitle|savedSubtitle(){}[0]
     open fun optionFields(): kotlin.collections/List<tv.nomercy.player.core.plugin/PluginOptionField> // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.optionFields|optionFields(){}[0]
     open fun use() // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.use|use(){}[0]
     open suspend fun restore() // tv.nomercy.player.video.preferences/VideoPreferencesPlugin.restore|restore(){}[0]
