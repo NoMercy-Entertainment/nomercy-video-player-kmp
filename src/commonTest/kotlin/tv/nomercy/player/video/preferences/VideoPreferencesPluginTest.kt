@@ -15,6 +15,7 @@ import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.testing.FakeVideoBackend
 import tv.nomercy.player.core.controllers.InMemoryStorage
+import tv.nomercy.player.core.events.AudioTrackPayload
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.ItemChange
 import tv.nomercy.player.core.events.TimeUpdate
@@ -202,7 +203,6 @@ class VideoPreferencesPluginTest {
 
         // The engine announces the new item's list, and only then does the cursor
         // move arrive.
-        println("DBGT set jpn, current=" + rig.player.audioTrack()?.language)
         rig.player.emit(VideoEvents.AudioTracks, AudioTracksChange(emptyList()))
         rig.plugin.awaitWrites()
         rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
@@ -221,7 +221,6 @@ class VideoPreferencesPluginTest {
         rig.player.emit(CoreEvents.MediaReady, Unit)
         rig.plugin.awaitWrites()
         assertEquals("eng", rig.player.audioTrack()?.language, "STAGE-ready")
-        println("DBGT final-read=" + rig.player.audioTrack()?.language + " saved=" + rig.plugin.savedAudioLanguage())
 
         assertEquals(
             "eng",
@@ -346,6 +345,64 @@ class VideoPreferencesPluginTest {
         }
 
         assertEquals(0, announced, "the track already playing was selected again, once per tick")
+    }
+
+    // What the viewer picked is what gets written down.
+    //
+    // A selection reaches the engine asynchronously — Media3 applies it on the
+    // main thread and refreshes its cache after — so the track the player
+    // reports while the event is being handled is still the OLD one. Saving
+    // that stored the language being replaced, and the list announcement the
+    // switch produces then restored it: the language changed back by itself.
+    @Test
+    fun theLanguageSavedIsTheOneChosenAndNotTheOneStillPlaying() = runTest {
+        val rig: Rig = rig()
+        rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        rig.backend.chosenAudio = audioJapanese
+        rig.plugin.awaitWrites()
+
+        // The engine has not caught up: it still answers Japanese while the
+        // event names English at index one.
+        rig.player.emit(CoreEvents.AudioTrack, AudioTrackPayload(id = 1.0))
+        rig.plugin.awaitWrites()
+
+        assertEquals(
+            "eng",
+            rig.plugin.savedAudioLanguage(),
+            "the language being replaced was saved instead of the one chosen",
+        )
+    }
+
+    // A switch is not a cursor move, and only a cursor move owes a restore.
+    //
+    // Every track switch makes the engine publish its list again. With nothing
+    // owed, that announcement still ran the restore, which re-selected against a
+    // player mid-switch — an extra selection per switch, which is the chop and
+    // the flip back a viewer sees.
+    @Test
+    fun aListAnnouncedAfterTheItemSettledSelectsNothing() = runTest {
+        val rig: Rig = rig()
+        rig.backend.audio = listOf(audioJapanese, audioEnglish)
+        rig.player.audioTrack(audioEnglish)
+        rig.plugin.awaitWrites()
+
+        // The item settles: the want is raised and the announcement answers it.
+        rig.player.emit(CoreEvents.Item, ItemChange(rig.player.item(), rig.player.index()))
+        rig.plugin.awaitWrites()
+        rig.player.emit(VideoEvents.AudioTracks, AudioTracksChange(emptyList()))
+        rig.plugin.awaitWrites()
+
+        var announced = 0
+        rig.player.on(CoreEvents.AudioTrack) { announced++ }
+
+        // The viewer switches to Japanese, and the engine publishes its list
+        // again while it is still reporting English.
+        rig.backend.chosenAudio = audioEnglish
+        rig.plugin.rememberAudioLanguage("jpn")
+        rig.player.emit(VideoEvents.AudioTracks, AudioTracksChange(emptyList()))
+        rig.plugin.awaitWrites()
+
+        assertEquals(0, announced, "the announcement after a switch selected a track of its own")
     }
 
     @Test

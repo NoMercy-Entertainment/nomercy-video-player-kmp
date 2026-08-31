@@ -109,10 +109,14 @@ public open class VideoPreferencesPlugin(
         // could not be corrected, and which language an item opened in depended
         // on what had been played before it. This is the shape the retired
         // Android player used, which is the one that worked.
-        on(CoreEvents.Subtitle) {
+        // The track the event NAMES, not the one the engine currently reports.
+        // A selection reaches the engine asynchronously, so reading the current
+        // track here answers with the language being replaced — and the list
+        // announcement that follows the switch then restores it.
+        on(CoreEvents.Subtitle) { payload ->
             if (applying) return@on
             remember {
-                val track: SubtitleTrack? = player.subtitle()
+                val track: SubtitleTrack? = trackAt(player.subtitles(), payload.track)
                 store.saveSubtitle(
                     track?.let {
                         SavedSubtitle(
@@ -124,9 +128,9 @@ public open class VideoPreferencesPlugin(
                 )
             }
         }
-        on(CoreEvents.AudioTrack) {
+        on(CoreEvents.AudioTrack) { payload ->
             if (applying) return@on
-            remember { store.saveAudio(player.audioTrack()?.language) }
+            remember { store.saveAudio(trackAt(player.audioTracks(), payload.id)?.language) }
         }
 
         // The viewer's choice, not the ladder's. `quality:requested` fires on an
@@ -145,8 +149,8 @@ public open class VideoPreferencesPlugin(
         // A list's ANNOUNCEMENT answers the want, because it is also when the
         // engine has finished choosing for itself. Anything applied earlier is
         // overwritten by the dub the new file declares.
-        on(CoreEvents.Subtitles) { remember { subtitlePending = !restoreSubtitle() && subtitlePending } }
-        on(VideoEvents.AudioTracks) { remember { audioPending = !restoreAudio() && audioPending } }
+        on(CoreEvents.Subtitles) { remember { answerSubtitle() } }
+        on(VideoEvents.AudioTracks) { remember { answerAudio() } }
         // The ladder, for the same reason: it is parsed after the source loads.
         on(VideoEvents.Levels) { remember { restoreQuality() } }
         on(CoreEvents.MediaReady) { remember { restoreWhatIsOwed() } }
@@ -199,6 +203,10 @@ public open class VideoPreferencesPlugin(
         lastWrite = launch { block() }
     }
 
+    // The event carries a place in the list the player held when it fired.
+    private fun <T> trackAt(list: List<T>, index: Double?): T? =
+        index?.toInt()?.let(list::getOrNull)
+
     private var lastWrite: Job? = null
 
     internal suspend fun awaitWrites() {
@@ -211,6 +219,23 @@ public open class VideoPreferencesPlugin(
         if (opts.restoreSubtitle) restoreSubtitle()
         if (opts.restoreAudio) restoreAudio()
         if (opts.restoreQuality) restoreQuality()
+    }
+
+    // The list is out, so the want is answered whether or not this item has the
+    // language. No list at all cannot answer it.
+    //
+    // Nothing is owed once it is answered, and a list is announced again every
+    // time a viewer switches track — so without the guard the switch is followed
+    // by a restore that argues with it, which is chop on the picture and a
+    // language that changes back by itself.
+    private suspend fun answerSubtitle() {
+        if (!subtitlePending) return
+        subtitlePending = !restoreSubtitle()
+    }
+
+    private suspend fun answerAudio() {
+        if (!audioPending) return
+        audioPending = !restoreAudio()
     }
 
     // An attempt that leaves the want standing, for an engine that parses a
