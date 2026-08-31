@@ -145,8 +145,17 @@ public open class VideoPreferencesPlugin(
         on(CoreEvents.Item) {
             audioPending = true
             subtitlePending = true
+            // An item carries its own sidecar subtitles, so that list can already
+            // be there. The audio list comes from the manifest and is not.
+            remember { restoreWhatIsOwed() }
         }
         on(CoreEvents.MediaReady) { remember { restoreWhatIsOwed() } }
+        // The lists themselves, which is when a restore can actually succeed.
+        // Waiting for the clock instead left the want open on a player that was
+        // paused, and every pick made while it was open was dropped as if it had
+        // been the engine's.
+        on(CoreEvents.Subtitles) { remember { restoreWhatIsOwed() } }
+        on(VideoEvents.AudioTracks) { remember { restoreWhatIsOwed() } }
         on(CoreEvents.Time) {
             if (audioPending || subtitlePending) remember { restoreWhatIsOwed() }
         }
