@@ -126,6 +126,11 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
             player.on(CoreEvents.Time) { clearFeedback() },
             // And a pause takes down whatever is already up.
             player.on(CoreEvents.Pause) { clearFeedback() },
+            // Enough data to play, whether or not anybody pressed play. A viewer
+            // who never presses play — the pre-screen's still-paused preview —
+            // gets no Playing and no Time, so without this a load that finished
+            // during that wait kept "Buffering" over a fully ready picture.
+            player.on(CoreEvents.Ready) { clearFeedback() },
             player.on(CoreEvents.Error) {
                 message = ChromeMessage(strings.error, ChromeMessage.Kind.Failure)
                 expiresAfterMs = null
