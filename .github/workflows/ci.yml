@@ -78,7 +78,6 @@ jobs:
         # against a box other jobs are using, and a runner without passwordless
         # sudo would fail the build on a step that had nothing to do.
         run: |
-          umask 0022
           set -e
           if ! ldconfig -p | grep -q libass; then
             sudo apt-get update
