@@ -75,30 +75,58 @@ public fun SubtitleStyle.toAreaColor(): Color =
 internal fun SubtitleStyle.fontSizeSp(containerWidthDp: Float): Float =
     (containerWidthDp * (CONTAINER_RATIO / PERCENT) * (fontSize / PERCENT)).coerceIn(MIN_FONT_SP, MAX_FONT_SP)
 
-private fun SubtitleStyle.isHaloEdge(): Boolean = edgeStyle == EDGE_TEXT_SHADOW || edgeStyle == EDGE_UNIFORM
+/**
+ * Only `textShadow` gets the stroked pass, which is what makes it an outline.
+ *
+ * `uniform` used to be in here too, and the two then drew the same pixels: the
+ * same zero-offset blur underneath and the same stroke on top, so two rows in
+ * the menu were one style under two names (Stoney: "outline and uniform are the
+ * same so one of them is useless").
+ *
+ * The web separates them by density, not by shape — `uniform` is one copy of
+ * `0 0 4px`, `textShadow` is that same shadow drawn seven times. Seven stacked
+ * blurs read as a hard edge, one reads as a glow. A single Compose [Shadow]
+ * cannot be stacked, so the stroke stands in for the dense one and the plain
+ * blur is left to carry the soft one on its own.
+ */
+private fun SubtitleStyle.isHaloEdge(): Boolean = edgeStyle == EDGE_TEXT_SHADOW
 
 private fun SubtitleStyle.edgeShadow(): Shadow? {
     val black: Color = Color.Black.withOpacity(textOpacity)
     return when (edgeStyle) {
-        EDGE_DEPRESSED -> Shadow(black, Offset(1f, 1f), 2f)
-        EDGE_DROP_SHADOW -> Shadow(black, Offset(2f, 2f), 4f)
-        EDGE_RAISED -> Shadow(black, Offset(-1f, -1f), 2f)
-        EDGE_UNIFORM, EDGE_TEXT_SHADOW -> Shadow(black, Offset.Zero, 4f)
+        EDGE_DEPRESSED -> Shadow(black, Offset(NEAR_OFFSET_PX, NEAR_OFFSET_PX), NEAR_BLUR_PX)
+        EDGE_DROP_SHADOW -> Shadow(black, Offset(FAR_OFFSET_PX, FAR_OFFSET_PX), WIDE_BLUR_PX)
+        EDGE_RAISED -> Shadow(black, Offset(-NEAR_OFFSET_PX, -NEAR_OFFSET_PX), NEAR_BLUR_PX)
+        EDGE_UNIFORM, EDGE_TEXT_SHADOW -> Shadow(black, Offset.Zero, WIDE_BLUR_PX)
         else -> null
     }
 }
 
 private fun Color.withOpacity(percent: Int): Color = copy(alpha = (percent / PERCENT).coerceIn(0f, 1f))
 
+/**
+ * The first name in the stack any side can actually supply.
+ *
+ * A CSS font stack is a preference list, and only the first entry was ever read:
+ * `"Courier New, monospace"` on a device without Courier New fell straight to
+ * sans-serif, so a viewer's monospace pick looked identical to their Arial one.
+ * The host is asked for every name before the generics are, because a host that
+ * ships a face should win over a generic the stack names later.
+ */
 private fun fontFamilyOf(stack: String, resolver: (String) -> FontFamily?): FontFamily {
-    val first: String = stack.substringBefore(',').trim()
-    resolver(first)?.let { return it }
-    return when (first.lowercase()) {
-        "serif" -> FontFamily.Serif
-        "monospace" -> FontFamily.Monospace
-        "cursive", "casual" -> FontFamily.Cursive
-        else -> FontFamily.SansSerif
-    }
+    val names: List<String> = stack.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+    names.forEach { name -> resolver(name)?.let { return it } }
+    names.forEach { name -> genericFamilyOf(name)?.let { return it } }
+    return FontFamily.SansSerif
+}
+
+/** The CSS generic families, which every platform can draw without a font file. */
+private fun genericFamilyOf(name: String): FontFamily? = when (name.lowercase()) {
+    "serif" -> FontFamily.Serif
+    "monospace" -> FontFamily.Monospace
+    "cursive", "casual" -> FontFamily.Cursive
+    "sans-serif" -> FontFamily.SansSerif
+    else -> null
 }
 
 private fun parseColor(value: String, fallback: Color): Color {
@@ -108,8 +136,12 @@ private fun parseColor(value: String, fallback: Color): Color {
     return if (digits.length == RGB_DIGITS) Color(rgb or OPAQUE) else Color(rgb)
 }
 
-// The handful CSS names the web's own picker offers. Anything else is a fallback,
+// The CSS names the web's own picker offers, and nothing beyond them — this is
 // not a guess at the full CSS table.
+//
+// The two trios must offer the same colours, or a style set on one platform
+// lands on the other as a colour its picker cannot show. `orange` was in the
+// television's list and not the web's, which is exactly that divergence.
 private fun namedToHex(name: String): String? = when (name.lowercase()) {
     "white" -> "#FFFFFF"
     "black" -> "#000000"
@@ -119,6 +151,10 @@ private fun namedToHex(name: String): String? = when (name.lowercase()) {
     "blue" -> "#0000FF"
     "cyan" -> "#00FFFF"
     "magenta" -> "#FF00FF"
+    "orange" -> "#FFA500"
+    "purple" -> "#800080"
+    "gray" -> "#808080"
+    "grey" -> "#808080"
     else -> null
 }
 
@@ -134,6 +170,14 @@ private const val MIN_FONT_SP = 14f
 private const val MAX_FONT_SP = 56f
 private const val LINE_HEIGHT = 1.2f
 private const val MIN_OUTLINE_PX = 1f
+
+// The web's own edge offsets and blurs, in the two sizes its table uses:
+// `depressed`/`raised` sit one pixel out under a 2px blur, `dropShadow` two out
+// under 4px, and the haloes stay put under that same wider blur.
+private const val NEAR_OFFSET_PX = 1f
+private const val FAR_OFFSET_PX = 2f
+private const val NEAR_BLUR_PX = 2f
+private const val WIDE_BLUR_PX = 4f
 private const val PERCENT = 100f
 private const val HEX_RADIX = 16
 private const val RGB_DIGITS = 6

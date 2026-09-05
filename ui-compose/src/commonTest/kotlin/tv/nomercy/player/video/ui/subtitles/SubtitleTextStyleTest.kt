@@ -60,6 +60,29 @@ class SubtitleTextStyleTest {
         assertNotNull(base.shadow)
     }
 
+    /**
+     * `uniform` is the soft one and must not borrow the outline pass.
+     *
+     * Both used to claim it, and with the same zero-offset blur underneath that
+     * made them draw identical pixels — two menu rows for one style. The web
+     * tells them apart by how many times the shadow is stacked, one against
+     * seven, so the stroke belongs to the dense one alone.
+     */
+    @Test
+    fun uniformIsASoftHaloAndNotTheOutline() {
+        val uniform = SubtitleStyle(edgeStyle = "uniform")
+        val textShadow = SubtitleStyle(edgeStyle = "textShadow")
+
+        val uniformBase: TextStyle = uniform.toTextStyle(960f)
+        val textShadowBase: TextStyle = textShadow.toTextStyle(960f)
+
+        assertNull(uniform.toOutlineStyle(uniformBase, 6f))
+        assertNotNull(textShadow.toOutlineStyle(textShadowBase, 6f))
+        // Both still carry the blur — the stroke is the only difference.
+        assertNotNull(uniformBase.shadow)
+        assertNotNull(textShadowBase.shadow)
+    }
+
     @Test
     fun anOffsetEdgeStyleNeedsNoOutlinePass() {
         val style = SubtitleStyle(edgeStyle = "dropShadow")
