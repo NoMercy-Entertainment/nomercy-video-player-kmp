@@ -77,10 +77,13 @@ public fun PlainSubtitleLayer(
 
     BoxWithConstraints(modifier.fillMaxSize().testTag(PLAIN_SUBTITLE_TAG)) {
         val fill: TextStyle = subtitleStyle.toTextStyle(maxWidth.value, fontResolver)
-        val outlineWidthPx: Float = with(LocalDensity.current) { fill.fontSize.toPx() } * SubtitleOutlineRatio
-        val outline: TextStyle? = subtitleStyle.toOutlineStyle(fill, outlineWidthPx)
-        val textBackground: Color = subtitleStyle.toBackgroundColor()
-        val areaBackground: Color = subtitleStyle.toAreaColor()
+        val outlineWidthPx: Float = with(LocalDensity.current) { fill.fontSize.toPx() } * SUBTITLE_OUTLINE_RATIO
+        val paint = CuePaint(
+            fill = fill,
+            outline = subtitleStyle.toOutlineStyle(fill, outlineWidthPx),
+            textBackground = subtitleStyle.toBackgroundColor(),
+            areaBackground = subtitleStyle.toAreaColor(),
+        )
 
         Column(
             modifier = Modifier
@@ -94,32 +97,41 @@ public fun PlainSubtitleLayer(
                 ),
             verticalArrangement = Arrangement.Bottom,
         ) {
-            cues.forEach { cue ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(areaBackground)
-                        .padding(vertical = AREA_PADDING_DP.dp),
-                    contentAlignment = cue.align.toAlignment(),
-                ) {
-                    Box(Modifier.background(textBackground)) {
-                        val align: TextAlign = cue.align.toTextAlign()
-                        val pad = Modifier.padding(horizontal = TEXT_PADDING_DP.dp)
-                        outline?.let { stroke ->
-                            BasicText(
-                                text = cue.plainText,
-                                style = stroke.copy(textAlign = align),
-                                modifier = pad.clearAndSetSemantics { },
-                            )
-                        }
-                        BasicText(
-                            text = cue.plainText,
-                            style = fill.copy(textAlign = align),
-                            modifier = pad,
-                        )
-                    }
-                }
+            cues.forEach { cue -> CueRow(cue, paint) }
+        }
+    }
+}
+
+// One cue's row: the area band, the text background inside it, and the outline
+// pass under the fill.
+//
+// Two draws rather than one because Compose has no stroke-then-fill on a single
+// node. The stroke is hidden from accessibility, so a screen reader announces
+// each line once instead of twice.
+@Composable
+private fun CueRow(cue: SubtitleCue, paint: CuePaint) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(paint.areaBackground)
+            .padding(vertical = AREA_PADDING_DP.dp),
+        contentAlignment = cue.align.toAlignment(),
+    ) {
+        Box(Modifier.background(paint.textBackground)) {
+            val align: TextAlign = cue.align.toTextAlign()
+            val pad = Modifier.padding(horizontal = TEXT_PADDING_DP.dp)
+            paint.outline?.let { stroke ->
+                BasicText(
+                    text = cue.plainText,
+                    style = stroke.copy(textAlign = align),
+                    modifier = pad.clearAndSetSemantics { },
+                )
             }
+            BasicText(
+                text = cue.plainText,
+                style = paint.fill.copy(textAlign = align),
+                modifier = pad,
+            )
         }
     }
 }

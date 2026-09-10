@@ -37,9 +37,9 @@ class AssPictureChannelsDeviceTest {
         val navy = 0x393F83.shl(BYTE) or 0x00
         val drawn = drawOnePixel(navy)
 
-        assertEquals(0x39, drawn.red, "red")
-        assertEquals(0x3F, drawn.green, "green")
-        assertEquals(0x83, drawn.blue, "blue")
+        assertEquals(NAVY_RED, drawn.red, "red")
+        assertEquals(NAVY_GREEN, drawn.green, "green")
+        assertEquals(NAVY_BLUE, drawn.blue, "blue")
     }
 
     // Red and blue apart, so a swap cannot pass by symmetry the way a grey or a
@@ -48,7 +48,7 @@ class AssPictureChannelsDeviceTest {
     fun redIsNotDrawnAsBlue() {
         val drawn = drawOnePixel(0xFF0000.shl(BYTE) or 0x00)
 
-        assertEquals(0xFF, drawn.red, "red")
+        assertEquals(FULL_CHANNEL, drawn.red, "red")
         assertEquals(0x00, drawn.blue, "blue")
     }
 
@@ -75,6 +75,12 @@ class AssPictureChannelsDeviceTest {
 
     private data class Channels(val red: Int, val green: Int, val blue: Int)
 }
+
+// The channels the authored navy resolves to, and a fully lit one.
+private const val NAVY_RED = 0x39
+private const val NAVY_GREEN = 0x3F
+private const val NAVY_BLUE = 0x83
+private const val FULL_CHANNEL = 0xFF
 
 private const val BYTE = 8
 private const val MAX_CHANNEL = 255f

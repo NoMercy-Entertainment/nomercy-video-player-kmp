@@ -175,28 +175,19 @@ public fun VideoChrome(
         remember { FocusRequester() },
     )
 
-    // The picture and the words on it, as one layer.
-    //
-    // Together rather than as two arguments because they are one thing to a
-    // viewer and because they have to stay in this order: the surface, then the
-    // cues, then everything else. A chrome that took them separately would let
-    // a caller supply a surface and no cues, which is the state this was in.
-    val picture: @Composable BoxScope.() -> Unit = {
-        surface()
-        SubtitleCueLayer(rememberCueBoxes(player), rememberSubtitleStyle(player))
-        slots.styledSubtitles?.invoke(state, commands)
-    }
+    val slotContext = ChromeSlotContext(state, commands)
+    val picture: @Composable BoxScope.() -> Unit = { ChromePicture(player, slotContext, slots, surface) }
 
     ChromeFrame(input = input, modifier = modifier, picture = picture) {
         ChromeMenuScope(keyboard = input.pointerDriven, menuOpen = menu != MenuState.Hidden) {
             ChromeLayers(
                 scene = ChromeScene(
                     state, commands, controller, strings, rememberMenuStrings(), buttons, layout, formFactor,
+                    player,
                 ),
                 host = ChromeHost(sprite, previewSprite, onClose, onBack, onCast, slots),
                 menu = menu,
                 onMenuChange = { menu = it },
-                player = player,
             )
 
             ShortcutsLayer(panel)
@@ -353,7 +344,15 @@ internal data class ChromeScene(
     // place — and a scene field carries it without giving every layer function
     // a fifth parameter.
     val formFactor: FormFactor,
-)
+    // The player itself, which the plugin slots resolve against. Every layer
+    // below already took it beside the scene; carrying it IN the scene is what
+    // stops four functions from each declaring the same fifth parameter.
+    val player: ComposedPlayer,
+) {
+    // The pair every slot resolution reads, built with the scene rather than
+    // at each of the three call sites.
+    val slotContext: ChromeSlotContext = ChromeSlotContext(state, commands)
+}
 
 // What the host supplied, which the player knows nothing about: the sprite sheet
 // its server generated, and where "out" goes.
@@ -380,7 +379,6 @@ private fun ChromeLayers(
     host: ChromeHost,
     menu: MenuState,
     onMenuChange: (MenuState) -> Unit,
-    player: ComposedPlayer,
 ) {
     val ui: ChromeUi by scene.controller.ui.collectAsState()
 
@@ -402,26 +400,10 @@ private fun ChromeLayers(
         AnimatedVisibility(visible = ui.active, enter = fadeIn(), exit = fadeOut()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Box(modifier = Modifier.align(Alignment.TopCenter)) {
-                    ChromeSlotResolution(
-                        player = player,
-                        slot = tv.nomercy.player.core.plugin.ChromeSlot.TopBar,
-                        hostOverride = host.slots.topBar,
-                        state = scene.state,
-                        commands = scene.commands,
-                        default = {
-                            ChromeTopBar(
-                                item = scene.state.item,
-                                strings = scene.strings,
-                                buttons = scene.buttons,
-                                exits = ChromeExits(host.onBack, host.onCast, host.onClose),
-                                hideTitle = scene.layout.hideTitle,
-                                pip = scene.state.pip,
-                            )
-                        },
-                    )
+                    ChromeTop(scene, host)
                 }
 
-                ChromeBottom(scene, host, Modifier.align(Alignment.BottomCenter), player)
+                ChromeBottom(scene, host, Modifier.align(Alignment.BottomCenter))
             }
         }
 
@@ -455,7 +437,7 @@ private fun ChromeLayers(
         // application installed on the player answering ChromeContribution's
         // manifest instead, which is the seam PluginRegistry.contributions()
         // has always offered with nothing on this side ever calling it.
-        PluginOverlayContributions(player)
+        PluginOverlayContributions(scene.player)
     }
 }
 
@@ -530,49 +512,6 @@ internal fun ScrubBubble(scene: ChromeScene, host: ChromeHost, scrub: Double?, b
     }
 }
 
-@Composable
-private fun ChromeBottom(scene: ChromeScene, host: ChromeHost, modifier: Modifier, player: ComposedPlayer) {
-    var scrub: Double? by remember { mutableStateOf(null) }
-
-    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        val rowWidth: Dp = maxWidth
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(BOTTOM_STACK_TAG)
-                .bottomScrim()
-                // The gesture bar, for the same reason the top bar clears the
-                // cutout: the picture uses the whole screen and the controls
-                // must stay reachable. Nothing on a desktop.
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-                .padding(bottom = BOTTOM_STACK_PADDING),
-            verticalArrangement = Arrangement.spacedBy(BOTTOM_STACK_GAP),
-        ) {
-            ChromeStrip(scene, host, rowWidth, { scrub = it }, player)
-
-            ChromeSlotResolution(
-                player = player,
-                slot = tv.nomercy.player.core.plugin.ChromeSlot.Transport,
-                hostOverride = host.slots.transport,
-                state = scene.state,
-                commands = scene.commands,
-                default = {
-                    TransportBar(
-                        state = scene.state,
-                        commands = scene.commands,
-                        strings = scene.strings,
-                        buttons = scene.buttons,
-                        priority = scene.layout.priority,
-                        portraitHidden = scene.layout.portraitHidden,
-                        volumeSlider = scene.layout.volumeSlider,
-                        buttonOrder = scene.layout.buttonOrder,
-                    )
-                },
-            )
-        }
-    }
-}
 
 internal fun scrubFraction(seconds: Double, duration: Double): Float =
     if (duration <= 0.0) 0f else (seconds / duration).coerceIn(0.0, 1.0).toFloat()

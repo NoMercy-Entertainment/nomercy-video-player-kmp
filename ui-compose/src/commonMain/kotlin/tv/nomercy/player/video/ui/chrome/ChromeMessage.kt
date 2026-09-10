@@ -14,6 +14,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import tv.nomercy.player.core.events.CoreEvents
@@ -81,94 +82,17 @@ internal fun waitIsWorthAnnouncing(phase: PlayerPhase): Boolean = phase != Playe
  */
 @Composable
 public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings): ChromeMessage? {
-    var message: ChromeMessage? by remember { mutableStateOf(null) }
-
-    // A countdown that only exists while a timed message is up. Held as state so
-    // a new message replaces the previous one's timer instead of racing it — the
-    // web clears its handle before setting another for the same reason.
-    var expiresAfterMs: Double? by remember { mutableStateOf(null) }
+    val channel: ChromeMessageChannel = remember { ChromeMessageChannel() }
 
     DisposableEffect(player, strings) {
-        fun feedback(text: String) {
-            message = ChromeMessage(text, ChromeMessage.Kind.Feedback)
-            expiresAfterMs = null
-        }
-
-        // A notice that clears itself. The feedback channel waits for a Playing
-        // or a Time tick, and neither follows a volume press.
-        fun timed(text: String) {
-            message = ChromeMessage(text, ChromeMessage.Kind.Host)
-            expiresAfterMs = TIMED_MESSAGE_MS
-        }
-
-        // Only the player's own notices. A host's message stays up.
-        fun clearFeedback() {
-            if (message?.kind == ChromeMessage.Kind.Feedback) {
-                message = null
-            }
-        }
-
         // At mount, because the player is already fetching. The web calls
         // showBuffer('message.loading') from wireFeedback itself rather than
         // waiting for an event, and without it the first thing a viewer sees is
         // an empty black frame with nothing explaining it.
-        feedback(strings.loading)
+        channel.feedback(strings.loading)
 
-        val subscriptions: List<Subscription> = listOf(
-            player.on(VideoEvents.Waiting) {
-                if (waitIsWorthAnnouncing(player.phase())) feedback(strings.buffering)
-            },
-            player.on(VideoEvents.Stalled) {
-                if (waitIsWorthAnnouncing(player.phase())) feedback(strings.buffering)
-            },
-            player.on(CoreEvents.Item) { feedback(strings.loading) },
-            player.on(CoreEvents.Playing) { clearFeedback() },
-            player.on(CoreEvents.Time) { clearFeedback() },
-            // And a pause takes down whatever is already up.
-            player.on(CoreEvents.Pause) { clearFeedback() },
-            // Enough data to play, whether or not anybody pressed play. A viewer
-            // who never presses play — the pre-screen's still-paused preview —
-            // gets no Playing and no Time, so without this a load that finished
-            // during that wait kept "Buffering" over a fully ready picture.
-            player.on(CoreEvents.Ready) { clearFeedback() },
-            player.on(CoreEvents.Error) {
-                message = ChromeMessage(strings.error, ChromeMessage.Kind.Failure)
-                expiresAfterMs = null
-            },
-            player.on(VideoEvents.DisplayMessage) { asked ->
-                message = ChromeMessage(asked.text, ChromeMessage.Kind.Host)
-                expiresAfterMs = asked.ms?.takeIf { it > 0.0 }
-            },
-            player.on(VideoEvents.RemoveMessage) {
-                message = null
-                expiresAfterMs = null
-            },
-            // The three the web shows and this channel never carried. A viewer
-            // changing the volume or muting saw nothing at all here while the
-            // browser says so on every press — `showMessage(t('message.volume',
-            // { level }), 1200)` and the muted/unmuted pair beside it.
-            //
-            // Timed rather than feedback: these expire on their own after 1200ms
-            // instead of waiting for a Playing or a Time tick to clear them, and
-            // a volume change does not produce either.
-            player.on(CoreEvents.Volume) { change ->
-                timed(strings.volumeMessage.replace(LEVEL_TOKEN, change.level.toString()))
-            },
-            player.on(CoreEvents.Mute) { change ->
-                timed(if (change.muted) strings.mutedMessage else strings.unmutedMessage)
-            },
-
-            // A track change, named. Master says so on every audio and subtitle
-            // switch and this channel carried neither, so selecting a styled
-            // subtitle — fetched, then its fonts, then rasterised — showed
-            // nothing at all until the first cue arrived seconds later.
-            player.on(CoreEvents.Subtitle) { change ->
-                timed(trackMessage(strings.subtitles, player.subtitles(), change.track, strings.offValue) { it.label })
-            },
-            player.on(CoreEvents.AudioTrack) { change ->
-                timed(trackMessage(strings.language, player.audioTracks(), change.id, strings.offValue) { it.label })
-            },
-        )
+        val subscriptions: List<Subscription> =
+            channel.subscribeToPlayback(player, strings) + channel.subscribeToNotices(player, strings)
 
         onDispose { subscriptions.forEach(Subscription::dispose) }
     }
@@ -176,17 +100,117 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
     // Keyed on the message as well as the delay: two identical requests in a row
     // are two notices, and keying on the duration alone would let the second ride
     // out the first one's remaining time.
-    val after: Double? = expiresAfterMs
+    val after: Double? = channel.expiresAfterMs
 
     if (after != null) {
-        LaunchedEffect(message, after) {
+        LaunchedEffect(channel.message, after) {
             delay(after.toLong())
-            message = null
-            expiresAfterMs = null
+            channel.clear()
         }
     }
 
-    return message
+    return channel.message
+}
+
+// The message channel as one object rather than two pieces of composition state
+// and six closures over them. What a subscription does to the channel is then a
+// named call, which is what lets the wiring below read as a list of events.
+@Stable
+internal class ChromeMessageChannel {
+
+    public var message: ChromeMessage? by mutableStateOf(null)
+        private set
+
+    // A countdown that only exists while a timed message is up. Held as state so
+    // a new message replaces the previous one's timer instead of racing it — the
+    // web clears its handle before setting another for the same reason.
+    public var expiresAfterMs: Double? by mutableStateOf(null)
+        private set
+
+    fun feedback(text: String) {
+        message = ChromeMessage(text, ChromeMessage.Kind.Feedback)
+        expiresAfterMs = null
+    }
+
+    // A notice that clears itself. The feedback channel waits for a Playing or a
+    // Time tick, and neither follows a volume press.
+    fun timed(text: String) {
+        message = ChromeMessage(text, ChromeMessage.Kind.Host)
+        expiresAfterMs = TIMED_MESSAGE_MS
+    }
+
+    fun host(text: String, ms: Double?) {
+        message = ChromeMessage(text, ChromeMessage.Kind.Host)
+        expiresAfterMs = ms
+    }
+
+    fun failure(text: String) {
+        message = ChromeMessage(text, ChromeMessage.Kind.Failure)
+        expiresAfterMs = null
+    }
+
+    // Only the player's own notices. A host's message stays up.
+    fun clearFeedback() {
+        if (message?.kind == ChromeMessage.Kind.Feedback) {
+            message = null
+        }
+    }
+
+    fun clear() {
+        message = null
+        expiresAfterMs = null
+    }
+
+    // What the player is doing: arriving, waiting, running, failing.
+    fun subscribeToPlayback(player: NMVideoPlayer, strings: TvChromeStrings): List<Subscription> = listOf(
+        player.on(VideoEvents.Waiting) {
+            if (waitIsWorthAnnouncing(player.phase())) feedback(strings.buffering)
+        },
+        player.on(VideoEvents.Stalled) {
+            if (waitIsWorthAnnouncing(player.phase())) feedback(strings.buffering)
+        },
+        player.on(CoreEvents.Item) { feedback(strings.loading) },
+        player.on(CoreEvents.Playing) { clearFeedback() },
+        player.on(CoreEvents.Time) { clearFeedback() },
+        // And a pause takes down whatever is already up.
+        player.on(CoreEvents.Pause) { clearFeedback() },
+        // Enough data to play, whether or not anybody pressed play. A viewer
+        // who never presses play — the pre-screen's still-paused preview —
+        // gets no Playing and no Time, so without this a load that finished
+        // during that wait kept "Buffering" over a fully ready picture.
+        player.on(CoreEvents.Ready) { clearFeedback() },
+        player.on(CoreEvents.Error) { failure(strings.error) },
+    )
+
+    // What somebody just changed, and what a host asked to say.
+    //
+    // The volume and mute notices are the three the web shows and this channel
+    // never carried: the browser says so on every press — `showMessage(
+    // t('message.volume', { level }), 1200)` and the muted/unmuted pair beside
+    // it. Timed rather than feedback, because they expire on their own instead
+    // of waiting for a Playing or a Time tick that a volume change never fires.
+    //
+    // A track change is named for the same reason, and the gap was worse: a
+    // styled subtitle is fetched, then its fonts, then rasterised, so selecting
+    // one showed nothing at all until the first cue arrived seconds later.
+    fun subscribeToNotices(player: NMVideoPlayer, strings: TvChromeStrings): List<Subscription> = listOf(
+        player.on(VideoEvents.DisplayMessage) { asked ->
+            host(asked.text, asked.ms?.takeIf { it > 0.0 })
+        },
+        player.on(VideoEvents.RemoveMessage) { clear() },
+        player.on(CoreEvents.Volume) { change ->
+            timed(strings.volumeMessage.replace(LEVEL_TOKEN, change.level.toString()))
+        },
+        player.on(CoreEvents.Mute) { change ->
+            timed(if (change.muted) strings.mutedMessage else strings.unmutedMessage)
+        },
+        player.on(CoreEvents.Subtitle) { change ->
+            timed(trackMessage(strings.subtitles, player.subtitles().map { it.label }, change.track, strings.offValue))
+        },
+        player.on(CoreEvents.AudioTrack) { change ->
+            timed(trackMessage(strings.language, player.audioTracks().map { it.label }, change.id, strings.offValue))
+        },
+    )
 }
 
 /**
@@ -196,8 +220,8 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
  * `indexIn(audioTracks(), track)` — and a null or out-of-range one is the track
  * being turned off.
  */
-internal fun <T> trackMessage(kind: String, tracks: List<T>, index: Double?, off: String, name: (T) -> String): String =
-    "$kind: ${index?.toInt()?.let(tracks::getOrNull)?.let(name) ?: off}"
+internal fun trackMessage(kind: String, labels: List<String>, index: Double?, off: String): String =
+    "$kind: ${index?.toInt()?.let(labels::getOrNull) ?: off}"
 
 // The web's `{level}` placeholder, and its 1200ms for a notice that says what
 // just happened rather than what is happening.

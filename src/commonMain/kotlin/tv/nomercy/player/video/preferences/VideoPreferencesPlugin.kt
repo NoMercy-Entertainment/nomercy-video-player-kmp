@@ -35,6 +35,12 @@ import tv.nomercy.player.video.VideoEvents
 // one list is a different track in the other — restoring an index would quietly
 // give a viewer the wrong language on the device that filtered hardest. What is
 // stored is the language, and what is restored is the track that has it.
+// Above the function threshold on purpose. Each preference is a pair — save it
+// when the viewer picks, restore it when a list appears — and there are style,
+// volume, mute, subtitle, audio and quality. Merging any two of them would put
+// two unrelated preferences in one body, which is the thing the threshold
+// exists to prevent.
+@Suppress("TooManyFunctions")
 public open class VideoPreferencesPlugin(
     private val player: NMVideoPlayer,
     opts: VideoPreferencesOptions = VideoPreferencesOptions(),
@@ -114,23 +120,14 @@ public open class VideoPreferencesPlugin(
         // track here answers with the language being replaced — and the list
         // announcement that follows the switch then restores it.
         on(CoreEvents.Subtitle) { payload ->
-            if (applying) return@on
-            remember {
-                val track: SubtitleTrack? = trackAt(player.subtitles(), payload.track)
-                store.saveSubtitle(
-                    track?.let {
-                        SavedSubtitle(
-                            language = it.language,
-                            kind = subtitleKindOf(it.label),
-                            format = it.format,
-                        )
-                    },
-                )
+            if (!applying) {
+                remember { saveSubtitlePick(payload.track) }
             }
         }
         on(CoreEvents.AudioTrack) { payload ->
-            if (applying) return@on
-            remember { store.saveAudio(trackAt(player.audioTracks(), payload.id)?.language) }
+            if (!applying) {
+                remember { store.saveAudio(trackAt(player.audioTracks(), payload.id)?.language) }
+            }
         }
 
         // The viewer's choice, not the ladder's. `quality:requested` fires on an
@@ -139,6 +136,13 @@ public open class VideoPreferencesPlugin(
         // having left it.
         on(VideoEvents.QualityRequested) { remember { store.saveQuality(chosenQuality()) } }
 
+        installRestores()
+    }
+
+    // What a new item owes, and where each debt is paid. Its own function
+    // because the two halves answer different questions: the block above
+    // records a viewer's choice, this one reinstates it.
+    private fun installRestores() {
         // Records what is owed and restores nothing: the cursor moves while the
         // outgoing item is still loaded, so the engine still answers with ITS
         // track list.
@@ -163,6 +167,20 @@ public open class VideoPreferencesPlugin(
             applyVolume()
             restore()
         }
+    }
+
+    // The caption the event NAMES, resolved against the list the player holds.
+    private suspend fun saveSubtitlePick(index: Double?) {
+        val track: SubtitleTrack? = trackAt(player.subtitles(), index)
+        store.saveSubtitle(
+            track?.let {
+                SavedSubtitle(
+                    language = it.language,
+                    kind = subtitleKindOf(it.label),
+                    format = it.format,
+                )
+            },
+        )
     }
 
     /**
@@ -265,21 +283,31 @@ public open class VideoPreferencesPlugin(
     private suspend fun restoreSubtitle(): Boolean {
         val available: List<SubtitleTrack> = player.subtitles()
         if (available.isEmpty()) return false
-        val saved: SavedSubtitle = store.subtitle() ?: return true
-        if (matches(player.subtitle(), saved)) return true
+        val wanted: SubtitleTrack? = store.subtitle()
+            ?.takeUnless { matches(player.subtitle(), it) }
+            ?.let { bestSubtitleFor(available, it) }
 
-        val track: SubtitleTrack = available.firstOrNull {
-            it.language == saved.language &&
-                subtitleKindOf(it.label) == saved.kind &&
-                it.format == saved.format
-        } ?: available.firstOrNull {
-            it.language == saved.language && subtitleKindOf(it.label) == saved.kind
-        } ?: available.firstOrNull {
-            it.language == saved.language
-        } ?: return true
-
-        applySelection { player.subtitle(track) }
+        if (wanted != null) {
+            applySelection { player.subtitle(wanted) }
+        }
         return true
+    }
+
+    // Three passes, loosening one field at a time: language, kind and format
+    // together; then language and kind; then language alone. A viewer who
+    // chose forced English gets forced English on an item that carries it and
+    // plain English on one that does not, rather than nothing at all.
+    private fun bestSubtitleFor(
+        available: List<SubtitleTrack>,
+        saved: SavedSubtitle,
+    ): SubtitleTrack? = available.firstOrNull {
+        it.language == saved.language &&
+            subtitleKindOf(it.label) == saved.kind &&
+            it.format == saved.format
+    } ?: available.firstOrNull {
+        it.language == saved.language && subtitleKindOf(it.label) == saved.kind
+    } ?: available.firstOrNull {
+        it.language == saved.language
     }
 
     // Owed from the cursor move until that kind's list is ANNOUNCED. Per kind,
@@ -319,10 +347,13 @@ public open class VideoPreferencesPlugin(
     private suspend fun restoreAudio(): Boolean {
         val available: List<AudioTrack> = player.audioTracks()
         if (available.isEmpty()) return false
-        val language: String = store.audio() ?: return true
-        if (player.audioTrack()?.language == language) return true
-        val track: AudioTrack = available.firstOrNull { it.language == language } ?: return true
-        applySelection { player.audioTrack(track) }
+        val wanted: AudioTrack? = store.audio()
+            ?.takeUnless { it == player.audioTrack()?.language }
+            ?.let { language -> available.firstOrNull { it.language == language } }
+
+        if (wanted != null) {
+            applySelection { player.audioTrack(wanted) }
+        }
         return true
     }
 

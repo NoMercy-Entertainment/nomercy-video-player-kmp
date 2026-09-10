@@ -135,7 +135,11 @@ private fun SeasonedRails(picks: PlaylistPicks, seasons: List<Int>, state: Chrom
         // out of the row rather than out of the rail's own width.
         Box(Modifier.width(RAIL_BORDER).fillMaxHeight().background(RAIL_BORDER_COLOR))
 
-        EpisodeRail(picks, episodeRows(state.queue, chosen), Modifier.weight(EPISODES_WEIGHT).widthIn(min = EPISODES_MIN_WIDTH))
+        EpisodeRail(
+            picks,
+            episodeRows(state.queue, chosen),
+            Modifier.weight(EPISODES_WEIGHT).widthIn(min = EPISODES_MIN_WIDTH),
+        )
     }
 }
 

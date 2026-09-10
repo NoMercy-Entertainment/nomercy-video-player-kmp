@@ -5,3 +5,7 @@ local.properties
 *.xcframework
 .DS_Store
 .idea/
+
+# Kotlin/Wasm regenerates this lock on every browser-test run, and CI starts
+# from nothing each time, so a committed copy would only ever drift.
+kotlin-js-store/

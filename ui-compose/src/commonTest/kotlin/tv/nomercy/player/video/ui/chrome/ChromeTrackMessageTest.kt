@@ -27,25 +27,25 @@ class ChromeTrackMessageTest {
 
     @Test
     fun theChosenTrackIsNamed() {
-        assertEquals("Subtitles: English (Full)", trackMessage("Subtitles", tracks, 0.0, "Off") { it.label })
-        assertEquals("Subtitles: English (Signs)", trackMessage("Subtitles", tracks, 1.0, "Off") { it.label })
+        assertEquals("Subtitles: English (Full)", trackMessage("Subtitles", tracks.map { it.label }, 0.0, "Off"))
+        assertEquals("Subtitles: English (Signs)", trackMessage("Subtitles", tracks.map { it.label }, 1.0, "Off"))
     }
 
     // Turning captions off is the null index, and it has to read as Off rather
     // than as the previous track or an empty colon.
     @Test
     fun noTrackReadsAsOff() {
-        assertEquals("Subtitles: Off", trackMessage("Subtitles", tracks, null, "Off") { it.label })
+        assertEquals("Subtitles: Off", trackMessage("Subtitles", tracks.map { it.label }, null, "Off"))
     }
 
     // An index past the end is the same answer as none, not a crash.
     @Test
     fun anIndexPastTheEndIsAlsoOff() {
-        assertEquals("Subtitles: Off", trackMessage("Subtitles", tracks, 9.0, "Off") { it.label })
+        assertEquals("Subtitles: Off", trackMessage("Subtitles", tracks.map { it.label }, 9.0, "Off"))
     }
 
     @Test
     fun theHostsWordsAreUsedForBothHalves() {
-        assertEquals("Ondertitels: Uit", trackMessage("Ondertitels", tracks, null, "Uit") { it.label })
+        assertEquals("Ondertitels: Uit", trackMessage("Ondertitels", tracks.map { it.label }, null, "Uit"))
     }
 }

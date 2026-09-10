@@ -28,6 +28,11 @@ public object ResumeGuard {
     // At or above this percentage, treat as fully watched.
     public const val PERCENT_THRESHOLD: Float = 95f
 
+    // A fraction expressed out of one hundred, matching the server's field.
+    private const val PERCENT_SCALE: Float = 100f
+
+    private const val MILLIS_PER_SECOND: Long = 1000L
+
     // The `startPositionMs` [tv.nomercy.player.core.ports.LoadOptions] should
     // actually carry — `savedSeconds` unchanged (as milliseconds) short of the
     // finished thresholds, `0` once either one is crossed. Both durations are
@@ -36,11 +41,11 @@ public object ResumeGuard {
     public fun startPositionMs(
         savedSeconds: Long,
         durationSeconds: Long,
-        percentComplete: Float = (savedSeconds.toFloat() / durationSeconds.toFloat()) * 100f,
+        percentComplete: Float = (savedSeconds.toFloat() / durationSeconds.toFloat()) * PERCENT_SCALE,
     ): Long {
         val nearEnd: Boolean = savedSeconds >= durationSeconds - TRAILING_SECONDS
         val highPercent: Boolean = percentComplete >= PERCENT_THRESHOLD
-        return if (nearEnd || highPercent) 0L else savedSeconds * 1000L
+        return if (nearEnd || highPercent) 0L else savedSeconds * MILLIS_PER_SECOND
     }
 
     /**
@@ -53,8 +58,8 @@ public object ResumeGuard {
      * one of them was tuned.
      */
     public fun startPositionMs(item: VideoPlaylistItem): Long {
-        val saved: Double = item.progress?.time ?: return 0L
-        val duration: Double = item.durationSeconds ?: return 0L
+        val saved: Double = item.progress?.time ?: 0.0
+        val duration: Double = item.durationSeconds ?: 0.0
         if (saved <= 0.0 || duration <= 0.0) return 0L
 
         return startPositionMs(saved.toLong(), duration.toLong())

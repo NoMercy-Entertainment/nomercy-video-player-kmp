@@ -62,7 +62,7 @@ public fun SubtitleStyle.toOutlineStyle(base: TextStyle, widthPx: Float): TextSt
     }
 
 /** How thick the outline pass is, as a fraction of the drawn font size. */
-public const val SubtitleOutlineRatio: Float = 0.09f
+public const val SUBTITLE_OUTLINE_RATIO: Float = 0.09f
 
 /** The caption box behind the text, separate from the text's own colour. */
 public fun SubtitleStyle.toBackgroundColor(): Color =

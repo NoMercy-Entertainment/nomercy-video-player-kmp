@@ -387,7 +387,7 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeMessageKt {
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromePluginContributionsKt {
-	public static final fun ChromeSlotResolution (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/core/plugin/ChromeSlot;Lkotlin/jvm/functions/Function4;Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;I)V
+	public static final fun ChromeSlotResolution (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/core/plugin/ChromeSlot;Ltv/nomercy/player/video/ui/chrome/ChromeSlotContext;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 	public static final fun PluginOverlayContributions (Ltv/nomercy/player/core/controllers/ComposedPlayer;Ltv/nomercy/player/core/plugin/ChromeSlot;Landroidx/compose/runtime/Composer;II)V
 }
 
@@ -415,6 +415,13 @@ public final class tv/nomercy/player/video/ui/chrome/ChromeSchedulerKt {
 public abstract interface class tv/nomercy/player/video/ui/chrome/ChromeSkipCommands {
 	public abstract fun setAutoSkipChapters (Z)V
 	public abstract fun setShowRemaining (Z)V
+}
+
+public final class tv/nomercy/player/video/ui/chrome/ChromeSlotContext {
+	public static final field $stable I
+	public fun <init> (Ltv/nomercy/player/video/ui/chrome/ChromeState;Ltv/nomercy/player/video/ui/chrome/ChromeCommands;)V
+	public final fun getCommands ()Ltv/nomercy/player/video/ui/chrome/ChromeCommands;
+	public final fun getState ()Ltv/nomercy/player/video/ui/chrome/ChromeState;
 }
 
 public final class tv/nomercy/player/video/ui/chrome/ChromeSlots {
@@ -1114,7 +1121,7 @@ public final class tv/nomercy/player/video/ui/subtitles/PlainSubtitleLayerKt {
 }
 
 public final class tv/nomercy/player/video/ui/subtitles/SubtitleTextStyleKt {
-	public static final field SubtitleOutlineRatio F
+	public static final field SUBTITLE_OUTLINE_RATIO F
 	public static final fun toAreaColor (Ltv/nomercy/player/core/events/SubtitleStyle;)J
 	public static final fun toBackgroundColor (Ltv/nomercy/player/core/events/SubtitleStyle;)J
 	public static final fun toOutlineStyle (Ltv/nomercy/player/core/events/SubtitleStyle;Landroidx/compose/ui/text/TextStyle;F)Landroidx/compose/ui/text/TextStyle;

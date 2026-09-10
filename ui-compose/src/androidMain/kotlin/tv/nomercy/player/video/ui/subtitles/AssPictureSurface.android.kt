@@ -52,10 +52,13 @@ internal actual class AssPictureSurface actual constructor() {
         // compositor's changed region describes ITS buffer's history, not this
         // one's, and trusting it here leaves the rest of the frame unwritten.
         if (fresh) {
-            for (row in 0 until frameHeight) swap(frame.pixels, swapped, row, 0, frameWidth - 1, frameWidth)
+            // One run rather than one per row: every row's span abuts the next,
+            // so the whole buffer is a single contiguous stretch of pixels.
+            swap(frame.pixels, swapped, 0, frameWidth * frameHeight - 1)
         } else if (!frame.changed.isEmpty) {
             for (row in frame.changed.top..frame.changed.bottom) {
-                swap(frame.pixels, swapped, row, frame.changed.leftAt(row), frame.changed.rightAt(row), frameWidth)
+                val start: Int = row * frameWidth
+                swap(frame.pixels, swapped, start + frame.changed.leftAt(row), start + frame.changed.rightAt(row))
             }
         }
 
@@ -67,7 +70,9 @@ internal actual class AssPictureSurface actual constructor() {
     // True when the buffers were replaced, so the caller knows its region is
     // meaningless against them.
     private fun adopt(frameGeneration: Int, frameWidth: Int, frameHeight: Int): Boolean {
-        if (buffers.isNotEmpty() && frameGeneration == generation && frameWidth == width && frameHeight == height) {
+        val sameSize: Boolean = frameWidth == width && frameHeight == height
+        val sameFrame: Boolean = frameGeneration == generation && sameSize
+        if (buffers.isNotEmpty() && sameFrame) {
             return false
         }
 
@@ -78,10 +83,11 @@ internal actual class AssPictureSurface actual constructor() {
         return true
     }
 
-    private fun swap(source: IntArray, target: IntArray, row: Int, from: Int, to: Int, stride: Int) {
-        if (from > to) return
-        val start: Int = row * stride
-        for (index in start + from..start + to) {
+    // Red and blue exchanged across one contiguous run, by absolute index. The
+    // caller resolves a row and a span into that run, which is what lets a
+    // whole fresh buffer be one call instead of one per row.
+    private fun swap(source: IntArray, target: IntArray, from: Int, to: Int) {
+        for (index in from..to) {
             val pixel: Int = source[index]
             target[index] = (pixel and ALPHA_GREEN) or
                 ((pixel and BLUE) shl RED_SHIFT) or

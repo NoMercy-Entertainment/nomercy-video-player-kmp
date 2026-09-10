@@ -10,30 +10,8 @@ package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.runtime.Composable
 import tv.nomercy.player.core.controllers.ComposedPlayer
-import tv.nomercy.player.core.plugin.ChromeContribution
 import tv.nomercy.player.core.plugin.ChromeSlot
 import tv.nomercy.player.core.plugin.ContributionBinding
-
-// The Compose half of a plugin's [ChromeContribution].
-//
-// commonMain declares WHERE a contribution goes; it cannot declare what it
-// draws, because commonMain has no UI toolkit. A plugin that wants a slot on a
-// Compose surface implements this on itself — the same shape HoldChromePlugin
-// already uses for VideoUiPlugin's controller, generalised to any plugin id a
-// registry names.
-//
-// Takes the player itself rather than a chrome's read projection, on purpose:
-// [ChromeState]/[ChromeCommands] are the video chrome's own shape and the
-// television chrome has a different one ([tv.nomercy.player.video.tv]'s
-// TvTransportState/TvChromeController). A plugin drawing the same widget on
-// both — a cast banner, a skip-intro button — needs one contract, and the
-// player is the one thing both chromes already hold. A plugin that wants
-// playback state collects the player's own stateFlow like any other Compose
-// reader would.
-public fun interface ComposeChromeContribution {
-    @Composable
-    public fun Render(player: ComposedPlayer)
-}
 
 // Every contribution a plugin declared for [slot], resolved and drawn in the
 // registry's own order.
@@ -55,13 +33,11 @@ public fun PluginOverlayContributions(
 ) {
     if (player == null) return
 
-    val bindings: List<ContributionBinding> = player.contributions(slot)
-    for (binding: ContributionBinding in bindings) {
-        val contribution: ChromeContribution = binding.contribution
-        if (contribution.replaces) continue
+    val renderers: List<ComposeChromeContribution> = player.contributions(slot)
+        .filterNot { it.contribution.replaces }
+        .mapNotNull { player.getPlugin(it.pluginId) as? ComposeChromeContribution }
 
-        val renderer: ComposeChromeContribution =
-            player.getPlugin(binding.pluginId) as? ComposeChromeContribution ?: continue
+    for (renderer: ComposeChromeContribution in renderers) {
         renderer.Render(player)
     }
 }
@@ -70,11 +46,12 @@ public fun PluginOverlayContributions(
 // through, in precedence order: an application's own [hostOverride] wins
 // outright (it is an explicit choice the app made about its own screen, and
 // a plugin the app also chose to install has no claim over that); failing
-// that, a plugin's [ChromeContribution.replaces] takes the built-in over;
-// failing that, [default] — the chrome's own widget, unchanged.
+// that, a plugin's [tv.nomercy.player.core.plugin.ChromeContribution.replaces]
+// takes the built-in over; failing that, [default] — the chrome's own widget,
+// unchanged.
 //
 // A slot with no host-override concept at all (SettingsMenu has no field on
-// [ChromeSlots]) calls this with `hostOverride = null` and gets the same
+// [ChromeSlots]) leaves [hostOverride] at its default and gets the same
 // plugin-vs-built-in resolution without a host tier to check first.
 //
 // A `replaces` contribution whose plugin has no [ComposeChromeContribution]
@@ -87,17 +64,17 @@ public fun PluginOverlayContributions(
 public fun ChromeSlotResolution(
     player: ComposedPlayer?,
     slot: ChromeSlot,
-    hostOverride: (@Composable (ChromeState, ChromeCommands) -> Unit)?,
-    state: ChromeState,
-    commands: ChromeCommands,
+    context: ChromeSlotContext,
+    hostOverride: (@Composable (ChromeState, ChromeCommands) -> Unit)? = null,
     default: @Composable () -> Unit,
 ) {
     if (hostOverride != null) {
-        hostOverride(state, commands)
+        hostOverride(context.state, context.commands)
         return
     }
 
-    val replacing: ContributionBinding? = player?.contributions(slot).orEmpty().firstOrNull { it.contribution.replaces }
+    val replacing: ContributionBinding? =
+        player?.contributions(slot).orEmpty().firstOrNull { it.contribution.replaces }
     val renderer: ComposeChromeContribution? =
         replacing?.let { player?.getPlugin(it.pluginId) as? ComposeChromeContribution }
 
