@@ -86,6 +86,14 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
 
     override fun loadTrack(assContent: String) {
         if (released) return
+        // Structural gate before ass_read_memory — see AssContentGuard.
+        // Primary defence here: a libass trap generally isn't catchable
+        // from Kotlin/Native, unlike the JVM binding's runCatching.
+        if (!looksLikeAssScript(assContent)) {
+            trackContent = null
+            disposeTrack()
+            return
+        }
         trackContent = assContent
         // Primed from the script, because one title ships tracks authored in
         // different spaces — No Game No Life's alternative track is 1280x720

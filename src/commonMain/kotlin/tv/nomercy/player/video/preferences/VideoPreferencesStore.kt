@@ -51,10 +51,17 @@ internal class VideoPreferencesStore(private val storage: Storage) {
         storage.setJSON(MUTED, muted, Boolean.serializer())
     }
 
-    suspend fun subtitle(): String? = storage.getJSON(SUBTITLE, String.serializer())
+    suspend fun subtitle(): SavedSubtitle? = storage.getJSON(SUBTITLE, SavedSubtitle.serializer())
 
-    suspend fun saveSubtitle(language: String?) {
-        write(SUBTITLE, language)
+    // Language alone is not the choice. A viewer who picked English SDH and got
+    // plain English back was handed a different track under the same name, so
+    // the variant and the file's format travel with it.
+    suspend fun saveSubtitle(subtitle: SavedSubtitle?) {
+        if (subtitle == null) {
+            storage.remove(SUBTITLE)
+        } else {
+            storage.setJSON(SUBTITLE, subtitle, SavedSubtitle.serializer())
+        }
     }
 
     suspend fun audio(): String? = storage.getJSON(AUDIO, String.serializer())
@@ -131,3 +138,11 @@ private const val QUALITY = "quality"
 
 private const val MIN_VOLUME = 0
 private const val MAX_VOLUME = 100
+
+/** A caption choice: the language, the variant it was, and the file's format. */
+@Serializable
+public data class SavedSubtitle(
+    val language: String,
+    val kind: String? = null,
+    val format: String? = null,
+)

@@ -11,11 +11,14 @@ package tv.nomercy.player.video.ui.chrome
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -170,10 +173,10 @@ public enum class SkipKind {
 /**
  * The button itself: one line, one press, at the corner its kind belongs to.
  *
- * Deliberately plain. His is a Material button in the app's theme, and a library
- * that shipped Material would put a design system into every consumer's build —
- * so this is the same shape on foundation, and a host that wants its own
- * replaces it through the overlays slot.
+ * The web's `.nmplayer-skip-segment-button` colours on a pill, on foundation
+ * rather than Material — a library that shipped Material would put a design
+ * system into every consumer's build. Focus fills it rather than ringing it,
+ * because a remote has no pointer and focus is the only cue a TV gets.
  */
 @Composable
 public fun SkipButton(
@@ -183,22 +186,30 @@ public fun SkipButton(
     modifier: Modifier = Modifier,
 ) {
     val interaction: MutableInteractionSource = remember { MutableInteractionSource() }
+    val focused: Boolean by interaction.collectIsFocusedAsState()
+    val hovered: Boolean by interaction.collectIsHoveredAsState()
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .padding(SKIP_INSET)
-            .background(SKIP_BACKGROUND, RoundedCornerShape(SKIP_RADIUS))
             // Clipped to the pill and no default indication, for the same reason
             // the play control is: a bare `clickable` takes Compose's ripple,
             // which is a rounded rectangle of its own radius drawn over whatever
             // shape the button actually is.
-            .clip(RoundedCornerShape(SKIP_RADIUS))
+            .clip(CircleShape)
+            .background(
+                when {
+                    focused -> Color.White
+                    hovered -> SKIP_BACKGROUND_HOVER
+                    else -> SKIP_BACKGROUND
+                }
+            )
             .clickable(interactionSource = interaction, indication = null, onClick = onSkip)
             .padding(horizontal = SKIP_PADDING_H, vertical = SKIP_PADDING_V)
             .testTag(if (kind == SkipKind.Intro) SKIP_INTRO_TAG else SKIP_OUTRO_TAG),
     ) {
-        BasicText(text = label, style = SKIP_LABEL)
+        BasicText(text = label, style = if (focused) SKIP_LABEL_ON_FILL else SKIP_LABEL)
     }
 }
 
@@ -208,10 +219,12 @@ internal const val SKIP_OUTRO_TAG = "nm-skip-outro"
 // Clear of the transport row, which is what his 120dp bottom inset is for: a
 // prompt sitting on the controls is one a thumb hits while reaching for pause.
 private val SKIP_INSET = 24.dp
-private val SKIP_RADIUS = 6.dp
 private val SKIP_PADDING_H = 20.dp
-private val SKIP_PADDING_V = 12.dp
+private val SKIP_PADDING_V = 10.dp
 
-private val SKIP_BACKGROUND = Color(red = 20, green = 20, blue = 25, alpha = 242)
+// rgb(38 38 48 / 92%) and its hover, rgb(58 58 72).
+private val SKIP_BACKGROUND = Color(0xEB262630)
+private val SKIP_BACKGROUND_HOVER = Color(0xFF3A3A48)
 
-private val SKIP_LABEL = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+private val SKIP_LABEL = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+private val SKIP_LABEL_ON_FILL = SKIP_LABEL.copy(color = SKIP_BACKGROUND)

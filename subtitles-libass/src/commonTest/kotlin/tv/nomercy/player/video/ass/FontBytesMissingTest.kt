@@ -11,6 +11,7 @@ package tv.nomercy.player.video.ass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.events.CoreEvents
@@ -28,8 +29,8 @@ import tv.nomercy.player.core.player.PlayerConfig
 class FontBytesMissingTest {
 
     @Test
-    fun aFontWithNoBytesIsReportedRatherThanSkipped() {
-        runTest {
+    fun aFontWithNoBytesIsReportedRatherThanSkipped(): TestResult {
+        return runTest {
             val errors: MutableList<String> = mutableListOf()
             val player = ComposedPlayer(
                 backend = null,

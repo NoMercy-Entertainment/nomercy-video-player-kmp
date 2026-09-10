@@ -100,6 +100,25 @@ jobs:
           echo "sans     -> $(fc-match sans)"
           echo "skeleton -> $(fc-match 'Skeleton Sans')"
 
+      # Skiko, which is what Compose Multiplatform renders through on the JVM,
+      # dlopens libGL when its class initialises. A GitHub-hosted ubuntu image
+      # carries that library and this runner does not, so :ui-compose:jvmTest
+      # fails with "libskiko-linux-x64.so: libGL.so.1: cannot open shared
+      # object file" before a single assertion runs. Core hit exactly this on
+      # 2026-09-10; this module has the same Compose target.
+      #
+      # Separate from the libass step above rather than folded into it: that
+      # one skips entirely once libass is present, which would leave this
+      # library uninstalled on every machine that already had the first.
+      - name: Install the libraries Skiko opens at runtime
+        run: |
+          set -e
+          if ! ldconfig -p | grep -q "libGL.so.1"; then
+            sudo apt-get update
+            sudo apt-get install -y libgl1
+          fi
+          ldconfig -p | grep -c "libGL.so.1"
+
       # First, and on its own, because drift from the ecosystem contract is the
       # one failure whose cause is not in this repo's diff. Named, so a red run
       # says which question was answered no rather than burying it in a build

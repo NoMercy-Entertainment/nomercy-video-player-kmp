@@ -221,9 +221,9 @@ private fun TopBarControls(
 
 // The right column: what is playing, on two lines, right-aligned.
 //
-// Sixty per cent of the bar, which is `max-width: 60%` on the web and the same
-// 0.60 weight in the Android original. A long film title that ran the width of
-// the picture would meet the buttons.
+// Seventy-five per cent of the bar, which is `max-width: 75%` on the web and
+// the same share in the app's own top bar. At 60 a show name reached the
+// ellipsis after four words; the buttons still have the quarter they need.
 @Composable
 private fun RowScope.TopBarTitle(
     item: TvChromeItem?,
@@ -346,7 +346,7 @@ private val BUTTON_REST_FILL: Color = Color.Black.copy(alpha = BUTTON_BACKGROUND
 private val BUTTON_HOVER_FILL: Color = Color(red = 61, green = 61, blue = 61, alpha = 106)
 
 // `max-width: 60%`.
-private const val RIGHT_COLUMN_SHARE = 0.60f
+private const val RIGHT_COLUMN_SHARE = 0.75f
 
 // `linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0.4), rgba(0,0,0,0))`.
 // Three stops, not two: the middle one is what keeps the fade from looking like

@@ -21,6 +21,13 @@ kotlin {
         compileSdk = 36
         minSdk = 29
 
+        // JNA binds to libass by symbol NAME. Without these a consumer's R8 pass
+        // renames the binding away and every styled subtitle silently stops.
+        optimization.consumerKeepRules.file(project.file("consumer-rules.pro"))
+        // Defaults to false, and without it the rules are compiled and never
+        // reach the aar — which is the same shape of nothing as not writing them.
+        optimization.consumerKeepRules.publish = true
+
         withHostTestBuilder {}.configure {}
 
         withDeviceTestBuilder {

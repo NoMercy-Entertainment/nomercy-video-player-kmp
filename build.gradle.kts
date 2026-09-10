@@ -43,6 +43,13 @@ kotlin {
             instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
 
+        // Ktor's Netty engine ships the same META-INF/INDEX.LIST in several
+        // of its jars; the device test APK doesn't need it at all.
+        packaging {
+            resources.excludes += "META-INF/INDEX.LIST"
+            resources.excludes += "META-INF/io.netty.versions.properties"
+        }
+
         compilations.configureEach {
             compileTaskProvider.configure {
                 compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }

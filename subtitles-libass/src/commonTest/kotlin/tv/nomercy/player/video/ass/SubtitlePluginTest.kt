@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ass
 
 import tv.nomercy.player.video.subtitles.AssRenderer
+import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.player.PlayerConfig
@@ -57,11 +58,11 @@ class SubtitlePluginTest {
     }
 
     @Test
-    fun theSecondEpisodeRegistersFromCacheRatherThanDownloadingAgain() {
+    fun theSecondEpisodeRegistersFromCacheRatherThanDownloadingAgain(): TestResult {
         // A series attaches the same three fonts to every episode. Without a
         // cache that is the same download twelve times over a season, on a
         // connection the viewer is also streaming video across.
-        runTest {
+        return runTest {
             val cache = TwoTierFontCache(FakeFileSystem(), "/cache".toPath())
             val responses = mapOf(
                 SUBTITLE_URL to FetchResponse(status = OK, body = skeletonAss("Skeleton Sans")),

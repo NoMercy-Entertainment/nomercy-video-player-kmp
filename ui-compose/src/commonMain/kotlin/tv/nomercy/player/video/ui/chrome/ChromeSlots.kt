@@ -52,6 +52,13 @@ public data class ChromeSlots(
     // Left unset the box keeps the web's own empty state, which is what the
     // browser shows when an `img` fails to load: the tinted panel, the shadow
     // and the progress overlay, without a broken-image glyph.
+    /**
+     * Extra rows appended to the subtitle pane, for a host that can offer more
+     * than the tracks already on the item — fetching subtitles from a provider,
+     * say. The library has no opinion about where those come from, and a host
+     * that has none passes nothing.
+     */
+    val subtitleExtras: ChromeSlot? = null,
     val artwork: ChromeArtwork? = null,
 )
 

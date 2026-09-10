@@ -147,6 +147,7 @@ public fun tvChromeStrings(locale: String): TvChromeStrings {
         volumeMessage = ChromeTranslations.get(locale, "plugin.desktop-ui.message.volume"),
         mutedMessage = ChromeTranslations.get(locale, "plugin.desktop-ui.message.muted"),
         unmutedMessage = ChromeTranslations.get(locale, "plugin.desktop-ui.message.unmuted"),
+        offValue = ChromeTranslations.get(locale, "plugin.desktop-ui.menu.off"),
     )
 }
 
@@ -223,6 +224,11 @@ public data class TvChromeStrings(
     val volumeMessage: String = "Volume: {level}%",
     val mutedMessage: String = "Muted",
     val unmutedMessage: String = "Unmuted",
+
+    // What a track change says. A styled subtitle is fetched, its fonts fetched
+    // after it and only then rasterised, so the seconds between the press and
+    // the first cue looked to a viewer exactly like a press that did nothing.
+    val offValue: String = "Off",
 )
 
 internal const val BOTTOM_BAR_TAG = "tv-bottom-bar"

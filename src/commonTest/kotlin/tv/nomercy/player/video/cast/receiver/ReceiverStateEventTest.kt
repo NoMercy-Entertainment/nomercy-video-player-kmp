@@ -40,8 +40,11 @@ private class InertReceiverBackend : MediaBackend {
     override fun off(event: String, fn: (Any?) -> Unit) = Unit
 }
 
-private data class StateEventClip(override val id: String, override val url: String, override val title: String? = null) :
-    PlaylistItem
+private data class StateEventClip(
+    override val id: String,
+    override val url: String,
+    override val title: String? = null,
+) : PlaylistItem
 
 class ReceiverStateEventTest {
 

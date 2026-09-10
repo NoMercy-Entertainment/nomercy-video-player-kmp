@@ -20,6 +20,7 @@ import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.webSocket
 import io.ktor.websocket.Frame
+import io.ktor.websocket.CloseReason
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import kotlinx.coroutines.CoroutineScope
@@ -82,29 +83,53 @@ public class KtorReceiverTransport(
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
             routing {
                 webSocket("/ws/receiver/{senderId}") {
-                    val senderId = call.parameters["senderId"]
-                    if (senderId.isNullOrBlank() || !authorize(senderId)) {
-                        close(io.ktor.websocket.CloseReason(io.ktor.websocket.CloseReason.Codes.VIOLATED_POLICY, "unauthorized"))
-                        return@webSocket
-                    }
-                    sessions += this
-                    try {
-                        for (frame in incoming) {
-                            if (frame !is Frame.Text) continue
-                            val command = runCatching { Json.decodeFromString<WireCommand>(frame.readText()) }
-                                .getOrNull()
-                                ?.toDomain()
-                                ?: continue
-                            val outcome = commandHandler(senderId, command)
-                            send(Frame.Text(Json.encodeToString(WireOutcome.serializer(), WireOutcome.from(outcome))))
-                        }
-                    } finally {
-                        sessions -= this
-                        disconnectHandlers.value.forEach { it(senderId) }
-                    }
+                    serve(call.parameters["senderId"], commandHandler)
                 }
             }
         }.also { it.start(wait = false) }
+    }
+
+    // One sender's connection, from the path parameter that names it to the
+    // disconnect handlers that fire once its socket unwinds.
+    private suspend fun DefaultWebSocketServerSession.serve(
+        senderId: String?,
+        commandHandler: (senderId: String, command: ReceiverCommand) -> ReceiverOutcome,
+    ) {
+        if (senderId.isNullOrBlank() || !authorize(senderId)) {
+            close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "unauthorized"))
+            return
+        }
+
+        sessions += this
+        try {
+            for (frame in incoming) {
+                answer(frame, senderId, commandHandler)
+            }
+        } finally {
+            sessions -= this
+            disconnectHandlers.value.forEach { it(senderId) }
+        }
+    }
+
+    // One frame, answered. A frame this build cannot read leaves the socket
+    // open rather than closing it: a sender speaking a newer envelope is a
+    // sender to keep, and the alternative is a reconnect loop.
+    private suspend fun DefaultWebSocketServerSession.answer(
+        frame: Frame,
+        senderId: String,
+        commandHandler: (senderId: String, command: ReceiverCommand) -> ReceiverOutcome,
+    ) {
+        val text: Frame.Text = frame as? Frame.Text ?: return
+        val command: ReceiverCommand = runCatching { Json.decodeFromString<WireCommand>(text.readText()) }
+            .getOrNull()
+            ?.toDomain()
+            ?: return
+
+        val outcome: ReceiverOutcome = commandHandler(senderId, command)
+        // Guarded like broadcast() below, against a dead socket.
+        runCatching {
+            send(Frame.Text(Json.encodeToString(WireOutcome.serializer(), WireOutcome.from(outcome))))
+        }
     }
 
     override fun stop() {

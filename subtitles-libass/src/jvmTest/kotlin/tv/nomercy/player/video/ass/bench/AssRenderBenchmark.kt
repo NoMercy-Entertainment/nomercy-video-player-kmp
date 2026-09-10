@@ -20,6 +20,7 @@ import tv.nomercy.player.video.subtitles.AssChangedRows
 import tv.nomercy.player.video.subtitles.AssSurfaceFrame
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import tv.nomercy.player.video.ass.readableBytes
 
 // What a moving ASS subtitle actually costs on the desktop, measured on the
 // real tracks that are slow rather than on a synthetic one.
@@ -259,7 +260,8 @@ object AssRenderBenchmark {
             val image = AssImageStruct(cursor)
             val size: Int = image.stride * image.h
             val pixels: ByteArray = borrow(run, size)
-            image.bitmap?.read(0, pixels, 0, size)
+            // The allocation, not the rectangle — see readableBytes.
+            image.bitmap?.read(0, pixels, 0, readableBytes(image.stride, image.h, image.w))
 
             images += AssImage(
                 x = image.dstX,

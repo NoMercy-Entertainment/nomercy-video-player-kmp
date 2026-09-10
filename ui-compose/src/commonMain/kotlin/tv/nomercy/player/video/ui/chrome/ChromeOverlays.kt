@@ -76,7 +76,7 @@ internal fun BoxScope.ChromeStatusText(scene: ChromeScene) {
         BufferingSpinner(Modifier.align(Alignment.Center))
     }
 
-    scene.state.message?.let { text -> PlayerMessage(text) }
+    scene.state.message?.let { text -> PlayerMessageBand(text) }
 }
 
 /**
@@ -88,7 +88,7 @@ internal fun BoxScope.ChromeStatusText(scene: ChromeScene) {
  * reads as part of the picture and covers the thing the viewer is waiting to see.
  */
 @Composable
-private fun BoxScope.PlayerMessage(text: String) {
+internal fun BoxScope.PlayerMessageBand(text: String) {
     Box(
         modifier = Modifier
             .align(Alignment.TopCenter)

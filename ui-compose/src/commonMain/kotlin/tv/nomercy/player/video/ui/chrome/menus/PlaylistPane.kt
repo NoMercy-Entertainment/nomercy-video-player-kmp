@@ -69,14 +69,16 @@ import tv.nomercy.player.video.ui.chrome.ChromeState
  * be drawn from a list the rule calls flat.
  *
  *     .playlist-cols  { display: flex; flex-direction: row; flex: 1 }
- *     .seasons-pane   { flex: 1; min-width: 16rem; border-right: 2px solid … }
- *     .episode-menu   { flex: 1; min-width: 36rem }
+ *     .seasons-pane   { flex: 1 1 16rem; min-width: 0; border-right: 2px solid … }
+ *     .episode-menu   { flex: 1 1 36rem; min-width: 0 }
  *     .playlist-flat .seasons-pane { display: none }
  *
- * Both rails are `flex: 1` over a floor, which is `weight(1f)` over a `widthIn`
- * here. Below 16rem + 36rem of room the floors win and the right rail is clipped,
- * which is what the browser does as well — `.playlist-cols` carries
- * `overflow: hidden`.
+ * The two widths are a BASIS on both sides, not a floor. They were `min-width`
+ * on the web until a flex child's minimum was found outranking the menu frame's
+ * `max-width`: the menu grew past its own cap, covered the picture and cut each
+ * card's overview off at the right edge. A Compose `widthIn(min = …)` inside a
+ * bounded Row cannot do that — it is clamped by the incoming constraints — so
+ * this side never showed the fault and does not change.
  */
 @Composable
 internal fun PlaylistPane(
@@ -115,7 +117,16 @@ private fun SeasonedRails(picks: PlaylistPicks, seasons: List<Int>, state: Chrom
     }
 
     Row(modifier = Modifier.fillMaxWidth()) {
-        SeasonsRail(picks, seasons, chosen, Modifier.weight(1f).widthIn(min = SEASONS_MIN_WIDTH)) {
+        // Weighted 16:36, not 1:1.
+        //
+        // `flex: 1` with `flex-basis: 0` splits the free space evenly, and the
+        // two widths are what pull it apart: the web asks for 16rem and 36rem
+        // as each rail's basis, and they add up to the 52rem the frame caps at.
+        // `weight(1f)` splits evenly too, but a Compose `min`
+        // only raises a child that fell under it — so on a rail wider than the
+        // card's cap the seasons column kept half the width and the episodes
+        // were squeezed into the rest. The ratio the mins produce is the rule.
+        SeasonsRail(picks, seasons, chosen, Modifier.weight(SEASONS_WEIGHT).widthIn(min = SEASONS_MIN_WIDTH)) {
             chosen = it
         }
 
@@ -124,7 +135,11 @@ private fun SeasonedRails(picks: PlaylistPicks, seasons: List<Int>, state: Chrom
         // out of the row rather than out of the rail's own width.
         Box(Modifier.width(RAIL_BORDER).fillMaxHeight().background(RAIL_BORDER_COLOR))
 
-        EpisodeRail(picks, episodeRows(state.queue, chosen), Modifier.weight(1f).widthIn(min = EPISODES_MIN_WIDTH))
+        EpisodeRail(
+            picks,
+            episodeRows(state.queue, chosen),
+            Modifier.weight(EPISODES_WEIGHT).widthIn(min = EPISODES_MIN_WIDTH),
+        )
     }
 }
 
@@ -451,6 +466,11 @@ private fun RowScope.CardText(cards: CardLayout, item: TvChromeItem, index: Int)
 // `.seasons-pane { min-width: 16rem }` and `.episode-menu { min-width: 36rem }`.
 internal val SEASONS_MIN_WIDTH = 256.dp
 internal val EPISODES_MIN_WIDTH = 576.dp
+
+// The proportions `.seasons-pane`'s 16rem and `.episode-menu`'s 36rem produce
+// where the web's card cap makes both mins bind at once.
+private const val SEASONS_WEIGHT = 16f
+private const val EPISODES_WEIGHT = 36f
 
 // `.seasons-pane { border-right: 2px solid rgba(107, 114, 128, 0.2) }` — and in
 // portrait the same two pixels turn under the rail as `border-bottom`.

@@ -26,6 +26,7 @@ import tv.nomercy.player.core.ports.SubtitleTrack
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import tv.nomercy.player.video.ass.fonts.CachedFont
+import tv.nomercy.player.video.item.VideoPlaylistItem
 import tv.nomercy.player.video.ass.fonts.TwoTierFontCache
 import tv.nomercy.player.video.subtitles.TtfNameParser
 
@@ -182,7 +183,10 @@ public class SubtitlePlugin(
         on(CoreEvents.Item) {
             selected = null
             selectionSeen = false
-            manifestUrl = null
+            // From the item, not null. Nothing ever called load(url, manifest),
+            // so fetchFonts never ran and every styled script fell back to the
+            // renderer's own face.
+            manifestUrl = (item() as? VideoPlaylistItem)?.fontManifestUrl
             reconcile()
         }
     }

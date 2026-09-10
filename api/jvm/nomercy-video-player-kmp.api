@@ -122,6 +122,15 @@ public final class tv/nomercy/player/video/QualityRequest {
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class tv/nomercy/player/video/ResumeGuard {
+	public static final field INSTANCE Ltv/nomercy/player/video/ResumeGuard;
+	public static final field PERCENT_THRESHOLD F
+	public static final field TRAILING_SECONDS J
+	public final fun startPositionMs (JJF)J
+	public final fun startPositionMs (Ltv/nomercy/player/video/item/VideoPlaylistItem;)J
+	public static synthetic fun startPositionMs$default (Ltv/nomercy/player/video/ResumeGuard;JJFILjava/lang/Object;)J
+}
+
 public final class tv/nomercy/player/video/SegmentBoundary {
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;DDLjava/lang/String;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;DDLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -758,6 +767,225 @@ public final class tv/nomercy/player/video/cast/WakeOutcome : java/lang/Enum {
 	public static fun values ()[Ltv/nomercy/player/video/cast/WakeOutcome;
 }
 
+public final class tv/nomercy/player/video/cast/receiver/ComposedPlayerReceiverPlayback : tv/nomercy/player/video/cast/receiver/ReceiverPlayback {
+	public static final field MS_PER_SECOND D
+	public static final field VOLUME_SCALE D
+	public fun <init> (Ltv/nomercy/player/core/controllers/ComposedPlayer;Lkotlinx/coroutines/CoroutineScope;)V
+	public fun apply (Ltv/nomercy/player/video/cast/receiver/ReceiverCommand;)V
+	public fun canPlay (Ljava/lang/String;)Z
+}
+
+public final class tv/nomercy/player/video/cast/receiver/NoReceiverTransport : tv/nomercy/player/video/cast/receiver/ReceiverTransport {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/receiver/NoReceiverTransport;
+	public fun broadcast (Ltv/nomercy/player/video/cast/receiver/ReceiverStateEvent;)V
+	public fun onDisconnect (Lkotlin/jvm/functions/Function1;)V
+	public fun start (Lkotlin/jvm/functions/Function2;)V
+	public fun stop ()V
+}
+
+public abstract interface class tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$Launch : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public fun <init> (Ljava/lang/String;Z)V
+	public synthetic fun <init> (Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Z
+	public final fun copy (Ljava/lang/String;Z)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Launch;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Launch;Ljava/lang/String;ZILjava/lang/Object;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Launch;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAutoplay ()Z
+	public final fun getUrl ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$Next : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Next;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$Pause : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Pause;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$Play : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Play;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$Previous : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Previous;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$Seek : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public fun <init> (J)V
+	public final fun component1 ()J
+	public final fun copy (J)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Seek;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Seek;JILjava/lang/Object;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Seek;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPositionMs ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$SetAudioTrack : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetAudioTrack;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetAudioTrack;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetAudioTrack;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getTrackId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$SetQuality : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public fun <init> (Ltv/nomercy/player/video/cast/RemoteQualityLevel;)V
+	public final fun component1 ()Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+	public final fun copy (Ltv/nomercy/player/video/cast/RemoteQualityLevel;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetQuality;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetQuality;Ltv/nomercy/player/video/cast/RemoteQualityLevel;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetQuality;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLevel ()Ltv/nomercy/player/video/cast/RemoteQualityLevel;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$SetSubtitleTrack : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetSubtitleTrack;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetSubtitleTrack;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetSubtitleTrack;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getTrackId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$SetVolume : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Boolean;)V
+	public synthetic fun <init> (Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Boolean;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/Double;
+	public final fun component2 ()Ljava/lang/Double;
+	public final fun component3 ()Ljava/lang/Boolean;
+	public final fun copy (Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Boolean;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetVolume;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetVolume;Ljava/lang/Double;Ljava/lang/Double;Ljava/lang/Boolean;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$SetVolume;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDelta ()Ljava/lang/Double;
+	public final fun getLevel ()Ljava/lang/Double;
+	public final fun getMuted ()Ljava/lang/Boolean;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$Stop : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Stop;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class tv/nomercy/player/video/cast/receiver/ReceiverOutcome {
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverOutcome$Accepted : tv/nomercy/player/video/cast/receiver/ReceiverOutcome {
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/receiver/ReceiverOutcome$Accepted;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverOutcome$Refused : tv/nomercy/player/video/cast/receiver/ReceiverOutcome {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Ltv/nomercy/player/video/cast/receiver/ReceiverOutcome$Refused;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/receiver/ReceiverOutcome$Refused;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/receiver/ReceiverOutcome$Refused;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getReason ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class tv/nomercy/player/video/cast/receiver/ReceiverPlayback {
+	public abstract fun apply (Ltv/nomercy/player/video/cast/receiver/ReceiverCommand;)V
+	public fun canPlay (Ljava/lang/String;)Z
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverPlayback$DefaultImpls {
+	public static fun canPlay (Ltv/nomercy/player/video/cast/receiver/ReceiverPlayback;Ljava/lang/String;)Z
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverRefusal {
+	public static final field ALREADY_CONTROLLED Ljava/lang/String;
+	public static final field CANNOT_PLAY Ljava/lang/String;
+	public static final field INSTANCE Ltv/nomercy/player/video/cast/receiver/ReceiverRefusal;
+	public static final field NOTHING_LOADED Ljava/lang/String;
+	public static final field WRONG_SENDER Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverSession {
+	public fun <init> (Ltv/nomercy/player/video/cast/receiver/ReceiverPlayback;)V
+	public final fun handle (Ljava/lang/String;Ltv/nomercy/player/video/cast/receiver/ReceiverCommand;)Ltv/nomercy/player/video/cast/receiver/ReceiverOutcome;
+	public final fun hasContent ()Z
+	public final fun isControlledBy (Ljava/lang/String;)Z
+	public final fun release (Ljava/lang/String;)V
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverStateEvent {
+	public fun <init> (Ljava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZII)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component10 ()Z
+	public final fun component11 ()I
+	public final fun component12 ()I
+	public final fun component2 ()J
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Ljava/lang/String;
+	public final fun component7 ()Ljava/lang/String;
+	public final fun component8 ()Ljava/lang/String;
+	public final fun component9 ()I
+	public final fun copy (Ljava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZII)Ltv/nomercy/player/video/cast/receiver/ReceiverStateEvent;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/receiver/ReceiverStateEvent;Ljava/lang/String;JJLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZIIILjava/lang/Object;)Ltv/nomercy/player/video/cast/receiver/ReceiverStateEvent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAudioTrackId ()Ljava/lang/String;
+	public final fun getDurationMs ()J
+	public final fun getItemId ()Ljava/lang/String;
+	public final fun getItemTitle ()Ljava/lang/String;
+	public final fun getMuted ()Z
+	public final fun getPlaybackState ()Ljava/lang/String;
+	public final fun getPlaylistActiveIndex ()I
+	public final fun getPlaylistLength ()I
+	public final fun getPositionMs ()J
+	public final fun getQualityLabel ()Ljava/lang/String;
+	public final fun getSubtitleTrackId ()Ljava/lang/String;
+	public final fun getVolumeLevel ()I
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverStateEventKt {
+	public static final fun projectReceiverState (Ltv/nomercy/player/core/controllers/ComposedPlayer;)Ltv/nomercy/player/video/cast/receiver/ReceiverStateEvent;
+}
+
+public abstract interface class tv/nomercy/player/video/cast/receiver/ReceiverTransport {
+	public abstract fun broadcast (Ltv/nomercy/player/video/cast/receiver/ReceiverStateEvent;)V
+	public abstract fun onDisconnect (Lkotlin/jvm/functions/Function1;)V
+	public abstract fun start (Lkotlin/jvm/functions/Function2;)V
+	public abstract fun stop ()V
+}
+
 public final class tv/nomercy/player/video/chapters/ChapterLabelKt {
 	public static final fun resolveChapterLabel (Ljava/util/List;DLjava/lang/String;)Ljava/lang/String;
 }
@@ -1066,6 +1294,7 @@ public abstract interface class tv/nomercy/player/video/item/VideoPlaylistItem :
 	public fun getDescription ()Ljava/lang/String;
 	public abstract fun getDurationSeconds ()Ljava/lang/Double;
 	public fun getEpisode ()Ljava/lang/Integer;
+	public fun getFontManifestUrl ()Ljava/lang/String;
 	public fun getImage ()Ljava/lang/String;
 	public fun getPlaylistType ()Ljava/lang/String;
 	public fun getPoster ()Ljava/lang/String;
@@ -1074,6 +1303,7 @@ public abstract interface class tv/nomercy/player/video/item/VideoPlaylistItem :
 	public fun getShow ()Ljava/lang/String;
 	public fun getSubtitles ()Ljava/util/List;
 	public fun getThumbnail ()Ljava/lang/String;
+	public fun getVideoFileId ()Ljava/lang/String;
 	public fun getVideoType ()Ljava/lang/String;
 }
 
@@ -1082,6 +1312,7 @@ public final class tv/nomercy/player/video/item/VideoPlaylistItem$DefaultImpls {
 	public static fun getChapters (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/util/List;
 	public static fun getDescription (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getEpisode (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/Integer;
+	public static fun getFontManifestUrl (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getImage (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getPlaylistType (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getPoster (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
@@ -1089,6 +1320,7 @@ public final class tv/nomercy/player/video/item/VideoPlaylistItem$DefaultImpls {
 	public static fun getShow (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getSubtitles (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/util/List;
 	public static fun getThumbnail (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
+	public static fun getVideoFileId (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 	public static fun getVideoType (Ltv/nomercy/player/video/item/VideoPlaylistItem;)Ljava/lang/String;
 }
 
@@ -1174,6 +1406,38 @@ public final class tv/nomercy/player/video/preferences/SavedQuality$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
 }
 
+public final class tv/nomercy/player/video/preferences/SavedSubtitle {
+	public static final field Companion Ltv/nomercy/player/video/preferences/SavedSubtitle$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/preferences/SavedSubtitle;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/preferences/SavedSubtitle;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/preferences/SavedSubtitle;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFormat ()Ljava/lang/String;
+	public final fun getKind ()Ljava/lang/String;
+	public final fun getLanguage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final synthetic class tv/nomercy/player/video/preferences/SavedSubtitle$$serializer : kotlinx/serialization/internal/GeneratedSerializer {
+	public static final field INSTANCE Ltv/nomercy/player/video/preferences/SavedSubtitle$$serializer;
+	public final fun childSerializers ()[Lkotlinx/serialization/KSerializer;
+	public synthetic fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ljava/lang/Object;
+	public final fun deserialize (Lkotlinx/serialization/encoding/Decoder;)Ltv/nomercy/player/video/preferences/SavedSubtitle;
+	public final fun getDescriptor ()Lkotlinx/serialization/descriptors/SerialDescriptor;
+	public synthetic fun serialize (Lkotlinx/serialization/encoding/Encoder;Ljava/lang/Object;)V
+	public final fun serialize (Lkotlinx/serialization/encoding/Encoder;Ltv/nomercy/player/video/preferences/SavedSubtitle;)V
+	public fun typeParametersSerializers ()[Lkotlinx/serialization/KSerializer;
+}
+
+public final class tv/nomercy/player/video/preferences/SavedSubtitle$Companion {
+	public final fun serializer ()Lkotlinx/serialization/KSerializer;
+}
+
 public final class tv/nomercy/player/video/preferences/VideoPreferencesOptions {
 	public fun <init> ()V
 	public fun <init> (ZZZZZ)V
@@ -1199,11 +1463,15 @@ public class tv/nomercy/player/video/preferences/VideoPreferencesPlugin : tv/nom
 	public static final field Manifest Ltv/nomercy/player/video/preferences/VideoPreferencesPlugin$Manifest;
 	public fun <init> (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;)V
 	public synthetic fun <init> (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCachedAudioLanguage ()Ljava/lang/String;
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;
 	public fun optionFields ()Ljava/util/List;
+	public final fun rememberAudioLanguage (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun restore (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun savedAudioLanguage (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun savedSubtitle (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun use ()V
 }
 

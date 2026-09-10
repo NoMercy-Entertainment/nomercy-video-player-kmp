@@ -89,6 +89,11 @@ public open class TouchZonesPlugin(
     private var lastTapAtMs: Long = 0
     private var lastZone: TouchZone? = null
 
+    // Once a double tap opens a run, every further tap in the same zone adds
+    // another step to it, the way every other player behaves. The run closes
+    // when the taps stop or the viewer moves to a different zone.
+    private var runZone: TouchZone? = null
+
     /**
      * A tap landed at [x], [y] across the picture, at [atMs].
      *
@@ -101,17 +106,24 @@ public open class TouchZonesPlugin(
      */
     public fun tap(x: Float, y: Float, atMs: Long): TouchAction {
         val zone: TouchZone = zoneAt(x, y, volumeZones)
-        val isDouble: Boolean =
-            zone == lastZone && atMs - lastTapAtMs <= opts.doubleTapWindowMs
+        val withinWindow: Boolean = atMs - lastTapAtMs <= opts.doubleTapWindowMs
+        val sameZone: Boolean = zone == lastZone
+
+        // A run that has gone quiet, or that the viewer has left, is over.
+        if (!sameZone || !withinWindow) runZone = null
+
+        val inRun: Boolean = runZone == zone
+        val opensRun: Boolean = sameZone && withinWindow
 
         lastZone = zone
-        // Reset rather than extend on a double, or a third tap in the same
-        // place would count as another double and a rapid series would seek
-        // once per tap instead of once per pair.
-        lastTapAtMs = if (isDouble) 0 else atMs
+        lastTapAtMs = atMs
 
-        val action: TouchAction =
-            if (isDouble) doubleTapAction(zone) else singleTapAction(zone)
+        val action: TouchAction = if (inRun || opensRun) {
+            runZone = zone
+            doubleTapAction(zone)
+        } else {
+            singleTapAction(zone)
+        }
 
         perform(action)
         return action

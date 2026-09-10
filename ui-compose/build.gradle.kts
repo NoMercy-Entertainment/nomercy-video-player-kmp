@@ -42,6 +42,19 @@ kotlin {
                 compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
             }
         }
+
+        // Netty arrives through the device-test runtime in a dozen artifacts,
+        // each carrying its own META-INF index, and the packager refuses to
+        // choose between identical files. It stopped the test APK from being
+        // built at all, so every device test on this module was unrunnable —
+        // including the ones that were passing before the dependency appeared.
+        packaging.resources.excludes.addAll(
+            listOf(
+                "META-INF/INDEX.LIST",
+                "META-INF/DEPENDENCIES",
+                "META-INF/io.netty.versions.properties",
+            )
+        )
     }
 
     jvm {

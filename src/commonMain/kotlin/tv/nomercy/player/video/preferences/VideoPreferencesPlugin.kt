@@ -19,6 +19,7 @@ import tv.nomercy.player.core.plugin.PluginOptionField
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
+import tv.nomercy.player.core.ports.subtitleKindOf
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoEvents
 
@@ -34,6 +35,12 @@ import tv.nomercy.player.video.VideoEvents
 // one list is a different track in the other — restoring an index would quietly
 // give a viewer the wrong language on the device that filtered hardest. What is
 // stored is the language, and what is restored is the track that has it.
+// Above the function threshold on purpose. Each preference is a pair — save it
+// when the viewer picks, restore it when a list appears — and there are style,
+// volume, mute, subtitle, audio and quality. Merging any two of them would put
+// two unrelated preferences in one body, which is the thing the threshold
+// exists to prevent.
+@Suppress("TooManyFunctions")
 public open class VideoPreferencesPlugin(
     private val player: NMVideoPlayer,
     opts: VideoPreferencesOptions = VideoPreferencesOptions(),
@@ -98,8 +105,30 @@ public open class VideoPreferencesPlugin(
         // asking the player which track is selected cannot disagree with the
         // player. Resolving the index here would be a second answer to a
         // question that already has one.
-        on(CoreEvents.Subtitle) { remember { store.saveSubtitle(player.subtitle()?.language) } }
-        on(CoreEvents.AudioTrack) { remember { store.saveAudio(player.audioTrack()?.language) } }
+        // Saved on every selection, with no window and no guard.
+        //
+        // `subtitle` and `audioTrack` are emitted by the SETTER and by nothing
+        // else — an engine settling on the file's own default does not fire
+        // them. A guard against "the engine's default arriving like a tap" was
+        // therefore protecting against something that cannot happen, and what it
+        // actually dropped was the viewer's own pick: a language saved once
+        // could not be corrected, and which language an item opened in depended
+        // on what had been played before it. This is the shape the retired
+        // Android player used, which is the one that worked.
+        // The track the event NAMES, not the one the engine currently reports.
+        // A selection reaches the engine asynchronously, so reading the current
+        // track here answers with the language being replaced — and the list
+        // announcement that follows the switch then restores it.
+        on(CoreEvents.Subtitle) { payload ->
+            if (!applying) {
+                remember { saveSubtitlePick(payload.track) }
+            }
+        }
+        on(CoreEvents.AudioTrack) { payload ->
+            if (!applying) {
+                remember { writeAudio(trackAt(player.audioTracks(), payload.id)?.language) }
+            }
+        }
 
         // The viewer's choice, not the ladder's. `quality:requested` fires on an
         // explicit pick; a level-switch event would persist whatever ABR landed
@@ -107,7 +136,31 @@ public open class VideoPreferencesPlugin(
         // having left it.
         on(VideoEvents.QualityRequested) { remember { store.saveQuality(chosenQuality()) } }
 
-        on(CoreEvents.Item) { remember { restore() } }
+        installRestores()
+    }
+
+    // What a new item owes, and where each debt is paid. Its own function
+    // because the two halves answer different questions: the block above
+    // records a viewer's choice, this one reinstates it.
+    private fun installRestores() {
+        // Records what is owed and restores nothing: the cursor moves while the
+        // outgoing item is still loaded, so the engine still answers with ITS
+        // track list.
+        on(CoreEvents.Item) {
+            audioPending = true
+            subtitlePending = true
+        }
+        // A list's ANNOUNCEMENT answers the want, because it is also when the
+        // engine has finished choosing for itself. Anything applied earlier is
+        // overwritten by the dub the new file declares.
+        on(CoreEvents.Subtitles) { remember { answerSubtitle() } }
+        on(VideoEvents.AudioTracks) { remember { answerAudio() } }
+        // The ladder, for the same reason: it is parsed after the source loads.
+        on(VideoEvents.Levels) { remember { restoreQuality() } }
+        on(CoreEvents.MediaReady) { remember { restoreWhatIsOwed() } }
+        on(CoreEvents.Time) {
+            if (audioPending || subtitlePending) remember { restoreWhatIsOwed() }
+        }
 
         remember {
             applyStyle()
@@ -115,6 +168,72 @@ public open class VideoPreferencesPlugin(
             restore()
         }
     }
+
+    // The caption the event NAMES, resolved against the list the player holds.
+    private suspend fun saveSubtitlePick(index: Double?) {
+        val track: SubtitleTrack? = trackAt(player.subtitles(), index)
+        store.saveSubtitle(
+            track?.let {
+                SavedSubtitle(
+                    language = it.language,
+                    kind = subtitleKindOf(it.label),
+                    format = it.format,
+                )
+            },
+        )
+    }
+
+    /**
+     * The audio language the viewer last chose, before any track list exists.
+     *
+     * A server that transcodes on demand decides which rendition it marks
+     * default, and it decides that when the SESSION opens — before the player
+     * has a list to restore against. A consumer asking for that session has to
+     * be able to say which language, or the choice is made for it and the
+     * restore is left correcting an item that opened in the wrong one.
+     */
+    public suspend fun savedAudioLanguage(): String? = readAudio()
+
+    /**
+     * The same answer without suspending, for the seam that cannot wait.
+     *
+     * [tv.nomercy.player.core.controllers.PlayerContext.preferredAudioLanguageFor]
+     * resolves into LoadOptions before any backend sees the next item, and it is
+     * an ordinary function — so [savedAudioLanguage], which reads storage,
+     * cannot answer it. This is what the plugin last read or wrote, held in
+     * memory.
+     *
+     * Null until the plugin has touched the store once. That is the honest
+     * answer rather than a guess: an item loaded before the first read starts
+     * in the file's own default and the restore corrects it, which is exactly
+     * the behaviour this cache exists to avoid REPEATING, not to fake.
+     */
+    public var cachedAudioLanguage: String? = null
+        private set
+
+    /**
+     * Adopt a language chosen on another device as this one's choice.
+     *
+     * A handoff carries the language the viewer was listening to, and the device
+     * taking over has to know it before it opens its own transcode session —
+     * which is before there is any track list to restore against.
+     */
+    public suspend fun rememberAudioLanguage(language: String?) {
+        if (language.isNullOrBlank()) return
+        writeAudio(language)
+    }
+
+    // Every read and every write of the audio language goes through these two,
+    // so [cachedAudioLanguage] cannot fall behind the store it mirrors.
+    private suspend fun readAudio(): String? = store.audio().also { cachedAudioLanguage = it }
+
+    private suspend fun writeAudio(language: String?) {
+        cachedAudioLanguage = language
+        store.saveAudio(language)
+    }
+
+    /** The caption choice the viewer last made, for the same reason. */
+    public suspend fun savedSubtitle(): SavedSubtitle? = store.subtitle()
 
     // Writing is fire-and-forget, and the handle is kept so it can be waited on.
     //
@@ -127,6 +246,10 @@ public open class VideoPreferencesPlugin(
     private fun remember(block: suspend () -> Unit) {
         lastWrite = launch { block() }
     }
+
+    // The event carries a place in the list the player held when it fired.
+    private fun <T> trackAt(list: List<T>, index: Double?): T? =
+        index?.toInt()?.let(list::getOrNull)
 
     private var lastWrite: Job? = null
 
@@ -142,6 +265,32 @@ public open class VideoPreferencesPlugin(
         if (opts.restoreQuality) restoreQuality()
     }
 
+    // The list is out, so the want is answered whether or not this item has the
+    // language. No list at all cannot answer it.
+    //
+    // Nothing is owed once it is answered, and a list is announced again every
+    // time a viewer switches track — so without the guard the switch is followed
+    // by a restore that argues with it, which is chop on the picture and a
+    // language that changes back by itself.
+    private suspend fun answerSubtitle() {
+        if (!subtitlePending) return
+        subtitlePending = !restoreSubtitle()
+    }
+
+    private suspend fun answerAudio() {
+        if (!audioPending) return
+        audioPending = !restoreAudio()
+    }
+
+    // An attempt that leaves the want standing, for an engine that parses a
+    // list without announcing one. Limited to the kinds still owed one, so it
+    // cannot walk over a language the viewer has since picked by hand.
+    private suspend fun restoreWhatIsOwed() {
+        if (opts.restoreSubtitle && subtitlePending) restoreSubtitle()
+        if (opts.restoreAudio && audioPending) restoreAudio()
+        if (opts.restoreQuality) restoreQuality()
+    }
+
     private suspend fun applyStyle() {
         if (!opts.restoreSubtitleStyle) return
         val style: SubtitleStyle = store.style() ?: return
@@ -154,16 +303,84 @@ public open class VideoPreferencesPlugin(
         if (store.muted() == true) player.mute(restored)
     }
 
-    private suspend fun restoreSubtitle() {
-        val language: String = store.subtitle() ?: return
-        val track: SubtitleTrack = player.subtitles().firstOrNull { it.language == language } ?: return
-        player.subtitle(track)
+    // Narrowest match first. A ladder filtered by device capability can drop the
+    // exact variant, and a viewer is better served by the same language in a
+    // different flavour than by no captions at all.
+    private suspend fun restoreSubtitle(): Boolean {
+        val available: List<SubtitleTrack> = player.subtitles()
+        if (available.isEmpty()) return false
+        val wanted: SubtitleTrack? = store.subtitle()
+            ?.takeUnless { matches(player.subtitle(), it) }
+            ?.let { bestSubtitleFor(available, it) }
+
+        if (wanted != null) {
+            applySelection { player.subtitle(wanted) }
+        }
+        return true
     }
 
-    private suspend fun restoreAudio() {
-        val language: String = store.audio() ?: return
-        val track: AudioTrack = player.audioTracks().firstOrNull { it.language == language } ?: return
-        player.audioTrack(track)
+    // Three passes, loosening one field at a time: language, kind and format
+    // together; then language and kind; then language alone. A viewer who
+    // chose forced English gets forced English on an item that carries it and
+    // plain English on one that does not, rather than nothing at all.
+    private fun bestSubtitleFor(
+        available: List<SubtitleTrack>,
+        saved: SavedSubtitle,
+    ): SubtitleTrack? = available.firstOrNull {
+        it.language == saved.language &&
+            subtitleKindOf(it.label) == saved.kind &&
+            it.format == saved.format
+    } ?: available.firstOrNull {
+        it.language == saved.language && subtitleKindOf(it.label) == saved.kind
+    } ?: available.firstOrNull {
+        it.language == saved.language
+    }
+
+    // Owed from the cursor move until that kind's list is ANNOUNCED. Per kind,
+    // because the two lists do not arrive together, and cleared nowhere else:
+    // every other caller restores against a list belonging to another item.
+    private var audioPending: Boolean = false
+    private var subtitlePending: Boolean = false
+
+    // True only while the plugin itself is selecting a track.
+    //
+    // The restore goes through the same setter a viewer's tap does, and that
+    // setter is what announces a selection — so without this the plugin writes
+    // back what it has just read, and a write racing a tap can put the OLD
+    // language back on top of the new one.
+    private var applying: Boolean = false
+
+    private suspend fun applySelection(select: suspend () -> Unit) {
+        applying = true
+        try {
+            select()
+        } finally {
+            applying = false
+        }
+    }
+
+    // Nothing is re-selected once the choice is already in effect: the setter
+    // announces, and a tick that re-applies it says so again on the picture.
+    //
+    // True once a list exists to decide against, whether or not it holds the
+    // saved language. False only while there is no list at all.
+    private fun matches(track: SubtitleTrack?, saved: SavedSubtitle): Boolean =
+        track != null &&
+            track.language == saved.language &&
+            subtitleKindOf(track.label) == saved.kind &&
+            track.format == saved.format
+
+    private suspend fun restoreAudio(): Boolean {
+        val available: List<AudioTrack> = player.audioTracks()
+        if (available.isEmpty()) return false
+        val wanted: AudioTrack? = readAudio()
+            ?.takeUnless { it == player.audioTrack()?.language }
+            ?.let { language -> available.firstOrNull { it.language == language } }
+
+        if (wanted != null) {
+            applySelection { player.audioTrack(wanted) }
+        }
+        return true
     }
 
     // Auto is a stored value, not the absence of one.

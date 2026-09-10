@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.cast
 
+import kotlinx.coroutines.test.TestResult
+
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -44,11 +46,11 @@ class RouteMatchTest {
     }
 
     @Test
-    fun aPlatformThatCannotWakeSaysSoRatherThanClaimingSuccess() {
+    fun aPlatformThatCannotWakeSaysSoRatherThanClaimingSuccess(): TestResult {
         // A television that never woke and a phone that thinks it did is the
         // worst of the available answers: the viewer is shown a casting state
         // and a dark screen with nothing explaining the gap.
-        kotlinx.coroutines.test.runTest {
+        return kotlinx.coroutines.test.runTest {
             assertTrue(defaultCastWaker().wake("dev-a") == WakeOutcome.UNSUPPORTED)
         }
     }

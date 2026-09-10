@@ -101,21 +101,23 @@ class PanelBoxTest {
 
     @Test
     fun aBoundedHeightIsTheFramesOwnRuleAndNotTheListsShare() {
-        // `.menu-frame { max-height: calc(100% - 2rem) }`.
+        // `.menu-frame { top: 16px; bottom: 52px; height: auto }`.
         //
-        // This asserted 60% of the player, citing `.main-menu` — which is a
-        // different selector with a different rule. Applying the inner list's
-        // share to the frame made every card, the playlist pane included, forty
-        // per cent shorter than the browser's. The share lives in MainMenu.kt
-        // now, on the list it belongs to.
-        assertEquals(968.dp, panelBoxOf(MenuState.Main, listOf(movie), 1920.dp, 1000.dp).maxHeight)
+        // Positioned from both edges with an auto height, so the used height is
+        // what those two leave: `100% - 68px`. The rule also carries
+        // `max-height: calc(100% - 2rem)`, and this asserted that instead — but
+        // `100% - 32px` is the larger of the two and never binds, so the card
+        // was allowed 36dp it does not have and its last rows fell past the
+        // bottom inset they are supposed to sit on.
+        assertEquals(932.dp, panelBoxOf(MenuState.Main, listOf(movie), 1920.dp, 1000.dp).maxHeight)
     }
 
     @Test
     fun theFrameGivesUpItsInsetsEvenOnAPlayerTooShortForThem() {
-        // 50dp of player, 32 of inset, 18 left. The frame does not go negative
-        // and does not refuse to draw.
-        assertEquals(18.dp, panelBoxOf(MenuState.Main, listOf(movie), 1920.dp, 50.dp).maxHeight)
+        // 50dp of player against 68 of inset. There is no room at all, and the
+        // point of the test is the floor: the frame does not go negative and
+        // does not refuse to draw.
+        assertEquals(0.dp, panelBoxOf(MenuState.Main, listOf(movie), 1920.dp, 50.dp).maxHeight)
     }
 
     @Test

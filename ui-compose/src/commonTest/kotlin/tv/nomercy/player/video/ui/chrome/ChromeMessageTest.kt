@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.core.player.PlayerPhase
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
 import tv.nomercy.player.video.ui.tv.tvChromeStrings
 import kotlin.test.Test
@@ -58,6 +59,25 @@ class ChromeMessageTest {
     // The distinction the web keeps as `messageIsFeedback`. `playing` and `time`
     // end a buffering notice because those events mean the buffering ended; they
     // must not cut off a sentence the host asked for.
+    // Reported on a phone: "if I pause and then seek I get to the fake
+    // buffering state". A seek raises Waiting, and Playing — the only thing
+    // that cleared the notice — never comes, because a paused player is not
+    // going to start.
+    @Test
+    fun aPausedPlayerIsNotBuffering() {
+        assertEquals(false, waitIsWorthAnnouncing(PlayerPhase.PAUSED))
+    }
+
+    // The notice still has to appear for every wait that IS one. Named rather
+    // than counted: a predicate that answered false everywhere would satisfy
+    // the test above on its own.
+    @Test
+    fun everyOtherPhaseStillAnnouncesTheWait() {
+        val silent: List<PlayerPhase> = PlayerPhase.entries.filterNot { waitIsWorthAnnouncing(it) }
+
+        assertEquals(listOf(PlayerPhase.PAUSED), silent)
+    }
+
     @Test
     fun aHostMessageAndAFeedbackMessageAreNotTheSameKind() {
         val buffering = ChromeMessage("Buffering…", ChromeMessage.Kind.Feedback)

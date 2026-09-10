@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -44,6 +45,7 @@ import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.video.tv.TvChromeItem
 import tv.nomercy.player.video.ui.chrome.ChromeButtons
 import tv.nomercy.player.video.ui.chrome.ChromeCommands
+import tv.nomercy.player.video.ui.chrome.ChromeSlot
 import tv.nomercy.player.video.ui.chrome.ChromeSlots
 import tv.nomercy.player.video.ui.chrome.ChromeState
 import tv.nomercy.player.video.ui.chrome.LocalChromeSlots
@@ -113,7 +115,12 @@ public fun SettingsMenu(
     // `max-width: calc(100% - 2rem)` is a percentage of the player, and the 16px
     // start inset is what enforces it: the card is right-aligned, so it can grow
     // leftwards until 16px from the far edge and no further.
-    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+    // Fills the player, not just its width. With a wrap-content height there is
+    // no room below the card for `BottomEnd` to push it into, so the panel hung
+    // from the top of the player instead of sitting above the settings button —
+    // and `maxHeight`, which decides portrait vs landscape and the card's size,
+    // was measuring the card rather than the picture.
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         // The web reads `(orientation: portrait)` off the window and writes it
         // onto the container as `data-orientation`; the player's own box is the
         // nearest thing this composable can measure.
@@ -121,7 +128,7 @@ public fun SettingsMenu(
         val panel: PanelBox = panelBoxOf(menu, state.queue, maxWidth, maxHeight, portrait)
 
         Box(
-            modifier = Modifier.fillMaxWidth().padding(panelInsets(panel)),
+            modifier = Modifier.fillMaxSize().padding(panelInsets(panel)),
             contentAlignment = Alignment.BottomEnd,
         ) {
             SettingsPanel(panel, MenuHeaderSpec(strings, menu, onMenuChange, state.queue)) {
@@ -129,7 +136,8 @@ public fun SettingsMenu(
                     MenuState.Main -> MainMenu(state, strings, buttons, onMenuChange)
                     MenuState.Quality -> QualityMenu(state, commands, strings, onMenuChange)
                     MenuState.Audio -> AudioMenu(state, commands, onMenuChange)
-                    MenuState.Subtitle -> SubtitleMenu(state, commands, strings, onMenuChange)
+                    MenuState.Subtitle ->
+                        SubtitleMenu(state, commands, strings, onMenuChange, slots.subtitleExtras)
                     MenuState.Speed -> SpeedMenu(state, commands, strings, onMenuChange)
                     MenuState.Playlist ->
                         PlaylistPane(state, commands, strings, onMenuChange, slots.artwork, portrait)
@@ -242,11 +250,8 @@ private fun AspectRatioMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    Column(
-        modifier = Modifier.padding(MENU_LIST_PADDING),
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
-        ASPECT_RATIOS.forEach { mode ->
+    MenuPane {
+        items(ASPECT_RATIOS) { mode ->
             MenuRow(
                 aspectLabel(mode, strings),
                 isCurrent = mode == state.aspectRatio,
@@ -276,10 +281,7 @@ private fun QualityMenu(
     val offerable: List<QualityLevel> =
         offerableRungs(state.qualityLevels, rememberDeviceCapabilities().hasHdrDisplay)
 
-    LazyColumn(
-        contentPadding = MENU_LIST_PADDING,
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
+    MenuPane {
         // Automatic first, because it is what most viewers should stay on and
         // the list below it exists for the ones who know they want otherwise.
         item {
@@ -312,10 +314,7 @@ private fun AudioMenu(
     // The locale that chose the header is the one that names the rows.
     val locale: String = rememberChromeLocale()
 
-    LazyColumn(
-        contentPadding = MENU_LIST_PADDING,
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
+    MenuPane {
         itemsIndexed(state.audioTracks) { index, track ->
             MenuRow(audioLabel(track, index, locale), isCurrent = track == state.activeAudio) {
                 commands.selectAudioTrack(track)
@@ -331,13 +330,11 @@ private fun SubtitleMenu(
     commands: ChromeCommands,
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
+    extras: ChromeSlot? = null,
 ) {
     val locale: String = rememberChromeLocale()
 
-    LazyColumn(
-        contentPadding = MENU_LIST_PADDING,
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
+    MenuPane {
         // Off is a row rather than an absence. A viewer turning subtitles off
         // has to be able to say so, and a list with no way back is one they
         // leave by restarting the film.
@@ -354,6 +351,10 @@ private fun SubtitleMenu(
                 onMenuChange(MenuState.Hidden)
             }
         }
+
+        // Last, under the tracks the item already carries: anything the host can
+        // add to that list belongs after it, not competing with it.
+        if (extras != null) item { extras(state, commands) }
     }
 }
 
@@ -364,10 +365,7 @@ private fun SpeedMenu(
     strings: MenuStrings,
     onMenuChange: (MenuState) -> Unit,
 ) {
-    LazyColumn(
-        contentPadding = MENU_LIST_PADDING,
-        verticalArrangement = Arrangement.spacedBy(MENU_LIST_GAP),
-    ) {
+    MenuPane {
         items(SPEEDS) { speed ->
             MenuRow(speedLabel(speed, strings), isCurrent = speed == state.rate, tag = "$ROW_SPEED_VALUE$speed") {
                 commands.setRate(speed)

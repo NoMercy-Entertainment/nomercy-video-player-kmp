@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.cast
 
+import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -93,10 +94,10 @@ class PlatformSeamTest {
     }
 
     @Test
-    fun aPlatformWithNoPanelToWakeSaysSoRatherThanFailing() {
+    fun aPlatformWithNoPanelToWakeSaysSoRatherThanFailing(): TestResult {
         // Desktop and Apple reach the television directly. Reporting a failure
         // would make a caller tell a viewer something is wrong when nothing is.
-        runTest {
+        return runTest {
             val waker: CastWaker = UnsupportedCastWaker()
 
             waker.warmUp()
@@ -106,19 +107,19 @@ class PlatformSeamTest {
     }
 
     @Test
-    fun eachWakeOutcomeIsDistinctBecauseCallersActOnThemDifferently() {
+    fun eachWakeOutcomeIsDistinctBecauseCallersActOnThemDifferently(): TestResult {
         // An already-awake set can be cast to now; a wake merely sent needs a
         // moment; no route at all is the one a viewer has to be told about. A
         // boolean would collapse the three.
-        runTest {
+        return runTest {
             assertEquals(WakeOutcome.AWOKE, FakeCastWaker(WakeOutcome.AWOKE).wake("dev-a"))
             assertEquals(WakeOutcome.NO_ROUTE, FakeCastWaker(WakeOutcome.NO_ROUTE).wake("dev-a"))
         }
     }
 
     @Test
-    fun theSetThatWasAskedForIsTheSetThatIsWoken() {
-        runTest {
+    fun theSetThatWasAskedForIsTheSetThatIsWoken(): TestResult {
+        return runTest {
             val waker = FakeCastWaker()
 
             waker.wake("dev-a")

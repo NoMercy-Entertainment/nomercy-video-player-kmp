@@ -11,6 +11,8 @@ package tv.nomercy.player.video.backend
 import tv.nomercy.player.core.ports.BackendState
 import tv.nomercy.player.core.ports.CanonicalBackendEvent
 import tv.nomercy.player.core.ports.VideoBackend
+import kotlinx.coroutines.test.TestResult
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -44,18 +46,24 @@ class Html5VideoBackendTest {
         backend.release()
     }
 
+    // The whole test is the coroutine, rather than a runTest block inside it.
+    //
+    // On Kotlin/Wasm and Kotlin/JS runTest returns a promise and does not block,
+    // so a body that called it and then asserted was reading `seen` before
+    // `load` had issued anything — the assertion failed with an empty list every
+    // run. Returning the TestResult is what makes the framework wait for it, and
+    // it is the only shape that works on these targets.
+    //
+    // No real network fetch is awaited even so: `load()` returns once the
+    // element's own `load()` call has been issued, matching every other
+    // backend's fire-and-forget shape for a URL this test never resolves.
     @Test
-    fun loadEmitsLoadStartBeforeAnythingElse() {
+    fun loadEmitsLoadStartBeforeAnythingElse(): TestResult = runTest {
         val backend = Html5VideoBackend()
         val seen = mutableListOf<String>()
         backend.on(CanonicalBackendEvent.LOAD_START) { seen.add(CanonicalBackendEvent.LOAD_START) }
 
-        // No real network fetch is awaited here — `load()` returns once the
-        // element's own `load()` call has been issued, matching every other
-        // backend's fire-and-forget shape for a URL this test never resolves.
-        kotlinx.coroutines.test.runTest {
-            backend.load("https://example.test/does-not-exist.mp4")
-        }
+        backend.load("https://example.test/does-not-exist.mp4")
 
         assertEquals(listOf(CanonicalBackendEvent.LOAD_START), seen)
         backend.release()

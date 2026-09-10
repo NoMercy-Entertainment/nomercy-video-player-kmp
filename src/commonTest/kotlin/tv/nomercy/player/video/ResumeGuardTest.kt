@@ -8,8 +8,18 @@
 
 package tv.nomercy.player.video
 
+import tv.nomercy.player.video.item.VideoPlaylistItem
+import tv.nomercy.player.video.item.WatchProgress
 import kotlin.test.Test
 import kotlin.test.assertEquals
+
+private data class ResumableItem(
+    override val id: String = "item",
+    override val url: String = "https://media.example.test/item.m3u8",
+    override val title: String? = null,
+    override val durationSeconds: Double? = 3600.0,
+    override val progress: WatchProgress? = null,
+) : VideoPlaylistItem
 
 // Ported case-for-case from the deprecated app's `ResumeGuardTest` (R6 —
 // "has its own test today, so the behaviour is known and portable"). Same
@@ -125,5 +135,32 @@ class ResumeGuardTest {
     @Test
     fun percentThresholdConstantIsNinetyFivePercent() {
         assertEquals(95f, ResumeGuard.PERCENT_THRESHOLD)
+    }
+
+    // ── The item overload, which the player and a transcode consumer share ───
+
+    @Test
+    fun anItemResumesAtItsSavedPosition() {
+        val item = ResumableItem(progress = WatchProgress(time = 932.0))
+        assertEquals(932_000L, ResumeGuard.startPositionMs(item))
+    }
+
+    @Test
+    fun anItemNearItsEndStartsOver() {
+        val item = ResumableItem(progress = WatchProgress(time = 3590.0))
+        assertEquals(0L, ResumeGuard.startPositionMs(item))
+    }
+
+    @Test
+    fun anItemWithNoProgressStartsAtZero() {
+        assertEquals(0L, ResumeGuard.startPositionMs(ResumableItem()))
+    }
+
+    @Test
+    fun anItemWithNoRuntimeStartsAtZero() {
+        // Without a runtime the finished-check has no denominator, and guessing
+        // one would resume an item this guard exists to send back to zero.
+        val item = ResumableItem(durationSeconds = null, progress = WatchProgress(time = 932.0))
+        assertEquals(0L, ResumeGuard.startPositionMs(item))
     }
 }
