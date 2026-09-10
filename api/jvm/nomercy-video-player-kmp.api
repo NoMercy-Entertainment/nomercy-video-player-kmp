@@ -1463,6 +1463,7 @@ public class tv/nomercy/player/video/preferences/VideoPreferencesPlugin : tv/nom
 	public static final field Manifest Ltv/nomercy/player/video/preferences/VideoPreferencesPlugin$Manifest;
 	public fun <init> (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;)V
 	public synthetic fun <init> (Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getCachedAudioLanguage ()Ljava/lang/String;
 	public fun getManifest ()Ltv/nomercy/player/core/plugin/PluginManifest;
 	public synthetic fun getOptions ()Ljava/lang/Object;
 	public fun getOptions ()Ltv/nomercy/player/video/preferences/VideoPreferencesOptions;

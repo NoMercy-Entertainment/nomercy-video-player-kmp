@@ -126,7 +126,7 @@ public open class VideoPreferencesPlugin(
         }
         on(CoreEvents.AudioTrack) { payload ->
             if (!applying) {
-                remember { store.saveAudio(trackAt(player.audioTracks(), payload.id)?.language) }
+                remember { writeAudio(trackAt(player.audioTracks(), payload.id)?.language) }
             }
         }
 
@@ -192,7 +192,24 @@ public open class VideoPreferencesPlugin(
      * be able to say which language, or the choice is made for it and the
      * restore is left correcting an item that opened in the wrong one.
      */
-    public suspend fun savedAudioLanguage(): String? = store.audio()
+    public suspend fun savedAudioLanguage(): String? = readAudio()
+
+    /**
+     * The same answer without suspending, for the seam that cannot wait.
+     *
+     * [tv.nomercy.player.core.controllers.PlayerContext.preferredAudioLanguageFor]
+     * resolves into LoadOptions before any backend sees the next item, and it is
+     * an ordinary function — so [savedAudioLanguage], which reads storage,
+     * cannot answer it. This is what the plugin last read or wrote, held in
+     * memory.
+     *
+     * Null until the plugin has touched the store once. That is the honest
+     * answer rather than a guess: an item loaded before the first read starts
+     * in the file's own default and the restore corrects it, which is exactly
+     * the behaviour this cache exists to avoid REPEATING, not to fake.
+     */
+    public var cachedAudioLanguage: String? = null
+        private set
 
     /**
      * Adopt a language chosen on another device as this one's choice.
@@ -203,6 +220,15 @@ public open class VideoPreferencesPlugin(
      */
     public suspend fun rememberAudioLanguage(language: String?) {
         if (language.isNullOrBlank()) return
+        writeAudio(language)
+    }
+
+    // Every read and every write of the audio language goes through these two,
+    // so [cachedAudioLanguage] cannot fall behind the store it mirrors.
+    private suspend fun readAudio(): String? = store.audio().also { cachedAudioLanguage = it }
+
+    private suspend fun writeAudio(language: String?) {
+        cachedAudioLanguage = language
         store.saveAudio(language)
     }
 
@@ -347,7 +373,7 @@ public open class VideoPreferencesPlugin(
     private suspend fun restoreAudio(): Boolean {
         val available: List<AudioTrack> = player.audioTracks()
         if (available.isEmpty()) return false
-        val wanted: AudioTrack? = store.audio()
+        val wanted: AudioTrack? = readAudio()
             ?.takeUnless { it == player.audioTrack()?.language }
             ?.let { language -> available.firstOrNull { it.language == language } }
 
