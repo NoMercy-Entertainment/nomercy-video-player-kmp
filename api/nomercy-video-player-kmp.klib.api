@@ -299,6 +299,7 @@ abstract interface tv.nomercy.player.video.cast.receiver/ReceiverTransport { // 
 abstract interface tv.nomercy.player.video.cast/CastWaker { // tv.nomercy.player.video.cast/CastWaker|null[0]
     abstract suspend fun wake(kotlin/String): tv.nomercy.player.video.cast/WakeOutcome // tv.nomercy.player.video.cast/CastWaker.wake|wake(kotlin.String){}[0]
     abstract suspend fun warmUp() // tv.nomercy.player.video.cast/CastWaker.warmUp|warmUp(){}[0]
+    open suspend fun wake(tv.nomercy.player.core.events/CastTarget): tv.nomercy.player.video.cast/WakeOutcome // tv.nomercy.player.video.cast/CastWaker.wake|wake(tv.nomercy.player.core.events.CastTarget){}[0]
 }
 
 abstract interface tv.nomercy.player.video.cast/DeviceDiscovery { // tv.nomercy.player.video.cast/DeviceDiscovery|null[0]

@@ -8,6 +8,8 @@
 
 package tv.nomercy.player.video.cast
 
+import tv.nomercy.player.core.events.CastTarget
+
 // What happened when a sleeping television was asked to wake.
 //
 // Five outcomes rather than a boolean, because the caller does different things
@@ -40,6 +42,21 @@ public interface CastWaker {
     public suspend fun warmUp()
 
     public suspend fun wake(deviceId: String): WakeOutcome
+
+    /**
+     * The same wake, told which device it is for.
+     *
+     * An id means nothing to Cast, so a waker matching a route has only two
+     * keys to match on: the address the device is at, and the name it
+     * advertises. A sleeping television has no address — the server's mDNS
+     * cannot see a box whose app is stopped, which is precisely when a wake is
+     * the only way in — so the name has to be able to carry it alone.
+     *
+     * Defaulted to the id-only form, so a waker that cannot tell two receivers
+     * apart keeps working and says so by not overriding this. A host with more
+     * than one receiver on the network wants an implementation that does.
+     */
+    public suspend fun wake(target: CastTarget): WakeOutcome = wake(target.id)
 }
 
 // The waker for a platform that has no panel to wake.

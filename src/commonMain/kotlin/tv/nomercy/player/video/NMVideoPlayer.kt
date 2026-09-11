@@ -203,6 +203,13 @@ public open class NMVideoPlayer(
 
     init {
         register(this)
+
+        // And leaves when it is disposed. The list only ever grew, so
+        // [instances] answered with every player the process had ever built —
+        // a host asking which one is on screen got a torn-down player whose
+        // engine was released, which is worse than getting nothing.
+        on(CoreEvents.Dispose) { unregister(this) }
+
         backend?.let { videoBridge.attach(it) }
 
         // Resume where the viewer left off, as a START position rather than a
@@ -772,6 +779,10 @@ public open class NMVideoPlayer(
 
         private fun register(player: NMVideoPlayer) {
             live.add(player)
+        }
+
+        private fun unregister(player: NMVideoPlayer) {
+            live.remove(player)
         }
     }
 }
