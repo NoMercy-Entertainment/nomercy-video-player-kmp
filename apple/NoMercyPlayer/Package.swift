@@ -25,7 +25,7 @@ let releasing = ProcessInfo.processInfo.environment["NOMERCY_SPM_RELEASE"] == "1
 let engine: Target = releasing
     ? .binaryTarget(
         name: "NoMercyVideoPlayer",
-        url: "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/v0.1.0/NoMercyVideoPlayer.xcframework.zip",
+        url: "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/v0.2.0/NoMercyVideoPlayer.xcframework.zip",
         // Filled by the release job from tools/package-xcframework.sh. Without a
         // real one a binaryTarget resolves whatever the URL serves, which is a
         // build that changes under a consumer who changed nothing.
