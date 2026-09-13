@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -31,7 +32,8 @@ public actual fun PlayerSurface(
     modifier: Modifier,
     stretching: Stretching,
 ) {
-    val player = surface.exoPlayer
+    val activeExoPlayer = surface.activeExoPlayer
+    val player = if (activeExoPlayer != null) activeExoPlayer.collectAsState().value else surface.exoPlayer
     val sink = surface.sink
 
     if (player == null && sink != null) {

@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ui
 
 import androidx.media3.exoplayer.ExoPlayer
+import kotlinx.coroutines.flow.StateFlow
 import tv.nomercy.player.core.ports.ExoPlayerVideoBackend
 import tv.nomercy.player.core.ports.FrameSourceBackend
 import tv.nomercy.player.core.ports.VideoBackend
@@ -32,6 +33,10 @@ public actual class VideoSurface internal constructor(
     internal val backend: VideoBackend?,
     public val exoPlayer: ExoPlayer?,
 ) {
+
+    // The backend can hand playback to a second engine mid-item; the view follows it.
+    internal val activeExoPlayer: StateFlow<ExoPlayer>? =
+        (backend as? ExoPlayerVideoBackend)?.activeExoPlayer
 
     internal val sink: ComposeFrameSink? =
         (backend as? FrameSourceBackend)?.let { source ->
