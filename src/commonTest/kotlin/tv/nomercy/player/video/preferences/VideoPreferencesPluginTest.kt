@@ -25,6 +25,8 @@ import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.AudioTracksChange
 import tv.nomercy.player.video.VideoEvents
 import tv.nomercy.player.video.VideoItem
+import tv.nomercy.player.video.item.VideoPlaylistItem
+import tv.nomercy.player.video.item.WatchProgress
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -349,6 +351,30 @@ class VideoPreferencesPluginTest {
         assertEquals(0, announced, "the track already playing was selected again, once per tick")
     }
 
+    // Saved English ASS, the item only has an English VTT sidecar. Each tick asked
+    // whether the EXACT saved track played, got no, and picked the VTT again.
+    @Test
+    fun aTickDoesNotReSelectTheClosestSubtitleItAlreadyChose() = runTest {
+        val rig: Rig = rig()
+        rig.backend.subtitleTracks = listOf(englishAss, dutch)
+        rig.player.subtitle(englishAss)
+        rig.plugin.awaitWrites()
+
+        rig.backend.subtitleTracks = emptyList()
+        rig.backend.chosenSubtitle = null
+        var announced = 0
+        rig.player.on(CoreEvents.Subtitle) { announced++ }
+        rig.player.queue(listOf(SidecarItem(subtitles = listOf(sidecarEnglish))))
+        rig.plugin.awaitWrites()
+        repeat(4) {
+            rig.player.emit(CoreEvents.Time, TimeUpdate(it.toDouble(), 1400.0, 0.0))
+            rig.plugin.awaitWrites()
+        }
+
+        assertEquals(sidecarEnglish.id, rig.player.subtitle()?.id, "the closest English track was not chosen")
+        assertEquals(1, announced, "the closest track was selected again on every tick")
+    }
+
     // What the viewer picked is what gets written down.
     //
     // A selection reaches the engine asynchronously — Media3 applies it on the
@@ -469,7 +495,25 @@ class VideoPreferencesPluginTest {
 }
 
 private val english = SubtitleTrack(id = "s-eng", language = "eng", label = "English")
+private val englishAss = SubtitleTrack(id = "s-eng-ass", language = "eng", label = "English", format = "ass")
 private val dutch = SubtitleTrack(id = "s-nld", language = "nld", label = "Nederlands")
+private val sidecarEnglish = SubtitleTrack(
+    id = "sub:eng.full.vtt",
+    language = "eng",
+    label = "English",
+    format = "vtt",
+    url = "https://media.example.test/b/eng.full.vtt",
+)
+
+private class SidecarItem(
+    override val id: String = "b",
+    override val url: String = "https://media.example.test/b.m3u8",
+    override val title: String? = "B",
+    override val durationSeconds: Double? = 1400.0,
+    override val progress: WatchProgress? = null,
+    override val subtitles: List<SubtitleTrack> = emptyList(),
+) : VideoPlaylistItem
+
 private val german = SubtitleTrack(id = "s-deu", language = "deu", label = "Deutsch")
 
 private val audioEnglish = AudioTrack(id = "a-eng", language = "eng", label = "English")

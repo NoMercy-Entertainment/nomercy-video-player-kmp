@@ -309,9 +309,11 @@ public open class VideoPreferencesPlugin(
     private suspend fun restoreSubtitle(): Boolean {
         val available: List<SubtitleTrack> = player.subtitles()
         if (available.isEmpty()) return false
+        val current: SubtitleTrack? = player.subtitle()
         val wanted: SubtitleTrack? = store.subtitle()
-            ?.takeUnless { matches(player.subtitle(), it) }
+            ?.takeUnless { matches(current, it) }
             ?.let { bestSubtitleFor(available, it) }
+            ?.takeUnless { it.id == current?.id }
 
         if (wanted != null) {
             applySelection { player.subtitle(wanted) }
