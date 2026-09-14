@@ -228,7 +228,7 @@ private suspend fun AssRenderer.rasterise(
 // Null means "keep what is on screen". The renderer answers null for a frame
 // that has not changed, which is most of them — a static line held for four
 // seconds is one render and ninety-five identical ones nobody should pay for.
-private suspend fun nextPicture(
+internal suspend fun nextPicture(
     renderer: AssRenderer,
     drawing: AssDrawing,
     timeMs: Long,
@@ -251,11 +251,14 @@ private suspend fun nextPicture(
     // an eighth of the screen and blending them in one pass was four
     // milliseconds — a quarter of a 60fps budget spent on subtitles alone.
     val composited: AssSurfaceFrame = drawing.compositor.renderParallel(frame.images, target.width, target.height)
+    drawing.cleared = false
     return drawing.picture.bitmap(composited, target.width, target.height)
 }
 
-// Nothing, drawn.
-private suspend fun blank(drawing: AssDrawing, target: IntSize): ImageBitmap {
+// Nothing, drawn once. Every tick without a track drew a new full-screen empty frame.
+private suspend fun blank(drawing: AssDrawing, target: IntSize): ImageBitmap? {
+    if (drawing.cleared) return null
+    drawing.cleared = true
     val empty: AssSurfaceFrame = drawing.compositor.renderParallel(emptyList(), target.width, target.height)
     return drawing.picture.bitmap(empty, target.width, target.height)
 }
@@ -263,10 +266,13 @@ private suspend fun blank(drawing: AssDrawing, target: IntSize): ImageBitmap {
 // The two things that turn libass images into a bitmap, held together for the
 // life of the layer: the compositor owns the pixel buffers and the surface owns
 // the toolkit's copy of them, and neither is any use without the other.
-private class AssDrawing(
+internal class AssDrawing(
     val compositor: AssFrameCompositor,
     val picture: AssPictureSurface,
 ) {
+    // True while the last picture published is the empty one.
+    var cleared: Boolean = false
+
     // Held for the whole of one frame, sizing included.
     //
     // The loop below is keyed on the surface, so a resize starts a second one

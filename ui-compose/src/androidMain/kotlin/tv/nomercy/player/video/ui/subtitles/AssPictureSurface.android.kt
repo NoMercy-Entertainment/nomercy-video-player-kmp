@@ -62,10 +62,15 @@ internal actual class AssPictureSurface actual constructor() {
             }
         }
 
-        val bitmap: Bitmap = Bitmap.createBitmap(frameWidth, frameHeight, Bitmap.Config.ARGB_8888)
+        val bitmap: Bitmap = bitmaps[frame.slot]
+            ?: Bitmap.createBitmap(frameWidth, frameHeight, Bitmap.Config.ARGB_8888).also { bitmaps[frame.slot] = it }
         bitmap.copyPixelsFromBuffer(IntBuffer.wrap(swapped))
         return bitmap.asImageBitmap()
     }
+
+    // One bitmap per slot, reused. A new full-screen bitmap per frame is native memory the
+    // collector frees late, and a busy sign track ran a 3 GB phone out of it (2026-09-14).
+    private var bitmaps: Array<Bitmap?> = arrayOfNulls(BUFFER_COUNT)
 
     // True when the buffers were replaced, so the caller knows its region is
     // meaningless against them.
@@ -80,6 +85,7 @@ internal actual class AssPictureSurface actual constructor() {
         width = frameWidth
         height = frameHeight
         buffers = Array(BUFFER_COUNT) { IntArray(frameWidth * frameHeight) }
+        bitmaps = arrayOfNulls(BUFFER_COUNT)
         return true
     }
 
