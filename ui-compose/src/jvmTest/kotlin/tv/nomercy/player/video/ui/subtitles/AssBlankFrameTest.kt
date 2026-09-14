@@ -29,7 +29,8 @@ class AssBlankFrameTest {
         override fun storageSize(): AssSize? = null
         override fun storageSize(width: Int, height: Int): Unit = Unit
         override fun frameSize(width: Int, height: Int): Unit = Unit
-        override fun render(timeMillis: Long): AssFrame? = if (track) AssFrame(images = emptyList(), changed = true) else null
+        override fun render(timeMillis: Long): AssFrame? =
+            if (track) AssFrame(images = emptyList(), changed = true) else null
         override fun hasTrack(): Boolean = track
         override fun release(): Unit = Unit
     }
@@ -42,7 +43,9 @@ class AssBlankFrameTest {
     fun sixtyTicksWithoutATrackPublishOneEmptyPicture() {
         val drawing = AssDrawing(AssFrameCompositor(), AssPictureSurface())
 
-        assertEquals(1, published(SwitchableRenderer(), drawing, ticks = 60), "an empty picture was drawn on every tick")
+        val count: Int = published(SwitchableRenderer(), drawing, ticks = 60)
+
+        assertEquals(1, count, "an empty picture was drawn on every tick")
     }
 
     @Test
@@ -55,7 +58,9 @@ class AssBlankFrameTest {
         published(renderer, drawing, ticks = 1)
         renderer.track = false
 
-        assertEquals(1, published(renderer, drawing, ticks = 5), "the last cue stayed on screen after its track went away")
+        val count: Int = published(renderer, drawing, ticks = 5)
+
+        assertEquals(1, count, "the last cue stayed on screen after its track went away")
     }
 }
 

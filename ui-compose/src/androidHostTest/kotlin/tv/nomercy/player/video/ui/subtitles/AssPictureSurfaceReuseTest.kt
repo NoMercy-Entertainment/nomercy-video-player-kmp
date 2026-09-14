@@ -53,12 +53,17 @@ class AssPictureSurfaceReuseTest {
         val compositor = AssFrameCompositor()
         val surface = AssPictureSurface()
         surface.bitmap(compositor.renderParallel(emptyList(), WIDTH, HEIGHT), WIDTH, HEIGHT)
-        val resized: Bitmap = surface.bitmap(compositor.renderParallel(emptyList(), 64, 36), 64, 36).asAndroidBitmap()
+        val frame = compositor.renderParallel(emptyList(), RESIZED_WIDTH, RESIZED_HEIGHT)
+        val resized: Bitmap = surface.bitmap(frame, RESIZED_WIDTH, RESIZED_HEIGHT).asAndroidBitmap()
 
-        assertEquals(64 to 36, resized.width to resized.height, "a resize drew into the old size")
+        val drawnSize = resized.width to resized.height
+
+        assertEquals(RESIZED_WIDTH to RESIZED_HEIGHT, drawnSize, "a resize drew into the old size")
     }
 }
 
 private const val SDK_UNDER_TEST = 34
 private const val WIDTH = 32
 private const val HEIGHT = 18
+private const val RESIZED_WIDTH = 64
+private const val RESIZED_HEIGHT = 36
