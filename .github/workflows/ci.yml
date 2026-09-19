@@ -59,6 +59,8 @@ jobs:
       # self-hosted runner does not. Without it every Android target fails to
       # configure, and the message names a licence rather than a missing SDK.
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
 
       # Chrome, for the same reason as the Android SDK above: a GitHub-hosted
       # ubuntu image ships one and this runner does not. This module targets
