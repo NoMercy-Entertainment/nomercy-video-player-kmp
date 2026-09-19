@@ -11,6 +11,7 @@ package tv.nomercy.player.video.apple
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import platform.AVFoundation.AVPlayer
@@ -27,6 +28,7 @@ import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.cast.DEFAULT_TV_PORT
 import tv.nomercy.player.video.cast.videoCastPlugin
+import tv.nomercy.player.video.launchThenCancel
 
 /**
  * Everything the SwiftUI chrome reads, in one value.
@@ -106,7 +108,13 @@ public class AppleVideoEngine(
     // AVFoundation is main-thread affine besides. A collector on a background
     // dispatcher would hand Swift a value it has to hop threads to use, and the
     // hop is where a frame goes missing.
-    private val scope = CoroutineScope(Dispatchers.Main)
+    //
+    // SupervisorJob, matching AppleMusicEngine's own scope: without one, a
+    // single failed child (a `player.time(seconds)` racing a torn-down
+    // backend, say) cancels the whole scope's job, and every later play(),
+    // pause() or seek() launched here silently does nothing from then on —
+    // the launch itself throws immediately against a cancelled parent.
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     // One per observer, because an application legitimately has more than one.
     //
@@ -239,7 +247,8 @@ public class AppleVideoEngine(
     public fun dispose() {
         collectors.forEach(Job::cancel)
         collectors.clear()
-        scope.launch { player.dispose() }
+
+        scope.launchThenCancel { player.dispose() }
     }
 
     // The same mapping chromeStateOf makes for Compose, deliberately field for
