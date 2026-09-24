@@ -27,7 +27,7 @@ private external fun jsAppendChild(parent: JsAny, child: JsAny)
  * A `<video>` element driven directly, as a [VideoBackend].
  *
  * This IS the web trio's own engine: [nomercy-video-player]'s `Html5VideoBackend`
- * (`packages/nomercy-video-player/src/adapters/video-backend/html5.ts`) wraps the
+ * (`packages/player-web/nomercy-video-player/src/adapters/video-backend/html5.ts`) wraps the
  * exact same `HTMLVideoElement`, and this port drives it the same way — through
  * `src` assignment and the element's own demux+decode pipeline, which on a Cast
  * receiver's Chromium build handles progressive MP4/WebM and native HLS the same

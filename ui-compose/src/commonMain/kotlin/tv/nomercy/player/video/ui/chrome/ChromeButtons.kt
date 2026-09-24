@@ -106,7 +106,7 @@ public data class ChromeButtons(
             playlist = true,
             cast = true,
 
-            // Measured on the running player in tools/player-testbed, which is
+            // Measured on the running player in testing/nomercy-player-testbed, which is
             // the thing that settled this: aspect-ratio, theater and speed are
             // all VISIBLE there. I had them off from reading app-web's options
             // object, and the options object is not the player — a second

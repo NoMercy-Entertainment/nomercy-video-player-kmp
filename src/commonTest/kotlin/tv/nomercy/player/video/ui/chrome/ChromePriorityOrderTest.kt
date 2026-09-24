@@ -18,7 +18,7 @@ import kotlin.test.assertEquals
 // control that disappears at the wrong width. Nothing checked it, and two were
 // swapped: the file claimed to be DEFAULT_PRIORITY "in order" and was not.
 //
-// Transcribed from packages/nomercy-video-player/src/plugins/desktop-ui/
+// Transcribed from packages/player-web/nomercy-video-player/src/plugins/desktop-ui/
 // helpers/responsive.ts. If that list moves, this fails and says which rank.
 class ChromePriorityOrderTest {
 
