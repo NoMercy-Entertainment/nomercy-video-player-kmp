@@ -38,19 +38,19 @@ jobs:
     # six-hour default ran out. A job that hangs reads as a job that is working.
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: packages/player-kmp/nomercy-video-player-kmp
 
       # Core is not on Maven Central yet, so the composite build is the only way
       # to resolve it. The relative path mirrors the monorepo, which is what
       # settings.gradle.kts looks for.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: NoMercy-Entertainment/nomercy-player-core-kmp
           path: packages/player-kmp/nomercy-player-core-kmp
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
@@ -58,7 +58,7 @@ jobs:
       # The Android SDK, which a GitHub-hosted ubuntu image carried and a
       # self-hosted runner does not. Without it every Android target fails to
       # configure, and the message names a licence rather than a missing SDK.
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools'
 
@@ -68,7 +68,7 @@ jobs:
       # through karma — without it the build dies on "Errors occurred during
       # launch of browser for testing - ChromeHeadless" before reaching them.
       # Core hit exactly this on 2026-09-10.
-      - uses: browser-actions/setup-chrome@v1
+      - uses: browser-actions/setup-chrome@v2
         id: setup-chrome
 
       # Karma looks the browser up by this variable rather than by PATH.
@@ -172,16 +172,16 @@ jobs:
     timeout-minutes: 75
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: packages/player-kmp/nomercy-video-player-kmp
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: NoMercy-Entertainment/nomercy-player-core-kmp
           path: packages/player-kmp/nomercy-player-core-kmp
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
@@ -217,7 +217,7 @@ jobs:
       # cache: it links against libraries built by a different compiler and
       # fails somewhere unrelated.
       - name: Cache the Kotlin/Native toolchain
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.konan
           key: konan-${{ runner.os }}-${{ hashFiles('packages/player-kmp/nomercy-video-player-kmp/gradle/libs.versions.toml') }}
@@ -289,16 +289,16 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: packages/player-kmp/nomercy-video-player-kmp
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: NoMercy-Entertainment/nomercy-player-core-kmp
           path: packages/player-kmp/nomercy-player-core-kmp
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
