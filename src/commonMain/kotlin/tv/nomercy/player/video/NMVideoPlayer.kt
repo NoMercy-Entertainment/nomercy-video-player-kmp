@@ -83,6 +83,10 @@ private fun sharesPrefix(language: String, wanted: String): Boolean =
 private fun subtitleTrackKey(track: SubtitleTrack): String =
     normalizeLanguage(track.language).orEmpty()
 
+// "und" is how an engine says it was not told.
+private fun SubtitleTrack.hasLanguage(): Boolean =
+    language.isNotBlank() && !language.equals("und", ignoreCase = true)
+
 // A video player.
 //
 // It is a core player plus six things only video has: fullscreen,
@@ -664,8 +668,13 @@ public open class NMVideoPlayer(
         val sidecars: List<SubtitleTrack> = externalSubtitles
         if (sidecars.isEmpty()) return super.subtitles()
 
+        // An engine track with no language steps aside too. The same-language
+        // rule can never match it, so an unlabelled caption track the engine
+        // made up (No Game No Life: "Track 1" above the server's three English
+        // files) stayed at the top of the menu. With nothing else to choose it
+        // stays, because then it is the only subtitle there is.
         val covered: Set<String> = sidecars.mapTo(mutableSetOf()) { subtitleTrackKey(it) }
-        return super.subtitles().filter { subtitleTrackKey(it) !in covered } + sidecars
+        return super.subtitles().filter { it.hasLanguage() && subtitleTrackKey(it) !in covered } + sidecars
     }
 
     // The sidecar being played, when one is, because the engine cannot answer
