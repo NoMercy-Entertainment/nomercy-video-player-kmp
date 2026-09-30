@@ -1,0 +1,9 @@
+# The Android libass in src/androidMain/jniLibs, copied unchanged from the
+# nomercy-libass release named below. Replace these files only with a newer
+# release of that pipeline, and update this list in the same commit.
+# NativeLibraryAlignmentTest fails when a file differs from its line here.
+#
+# release: NoMercy-Entertainment/nomercy-libass v0.17.5-1
+957e7d5f5ec11abe86fe846990d2725dd03f3fec6566b2bf90134076cba172d6  arm64-v8a
+476d805d0f192cb3337deef9c9a3456def909d4e6d2d3ab727ed456f49341f97  armeabi-v7a
+7e90e33d38279ef5247173adf8d4692f0e9315fd7f2025581036fda2a89d7d95  x86_64

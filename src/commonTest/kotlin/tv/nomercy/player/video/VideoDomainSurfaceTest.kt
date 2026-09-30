@@ -133,6 +133,31 @@ class VideoDomainSurfaceTest {
     }
 
     @Test
+    fun aStreamTrackWithNoLanguageStepsAsideWhenTheServerSentFiles() = runTest {
+        // No Game No Life listed a "Track 1" above the server's three English
+        // files: a caption track the engine reported with no language, which the
+        // same-language rule can never match, so it always stayed.
+        val (subject, backend) = player()
+        backend.subtitleTracks = listOf(
+            SubtitleTrack(id = "cc-blank", language = "", label = ""),
+            SubtitleTrack(id = "cc-und", language = "und", label = ""),
+            ENGLISH,
+        )
+
+        subject.addSubtitleTrack(DUTCH)
+
+        assertEquals(listOf("sub-en", "sub-nl"), subject.subtitles().map { it.id })
+    }
+
+    @Test
+    fun aStreamTrackWithNoLanguageStaysWhenItIsAllThereIs() = runTest {
+        val (subject, backend) = player()
+        backend.subtitleTracks = listOf(SubtitleTrack(id = "cc-blank", language = "", label = ""))
+
+        assertEquals(listOf("cc-blank"), subject.subtitles().map { it.id })
+    }
+
+    @Test
     fun aSidecarWithNothingLoadedIsRefusedRatherThanKept() = runTest {
         // Kept, it would belong to whatever item loaded next — a Dutch subtitle
         // silently offered against the following film.
