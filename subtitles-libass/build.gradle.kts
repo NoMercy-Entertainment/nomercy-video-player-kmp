@@ -237,6 +237,18 @@ tasks.withType<Test>().configureEach {
         showCauses = true
         showStackTraces = true
     }
+
+    // The prebuilt Android libass and its digest manifest are read by
+    // NativeLibraryAlignmentTest straight from the source tree, so Gradle does
+    // not know the test depends on them. Without this a swapped .so leaves the
+    // task UP-TO-DATE and the gate reports the previous file's verdict: seen on
+    // 2026-09-30, where the 4 KB build copied back in place ran green.
+    inputs.files(
+        fileTree("src/androidMain/jniLibs") { include("**/*.so") },
+        file("libass-android.sha256"),
+    )
+        .withPropertyName("androidNativeLibraries")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // The klib surface check runs on macOS only, for this module alone.
