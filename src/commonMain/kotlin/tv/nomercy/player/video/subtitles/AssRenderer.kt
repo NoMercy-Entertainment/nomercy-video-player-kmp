@@ -19,6 +19,11 @@ package tv.nomercy.player.video.subtitles
 // images with positions; where those are drawn is the surface's business, and
 // keeping that out of here is what lets one contract serve a Compose overlay, a
 // SurfaceView and a CALayer.
+//
+// The method count is libass's own surface: one renderer handle, and every call
+// here configures or reads it. Splitting it to satisfy a counter would hand a
+// surface two objects that must share one native handle and one lock.
+@Suppress("ComplexInterface")
 public interface AssRenderer {
 
     // Fonts must arrive before the track is drawn. libass resolves a font at the

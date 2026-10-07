@@ -91,7 +91,7 @@ public fun AssSubtitleLayer(
 
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
-            renderer.rasterise(drawing, surface, positionMs, { wantedScale }) { drawn ->
+            renderer.rasterise(drawing, surface, AssFeed(positionMs) { wantedScale }) { drawn ->
                 frame = drawn
                 shown += 1
             }
@@ -139,8 +139,7 @@ public fun AssSubtitleLayer(
 private suspend fun AssRenderer.rasterise(
     drawing: AssDrawing,
     surface: IntSize,
-    positionMs: () -> Long,
-    wantedScale: () -> Double,
+    feed: AssFeed,
     onFrame: (ImageBitmap) -> Unit,
 ) {
     var frameClock: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
@@ -164,7 +163,7 @@ private suspend fun AssRenderer.rasterise(
         // The viewer's size, on the same loop and lock as sizing. libass calls a
         // held cue "unchanged" after a setting moves, so the next frame is drawn
         // whatever it answers; that is also what makes a paused video follow.
-        val scale: Double = wantedScale().coerceAtLeast(MIN_FONT_SCALE)
+        val scale: Double = feed.wantedScale().coerceAtLeast(MIN_FONT_SCALE)
         if (scale != appliedScale) {
             appliedScale = scale
             repaint = true
@@ -174,7 +173,7 @@ private suspend fun AssRenderer.rasterise(
         // On the composition thread, not inside the block below: an engine's
         // own position is main-thread-only, so reading it there forced the
         // consumer to pass a cached snapshot and cues landed frames late.
-        val now: Long = positionMs()
+        val now: Long = feed.positionMs()
 
         // Rasterising OFF the composition thread, which is the whole
         // point of this line.
@@ -247,6 +246,14 @@ private suspend fun AssRenderer.rasterise(
     }
 }
 
+// What the loop reads from outside on every pass: where the video is, and how
+// big the viewer wants the text. Read, never captured, so a seek or a size picked
+// in the menu reaches the next frame without restarting the loop.
+private class AssFeed(
+    val positionMs: () -> Long,
+    val wantedScale: () -> Double,
+)
+
 // Null means "keep what is on screen". The renderer answers null for a frame
 // that has not changed, which is most of them — a static line held for four
 // seconds is one render and ninety-five identical ones nobody should pay for.
@@ -272,7 +279,8 @@ internal suspend fun nextPicture(
     // unchanged. Not when there are none: that is also the answer for a frame
     // skipped while a track switch held the renderer, and drawing it would wipe
     // a cue that is still due.
-    if (!frame.changed && !(repaint && frame.images.isNotEmpty())) return null
+    val forced: Boolean = repaint && frame.images.isNotEmpty()
+    if (!frame.changed && !forced) return null
 
     // Banded, because a single ending sequence puts two hundred glyph runs over
     // an eighth of the screen and blending them in one pass was four

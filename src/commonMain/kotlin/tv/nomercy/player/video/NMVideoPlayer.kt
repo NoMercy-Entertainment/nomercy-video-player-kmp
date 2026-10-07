@@ -455,18 +455,7 @@ public open class NMVideoPlayer(
     private suspend fun applyDefaultTracks() {
         val config: PlayerConfig = options()
 
-        config.defaultSubtitleLanguage?.let { wanted ->
-            val tracks: List<SubtitleTrack> = subtitles()
-            matchLanguage(tracks.map { it.language }, wanted)
-                ?.let { index ->
-                    selectingDefaults = true
-                    try {
-                        subtitle(tracks[preferFullVariant(tracks, index)])
-                    } finally {
-                        selectingDefaults = false
-                    }
-                }
-        }
+        config.defaultSubtitleLanguage?.let { wanted -> applyDefaultSubtitle(wanted) }
 
         config.defaultAudioLanguage?.let { wanted ->
             val tracks: List<AudioTrack> = audioTracks()
@@ -474,6 +463,17 @@ public open class NMVideoPlayer(
                 // Not awaited, because the reference does not await it either:
                 // _applyDefaultTracks is a void method calling an async setter.
                 ?.let { index -> playerScope.launch { audioTrack(tracks[index]) } }
+        }
+    }
+
+    private suspend fun applyDefaultSubtitle(wanted: String) {
+        val tracks: List<SubtitleTrack> = subtitles()
+        val index: Int = matchLanguage(tracks.map { it.language }, wanted) ?: return
+        selectingDefaults = true
+        try {
+            subtitle(tracks[preferFullVariant(tracks, index)])
+        } finally {
+            selectingDefaults = false
         }
     }
 
