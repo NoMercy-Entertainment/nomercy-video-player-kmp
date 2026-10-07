@@ -32,7 +32,10 @@ env:
 
 jobs:
   build:
-    runs-on: [self-hosted, Linux, X64, beast-unit]
+    # GitHub-hosted for now, like every job in this file: the self-hosted
+    # runners failed on setup-android, a Windows libmpv download and the tvOS
+    # simulator (#48). Back to self-hosted once those are fixed.
+    runs-on: ubuntu-latest
     # A cap, because the failure mode this job actually had was not a red test —
     # it was Kotlin/Native sitting on a toolchain it did not have until the
     # six-hour default ran out. A job that hangs reads as a job that is working.
@@ -157,7 +160,7 @@ jobs:
   # when driven on a simulator. The Compose half is measured on Linux; this half
   # cannot be.
   apple:
-    runs-on: [self-hosted, macOS, ARM64, xcode]
+    runs-on: macos-15
 
     # Seventy-five, not forty-five.
     #
@@ -279,11 +282,11 @@ jobs:
           # correctly skips and died on its own with "no libmpv.dylib under
           # /opt/homebrew/opt/mpv/lib".
           - name: macos
-            runner: [self-hosted, macOS, ARM64, xcode]
+            runner: macos-15
             install: "yes"
             require: "1"
           - name: windows
-            runner: [self-hosted, Windows, X64]
+            runner: windows-latest
             install: ""
             require: "0"
     runs-on: ${{ matrix.runner }}
