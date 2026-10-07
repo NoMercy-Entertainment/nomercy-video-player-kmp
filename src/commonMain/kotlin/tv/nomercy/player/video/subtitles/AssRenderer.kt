@@ -95,6 +95,18 @@ public interface AssRenderer {
      */
     public fun hasTrack(): Boolean = true
 
+    /**
+     * The viewer's text size, as a multiple of what the track was authored at.
+     *
+     * Applied to dialogue only. libass is asked to leave events that look like
+     * typesetting alone (a positioned sign, a karaoke wipe), because scaling
+     * those moves them off the thing in the picture they were drawn to match.
+     *
+     * Defaults to nothing, so an implementation that has not been taught this
+     * draws the author's size as it always did.
+     */
+    public fun fontScale(scale: Double): Unit = Unit
+
     public fun release()
 }
 

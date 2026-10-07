@@ -33,6 +33,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.isActive
+import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssRenderer
 import tv.nomercy.player.video.subtitles.AssSize
@@ -66,6 +67,8 @@ public fun AssSubtitleLayer(
     positionMs: () -> Long,
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
+    /** The viewer's caption styling. Only the size reaches libass; see [AssRenderer.fontScale]. */
+    subtitleStyle: SubtitleStyle = SubtitleStyle(),
 ) {
     var surface: IntSize by remember { mutableStateOf(IntSize.Zero) }
     var frame: ImageBitmap? by remember { mutableStateOf(null) }
