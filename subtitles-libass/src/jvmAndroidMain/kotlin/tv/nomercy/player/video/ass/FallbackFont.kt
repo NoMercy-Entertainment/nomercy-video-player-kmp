@@ -26,8 +26,11 @@ import java.io.File
  * under the cue's own family still drew nothing. `ass_set_fonts` takes the
  * fallback as a PATH, so the resource is unpacked once and the path handed over.
  *
- * Roboto, under the Apache Licence 2.0, which is the same licence this library
- * ships under.
+ * Roboto (Apache Licence 2.0, the licence this library ships under) merged with
+ * Noto Sans Arabic, Noto Sans Hebrew and Noto Sans Thai (SIL Open Font Licence
+ * 1.1), so that cues in those three scripts get glyphs instead of empty boxes.
+ * Built with the fontTools merger, the three Noto faces scaled to the Roboto
+ * em size; the script is `subtitles-libass/tools/build-fallback-font.py`.
  */
 internal object FallbackFont {
 

@@ -3,9 +3,12 @@
 ## Roboto — shipped
 
 `src/jvmAndroidMain/resources/tv/nomercy/player/video/ass/NoMercyFallback.ttf`
-is Roboto Regular, unmodified, from the Debian `fonts-roboto-unhinted` package.
-Roboto is licensed under the Apache License 2.0, the same licence this library
-ships under.
+is Roboto Regular (Debian `fonts-roboto-unhinted` package) merged with Noto Sans
+Arabic, Noto Sans Hebrew and Noto Sans Thai Regular. Roboto is licensed under
+the Apache License 2.0, the same licence this library ships under. The Noto
+faces are licensed under the SIL Open Font License 1.1. The merge uses the
+fontTools merger, with the Noto faces scaled to 2048 units per em;
+`tools/build-fallback-font.py` is the script.
 
 It is here because libass resolves a cue's font through a system provider, and a
 machine whose provider answers nothing renders every cue as no glyphs at all:
