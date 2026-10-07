@@ -86,6 +86,29 @@ class DefaultTracksAndSegmentsTest {
     }
 
     @Test
+    fun theFullTrackBeatsASignTrackListedFirstInTheSameLanguage() = runTest {
+        val tracks: List<SubtitleTrack> = listOf(
+            SubtitleTrack(id = "en-sign", language = "en", label = "English (Signs)"),
+            SubtitleTrack(id = "en-full", language = "en", label = "English (Full)"),
+        )
+        val subject = player(PlayerConfig(defaultSubtitleLanguage = "en"), tracks)
+
+        assertEquals("en-full", subject.subtitle()?.id)
+    }
+
+    @Test
+    fun aPlainlyLabelledTrackBeatsASignAndAForcedTrackListedFirst() = runTest {
+        val tracks: List<SubtitleTrack> = listOf(
+            SubtitleTrack(id = "en-sign", language = "en", label = "English (Signs)"),
+            SubtitleTrack(id = "en-forced", language = "en", label = "English", forced = true),
+            SubtitleTrack(id = "en-plain", language = "en", label = "English"),
+        )
+        val subject = player(PlayerConfig(defaultSubtitleLanguage = "en"), tracks)
+
+        assertEquals("en-plain", subject.subtitle()?.id)
+    }
+
+    @Test
     fun theTagIsMatchedWithoutRegardToCase() = runTest {
         val subject = player(PlayerConfig(defaultSubtitleLanguage = "EN"), subtitles("de", "en"))
 

@@ -88,6 +88,19 @@ class VideoPreferencesPluginTest {
     }
 
     @Test
+    fun aGoneVariantFallsBackToTheFullTrackBeforeASignTrackListedFirst() = runTest {
+        val rig: Rig = rig()
+        rig.backend.subtitleTracks = listOf(englishSdh)
+        rig.player.subtitle(englishSdh)
+        rig.plugin.awaitWrites()
+
+        rig.backend.subtitleTracks = listOf(englishSign, englishFull)
+        rig.plugin.restore()
+
+        assertEquals("s-eng-full", rig.player.subtitle()?.id, "the restore took the sign track because it came first")
+    }
+
+    @Test
     fun theAudioTrackThatComesBackIsTheSavedLanguageEvenAfterItMoves() = runTest {
         val rig: Rig = rig()
         rig.backend.audio = listOf(audioEnglish, audioDutch)
@@ -497,6 +510,9 @@ class VideoPreferencesPluginTest {
 private val english = SubtitleTrack(id = "s-eng", language = "eng", label = "English")
 private val englishAss = SubtitleTrack(id = "s-eng-ass", language = "eng", label = "English", format = "ass")
 private val dutch = SubtitleTrack(id = "s-nld", language = "nld", label = "Nederlands")
+private val englishSdh = SubtitleTrack(id = "s-eng-sdh", language = "eng", label = "English (SDH)")
+private val englishSign = SubtitleTrack(id = "s-eng-sign", language = "eng", label = "English (Signs)")
+private val englishFull = SubtitleTrack(id = "s-eng-full", language = "eng", label = "English (Full)")
 private val sidecarEnglish = SubtitleTrack(
     id = "sub:eng.full.vtt",
     language = "eng",
