@@ -94,7 +94,10 @@ class VideoPreferencesPluginTest {
         rig.player.subtitle(englishSdh)
         rig.plugin.awaitWrites()
 
+        // Straight at the backend, so the sign track being on screen is not itself
+        // recorded as a choice; the saved SDH would otherwise match what is current.
         rig.backend.subtitleTracks = listOf(englishSign, englishFull)
+        rig.backend.chosenSubtitle = englishSign
         rig.plugin.restore()
 
         assertEquals("s-eng-full", rig.player.subtitle()?.id, "the restore took the sign track because it came first")

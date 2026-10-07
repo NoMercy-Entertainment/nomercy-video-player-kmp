@@ -20,6 +20,7 @@ import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.subtitleKindOf
+import tv.nomercy.player.video.preferFullVariant
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoEvents
 
@@ -334,9 +335,8 @@ public open class VideoPreferencesPlugin(
             it.format == saved.format
     } ?: available.firstOrNull {
         it.language == saved.language && subtitleKindOf(it.label) == saved.kind
-    } ?: available.firstOrNull {
-        it.language == saved.language
-    }
+    } ?: available.firstOrNull { it.language == saved.language }
+        ?.let { first -> available[preferFullVariant(available, available.indexOf(first))] }
 
     // Owed from the cursor move until that kind's list is ANNOUNCED. Per kind,
     // because the two lists do not arrive together, and cleared nowhere else:
