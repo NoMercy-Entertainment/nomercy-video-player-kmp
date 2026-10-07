@@ -8,7 +8,11 @@
 
 package tv.nomercy.player.video.preferences
 
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
@@ -54,7 +58,11 @@ class VideoPreferencesPluginTest {
     // pending, and an interval is always pending. What the test needs from the
     // plugin instead is awaitWrites(), which is a real handle on a real write
     // rather than a guess at how long one takes.
-    private suspend fun rig(opts: VideoPreferencesOptions = VideoPreferencesOptions()): Rig {
+    private suspend fun rig(
+        opts: VideoPreferencesOptions = VideoPreferencesOptions(),
+        storage: InMemoryStorage = InMemoryStorage(),
+        config: PlayerConfig = PlayerConfig(),
+    ): Rig {
         val backend = FakeVideoBackend()
         // Its own store, per rig.
         //
@@ -63,8 +71,8 @@ class VideoPreferencesPluginTest {
         // over each other's keys in one SharedPreferences file, and two failed on
         // a device while passing on the JVM: "the restore followed the old index"
         // was a rig reading what a neighbouring test had stored.
-        val player = NMVideoPlayer(backend = backend, video = backend, storage = InMemoryStorage())
-        player.setup(PlayerConfig())
+        val player = NMVideoPlayer(backend = backend, video = backend, storage = storage)
+        player.setup(config)
         player.queue(listOf(VideoItem(id = "a", url = "https://media.example.test/a.m3u8", title = "A")))
 
         val plugin = VideoPreferencesPlugin(player, opts)
@@ -85,6 +93,72 @@ class VideoPreferencesPluginTest {
         rig.plugin.restore()
 
         assertEquals("nld", rig.player.subtitle()?.language, "the restore followed the old index, not the language")
+    }
+
+    @Test
+    fun aGoneVariantFallsBackToTheFullTrackBeforeASignTrackListedFirst() = runTest {
+        val rig: Rig = rig()
+        rig.backend.subtitleTracks = listOf(englishSdh)
+        rig.player.subtitle(englishSdh)
+        rig.plugin.awaitWrites()
+
+        // Straight at the backend, so the sign track being on screen is not itself
+        // recorded as a choice; the saved SDH would otherwise match what is current.
+        rig.backend.subtitleTracks = listOf(englishSign, englishFull)
+        rig.backend.chosenSubtitle = englishSign
+        rig.plugin.restore()
+
+        assertEquals("s-eng-full", rig.player.subtitle()?.id, "the restore took the sign track because it came first")
+    }
+
+    // The store a default pick poisoned before picks were marked: Signs, with no
+    // marker that a viewer chose it. Every episode then restored the sign track.
+    @Test
+    fun aSavedSignKindNoViewerChoseComesBackAsTheFullTrack() = runTest {
+        val storage = InMemoryStorage()
+        val rig: Rig = rig(storage = storage)
+        // The exact string the television held, under the plugin's own key.
+        storage.set(SUBTITLE_KEY, """{"language":"eng","kind":"Signs","format":"ass"}""")
+
+        rig.backend.subtitleTracks = listOf(englishFull, dutch, englishSign)
+        rig.backend.chosenSubtitle = dutch
+        rig.plugin.restore()
+
+        assertEquals("s-eng-full", rig.player.subtitle()?.id, "a Signs kind nobody chose was restored")
+    }
+
+    // The other half: demoting the legacy value must not take a real choice away.
+    @Test
+    fun aSignTrackTheViewerTappedComesBackAsTheSignTrack() = runTest {
+        val rig: Rig = rig()
+        rig.backend.subtitleTracks = listOf(englishFull, dutch, englishSign)
+        rig.player.subtitle(englishSign)
+        rig.plugin.awaitWrites()
+
+        rig.backend.chosenSubtitle = dutch
+        rig.plugin.restore()
+
+        assertEquals("s-eng-sign", rig.player.subtitle()?.id, "the viewer's own sign pick was demoted")
+    }
+
+    @Test
+    fun aDefaultPickFromTheHostConfigIsNotWrittenAsTheViewersChoice() = runTest {
+        val storage = InMemoryStorage()
+        val rig: Rig = rig(storage = storage, config = PlayerConfig(defaultSubtitleLanguage = "eng"))
+        rig.backend.subtitleTracks = listOf(englishSign, englishFull)
+
+        val picked = CompletableDeferred<Unit>()
+        rig.player.on(CoreEvents.Subtitle) { picked.complete(Unit) }
+        rig.player.emit(CoreEvents.MediaReady, Unit)
+        withContext(Dispatchers.Default) {
+            withTimeout(PICK_TIMEOUT_MS) { picked.await() }
+            // The write is launched by the plugin's own handler on the player's
+            // scope, so it is given a moment to land before the store is read.
+            kotlinx.coroutines.delay(SETTLE_MS)
+        }
+        rig.plugin.awaitWrites()
+
+        assertNull(rig.plugin.savedSubtitle(), "the default pick was saved as if the viewer chose it")
     }
 
     @Test
@@ -497,6 +571,9 @@ class VideoPreferencesPluginTest {
 private val english = SubtitleTrack(id = "s-eng", language = "eng", label = "English")
 private val englishAss = SubtitleTrack(id = "s-eng-ass", language = "eng", label = "English", format = "ass")
 private val dutch = SubtitleTrack(id = "s-nld", language = "nld", label = "Nederlands")
+private val englishSdh = SubtitleTrack(id = "s-eng-sdh", language = "eng", label = "English (SDH)")
+private val englishSign = SubtitleTrack(id = "s-eng-sign", language = "eng", label = "English (Signs)")
+private val englishFull = SubtitleTrack(id = "s-eng-full", language = "eng", label = "English (Full)")
 private val sidecarEnglish = SubtitleTrack(
     id = "sub:eng.full.vtt",
     language = "eng",
@@ -524,6 +601,12 @@ private val audioDutch = AudioTrack(id = "a-nld", language = "nld", label = "Ned
 private val audioJapanese = AudioTrack(id = "a-jpn", language = "jpn", label = "日本語")
 
 private const val HD_HEIGHT = 720
+private const val PICK_TIMEOUT_MS = 5_000L
+private const val SETTLE_MS = 200L
+
+// The plugin's storage is namespaced by its id; this is the subtitle key in the
+// player's root store, the same one the device preferences file holds.
+private const val SUBTITLE_KEY = "nmplayer-video-preferences-subtitle"
 
 private val fullHd = QualityLevel(height = 1080, bitrate = 6_000_000, codec = "avc1")
 private val hd = QualityLevel(height = HD_HEIGHT, bitrate = 2_500_000, codec = "avc1")
