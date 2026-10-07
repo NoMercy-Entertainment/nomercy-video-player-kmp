@@ -37,6 +37,12 @@ internal interface LibAss : Library {
     fun ass_set_frame_size(renderer: Pointer, w: Int, h: Int)
     fun ass_set_storage_size(renderer: Pointer, w: Int, h: Int)
 
+    fun ass_set_font_scale(renderer: Pointer, fontScale: Double)
+
+    // bits is an ASS_OverrideBits mask. With SELECTIVE_FONT_SCALE set, the font
+    // scale applies to dialogue only and a positioned sign keeps its size.
+    fun ass_set_selective_style_override_enabled(renderer: Pointer, bits: Int)
+
     // Without this call libass has no font provider and renders nothing. It is
     // not optional and it is easy to miss, because every other call succeeds.
     fun ass_set_fonts(
@@ -104,3 +110,6 @@ internal open class AssImageStruct(pointer: Pointer? = null) : Structure(pointer
 // AUTODETECT, which is CoreText on macOS and fontconfig on Linux. Both find the
 // system's fonts, which is what a subtitle naming a common family needs.
 internal const val FONT_PROVIDER_AUTODETECT: Int = 1
+
+// ASS_OVERRIDE_BIT_SELECTIVE_FONT_SCALE: ass_set_font_scale on dialogue only.
+internal const val OVERRIDE_SELECTIVE_FONT_SCALE: Int = 1 shl 1

@@ -54,6 +54,7 @@ internal class NativeAssRenderer(
     private var storageWidth: Int = 0
     private var storageHeight: Int = 0
     private var hostStorage: Boolean = false
+    private var fontScale: Double = 1.0
     private var released: Boolean = false
 
     override fun addFont(name: String, data: ByteArray): Unit = lock.withLock {
@@ -124,6 +125,12 @@ internal class NativeAssRenderer(
             .take(HEADER_LINES)
             .firstOrNull { it.trimStart().startsWith(key, ignoreCase = true) }
             ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
+
+    override fun fontScale(scale: Double): Unit = lock.withLock {
+        if (released) return
+        fontScale = scale
+        renderer?.let { applyFontScale(it) }
+    }
 
     override fun frameSize(width: Int, height: Int): Unit = lock.withLock {
         if (released) return
@@ -234,6 +241,13 @@ internal class NativeAssRenderer(
         lib.ass_set_frame_size(target, width, height)
     }
 
+    // The renderer is rebuilt when a font arrives, so the scale is kept here and
+    // applied to every new one rather than set once on the first.
+    private fun applyFontScale(target: Pointer) {
+        lib.ass_set_selective_style_override_enabled(target, OVERRIDE_SELECTIVE_FONT_SCALE)
+        lib.ass_set_font_scale(target, fontScale)
+    }
+
     private fun activeRenderer(): Pointer? {
         renderer?.let { return it }
 
@@ -256,6 +270,7 @@ internal class NativeAssRenderer(
         // has to track the megabytes or the count evicts first and every
         // eviction sends FreeType back over a glyph it already had.
         lib.ass_set_cache_limits(created, glyphMax, bitmapCacheMegabytes)
+        applyFontScale(created)
         applySize(created)
         renderer = created
         disposeTrack()

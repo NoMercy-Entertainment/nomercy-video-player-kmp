@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -84,9 +85,13 @@ public fun AssSubtitleLayer(
     // libass spent rasterising the glyphs that go on it.
     val drawing: AssDrawing = remember { AssDrawing(AssFrameCompositor(), AssPictureSurface()) }
 
+    // Read by the loop on every pass rather than keyed on, so a size picked in
+    // the menu reaches libass without tearing the loop down.
+    val wantedScale: Double by rememberUpdatedState(subtitleStyle.fontSize / PERCENT)
+
     LaunchedEffect(renderer, surface) {
         if (surface.width > 0 && surface.height > 0) {
-            renderer.rasterise(drawing, surface, positionMs) { drawn ->
+            renderer.rasterise(drawing, surface, positionMs, { wantedScale }) { drawn ->
                 frame = drawn
                 shown += 1
             }
@@ -135,10 +140,13 @@ private suspend fun AssRenderer.rasterise(
     drawing: AssDrawing,
     surface: IntSize,
     positionMs: () -> Long,
+    wantedScale: () -> Double,
     onFrame: (ImageBitmap) -> Unit,
 ) {
     var frameClock: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
     var target: IntSize = IntSize.Zero
+    var appliedScale: Double? = null
+    var repaint = false
 
     while (coroutineContext.isActive) {
         // Re-asked rather than set once, because the size to draw at is
@@ -151,6 +159,16 @@ private suspend fun AssRenderer.rasterise(
             target = next
             // Sizing is native work too, and it happens on every resize.
             withContext(Dispatchers.Default) { drawing.turn.withLock { frameSize(target.width, target.height) } }
+        }
+
+        // The viewer's size, on the same loop and lock as sizing. libass calls a
+        // held cue "unchanged" after a setting moves, so the next frame is drawn
+        // whatever it answers; that is also what makes a paused video follow.
+        val scale: Double = wantedScale().coerceAtLeast(MIN_FONT_SCALE)
+        if (scale != appliedScale) {
+            appliedScale = scale
+            repaint = true
+            withContext(Dispatchers.Default) { drawing.turn.withLock { fontScale(scale) } }
         }
 
         // On the composition thread, not inside the block below: an engine's
@@ -174,8 +192,9 @@ private suspend fun AssRenderer.rasterise(
         // Only the finished ImageBitmap crosses back, and the state
         // write lands on the main thread where composition expects it.
         val drawn: ImageBitmap? = withContext(Dispatchers.Default) {
-            drawing.turn.withLock { nextPicture(this@rasterise, drawing, now, target) }
+            drawing.turn.withLock { nextPicture(this@rasterise, drawing, now, target, repaint) }
         }
+        if (drawn != null) repaint = false
 
         // Only a NEW picture is published. The renderer answers null for a
         // frame that has not changed, and pushing that through would clear
@@ -236,6 +255,7 @@ internal suspend fun nextPicture(
     drawing: AssDrawing,
     timeMs: Long,
     target: IntSize,
+    repaint: Boolean = false,
 ): ImageBitmap? {
     // Null from render() means "nothing changed", and the caller keeps what it
     // has — right for a still cue, wrong for no cue at all. One value carried
@@ -248,7 +268,11 @@ internal suspend fun nextPicture(
     // drawing nothing.
     val frame: AssFrame = renderer.render(timeMs)
         ?: return if (renderer.hasTrack()) null else blank(drawing, target)
-    if (!frame.changed) return null
+    // [repaint] draws the images libass handed back even though it called them
+    // unchanged. Not when there are none: that is also the answer for a frame
+    // skipped while a track switch held the renderer, and drawing it would wipe
+    // a cue that is still due.
+    if (!frame.changed && !(repaint && frame.images.isNotEmpty())) return null
 
     // Banded, because a single ending sequence puts two hundred glyph runs over
     // an eighth of the screen and blending them in one pass was four
@@ -390,3 +414,9 @@ internal const val ASS_SUBTITLE_TAG = "nm-ass-subtitles"
 // costs nothing, because the renderer answers null for a frame that has not
 // changed.
 private const val FRAME_FLOOR_MS = 16L
+
+// The style stores the size as a percentage, 100 being the track's own.
+private const val PERCENT = 100.0
+
+// A zero or negative scale would ask libass for text that cannot be drawn.
+private const val MIN_FONT_SCALE = 0.1
