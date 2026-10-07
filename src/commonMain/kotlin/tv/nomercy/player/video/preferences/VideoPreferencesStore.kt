@@ -51,7 +51,13 @@ internal class VideoPreferencesStore(private val storage: Storage) {
         storage.setJSON(MUTED, muted, Boolean.serializer())
     }
 
-    suspend fun subtitle(): SavedSubtitle? = storage.getJSON(SUBTITLE, SavedSubtitle.serializer())
+    // A row written before picks carried a marker cannot say who chose it. A Signs
+    // or Forced kind in such a row is read as no kind at all, so the restore lands
+    // on the full track of the language. Every reader sees this one answer.
+    suspend fun subtitle(): SavedSubtitle? =
+        storage.getJSON(SUBTITLE, SavedSubtitle.serializer())?.let { saved ->
+            if (saved.explicit || saved.kind !in UNCHOSEN_KINDS) saved else saved.copy(kind = null, format = null)
+        }
 
     // Language alone is not the choice. A viewer who picked English SDH and got
     // plain English back was handed a different track under the same name, so
@@ -139,10 +145,19 @@ private const val QUALITY = "quality"
 private const val MIN_VOLUME = 0
 private const val MAX_VOLUME = 100
 
-/** A caption choice: the language, the variant it was, and the file's format. */
+// The kinds a player picks by itself when it has nothing else to go on.
+private val UNCHOSEN_KINDS: Set<String?> = setOf("Signs", "Forced")
+
+/**
+ * A caption choice: the language, the variant it was, and the file's format.
+ *
+ * [explicit] is true when the viewer picked the track. A row without it (an older
+ * build, or a default the player picked) restores as the full track.
+ */
 @Serializable
 public data class SavedSubtitle(
     val language: String,
     val kind: String? = null,
     val format: String? = null,
+    val explicit: Boolean = false,
 )

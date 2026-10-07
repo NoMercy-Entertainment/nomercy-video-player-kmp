@@ -447,13 +447,25 @@ public open class NMVideoPlayer(
         )
     }
 
+    // True while the host's default caption language is being applied. The pick
+    // goes through the same setter as a viewer's tap, so a listener that remembers
+    // taps (the preferences plugin) reads this to tell the two apart.
+    internal var selectingDefaults: Boolean = false
+
     private suspend fun applyDefaultTracks() {
         val config: PlayerConfig = options()
 
         config.defaultSubtitleLanguage?.let { wanted ->
             val tracks: List<SubtitleTrack> = subtitles()
             matchLanguage(tracks.map { it.language }, wanted)
-                ?.let { index -> subtitle(tracks[preferFullVariant(tracks, index)]) }
+                ?.let { index ->
+                    selectingDefaults = true
+                    try {
+                        subtitle(tracks[preferFullVariant(tracks, index)])
+                    } finally {
+                        selectingDefaults = false
+                    }
+                }
         }
 
         config.defaultAudioLanguage?.let { wanted ->
