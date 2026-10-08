@@ -16,6 +16,7 @@ import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitlePayload
 import tv.nomercy.player.core.events.SubtitlesPayload
 import tv.nomercy.player.core.player.PlayerConfig
+import tv.nomercy.player.core.ports.FetchResponse
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssRenderer
@@ -45,7 +46,10 @@ class SelectionOutlivesAnInFlightTeardownTest {
 
     @Test
     fun aReselectionDuringTheTeardownIsTheOneThatStands() = runTest {
-        val player = ComposedPlayer(backend = null).also { it.setup(PlayerConfig()) }
+        // A file that exists: a load that cannot fetch now ends with no url, so
+        // the url this test asserts on only survives a track that arrived.
+        val player = ComposedPlayer(backend = null, fetcher = { _, _ -> FetchResponse(status = 200, body = SCRIPT) })
+            .also { it.setup(PlayerConfig()) }
 
         // Fires when the plugin tells the renderer to draw nothing, which is the
         // middle of turning captions off.
@@ -103,6 +107,7 @@ class SelectionOutlivesAnInFlightTeardownTest {
     }
 
     private companion object {
+        const val SCRIPT = "[Script Info]\n[Events]\nDialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,line"
         const val ASS_URL = "https://media.example.test/show/1/signs.ass"
 
         val TRACKS: List<Any?> = listOf(
