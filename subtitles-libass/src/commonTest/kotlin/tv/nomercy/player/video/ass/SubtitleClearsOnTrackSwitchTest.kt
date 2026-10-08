@@ -13,6 +13,7 @@ import tv.nomercy.player.core.controllers.ComposedPlayer
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitlePayload
 import tv.nomercy.player.core.player.PlayerConfig
+import tv.nomercy.player.core.ports.FetchResponse
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -79,7 +80,8 @@ class SubtitleClearsOnTrackSwitchTest {
     }
 
     private suspend fun installed(renderer: RecordingRenderer): SubtitlePlugin {
-        val player = ComposedPlayer(backend = null)
+        // A file that exists: a load that cannot fetch ends with no url.
+        val player = ComposedPlayer(backend = null, fetcher = { _, _ -> FetchResponse(status = 200, body = SCRIPT) })
         player.setup(PlayerConfig())
         val plugin = SubtitlePlugin(renderer)
         player.addPlugin(plugin)
@@ -99,6 +101,7 @@ class SubtitleClearsOnTrackSwitchTest {
     }
 
     private companion object {
+        const val SCRIPT = "[Script Info]\n[Events]\nDialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,line"
         const val ASS = "https://media.example.test/show/1/signs.ass"
         const val OTHER_ASS = "https://media.example.test/show/1/full.ass"
     }
