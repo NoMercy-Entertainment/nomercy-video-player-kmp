@@ -16,6 +16,7 @@ import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitlePayload
 import tv.nomercy.player.core.events.SubtitlesPayload
 import tv.nomercy.player.core.player.PlayerConfig
+import tv.nomercy.player.core.ports.FetchResponse
 import tv.nomercy.player.core.ports.SubtitleTrack
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -84,7 +85,9 @@ class SubtitleFollowsTheSelectionTest {
     }
 
     private suspend fun play(): ComposedPlayer =
-        ComposedPlayer(backend = null).also { it.setup(PlayerConfig()) }
+        // A file that exists: a load that cannot fetch ends with no url.
+        ComposedPlayer(backend = null, fetcher = { _, _ -> FetchResponse(status = 200, body = SCRIPT) })
+            .also { it.setup(PlayerConfig()) }
 
     private fun announceTracks(player: ComposedPlayer) {
         player.emit(CoreEvents.Subtitles, SubtitlesPayload(tracks = TRACKS))
@@ -95,6 +98,7 @@ class SubtitleFollowsTheSelectionTest {
     }
 
     private companion object {
+        const val SCRIPT = "[Script Info]\n[Events]\nDialogue: 0,0:00:00.00,0:00:05.00,Default,,0,0,0,,line"
         const val ASS_URL = "https://media.example.test/show/1/signs.ass"
 
         val TRACKS: List<Any?> = listOf(

@@ -101,6 +101,13 @@ internal class NativeAssRenderer(
             storageHeight = primed?.second ?: 0
         }
         disposeTrack()
+        // Parsed now, on the caller's thread, and not on the first frame. The
+        // parse used to be lazy inside render(): a script that passed the
+        // structural gate and was then refused by libass left hasTrack() true
+        // with nothing to draw, so the layer read the null from render() as
+        // "nothing changed" and kept the previous track's last cue on screen,
+        // re-trying the parse on every frame. A refusal is a track of none.
+        if (activeTrack() == null) return
         renderer?.let { applySize(it) }
     }
 
@@ -273,18 +280,25 @@ internal class NativeAssRenderer(
         applyFontScale(created)
         applySize(created)
         renderer = created
-        disposeTrack()
         return created
     }
 
+    // The parsed track, parsing it if a font arrival threw the last parse away.
+    //
+    // A refusal drops the content as well, so hasTrack() says false and the
+    // layer blanks instead of freezing the last cue.
     private fun activeTrack(): Pointer? {
         track?.let { return it }
 
         val content: ByteArray = trackContent?.encodeToByteArray() ?: return null
         // Backstop for whatever looksLikeAssScript doesn't catch — JNA exceptions are catchable here.
-        val loaded: Pointer = runCatching {
+        val loaded: Pointer? = runCatching {
             lib.ass_read_memory(library, content, content.size, null)
-        }.getOrNull() ?: return null
+        }.getOrNull()
+        if (loaded == null) {
+            trackContent = null
+            return null
+        }
         track = loaded
         return loaded
     }
