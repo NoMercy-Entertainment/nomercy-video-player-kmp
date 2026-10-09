@@ -428,6 +428,7 @@ abstract interface tv.nomercy.player.video.subtitles/AssRenderer { // tv.nomercy
     abstract fun render(kotlin/Long): tv.nomercy.player.video.subtitles/AssFrame? // tv.nomercy.player.video.subtitles/AssRenderer.render|render(kotlin.Long){}[0]
     abstract fun storageSize(): tv.nomercy.player.video.subtitles/AssSize? // tv.nomercy.player.video.subtitles/AssRenderer.storageSize|storageSize(){}[0]
     abstract fun storageSize(kotlin/Int, kotlin/Int) // tv.nomercy.player.video.subtitles/AssRenderer.storageSize|storageSize(kotlin.Int;kotlin.Int){}[0]
+    open fun fontScale(kotlin/Double) // tv.nomercy.player.video.subtitles/AssRenderer.fontScale|fontScale(kotlin.Double){}[0]
     open fun hasTrack(): kotlin/Boolean // tv.nomercy.player.video.subtitles/AssRenderer.hasTrack|hasTrack(){}[0]
 }
 
@@ -1232,8 +1233,10 @@ final class tv.nomercy.player.video.preferences/SavedQuality { // tv.nomercy.pla
 }
 
 final class tv.nomercy.player.video.preferences/SavedSubtitle { // tv.nomercy.player.video.preferences/SavedSubtitle|null[0]
-    constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/String? = ...) // tv.nomercy.player.video.preferences/SavedSubtitle.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String?){}[0]
+    constructor <init>(kotlin/String, kotlin/String? = ..., kotlin/String? = ..., kotlin/Boolean = ...) // tv.nomercy.player.video.preferences/SavedSubtitle.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String?;kotlin.Boolean){}[0]
 
+    final val explicit // tv.nomercy.player.video.preferences/SavedSubtitle.explicit|{}explicit[0]
+        final fun <get-explicit>(): kotlin/Boolean // tv.nomercy.player.video.preferences/SavedSubtitle.explicit.<get-explicit>|<get-explicit>(){}[0]
     final val format // tv.nomercy.player.video.preferences/SavedSubtitle.format|{}format[0]
         final fun <get-format>(): kotlin/String? // tv.nomercy.player.video.preferences/SavedSubtitle.format.<get-format>|<get-format>(){}[0]
     final val kind // tv.nomercy.player.video.preferences/SavedSubtitle.kind|{}kind[0]
@@ -1244,7 +1247,8 @@ final class tv.nomercy.player.video.preferences/SavedSubtitle { // tv.nomercy.pl
     final fun component1(): kotlin/String // tv.nomercy.player.video.preferences/SavedSubtitle.component1|component1(){}[0]
     final fun component2(): kotlin/String? // tv.nomercy.player.video.preferences/SavedSubtitle.component2|component2(){}[0]
     final fun component3(): kotlin/String? // tv.nomercy.player.video.preferences/SavedSubtitle.component3|component3(){}[0]
-    final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/String? = ...): tv.nomercy.player.video.preferences/SavedSubtitle // tv.nomercy.player.video.preferences/SavedSubtitle.copy|copy(kotlin.String;kotlin.String?;kotlin.String?){}[0]
+    final fun component4(): kotlin/Boolean // tv.nomercy.player.video.preferences/SavedSubtitle.component4|component4(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/Boolean = ...): tv.nomercy.player.video.preferences/SavedSubtitle // tv.nomercy.player.video.preferences/SavedSubtitle.copy|copy(kotlin.String;kotlin.String?;kotlin.String?;kotlin.Boolean){}[0]
     final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.preferences/SavedSubtitle.equals|equals(kotlin.Any?){}[0]
     final fun hashCode(): kotlin/Int // tv.nomercy.player.video.preferences/SavedSubtitle.hashCode|hashCode(){}[0]
     final fun toString(): kotlin/String // tv.nomercy.player.video.preferences/SavedSubtitle.toString|toString(){}[0]

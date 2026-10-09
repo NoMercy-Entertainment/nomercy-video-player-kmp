@@ -6,8 +6,12 @@
 //  SPDX-License-Identifier: Apache-2.0
 // -----------------------------------------------------------------------------
 
+@file:OptIn(ExperimentalAtomicApi::class)
+
 package tv.nomercy.player.video.ass
 
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import tv.nomercy.player.video.subtitles.AssRenderer
 import tv.nomercy.player.core.plugin.Plugin
 import tv.nomercy.player.core.plugin.PluginManifest
@@ -106,6 +110,9 @@ public class SubtitlePlugin(
      */
     public suspend fun clear() {
         currentSubtitleUrl = null
+        // A load still downloading must not install over the captions the viewer
+        // just turned off.
+        issue()
         clearTrack()
     }
 
@@ -122,14 +129,31 @@ public class SubtitlePlugin(
     // nothing -- the same defect this class was written for, arriving through
     // the one door it did not cover.
     private suspend fun clearTrack() {
-        nativeLock.withLock {
-            renderer.clearFonts()
-            // An empty track is how this renderer is told to draw nothing;
-            // there is no separate reset on the contract.
-            renderer.loadTrack("")
-        }
-        loadedFonts = emptyList()
+        nativeLock.withLock { blankLocked() }
     }
+
+    // Draw nothing and remember nothing. Caller holds [nativeLock].
+    private fun blankLocked() {
+        renderer.clearFonts()
+        // An empty track is how this renderer is told to draw nothing;
+        // there is no separate reset on the contract.
+        renderer.loadTrack("")
+        loadedFonts = emptyList()
+        // Also forgotten here: a font arriving late reloads [currentTrack], and
+        // reloading one that was taken off puts it back on screen.
+        currentTrack = null
+        installedUrl = null
+    }
+
+    // Every request for a track, or for none, takes a number when it is made.
+    // Only the newest number may touch the renderer: a slow download that
+    // finishes after a later selection has nothing current to say, and without
+    // this it installed itself over the track the viewer had moved on to.
+    private val requests = AtomicInt(0)
+
+    private fun issue(): Int = requests.addAndFetch(1)
+
+    private fun isCurrent(ticket: Int): Boolean = requests.load() == ticket
 
     // The track does not survive the item that carried it.
     //
@@ -222,6 +246,10 @@ public class SubtitlePlugin(
         if (target == currentSubtitleUrl) return
 
         currentSubtitleUrl = target
+        // Numbered now, when the choice is made, not when its turn comes: a
+        // request queued behind a slow download is already out of date the
+        // moment a newer one is made.
+        val ticket: Int = issue()
 
         // Queued behind the previous reconcile, not racing it and not cancelling
         // it.
@@ -243,7 +271,7 @@ public class SubtitlePlugin(
                 // The last word wins. An older reconcile that waited its turn
                 // must not undo the selection made while it waited.
                 if (currentSubtitleUrl != target) return@withLock
-                if (target == null) clearTrack() else loadTrack(target, manifestUrl)
+                if (target == null) clearTrack() else loadTrack(target, manifestUrl, ticket)
             }
         }
     }
@@ -285,26 +313,54 @@ public class SubtitlePlugin(
 
     private var currentSubtitleUrl: String? = null
 
+    // The url whose body the renderer actually holds, as opposed to the one
+    // that is wanted. Null whenever the renderer was told to draw nothing.
+    // Read and written under [nativeLock].
+    private var installedUrl: String? = null
+
     public suspend fun load(subtitleUrl: String, fontManifestUrl: String?): Boolean {
         currentSubtitleUrl = subtitleUrl
-        return loadTrack(subtitleUrl, fontManifestUrl)
+        return loadTrack(subtitleUrl, fontManifestUrl, issue())
     }
 
     // The load without the bookkeeping. Same reason as [clearTrack]: what is
     // wanted is decided before the work starts, and a coroutine that has been
     // waiting has nothing current to say about it.
-    private suspend fun loadTrack(subtitleUrl: String, fontManifestUrl: String?): Boolean {
+    //
+    // Mirrors the web plugin: the old picture goes before the new body is
+    // fetched, and a load that fails leaves a blank screen, no loaded url and a
+    // warning rather than the previous track still drawing under the new name.
+    // [ticket] is what the web does not have: only the newest request may
+    // install.
+    private suspend fun loadTrack(subtitleUrl: String, fontManifestUrl: String?, ticket: Int): Boolean {
+        if (!isCurrent(ticket)) return false
+
         // Remembered, so a reselection inside the same film reloads with the
         // faces the consumer named rather than without them.
         manifestUrl = fontManifestUrl
+
+        // Before the fetch, and in a critical section of its own so a frame can
+        // run between this and the install and draw the blank. The track that is
+        // showing is another file's: leaving it up for as long as the download
+        // takes is how the Full track's dialogue sat under a Signs tick.
+        //
+        // Only when another file is installed. With nothing in the renderer
+        // there is nothing to take down, and the same file again is a reload
+        // that should not flicker.
+        nativeLock.withLock {
+            val showing: String? = installedUrl
+            if (isCurrent(ticket) && showing != null && showing != subtitleUrl) blankLocked()
+        }
+
         val subtitle: String = get(subtitleUrl)?.body ?: run {
             // A false with nothing said. The caller can fall back, and everyone
             // else — a consumer's error surface, a support ticket — had no way
             // to learn the track never arrived.
-            report(
+            abandon(
+                ticket,
                 code = LOAD_FAILED,
                 message = "no subtitle at $subtitleUrl; nothing was loaded",
-                context = mapOf("url" to subtitleUrl),
+                url = subtitleUrl,
             )
             return false
         }
@@ -320,6 +376,10 @@ public class SubtitlePlugin(
         // landing between them is a track loaded against a font set that was
         // still changing.
         nativeLock.withLock {
+            // A newer request was made while this one downloaded. It owns the
+            // renderer now.
+            if (!isCurrent(ticket)) return false
+
             // The previous item's fonts go first. They belong to the item they
             // came with, and libass resolves against whatever it holds — so an
             // episode whose manifest is missing a face would quietly draw in the
@@ -354,6 +414,8 @@ public class SubtitlePlugin(
                 // libass refusing a track is a rendering failure, not a missing
                 // file, and it used to unwind out of here as whatever the
                 // native layer threw.
+                blankLocked()
+                currentSubtitleUrl = null
                 report(
                     code = RENDER_ERROR,
                     message = "libass could not load the track from $subtitleUrl",
@@ -362,9 +424,37 @@ public class SubtitlePlugin(
                 )
                 return false
             }
+
+            // Refused by the parser: the renderer holds no track. That is a
+            // failure to load, not a track that happens to be empty.
+            if (!renderer.hasTrack()) {
+                blankLocked()
+                currentSubtitleUrl = null
+                report(
+                    code = RENDER_ERROR,
+                    message = "libass refused the track from $subtitleUrl; nothing is drawn",
+                    context = mapOf("url" to subtitleUrl),
+                )
+                return false
+            }
             currentTrack = subtitle
+            installedUrl = subtitleUrl
         }
         return true
+    }
+
+    // A load that did not arrive: blank, forget the url, say so. Only for the
+    // newest request; an out-of-date one failing has no bearing on what is
+    // wanted now.
+    private suspend fun abandon(ticket: Int, code: String, message: String, url: String) {
+        nativeLock.withLock {
+            if (!isCurrent(ticket)) return
+            // Nothing installed means nothing to take down: the renderer is
+            // already blank and a native round trip would say so again.
+            if (installedUrl != null) blankLocked()
+            currentSubtitleUrl = null
+        }
+        report(code = code, message = message, context = mapOf("url" to url))
     }
 
     // Every font in the manifest, registered under the name it calls itself.

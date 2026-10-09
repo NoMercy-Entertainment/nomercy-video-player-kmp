@@ -19,6 +19,11 @@ package tv.nomercy.player.video.subtitles
 // images with positions; where those are drawn is the surface's business, and
 // keeping that out of here is what lets one contract serve a Compose overlay, a
 // SurfaceView and a CALayer.
+//
+// The method count is libass's own surface: one renderer handle, and every call
+// here configures or reads it. Splitting it to satisfy a counter would hand a
+// surface two objects that must share one native handle and one lock.
+@Suppress("ComplexInterface")
 public interface AssRenderer {
 
     // Fonts must arrive before the track is drawn. libass resolves a font at the
@@ -94,6 +99,18 @@ public interface AssRenderer {
      * to blank.
      */
     public fun hasTrack(): Boolean = true
+
+    /**
+     * The viewer's text size, as a multiple of what the track was authored at.
+     *
+     * Applied to dialogue only. libass is asked to leave events that look like
+     * typesetting alone (a positioned sign, a karaoke wipe), because scaling
+     * those moves them off the thing in the picture they were drawn to match.
+     *
+     * Defaults to nothing, so an implementation that has not been taught this
+     * draws the author's size as it always did.
+     */
+    public fun fontScale(scale: Double): Unit = Unit
 
     public fun release()
 }

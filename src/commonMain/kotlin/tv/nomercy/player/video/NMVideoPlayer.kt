@@ -29,6 +29,7 @@ import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.Fetcher
 import tv.nomercy.player.core.ports.SubtitleTrack
+import tv.nomercy.player.core.ports.subtitleKindOf
 import tv.nomercy.player.core.ports.MediaBackend
 import tv.nomercy.player.core.events.SubtitlePayload
 import tv.nomercy.player.core.media.DynamicRange
@@ -56,6 +57,22 @@ internal fun matchLanguage(candidates: List<String?>, target: String): Int? {
         if (prefixMatch == null && sharesPrefix(language, wanted)) prefixMatch = index
     }
     return prefixMatch
+}
+
+// The track to take once [matched] has settled the language.
+//
+// The server lists a signs or forced track ahead of the full one often enough
+// that "first track in the language" shows only the signs.
+internal fun preferFullVariant(tracks: List<SubtitleTrack>, matched: Int): Int {
+    val language: String = tracks[matched].language
+    val sameLanguage: List<IndexedValue<SubtitleTrack>> =
+        tracks.withIndex().filter { it.value.language == language }
+
+    return sameLanguage.firstOrNull { subtitleKindOf(it.value.label) == "Full" }?.index
+        ?: sameLanguage.firstOrNull {
+            !it.value.forced && subtitleKindOf(it.value.label).let { kind -> kind != "Signs" && kind != "Forced" }
+        }?.index
+        ?: matched
 }
 
 // Either direction, because a viewer's "en" should find "en-US" and a viewer's
@@ -430,14 +447,15 @@ public open class NMVideoPlayer(
         )
     }
 
+    // True while the host's default caption language is being applied. The pick
+    // goes through the same setter as a viewer's tap, so a listener that remembers
+    // taps (the preferences plugin) reads this to tell the two apart.
+    internal var selectingDefaults: Boolean = false
+
     private suspend fun applyDefaultTracks() {
         val config: PlayerConfig = options()
 
-        config.defaultSubtitleLanguage?.let { wanted ->
-            val tracks: List<SubtitleTrack> = subtitles()
-            matchLanguage(tracks.map { it.language }, wanted)
-                ?.let { index -> subtitle(tracks[index]) }
-        }
+        config.defaultSubtitleLanguage?.let { wanted -> applyDefaultSubtitle(wanted) }
 
         config.defaultAudioLanguage?.let { wanted ->
             val tracks: List<AudioTrack> = audioTracks()
@@ -445,6 +463,17 @@ public open class NMVideoPlayer(
                 // Not awaited, because the reference does not await it either:
                 // _applyDefaultTracks is a void method calling an async setter.
                 ?.let { index -> playerScope.launch { audioTrack(tracks[index]) } }
+        }
+    }
+
+    private suspend fun applyDefaultSubtitle(wanted: String) {
+        val tracks: List<SubtitleTrack> = subtitles()
+        val index: Int = matchLanguage(tracks.map { it.language }, wanted) ?: return
+        selectingDefaults = true
+        try {
+            subtitle(tracks[preferFullVariant(tracks, index)])
+        } finally {
+            selectingDefaults = false
         }
     }
 
