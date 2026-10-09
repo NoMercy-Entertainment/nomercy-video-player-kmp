@@ -106,22 +106,21 @@ public open class VideoPreferencesPlugin(
         // asking the player which track is selected cannot disagree with the
         // player. Resolving the index here would be a second answer to a
         // question that already has one.
-        // Saved on every selection, with no window and no guard.
+        // Saved on every selection, with no window and no guard, except two.
         //
         // `subtitle` and `audioTrack` are emitted by the SETTER and by nothing
         // else — an engine settling on the file's own default does not fire
-        // them. A guard against "the engine's default arriving like a tap" was
-        // therefore protecting against something that cannot happen, and what it
-        // actually dropped was the viewer's own pick: a language saved once
-        // could not be corrected, and which language an item opened in depended
-        // on what had been played before it. This is the shape the retired
-        // Android player used, which is the one that worked.
+        // them, so no window is needed for that. But the player's own default
+        // pick (`applyDefaultTracks`) goes through the same setter, so it
+        // arrives like a tap. For captions it is skipped while it runs: a default
+        // that landed on a sign track was saved as the viewer's choice and then
+        // restored on every episode. The other skip is the plugin's own restore.
         // The track the event NAMES, not the one the engine currently reports.
         // A selection reaches the engine asynchronously, so reading the current
         // track here answers with the language being replaced — and the list
         // announcement that follows the switch then restores it.
         on(CoreEvents.Subtitle) { payload ->
-            if (!applying) {
+            if (!applying && !player.selectingDefaults) {
                 remember { saveSubtitlePick(payload.track) }
             }
         }
@@ -179,6 +178,7 @@ public open class VideoPreferencesPlugin(
                     language = it.language,
                     kind = subtitleKindOf(it.label),
                     format = it.format,
+                    explicit = true,
                 )
             },
         )

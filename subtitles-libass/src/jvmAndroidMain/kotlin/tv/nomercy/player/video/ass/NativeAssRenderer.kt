@@ -54,6 +54,7 @@ internal class NativeAssRenderer(
     private var storageWidth: Int = 0
     private var storageHeight: Int = 0
     private var hostStorage: Boolean = false
+    private var fontScale: Double = 1.0
     private var released: Boolean = false
 
     override fun addFont(name: String, data: ByteArray): Unit = lock.withLock {
@@ -100,6 +101,13 @@ internal class NativeAssRenderer(
             storageHeight = primed?.second ?: 0
         }
         disposeTrack()
+        // Parsed now, on the caller's thread, and not on the first frame. The
+        // parse used to be lazy inside render(): a script that passed the
+        // structural gate and was then refused by libass left hasTrack() true
+        // with nothing to draw, so the layer read the null from render() as
+        // "nothing changed" and kept the previous track's last cue on screen,
+        // re-trying the parse on every frame. A refusal is a track of none.
+        if (activeTrack() == null) return
         renderer?.let { applySize(it) }
     }
 
@@ -124,6 +132,12 @@ internal class NativeAssRenderer(
             .take(HEADER_LINES)
             .firstOrNull { it.trimStart().startsWith(key, ignoreCase = true) }
             ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
+
+    override fun fontScale(scale: Double): Unit = lock.withLock {
+        if (released) return
+        fontScale = scale
+        renderer?.let { applyFontScale(it) }
+    }
 
     override fun frameSize(width: Int, height: Int): Unit = lock.withLock {
         if (released) return
@@ -234,6 +248,13 @@ internal class NativeAssRenderer(
         lib.ass_set_frame_size(target, width, height)
     }
 
+    // The renderer is rebuilt when a font arrives, so the scale is kept here and
+    // applied to every new one rather than set once on the first.
+    private fun applyFontScale(target: Pointer) {
+        lib.ass_set_selective_style_override_enabled(target, OVERRIDE_SELECTIVE_FONT_SCALE)
+        lib.ass_set_font_scale(target, fontScale)
+    }
+
     private fun activeRenderer(): Pointer? {
         renderer?.let { return it }
 
@@ -256,20 +277,28 @@ internal class NativeAssRenderer(
         // has to track the megabytes or the count evicts first and every
         // eviction sends FreeType back over a glyph it already had.
         lib.ass_set_cache_limits(created, glyphMax, bitmapCacheMegabytes)
+        applyFontScale(created)
         applySize(created)
         renderer = created
-        disposeTrack()
         return created
     }
 
+    // The parsed track, parsing it if a font arrival threw the last parse away.
+    //
+    // A refusal drops the content as well, so hasTrack() says false and the
+    // layer blanks instead of freezing the last cue.
     private fun activeTrack(): Pointer? {
         track?.let { return it }
 
         val content: ByteArray = trackContent?.encodeToByteArray() ?: return null
         // Backstop for whatever looksLikeAssScript doesn't catch — JNA exceptions are catchable here.
-        val loaded: Pointer = runCatching {
+        val loaded: Pointer? = runCatching {
             lib.ass_read_memory(library, content, content.size, null)
-        }.getOrNull() ?: return null
+        }.getOrNull()
+        if (loaded == null) {
+            trackContent = null
+            return null
+        }
         track = loaded
         return loaded
     }

@@ -38,8 +38,10 @@ import libass.ass_render_frame
 import libass.ass_renderer_done
 import libass.ass_renderer_init
 import libass.ass_set_cache_limits
+import libass.ass_set_font_scale
 import libass.ass_set_fonts
 import libass.ass_set_frame_size
+import libass.ass_set_selective_style_override_enabled
 import libass.ass_set_storage_size
 
 // libass on Apple, over Kotlin/Native cinterop.
@@ -64,6 +66,7 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
     private var storageWidth: Int = 0
     private var storageHeight: Int = 0
     private var hostStorage: Boolean = false
+    private var fontScale: Double = 1.0
     private var released: Boolean = false
 
     override fun addFont(name: String, data: ByteArray) {
@@ -132,6 +135,12 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
             .firstOrNull { it.trimStart().startsWith(key, ignoreCase = true) }
             ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
 
+    override fun fontScale(scale: Double) {
+        if (released) return
+        fontScale = scale
+        renderer?.let { applyFontScale(it) }
+    }
+
     override fun frameSize(width: Int, height: Int) {
         if (released) return
         this.width = width.coerceAtLeast(1)
@@ -183,6 +192,13 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
         ass_set_frame_size(target, width, height)
     }
 
+    // The renderer is rebuilt when a font arrives, so the scale is kept here and
+    // applied to every new one rather than set once on the first.
+    private fun applyFontScale(target: CPointer<ASS_Renderer>) {
+        ass_set_selective_style_override_enabled(target, OVERRIDE_SELECTIVE_FONT_SCALE)
+        ass_set_font_scale(target, fontScale)
+    }
+
     private fun activeRenderer(): CPointer<ASS_Renderer>? {
         renderer?.let { return it }
 
@@ -197,6 +213,7 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
         // bindings: the glyph count has to track the megabytes, or the count
         // evicts first and every eviction re-rasterizes a glyph already held.
         ass_set_cache_limits(created, APPLE_GLYPH_MAX, APPLE_BITMAP_CACHE_MEGABYTES)
+        applyFontScale(created)
         applySize(created)
         renderer = created
         disposeTrack()
@@ -237,6 +254,9 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
 }
 
 internal const val FONT_PROVIDER_AUTODETECT: Int = 1
+
+// ASS_OVERRIDE_BIT_SELECTIVE_FONT_SCALE: ass_set_font_scale on dialogue only.
+private const val OVERRIDE_SELECTIVE_FONT_SCALE: Int = 1 shl 1
 
 // A television box, not a desktop. tvOS gives an application far less than
 // macOS would and the same build serves both it and the phone.

@@ -1112,7 +1112,7 @@ public final class tv/nomercy/player/video/ui/chrome/menus/SubtitleSetting : jav
 }
 
 public final class tv/nomercy/player/video/ui/subtitles/AssSubtitleLayerKt {
-	public static final fun AssSubtitleLayer (Ltv/nomercy/player/video/subtitles/AssRenderer;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun AssSubtitleLayer (Ltv/nomercy/player/video/subtitles/AssRenderer;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ltv/nomercy/player/core/events/SubtitleStyle;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/subtitles/PlainSubtitleLayerKt {

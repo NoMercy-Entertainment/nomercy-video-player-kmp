@@ -46,19 +46,22 @@ jobs:
   publish:
     # Only a tag push publishes. A dispatch is here to redo the framework.
     if: github.event_name == 'push'
-    runs-on: [self-hosted, macOS, ARM64, xcode]
+    # Hosted, like CI's apple job: the Mac mini has no tvOS simulator, and
+    # core's v0.2.8 tag failed on :tvosSimulatorArm64Test there
+    # (NoMercy-Entertainment/nomercy-github-runner#48).
+    runs-on: macos-15
     env:
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
       GRADLE_OPTS: -Dorg.gradle.daemon=false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools'
 
@@ -143,23 +146,23 @@ jobs:
   xcframework:
     needs: publish
     if: always() && (needs.publish.result == 'success' || needs.publish.result == 'skipped')
-    runs-on: [self-hosted, macOS, ARM64, xcode]
+    runs-on: macos-15
     permissions:
       contents: write
     env:
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
       GRADLE_OPTS: -Dorg.gradle.daemon=false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.inputs.ref || github.event.inputs.tag || github.ref }}
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools'
 
