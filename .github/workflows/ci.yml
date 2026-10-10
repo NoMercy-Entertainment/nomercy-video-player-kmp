@@ -35,7 +35,7 @@ jobs:
     # GitHub-hosted for now, like every job in this file: the self-hosted
     # runners failed on setup-android, a Windows libmpv download and the tvOS
     # simulator (#48). Back to self-hosted once those are fixed.
-    runs-on: ubuntu-latest
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","Linux","X64","beast-unit"]') || 'ubuntu-latest' }}
     # A cap, because the failure mode this job actually had was not a red test —
     # it was Kotlin/Native sitting on a toolchain it did not have until the
     # six-hour default ran out. A job that hangs reads as a job that is working.
