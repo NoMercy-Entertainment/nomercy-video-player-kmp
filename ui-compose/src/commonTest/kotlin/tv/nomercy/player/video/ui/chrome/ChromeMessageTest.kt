@@ -8,7 +8,13 @@
 
 package tv.nomercy.player.video.ui.chrome
 
+import tv.nomercy.player.core.errors.ErrorScope
+import tv.nomercy.player.core.errors.ScopeKind
+import tv.nomercy.player.core.errors.Severity
+import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.PlayerErrorEvent
 import tv.nomercy.player.core.player.PlayerPhase
+import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
 import tv.nomercy.player.video.ui.tv.tvChromeStrings
 import kotlin.test.Test
@@ -76,6 +82,40 @@ class ChromeMessageTest {
         val silent: List<PlayerPhase> = PlayerPhase.entries.filterNot { waitIsWorthAnnouncing(it) }
 
         assertEquals(listOf(PlayerPhase.PAUSED), silent)
+    }
+
+    // Reported on a television: "English (Full)" was chosen, the notice said so,
+    // and no subtitle ever appeared. The subtitle file had failed to load and
+    // nothing said so; the viewer saw the choice confirmed and then a blank
+    // picture.
+    private fun warning(code: String): PlayerErrorEvent = PlayerErrorEvent(
+        code = code,
+        message = "",
+        severity = Severity.WARNING,
+        scope = ErrorScope(ScopeKind.CUE),
+    )
+
+    @Test
+    fun aSubtitleThatFailedToLoadIsSaidOnScreen() {
+        val player = NMVideoPlayer(RecordingVideoBackend())
+        val strings: TvChromeStrings = tvChromeStrings("en")
+        val channel = ChromeMessageChannel()
+        channel.subscribeToNotices(player, strings)
+
+        player.emit(CoreEvents.Warning, warning("subtitle:sidecar-load-failed"))
+
+        assertEquals(strings.subtitleLoadFailed, channel.message?.text)
+    }
+
+    @Test
+    fun anUnrelatedWarningStaysOffTheScreen() {
+        val player = NMVideoPlayer(RecordingVideoBackend())
+        val channel = ChromeMessageChannel()
+        channel.subscribeToNotices(player, tvChromeStrings("en"))
+
+        player.emit(CoreEvents.Warning, warning("subtitle:font-missing"))
+
+        assertEquals(null, channel.message)
     }
 
     @Test
