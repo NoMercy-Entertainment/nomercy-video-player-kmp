@@ -229,6 +229,11 @@ public data class TvChromeStrings(
     // after it and only then rasterised, so the seconds between the press and
     // the first cue looked to a viewer exactly like a press that did nothing.
     val offValue: String = "Off",
+
+    // Said when a chosen subtitle file never arrives. The web has no key for it
+    // (its sidecar path fails silently), so it cannot be read out of the generated
+    // table and a host that wants it translated supplies it, like seekPreview.
+    val subtitleLoadFailed: String = "Subtitles could not be loaded",
 )
 
 internal const val BOTTOM_BAR_TAG = "tv-bottom-bar"

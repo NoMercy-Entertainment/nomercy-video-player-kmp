@@ -207,6 +207,12 @@ internal class ChromeMessageChannel {
         player.on(CoreEvents.Subtitle) { change ->
             timed(trackMessage(strings.subtitles, player.subtitles().map { it.label }, change.track, strings.offValue))
         },
+        // The choice notice above says a subtitle was picked, not that it
+        // arrived. A file that fails to load leaves a blank picture under a
+        // confirmed choice, so the failure gets its own, longer notice.
+        player.on(CoreEvents.Warning) { warning ->
+            if (warning.code == SIDECAR_LOAD_FAILED) host(strings.subtitleLoadFailed, FAILURE_NOTICE_MS)
+        },
         player.on(CoreEvents.AudioTrack) { change ->
             timed(trackMessage(strings.language, player.audioTracks().map { it.label }, change.id, strings.offValue))
         },
@@ -227,3 +233,7 @@ internal fun trackMessage(kind: String, labels: List<String>, index: Double?, of
 // just happened rather than what is happening.
 private const val LEVEL_TOKEN = "{level}"
 private const val TIMED_MESSAGE_MS = 1_200.0
+
+// The code the video player's sidecar subtitles report a failed load under.
+private const val SIDECAR_LOAD_FAILED = "subtitle:sidecar-load-failed"
+private const val FAILURE_NOTICE_MS = 4_000.0
