@@ -14,19 +14,24 @@ import kotlinx.coroutines.launch
 import tv.nomercy.player.core.cues.Cue
 import tv.nomercy.player.core.cues.TextPayload
 import tv.nomercy.player.core.cues.VttSubtitlePayload
+import tv.nomercy.player.core.errors.ErrorScope
+import tv.nomercy.player.core.errors.PlayerError
+import tv.nomercy.player.core.errors.ScopeKind
+import tv.nomercy.player.core.errors.Severity
 import tv.nomercy.player.core.events.ALIGN_CENTER
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.CueEvent
 import tv.nomercy.player.core.events.FULL_SIZE
+import tv.nomercy.player.core.events.Subscription
 import tv.nomercy.player.core.events.SubtitleCue
 import tv.nomercy.player.core.events.SubtitleCueChange
-import tv.nomercy.player.core.events.Subscription
 import tv.nomercy.player.core.media.CueCrossing
 import tv.nomercy.player.core.media.CueTracker
 import tv.nomercy.player.core.plugin.PluginHost
 import tv.nomercy.player.core.ports.CueParser
 import tv.nomercy.player.core.ports.FetchOptions
 import tv.nomercy.player.core.ports.SubtitleTrack
+import kotlin.coroutines.cancellation.CancellationException
 
 // A subtitle file that is not inside the film, played anyway.
 //
@@ -164,9 +169,51 @@ internal class SidecarSubtitleCues(
     // Null body on any failure, because a subtitle file that will not load is
     // not a reason to stop a film. The web's sidecar path swallows the same way
     // and for the same reason.
-    private suspend fun fetchText(url: String): String? = runCatching {
-        host.fetch(url, FetchOptions()).body
-    }.getOrNull()
+    //
+    // Still null, and still not a reason to stop the film, but no longer silent:
+    // the failure is reported with the url and the HTTP status. A 404 or 401 used
+    // to look exactly like a file with no dialogue, and a 404 whose body happened
+    // to parse was installed as the captions.
+    private suspend fun fetchText(url: String): String? {
+        val response = try {
+            host.fetch(url, FetchOptions())
+        } catch (canceled: CancellationException) {
+            throw canceled
+        } catch (@Suppress("TooGenericExceptionCaught") failure: Throwable) {
+            // The core's request pipeline turns a 404 or 401 into a thrown
+            // NetworkError and keeps the status in its context bag.
+            val status: Int? = (failure as? PlayerError)?.context?.get("httpStatus") as? Int
+            reportLoadFailure(url, status = status, cause = failure)
+            return null
+        }
+
+        if (response.status !in HTTP_OK_RANGE) {
+            reportLoadFailure(url, status = response.status, cause = null)
+            return null
+        }
+        return response.body
+    }
+
+    private fun reportLoadFailure(url: String, status: Int?, cause: Throwable?) {
+        val detail: String = status?.let { "HTTP $it" }
+            ?: cause?.message
+            ?: cause?.let { it::class.simpleName }
+            ?: "unknown"
+        host.report(
+            PlayerError(
+                code = LOAD_FAILED,
+                scope = ErrorScope(ScopeKind.CUE),
+                severity = Severity.WARNING,
+                message = "subtitle file did not load ($detail): $url",
+                cause = cause,
+                context = buildMap {
+                    put("url", url)
+                    put("language", language)
+                    if (status != null) put("httpStatus", status)
+                },
+            ),
+        )
+    }
 
     // Through the host's registry rather than a parser named here, so a consumer
     // who registered their own format for a url gets it — the same answer
@@ -203,3 +250,8 @@ private fun cueOf(payload: TextPayload): SubtitleCue {
         size = vtt?.size?.toDouble() ?: FULL_SIZE,
     )
 }
+
+/** The code a consumer keys on to tell the viewer a chosen subtitle file never arrived. */
+internal const val LOAD_FAILED: String = "subtitle:sidecar-load-failed"
+
+private val HTTP_OK_RANGE: IntRange = 200..299

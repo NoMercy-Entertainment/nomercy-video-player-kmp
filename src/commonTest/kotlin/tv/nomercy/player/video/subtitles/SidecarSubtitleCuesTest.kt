@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
 import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.PlayerErrorEvent
 import tv.nomercy.player.core.events.SubtitleCueChange
 import tv.nomercy.player.core.events.TimeUpdate
 import tv.nomercy.player.core.media.PlaylistItem
@@ -158,6 +159,62 @@ class SidecarSubtitleCuesTest {
         assertTrue(seen.last().cues.isEmpty())
     }
 
+    // A file that cannot be had is not "no captions". The picture is blank
+    // either way, but only one of them tells the viewer why. Status 404 carries a
+    // body that parses as a perfectly good WebVTT file, so a loader that never
+    // looks at the status installs it as captions.
+    private fun warningsSeenBy(player: NMVideoPlayer): MutableList<PlayerErrorEvent> {
+        val seen: MutableList<PlayerErrorEvent> = mutableListOf()
+        player.on(CoreEvents.Warning) { seen += it }
+        return seen
+    }
+
+    @Test
+    fun aNotFoundAnswerIsReportedAndDrawsNothing() = runTest {
+        val player = playerWith(FakeFetcher().respondWith(status = 404, body = VTT))
+        player.setup()
+        val warnings = warningsSeenBy(player)
+        val seen = cuesSeenBy(player)
+
+        player.choose(DUTCH)
+        tick(player, 1.5)
+
+        assertEquals(listOf("subtitle:sidecar-load-failed"), warnings.map { it.code })
+        assertEquals(404, warnings.single().context["httpStatus"])
+        assertEquals(DUTCH.url, warnings.single().context["url"])
+        assertTrue(seen.all { it.cues.isEmpty() })
+    }
+
+    @Test
+    fun anUnauthorizedAnswerIsReported() = runTest {
+        val player = playerWith(FakeFetcher().respondWith(status = 401, body = ""))
+        player.setup()
+        val warnings = warningsSeenBy(player)
+
+        player.choose(DUTCH)
+
+        assertEquals(listOf("subtitle:sidecar-load-failed"), warnings.map { it.code })
+        assertEquals(401, warnings.single().context["httpStatus"])
+    }
+
+    @Test
+    fun aFetchThatThrowsIsReported() = runTest {
+        // No queued response: FakeFetcher throws, as a dropped connection does.
+        val player = playerWith(FakeFetcher())
+        player.setup()
+        val warnings = warningsSeenBy(player)
+
+        player.choose(DUTCH)
+        // The request pipeline retries a dropped connection after a delay, in
+        // virtual time here; the warning comes once the retries run out. Time is
+        // advanced by hand because advanceUntilIdle skips a background scope.
+        testScheduler.advanceTimeBy(RETRIES_RUN_OUT_MS)
+        testScheduler.runCurrent()
+
+        assertEquals(listOf("subtitle:sidecar-load-failed"), warnings.map { it.code })
+        assertEquals(DUTCH.url, warnings.single().context["url"])
+    }
+
     // The item names its own files, so a host queueing a film does not have to
     // register nine languages by hand — which is what "sidecars are the norm"
     // means in practice.
@@ -264,6 +321,7 @@ class SidecarSubtitleCuesTest {
     }
 
     private companion object {
+        const val RETRIES_RUN_OUT_MS: Long = 120_000L
         const val FIRST_LINE = "Wat is er met je hand gebeurd?"
         const val SIGN = "— SINTEL —"
 
