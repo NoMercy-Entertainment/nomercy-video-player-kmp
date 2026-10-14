@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.core.events.Subscription
+import tv.nomercy.player.core.player.PlayerPhase
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.subtitles.CueAlign
 import tv.nomercy.player.video.subtitles.CueAnchor
@@ -277,6 +278,36 @@ internal fun rememberCueBoxes(player: NMVideoPlayer): List<CueBox> {
 
     return if (overlay == null) emptyList() else overlay.boxes.collectAsState().value
 }
+
+// Whether a picture has been shown for the current item.
+//
+// The library has no first-frame event in Kotlin, so this latches on the
+// closest real signals: `Playing`, or a `Time` tick past zero (the same line
+// backdropIsVisible draws, `time == 0`). It drops back on `Item`, so the next
+// episode waits for its own first frame, and it stays up through a mid-play
+// stall, so a line of dialogue does not vanish while the video buffers.
+//
+// Seeded from the phase: a chrome mounted over a picture that already runs gets
+// no Playing to wait for.
+@Composable
+internal fun rememberFirstFrameShown(player: NMVideoPlayer): Boolean {
+    var shown: Boolean by remember(player) { mutableStateOf(player.phase() in PICTURE_PHASES) }
+
+    DisposableEffect(player) {
+        val subscriptions: List<Subscription> = listOf(
+            player.on(CoreEvents.Item) { shown = false },
+            player.on(CoreEvents.Playing) { shown = true },
+            player.on(CoreEvents.Time) { if (it.time > 0.0) shown = true },
+        )
+
+        onDispose { subscriptions.forEach { it.dispose() } }
+    }
+
+    return shown
+}
+
+private val PICTURE_PHASES: Set<PlayerPhase> =
+    setOf(PlayerPhase.PLAYING, PlayerPhase.PAUSED, PlayerPhase.SEEKING)
 
 // What the viewer chose, and every change to it while they are choosing.
 //
