@@ -21,6 +21,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.device.FormFactor
+import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.ItemChange
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.core.events.SubtitleCue
@@ -62,10 +64,59 @@ class SubtitleCueLayerTest {
         return player
     }
 
+    // The first frame is up. The cue tests below are about drawing, so they start
+    // from a picture that is already showing.
+    private fun ComposeUiTest.mountPlaying(overlay: SubtitleOverlayPlugin?): NMVideoPlayer {
+        val player = mount(overlay)
+        player.emit(CoreEvents.Playing, Unit)
+        waitForIdle()
+
+        return player
+    }
+
+    @Test
+    fun aCueBeforeTheFirstFrameIsNotDrawn() = runComposeUiTest {
+        // The screen is black with a spinner while the first frame is still on
+        // its way, and a line of dialogue over that reads as a fault.
+        val overlay = SubtitleOverlayPlugin()
+        mount(overlay)
+
+        overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
+        waitForIdle()
+
+        onNodeWithText(LINE).assertDoesNotExist()
+        onNodeWithTag(SUBTITLE_LAYER_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    fun theSameCueAppearsOnceTheFirstFrameShows() = runComposeUiTest {
+        val overlay = SubtitleOverlayPlugin()
+        val player = mount(overlay)
+        overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
+        waitForIdle()
+
+        player.emit(CoreEvents.Playing, Unit)
+        waitForIdle()
+
+        onNodeWithText(LINE).assertIsDisplayed()
+    }
+
+    @Test
+    fun aNewItemWaitsForItsOwnFirstFrame() = runComposeUiTest {
+        val overlay = SubtitleOverlayPlugin()
+        val player = mountPlaying(overlay)
+
+        player.emit(CoreEvents.Item, ItemChange(item = null, index = 1))
+        overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
+        waitForIdle()
+
+        onNodeWithText(LINE).assertDoesNotExist()
+    }
+
     @Test
     fun aCueTheOverlayLaidOutIsDrawn() = runComposeUiTest {
         val overlay = SubtitleOverlayPlugin()
-        mount(overlay)
+        mountPlaying(overlay)
 
         overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
         waitForIdle()
@@ -80,7 +131,7 @@ class SubtitleCueLayerTest {
         // layout pushes them apart rather than stacking them. Drawing one would
         // look like the other having failed to arrive.
         val overlay = SubtitleOverlayPlugin()
-        mount(overlay)
+        mountPlaying(overlay)
 
         overlay.show(
             listOf(
@@ -97,7 +148,7 @@ class SubtitleCueLayerTest {
     @Test
     fun andTheyGoWhenTheOverlayClears() = runComposeUiTest {
         val overlay = SubtitleOverlayPlugin()
-        mount(overlay)
+        mountPlaying(overlay)
 
         overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
         waitForIdle()
@@ -116,7 +167,7 @@ class SubtitleCueLayerTest {
         // shadow and say nothing. `onNodeWithText` asserting a single node is
         // the check: it fails outright when more than one matches.
         val overlay = SubtitleOverlayPlugin()
-        mount(overlay)
+        mountPlaying(overlay)
 
         overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
         waitForIdle()
