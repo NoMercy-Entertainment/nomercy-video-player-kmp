@@ -11,8 +11,11 @@ package tv.nomercy.player.video.ui.chrome
 import tv.nomercy.player.core.errors.ErrorScope
 import tv.nomercy.player.core.errors.ScopeKind
 import tv.nomercy.player.core.errors.Severity
+import tv.nomercy.player.core.events.AudioTrackPayload
 import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.ItemChange
 import tv.nomercy.player.core.events.PlayerErrorEvent
+import tv.nomercy.player.core.events.SubtitlePayload
 import tv.nomercy.player.core.player.PlayerPhase
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
@@ -21,6 +24,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TestTimeSource
 
 // The message channel's rules, and the strings it needs to state them.
 //
@@ -116,6 +121,63 @@ class ChromeMessageTest {
         player.emit(CoreEvents.Warning, warning("subtitle:font-missing"))
 
         assertEquals(null, channel.message)
+    }
+
+    // Reported on a television: every next episode put "Subtitles: English
+    // (Full)" on the picture. Nobody picked anything; the preferences plugin
+    // carried the viewer's language into the new item, and the notice for a
+    // pick read that as one. A notice there tells the viewer nothing.
+    private fun episodeStart(player: NMVideoPlayer) {
+        player.emit(CoreEvents.Item, ItemChange(item = null, index = 1))
+        player.emit(CoreEvents.Playing, Unit)
+    }
+
+    @Test
+    fun theLanguageCarriedIntoTheNextEpisodeIsNotAnnounced() {
+        val player = NMVideoPlayer(RecordingVideoBackend())
+        val clock = TestTimeSource()
+        val channel = ChromeMessageChannel(clock)
+        channel.subscribeToNotices(player, tvChromeStrings("en"))
+
+        // The restore lands while the item loads, or just after it starts.
+        player.emit(CoreEvents.Item, ItemChange(item = null, index = 1))
+        player.emit(CoreEvents.Subtitle, SubtitlePayload(track = 0.0))
+        player.emit(CoreEvents.AudioTrack, AudioTrackPayload(id = 0.0))
+        player.emit(CoreEvents.Playing, Unit)
+        clock += 1.seconds
+        player.emit(CoreEvents.Subtitle, SubtitlePayload(track = 0.0))
+
+        assertEquals(null, channel.message)
+    }
+
+    @Test
+    fun aTrackTheViewerPicksWhilePlayingIsStillNamed() {
+        val player = NMVideoPlayer(RecordingVideoBackend())
+        val clock = TestTimeSource()
+        val channel = ChromeMessageChannel(clock)
+        val strings: TvChromeStrings = tvChromeStrings("en")
+        channel.subscribeToNotices(player, strings)
+        episodeStart(player)
+
+        clock += 10.seconds
+        player.emit(CoreEvents.Subtitle, SubtitlePayload(track = null))
+
+        assertEquals("${strings.subtitles}: ${strings.offValue}", channel.message?.text)
+    }
+
+    // A chrome mounted over a running item gets no Playing; a pick there is
+    // still a pick.
+    @Test
+    fun aChromeMountedOverARunningItemNamesTheNextPick() {
+        val player = NMVideoPlayer(RecordingVideoBackend())
+        val channel = ChromeMessageChannel(TestTimeSource())
+        val strings: TvChromeStrings = tvChromeStrings("en")
+        channel.subscribeToNotices(player, strings)
+        channel.mountedOver(PlayerPhase.PAUSED)
+
+        player.emit(CoreEvents.Subtitle, SubtitlePayload(track = null))
+
+        assertEquals("${strings.subtitles}: ${strings.offValue}", channel.message?.text)
     }
 
     @Test

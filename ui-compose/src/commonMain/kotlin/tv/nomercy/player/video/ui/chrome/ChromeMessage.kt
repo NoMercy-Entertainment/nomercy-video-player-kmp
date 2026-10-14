@@ -23,6 +23,9 @@ import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.VideoEvents
 import tv.nomercy.player.video.ui.tv.TvChromeStrings
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 
 /**
  * What the player is telling the viewer right now, and for how long.
@@ -93,6 +96,7 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
 
         val subscriptions: List<Subscription> =
             channel.subscribeToPlayback(player, strings) + channel.subscribeToNotices(player, strings)
+        channel.mountedOver(player.phase())
 
         onDispose { subscriptions.forEach(Subscription::dispose) }
     }
@@ -116,7 +120,7 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
 // and six closures over them. What a subscription does to the channel is then a
 // named call, which is what lets the wiring below read as a list of events.
 @Stable
-internal class ChromeMessageChannel {
+internal class ChromeMessageChannel(private val clock: TimeSource = TimeSource.Monotonic) {
 
     public var message: ChromeMessage? by mutableStateOf(null)
         private set
@@ -142,6 +146,40 @@ internal class ChromeMessageChannel {
     fun host(text: String, ms: Double?) {
         message = ChromeMessage(text, ChromeMessage.Kind.Host)
         expiresAfterMs = ms
+    }
+
+    // A track notice names a pick. While an item loads, and for a moment after it
+    // starts, a track change is the player carrying the viewer's language into
+    // the item, not a pick, and naming it put "Subtitles: English" over every
+    // next episode.
+    private var itemLoading: Boolean = true
+    private var settledAt: TimeMark? = null
+
+    private fun trackChangeIsAPick(): Boolean =
+        !itemLoading && settledAt?.hasPassedNow() != false
+
+    fun track(text: String) {
+        if (trackChangeIsAPick()) timed(text)
+    }
+
+    fun itemStarted() {
+        itemLoading = true
+        settledAt = null
+    }
+
+    fun itemPlaying() {
+        if (!itemLoading) return
+        itemLoading = false
+        settledAt = clock.markNow() + TRACK_SETTLE
+    }
+
+    // Mounted over an item that already plays: no Playing will come, and every
+    // track change from here on is a pick.
+    fun mountedOver(phase: PlayerPhase) {
+        if (phase in RUNNING_PHASES) {
+            itemLoading = false
+            settledAt = null
+        }
     }
 
     fun failure(text: String) {
@@ -204,8 +242,10 @@ internal class ChromeMessageChannel {
         player.on(CoreEvents.Mute) { change ->
             timed(if (change.muted) strings.mutedMessage else strings.unmutedMessage)
         },
+        player.on(CoreEvents.Item) { itemStarted() },
+        player.on(CoreEvents.Playing) { itemPlaying() },
         player.on(CoreEvents.Subtitle) { change ->
-            timed(trackMessage(strings.subtitles, player.subtitles().map { it.label }, change.track, strings.offValue))
+            track(trackMessage(strings.subtitles, player.subtitles().map { it.label }, change.track, strings.offValue))
         },
         // The choice notice above says a subtitle was picked, not that it
         // arrived. A file that fails to load leaves a blank picture under a
@@ -214,7 +254,7 @@ internal class ChromeMessageChannel {
             if (warning.code == SIDECAR_LOAD_FAILED) host(strings.subtitleLoadFailed, FAILURE_NOTICE_MS)
         },
         player.on(CoreEvents.AudioTrack) { change ->
-            timed(trackMessage(strings.language, player.audioTracks().map { it.label }, change.id, strings.offValue))
+            track(trackMessage(strings.language, player.audioTracks().map { it.label }, change.id, strings.offValue))
         },
     )
 }
@@ -233,6 +273,14 @@ internal fun trackMessage(kind: String, labels: List<String>, index: Double?, of
 // just happened rather than what is happening.
 private const val LEVEL_TOKEN = "{level}"
 private const val TIMED_MESSAGE_MS = 1_200.0
+
+// How long after an item starts a track change still counts as the carry-over.
+// The preferences plugin answers when the track list arrives, which can be just
+// after the first frame.
+private val TRACK_SETTLE = 3.seconds
+
+private val RUNNING_PHASES: Set<PlayerPhase> =
+    setOf(PlayerPhase.PLAYING, PlayerPhase.PAUSED, PlayerPhase.BUFFERING, PlayerPhase.SEEKING)
 
 // The code the video player's sidecar subtitles report a failed load under.
 private const val SIDECAR_LOAD_FAILED = "subtitle:sidecar-load-failed"
