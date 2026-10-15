@@ -24,6 +24,7 @@ import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import tv.nomercy.player.core.device.FormFactor
+import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.subtitles.AssFrame
@@ -60,10 +61,10 @@ class AssSubtitleLayerTest {
         // harness waits a full minute for before failing the test it already
         // passed.
         var mounted: Boolean by mutableStateOf(true)
+        val player = NMVideoPlayer(RecordingVideoBackend())
 
         setContent {
             if (mounted) {
-                val player = NMVideoPlayer(RecordingVideoBackend())
                 LaunchedEffect(player) { player.setup(PlayerConfig()) }
 
                 Box(modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp)) {
@@ -84,9 +85,12 @@ class AssSubtitleLayerTest {
         // goes idle by design, so waiting for that is waiting for the harness's
         // one-minute timeout. The wait above is the real condition: the frame
         // has been rasterized, and captureToImage draws what is composed.
+        player.emit(CoreEvents.Playing, Unit)
         waitUntil(timeoutMillis = TIMEOUT_MS) { renderer.asked }
 
-        val painted = onNodeWithTag(ASS_SUBTITLE_TAG).captureToImage().toPixelMap()
+        fun capture() = onNodeWithTag(ASS_SUBTITLE_TAG).captureToImage().toPixelMap()
+        waitUntil(timeoutMillis = TIMEOUT_MS) { capture()[RUN_X + RUN_WIDTH / 2, RUN_Y + RUN_HEIGHT / 2].alpha == 1f }
+        val painted = capture()
         mounted = false
         waitForIdle()
 
@@ -101,6 +105,34 @@ class AssSubtitleLayerTest {
         // unpacking produces, and it hides the film rather than captioning it.
         val outside = painted[RUN_X + RUN_WIDTH + MARGIN, RUN_Y + RUN_HEIGHT + MARGIN]
         assertTrue(outside.alpha == 0f, "and it covered nothing else")
+    }
+
+    @Test
+    fun noFrameIsRenderedBeforeTheFirstVideoFrame() = runComposeUiTest {
+        val renderer = OneRunRenderer()
+        // Ungated control: once it renders, the loop runs, so "unasked" is a result.
+        val control = OneRunRenderer()
+        val player = NMVideoPlayer(RecordingVideoBackend())
+        var mounted: Boolean by mutableStateOf(true)
+
+        setContent {
+            if (mounted) {
+                LaunchedEffect(player) { player.setup(PlayerConfig()) }
+                Box(modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp)) {
+                    AssSubtitleLayer(renderer = control, positionMs = { 0L })
+                    AssSubtitleLayer(renderer = renderer, positionMs = { 0L }, player = player)
+                }
+            }
+        }
+
+        waitUntil(timeoutMillis = TIMEOUT_MS) { control.asked }
+        mainClock.advanceTimeBy(SETTLE_MS)
+        assertTrue(!renderer.asked, "libass was asked for a frame before the first video frame")
+
+        player.emit(CoreEvents.Playing, Unit)
+        waitUntil(timeoutMillis = TIMEOUT_MS) { renderer.asked }
+        mounted = false
+        waitForIdle()
     }
 
     @Test
@@ -256,5 +288,6 @@ private const val FULL_COVERAGE = 0xFF.toByte()
 private const val HALF = 0.5f
 
 private const val TIMEOUT_MS = 5_000L
+private const val SETTLE_MS = 1_000L
 
 private const val MARGIN = 20
