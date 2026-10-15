@@ -95,8 +95,10 @@ public fun AssSubtitleLayer(
 
     val ready: Boolean = player == null || rememberFirstFrameShown(player)
 
+    val hasSurface: Boolean = surface.width > 0 && surface.height > 0
+
     LaunchedEffect(renderer, surface, ready) {
-        if (ready && surface.width > 0 && surface.height > 0) {
+        if (ready && hasSurface) {
             renderer.rasterise(drawing, surface, AssFeed(positionMs) { wantedScale }) { drawn ->
                 frame = drawn
                 shown += 1
