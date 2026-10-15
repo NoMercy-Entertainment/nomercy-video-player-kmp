@@ -85,7 +85,7 @@ class AssSubtitleLayerTest {
         // goes idle by design, so waiting for that is waiting for the harness's
         // one-minute timeout. The wait above is the real condition: the frame
         // has been rasterized, and captureToImage draws what is composed.
-        player.emit(CoreEvents.Playing, Unit)
+        player.emit(CoreEvents.FirstFrame, Unit)
         waitUntil(timeoutMillis = TIMEOUT_MS) { renderer.asked }
 
         fun capture() = onNodeWithTag(ASS_SUBTITLE_TAG).captureToImage().toPixelMap()
@@ -129,7 +129,7 @@ class AssSubtitleLayerTest {
         mainClock.advanceTimeBy(SETTLE_MS)
         assertTrue(!renderer.asked, "libass was asked for a frame before the first video frame")
 
-        player.emit(CoreEvents.Playing, Unit)
+        player.emit(CoreEvents.FirstFrame, Unit)
         waitUntil(timeoutMillis = TIMEOUT_MS) { renderer.asked }
         mounted = false
         waitForIdle()

@@ -26,6 +26,7 @@ import tv.nomercy.player.core.events.ItemChange
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.core.events.SubtitleCue
+import tv.nomercy.player.core.events.TimeUpdate
 import tv.nomercy.player.video.subtitles.SubtitleOverlayPlugin
 import kotlin.test.Test
 
@@ -68,7 +69,7 @@ class SubtitleCueLayerTest {
     // from a picture that is already showing.
     private fun ComposeUiTest.mountPlaying(overlay: SubtitleOverlayPlugin?): NMVideoPlayer {
         val player = mount(overlay)
-        player.emit(CoreEvents.Playing, Unit)
+        player.emit(CoreEvents.FirstFrame, Unit)
         waitForIdle()
 
         return player
@@ -95,7 +96,13 @@ class SubtitleCueLayerTest {
         overlay.show(listOf(SubtitleCue(text = LINE, plainText = LINE)))
         waitForIdle()
 
+        // A resume starts with time > 0 and PLAYING before any picture.
         player.emit(CoreEvents.Playing, Unit)
+        player.emit(CoreEvents.Time, TimeUpdate(time = 600.0, duration = 1400.0, percentage = 42.0))
+        waitForIdle()
+        onNodeWithText(LINE).assertDoesNotExist()
+
+        player.emit(CoreEvents.FirstFrame, Unit)
         waitForIdle()
 
         onNodeWithText(LINE).assertIsDisplayed()
