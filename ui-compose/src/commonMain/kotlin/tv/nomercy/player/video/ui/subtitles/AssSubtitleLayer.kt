@@ -37,7 +37,9 @@ import kotlinx.coroutines.isActive
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssRenderer
+import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.subtitles.AssSize
+import tv.nomercy.player.video.ui.chrome.rememberFirstFrameShown
 import tv.nomercy.player.video.subtitles.AssFrameCompositor
 import tv.nomercy.player.video.subtitles.AssSurfaceFrame
 import kotlin.coroutines.coroutineContext
@@ -70,6 +72,8 @@ public fun AssSubtitleLayer(
     contentDescription: String? = null,
     /** The viewer's caption styling. Only the size reaches libass; see [AssRenderer.fontScale]. */
     subtitleStyle: SubtitleStyle = SubtitleStyle(),
+    /** When set, nothing renders until this player shows its first frame. */
+    player: NMVideoPlayer? = null,
 ) {
     var surface: IntSize by remember { mutableStateOf(IntSize.Zero) }
     var frame: ImageBitmap? by remember { mutableStateOf(null) }
@@ -89,8 +93,12 @@ public fun AssSubtitleLayer(
     // the menu reaches libass without tearing the loop down.
     val wantedScale: Double by rememberUpdatedState(subtitleStyle.fontSize / PERCENT)
 
-    LaunchedEffect(renderer, surface) {
-        if (surface.width > 0 && surface.height > 0) {
+    val ready: Boolean = player == null || rememberFirstFrameShown(player)
+
+    val hasSurface: Boolean = surface.width > 0 && surface.height > 0
+
+    LaunchedEffect(renderer, surface, ready) {
+        if (ready && hasSurface) {
             renderer.rasterise(drawing, surface, AssFeed(positionMs) { wantedScale }) { drawn ->
                 frame = drawn
                 shown += 1
@@ -104,7 +112,7 @@ public fun AssSubtitleLayer(
             .testTag(ASS_SUBTITLE_TAG)
             .onSizeChanged { measured: IntSize -> surface = measured },
     ) {
-        frame?.let { drawn: ImageBitmap ->
+        frame?.takeIf { ready }?.let { drawn: ImageBitmap ->
             Image(
                 bitmap = drawn,
                 contentDescription = contentDescription,

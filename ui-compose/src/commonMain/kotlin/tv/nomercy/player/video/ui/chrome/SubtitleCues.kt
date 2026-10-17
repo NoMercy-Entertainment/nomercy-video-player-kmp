@@ -296,8 +296,8 @@ internal fun rememberFirstFrameShown(player: NMVideoPlayer): Boolean {
     DisposableEffect(player) {
         val subscriptions: List<Subscription> = listOf(
             player.on(CoreEvents.Item) { shown = false },
-            player.on(CoreEvents.Playing) { shown = true },
-            player.on(CoreEvents.Time) { if (it.time > 0.0) shown = true },
+            // Not Playing or Time: both arrive before the picture on a resume.
+            player.on(CoreEvents.FirstFrame) { shown = true },
         )
 
         onDispose { subscriptions.forEach { it.dispose() } }

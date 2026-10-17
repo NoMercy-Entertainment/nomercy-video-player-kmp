@@ -115,5 +115,5 @@ internal fun BoxScope.ChromePicture(
     // No cue over the black spinner: the words wait for the first frame.
     val boxes = rememberCueBoxes(player)
     SubtitleCueLayer(if (rememberFirstFrameShown(player)) boxes else emptyList(), rememberSubtitleStyle(player))
-    slots.styledSubtitles?.invoke(context.state, context.commands)
+    if (rememberFirstFrameShown(player)) slots.styledSubtitles?.invoke(context.state, context.commands)
 }
