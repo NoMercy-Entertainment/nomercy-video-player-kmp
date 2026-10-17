@@ -198,7 +198,18 @@ public class AssFrameCompositor {
         // all eight and idling means the fastest possible frame still costs a
         // dispatch and a wake-up; doing one strip here removes both from the
         // critical path and leaves the caller busy instead of parked.
-        spread(Surface(pixels, safeWidth, safeHeight), images, Strips(strips, rows, perBand))
+        var finished = false
+        try {
+            spread(Surface(pixels, safeWidth, safeHeight), images, Strips(strips, rows, perBand))
+            finished = true
+        } finally {
+            // Aborted: some bands drew and none were recorded. Wipe the buffer and
+            // make every surface copy it whole, or those pixels are never cleared.
+            if (!finished) {
+                pixels.fill(0)
+                generation++
+            }
+        }
 
         for (band in perBand) {
             stale.absorb(band)

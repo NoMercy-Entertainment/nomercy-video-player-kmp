@@ -30,6 +30,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -198,15 +199,15 @@ private suspend fun AssRenderer.rasterise(
         //
         // Only the finished ImageBitmap crosses back, and the state
         // write lands on the main thread where composition expects it.
-        val drawn: ImageBitmap? = withContext(Dispatchers.Default) {
-            drawing.turn.withLock { nextPicture(this@rasterise, drawing, now, target, repaint) }
+        // NonCancellable, with the publish inside: libass reports a change once,
+        // so a frame a restart dropped left the old cue up until the player closed.
+        // Only a NEW picture is published; null means "keep what is on screen".
+        val drawn: ImageBitmap? = withContext(NonCancellable + Dispatchers.Default) {
+            drawing.turn.withLock {
+                nextPicture(this@rasterise, drawing, now, target, repaint)?.also(onFrame)
+            }
         }
         if (drawn != null) repaint = false
-
-        // Only a NEW picture is published. The renderer answers null for a
-        // frame that has not changed, and pushing that through would clear
-        // a cue that is still on screen.
-        drawn?.let(onFrame)
 
         // Paced by the display, not by a timer.
         //

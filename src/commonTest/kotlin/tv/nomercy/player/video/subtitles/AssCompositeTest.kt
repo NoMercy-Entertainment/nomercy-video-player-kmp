@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.subtitles
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -288,6 +289,27 @@ class AssCompositeTest {
         assertEquals(serial.changed.bottom, parallel.changed.bottom)
         assertEquals(serial.changed.leftAt(5), parallel.changed.leftAt(5))
         assertEquals(serial.changed.rightAt(55), parallel.changed.rightAt(55))
+    }
+
+    // The layer's loop restarts on every episode and resize, so a cancel can land
+    // mid-blend. Pixels it left untracked were never cleared and came back in pieces.
+    @Test
+    fun aCanceledBandedFrameLeavesNothingBehind() = runTest {
+        val compositor = AssFrameCompositor()
+        val white: Int = libassColour(0xFF, 0xFF, 0xFF, 255)
+        val line: List<AssImage> = listOf(run(At(0, 0, 8, 8), white, 255))
+
+        compositor.compositeParallel(line, 8, 8, bands = 8)
+        runCatching {
+            coroutineScope {
+                cancel()
+                compositor.compositeParallel(line, 8, 8, bands = 8)
+            }
+        }
+        compositor.compositeParallel(emptyList(), 8, 8, bands = 8)
+        val after: AssSurfaceFrame = compositor.renderParallel(emptyList(), 8, 8, bands = 8)
+
+        assertTrue(after.pixels.all { it == 0 }, "a canceled frame left pixels nothing clears")
     }
 
     @Test
