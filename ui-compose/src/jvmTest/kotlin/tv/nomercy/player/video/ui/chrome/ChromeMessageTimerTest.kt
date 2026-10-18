@@ -21,6 +21,8 @@ import tv.nomercy.player.video.ui.tv.tvChromeStrings
 
 @OptIn(ExperimentalTestApi::class)
 class ChromeMessageTimerTest {
+    private val notice = "Saved"
+
     @Test
     fun theSameHostNoticeGetsItsFullWindowAgain() = runComposeUiTest {
         mainClock.autoAdvance = false
@@ -30,15 +32,15 @@ class ChromeMessageTimerTest {
         }
         waitForIdle()
 
-        runOnIdle { player.emit(VideoEvents.DisplayMessage, DisplayMessage("Saved", 1_000.0)) }
+        runOnIdle { player.emit(VideoEvents.DisplayMessage, DisplayMessage(notice, 1_000.0)) }
         mainClock.advanceTimeByFrame()
-        onNodeWithText("Saved").assertIsDisplayed()
+        onNodeWithText(notice).assertIsDisplayed()
         mainClock.advanceTimeBy(600)
 
-        runOnIdle { player.emit(VideoEvents.DisplayMessage, DisplayMessage("Saved", 1_000.0)) }
+        runOnIdle { player.emit(VideoEvents.DisplayMessage, DisplayMessage(notice, 1_000.0)) }
         mainClock.advanceTimeByFrame()
         mainClock.advanceTimeBy(500)
 
-        onNodeWithText("Saved").assertIsDisplayed()
+        onNodeWithText(notice).assertIsDisplayed()
     }
 }
