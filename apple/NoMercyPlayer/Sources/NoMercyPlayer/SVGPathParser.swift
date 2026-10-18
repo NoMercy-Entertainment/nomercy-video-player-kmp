@@ -28,8 +28,8 @@ public enum PathCommand: Equatable, Sendable {
 ///
 /// Compose gets this for free — `PathParser` ships with it — and SwiftUI does
 /// not, which is the only reason this file exists. It is deliberately not a
-/// general SVG parser: arcs, `S`, `T` and elliptical commands are absent
-/// because the table has none, and a parser that silently accepted them by
+/// general SVG parser: `S` and `T` commands are absent because the table has
+/// none, and a parser that silently accepted them by
 /// ignoring them would draw a subtly wrong icon rather than fail.
 ///
 /// Both absolute and relative forms are handled, because the table uses both.
@@ -86,6 +86,16 @@ public enum SVGPathParser {
                 commands.append(.quad(to: end, control: control))
                 current = end
 
+            case "a":
+                let radii = scanner.point()
+                let rotation = scanner.number()
+                let largeArc = scanner.number() != 0
+                let sweep = scanner.number() != 0
+                let end = absolute(scanner.point())
+                commands.append(contentsOf: arc(from: current, to: end, radii: radii,
+                                                rotation: rotation, largeArc: largeArc, sweep: sweep))
+                current = end
+
             case "z":
                 commands.append(.close)
                 current = start
@@ -100,6 +110,66 @@ public enum SVGPathParser {
         }
 
         return commands
+    }
+
+    private static func arc(
+        from start: CGPoint, to end: CGPoint, radii: CGPoint,
+        rotation: CGFloat, largeArc: Bool, sweep: Bool
+    ) -> [PathCommand] {
+        var rx = abs(Double(radii.x))
+        var ry = abs(Double(radii.y))
+        if start == end { return [] }
+        if rx == 0 || ry == 0 { return [.line(end)] }
+
+        let phi = Double(rotation) * .pi / 180
+        let cosine = cos(phi)
+        let sine = sin(phi)
+        let dx = (Double(start.x) - Double(end.x)) / 2
+        let dy = (Double(start.y) - Double(end.y)) / 2
+        let x1 = cosine * dx + sine * dy
+        let y1 = -sine * dx + cosine * dy
+        let size = x1 * x1 / (rx * rx) + y1 * y1 / (ry * ry)
+        if size > 1 {
+            let scale = sqrt(size)
+            rx *= scale
+            ry *= scale
+        }
+
+        let numerator = max(0, rx * rx * ry * ry - rx * rx * y1 * y1 - ry * ry * x1 * x1)
+        let denominator = rx * rx * y1 * y1 + ry * ry * x1 * x1
+        let factor = (largeArc == sweep ? -1.0 : 1.0) * sqrt(numerator / denominator)
+        let centerX1 = factor * rx * y1 / ry
+        let centerY1 = -factor * ry * x1 / rx
+        let centerX = cosine * centerX1 - sine * centerY1 + (Double(start.x) + Double(end.x)) / 2
+        let centerY = sine * centerX1 + cosine * centerY1 + (Double(start.y) + Double(end.y)) / 2
+
+        let ux = (x1 - centerX1) / rx
+        let uy = (y1 - centerY1) / ry
+        let vx = (-x1 - centerX1) / rx
+        let vy = (-y1 - centerY1) / ry
+        var angle = atan2(uy, ux)
+        var extent = atan2(ux * vy - uy * vx, ux * vx + uy * vy)
+        if sweep && extent < 0 { extent += 2 * .pi }
+        if !sweep && extent > 0 { extent -= 2 * .pi }
+        let count = max(1, Int(ceil(abs(extent) / (.pi / 2))))
+        let step = extent / Double(count)
+
+        func point(_ x: Double, _ y: Double) -> CGPoint {
+            CGPoint(x: CGFloat(centerX + rx * cosine * x - ry * sine * y),
+                    y: CGFloat(centerY + rx * sine * x + ry * cosine * y))
+        }
+
+        var result: [PathCommand] = []
+        for index in 0..<count {
+            let next = angle + step
+            let tangent = 4.0 / 3.0 * tan(step / 4.0)
+            let control1 = point(cos(angle) - tangent * sin(angle), sin(angle) + tangent * cos(angle))
+            let control2 = point(cos(next) + tangent * sin(next), sin(next) - tangent * cos(next))
+            result.append(.curve(to: index == count - 1 ? end : point(cos(next), sin(next)),
+                                 control1: control1, control2: control2))
+            angle = next
+        }
+        return result
     }
 
     public static func apply(_ commands: [PathCommand], to path: inout Path) {

@@ -94,6 +94,13 @@ final class SVGPathParserTests: XCTestCase {
         XCTAssertEqual(point.y, -7)
     }
 
+    func testRelativeArcCompletesTheStyledDots() {
+        let commands = SVGPathParser.parse("M16.048 10.58a1.25 1.25 0 1 1 2.414-.647Z")
+
+        XCTAssertGreaterThan(commands.count, 2, "the arc must produce drawable curves")
+        XCTAssertEqual(commands.last, .close)
+    }
+
     // Every icon in the table parses to something, which is the check that the
     // generated file and this parser agree.
     func testEveryGeneratedIconParses() {
