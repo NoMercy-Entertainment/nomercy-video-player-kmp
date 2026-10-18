@@ -765,6 +765,7 @@ public final class tv/nomercy/player/video/cast/VideoCastPlugin$Manifest : tv/no
 public final class tv/nomercy/player/video/cast/WakeOutcome : java/lang/Enum {
 	public static final field AWOKE Ltv/nomercy/player/video/cast/WakeOutcome;
 	public static final field CAST_FALLBACK Ltv/nomercy/player/video/cast/WakeOutcome;
+	public static final field LAUNCH_REFUSED Ltv/nomercy/player/video/cast/WakeOutcome;
 	public static final field NO_ROUTE Ltv/nomercy/player/video/cast/WakeOutcome;
 	public static final field UNSUPPORTED Ltv/nomercy/player/video/cast/WakeOutcome;
 	public static final field WAKE_SENT Ltv/nomercy/player/video/cast/WakeOutcome;

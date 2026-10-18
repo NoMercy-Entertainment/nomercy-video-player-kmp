@@ -229,6 +229,38 @@ class VideoCastPluginTest {
     }
 
     @Test
+    fun refusedTransferReturnsLocalPlaybackControl() = runTest {
+        val rig: Rig = rig()
+        rig.client.launchAccepted = false
+
+        val accepted = rig.player.transferTo(CastTarget(id = "dev-a", name = "Living Room"))
+        val playedBefore = rig.backend.playCount
+        rig.player.play()
+
+        assertEquals(false, accepted)
+        assertEquals(RemoteStatus.DISCONNECTED, rig.plugin.status.value)
+        assertTrue(rig.plugin.casting.not())
+        assertTrue(rig.backend.playCount > playedBefore, "local play was prevented after launch was refused")
+        assertEquals(emptyList(), rig.client.commands.filter { it == "play" })
+    }
+
+    @Test
+    fun refusedStartCastReportsFailureAndReturnsLocalPlaybackControl() = runTest {
+        val rig: Rig = rig()
+        rig.client.launchAccepted = false
+
+        val outcome = rig.plugin.startCast(device(), "https://media.example.test/a.mkv")
+        val playedBefore = rig.backend.playCount
+        rig.player.play()
+
+        assertEquals(WakeOutcome.LAUNCH_REFUSED, outcome)
+        assertEquals(RemoteStatus.DISCONNECTED, rig.plugin.status.value)
+        assertTrue(rig.plugin.casting.not())
+        assertTrue(rig.backend.playCount > playedBefore, "local play was prevented after launch was refused")
+        assertEquals(emptyList(), rig.client.commands.filter { it == "play" })
+    }
+
+    @Test
     fun takingPlaybackBackResumesWhereTheSetGotToRatherThanWhereThisDeviceLeftOff() = runTest {
         // The viewer walked out of the living room forty minutes in. Resuming at
         // the position this phone was paused at when the session STARTED is the
