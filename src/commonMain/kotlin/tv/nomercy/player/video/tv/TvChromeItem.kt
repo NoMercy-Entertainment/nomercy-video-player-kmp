@@ -84,7 +84,9 @@ private fun numberOf(item: TvChromeItem, labels: EpisodeLabels): String? {
 
     return when {
         isNonSeasonal(item) -> "$episode"
-        season != null && season != 0 -> "${labels.season}$season${labels.episode}$episode"
+        season != null && season > 0 -> "${labels.season}$season${labels.episode}$episode"
+        // A season below one is bad data; the title bar drops it, so this line does too.
+        season != null && season < 0 -> "${labels.episode}$episode"
         // Season zero is where a library puts everything that is not part of the
         // run itself. Calling it season zero to a viewer means nothing.
         season == 0 -> "${labels.extras} ${labels.episode}$episode"
