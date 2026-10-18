@@ -53,6 +53,7 @@ public class TvChromeController(
     public val ui: StateFlow<TvChromeUi> = state.asStateFlow()
 
     private var autoHide: Cancellable? = null
+    private var volumeHide: Cancellable? = null
 
     // Answers whether the press was consumed. False hands it back, which is what
     // lets a focused button take its own centre press and what lets the host
@@ -287,14 +288,18 @@ public class TvChromeController(
     }
 
     public fun showVolume() {
+        volumeHide?.cancel()
         state.value = state.value.copy(volumeIndicatorVisible = true)
-        scheduler.schedule(VOLUME_VISIBLE_MS) {
+        volumeHide = scheduler.schedule(VOLUME_VISIBLE_MS) {
+            volumeHide = null
             state.value = state.value.copy(volumeIndicatorVisible = false)
         }
     }
 
     public fun dispose() {
         cancelAutoHide()
+        volumeHide?.cancel()
+        volumeHide = null
     }
 
     // Only while playing. Hiding the controls over a paused picture leaves a

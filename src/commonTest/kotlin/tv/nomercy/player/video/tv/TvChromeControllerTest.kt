@@ -41,15 +41,17 @@ class TvChromeControllerTest {
     // auto-hide assertable without waiting five seconds for it.
     private class ManualScheduler : Scheduler {
         private val pending: MutableList<Pair<Long, () -> Unit>> = mutableListOf()
+        private var nowMs: Long = 0
 
         override fun schedule(delayMs: Long, action: () -> Unit): Cancellable {
-            val entry: Pair<Long, () -> Unit> = delayMs to action
+            val entry: Pair<Long, () -> Unit> = (nowMs + delayMs) to action
             pending += entry
             return Cancellable { pending.remove(entry) }
         }
 
         fun elapse(ms: Long) {
-            val due: List<Pair<Long, () -> Unit>> = pending.filter { it.first <= ms }
+            nowMs += ms
+            val due: List<Pair<Long, () -> Unit>> = pending.filter { it.first <= nowMs }
             pending.removeAll(due)
             due.forEach { it.second() }
         }
@@ -307,6 +309,30 @@ class TvChromeControllerTest {
         // watching, once per screen ever opened.
         val controller: TvChromeController = watching(playing = true)
         controller.onKey(PlayerKey.Up)
+
+        controller.dispose()
+
+        assertEquals(0, scheduler.outstanding)
+    }
+
+    @Test
+    fun anotherVolumePressRestartsTheVisibleWindow() {
+        val controller = TvChromeController(callbacks, scheduler, playing = false, startOnPreScreen = false)
+        controller.showVolume()
+        scheduler.elapse(1_500)
+
+        controller.showVolume()
+        scheduler.elapse(600)
+
+        assertTrue(controller.ui.value.volumeIndicatorVisible)
+        scheduler.elapse(1_400)
+        assertFalse(controller.ui.value.volumeIndicatorVisible)
+    }
+
+    @Test
+    fun disposingCancelsTheVolumeHide() {
+        val controller = TvChromeController(callbacks, scheduler, playing = false, startOnPreScreen = false)
+        controller.showVolume()
 
         controller.dispose()
 
