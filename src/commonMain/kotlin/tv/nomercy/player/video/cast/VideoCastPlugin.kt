@@ -120,7 +120,9 @@ public open class VideoCastPlugin(
         if (waker.wake(target.id) == WakeOutcome.NO_ROUTE) return false
 
         controller.connect()
-        return controller.launch(url, positionSeconds = position)
+        val accepted = controller.launch(url, positionSeconds = position)
+        if (!accepted) controller.disconnect()
+        return accepted
     }
 
     // Take it back, and say where the set had got to.
@@ -150,7 +152,10 @@ public open class VideoCastPlugin(
         controller.connect()
         // The url was accepted here and thrown away, so a viewer who started a
         // cast got a connected session showing whatever the set had been on.
-        controller.launch(url)
+        if (!controller.launch(url)) {
+            controller.disconnect()
+            return WakeOutcome.LAUNCH_REFUSED
+        }
         return outcome
     }
 

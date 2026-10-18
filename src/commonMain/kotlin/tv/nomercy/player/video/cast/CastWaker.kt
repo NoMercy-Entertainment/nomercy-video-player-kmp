@@ -10,18 +10,19 @@ package tv.nomercy.player.video.cast
 
 import tv.nomercy.player.core.events.CastTarget
 
-// What happened when a sleeping television was asked to wake.
+// What happened while waking the television or launching media on it.
 //
-// Five outcomes rather than a boolean, because the caller does different things
+// An outcome rather than a boolean, because the caller does different things
 // with them: an already-awake set can be cast to immediately, a wake that was
-// merely sent needs a moment, and no route at all is the one a viewer has to be
-// told about.
+// merely sent needs a moment, and a missing route or refused launch must be
+// reported to the viewer.
 public enum class WakeOutcome {
     AWOKE,
     WAKE_SENT,
     CAST_FALLBACK,
     NO_ROUTE,
     UNSUPPORTED,
+    LAUNCH_REFUSED,
 }
 
 // Waking a television panel so it can accept a cast.

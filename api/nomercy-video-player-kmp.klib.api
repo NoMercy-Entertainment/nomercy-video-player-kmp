@@ -77,6 +77,7 @@ final enum class tv.nomercy.player.video.cast/RemoteStatus : kotlin/Enum<tv.nome
 final enum class tv.nomercy.player.video.cast/WakeOutcome : kotlin/Enum<tv.nomercy.player.video.cast/WakeOutcome> { // tv.nomercy.player.video.cast/WakeOutcome|null[0]
     enum entry AWOKE // tv.nomercy.player.video.cast/WakeOutcome.AWOKE|null[0]
     enum entry CAST_FALLBACK // tv.nomercy.player.video.cast/WakeOutcome.CAST_FALLBACK|null[0]
+    enum entry LAUNCH_REFUSED // tv.nomercy.player.video.cast/WakeOutcome.LAUNCH_REFUSED|null[0]
     enum entry NO_ROUTE // tv.nomercy.player.video.cast/WakeOutcome.NO_ROUTE|null[0]
     enum entry UNSUPPORTED // tv.nomercy.player.video.cast/WakeOutcome.UNSUPPORTED|null[0]
     enum entry WAKE_SENT // tv.nomercy.player.video.cast/WakeOutcome.WAKE_SENT|null[0]
