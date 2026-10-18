@@ -224,4 +224,15 @@ class ChromeMessageTest {
         player.emit(CoreEvents.Item, ItemChange(item = null, index = 1))
         assertEquals(ChromeMessage(strings.loading, ChromeMessage.Kind.Feedback), channel.message)
     }
+
+    @Test
+    fun identicalTimedNoticesHaveDifferentIds() {
+        val channel = ChromeMessageChannel()
+        channel.timed("Volume 50")
+        val firstId = channel.noticeId
+
+        channel.timed("Volume 50")
+
+        assertEquals(firstId + 1, channel.noticeId)
+    }
 }
