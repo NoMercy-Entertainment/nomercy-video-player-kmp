@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -89,11 +90,16 @@ public fun rememberTvChrome(
     // stalling.
     var preview: Float? by remember { mutableStateOf(null) }
 
+    // Read at call time: the host's lambdas change as its state does.
+    val latestExit by rememberUpdatedState(onExit)
+    val latestSelect by rememberUpdatedState(onSelectEpisode)
+    val latestSearch by rememberUpdatedState(onSearchSubtitles)
+
     val callbacks: TvChromeCallbacks = remember(player, scope) {
-        PlayerTvCallbacks(player, scope, onExit) { preview = it }
+        PlayerTvCallbacks(player, scope, { latestExit() }) { preview = it }
     }
     val content: TvContentCallbacks = remember(player, scope) {
-        PlayerTvContent(player, scope, onSelectEpisode, onSearchSubtitles)
+        PlayerTvContent(player, scope, { latestSelect(it) }, { latestSearch() })
     }
     val scheduler = rememberChromeScheduler()
 
