@@ -101,13 +101,13 @@ public fun rememberChromeMessage(player: NMVideoPlayer, strings: TvChromeStrings
         onDispose { subscriptions.forEach(Subscription::dispose) }
     }
 
-    // Keyed on the message as well as the delay: two identical requests in a row
-    // are two notices, and keying on the duration alone would let the second ride
-    // out the first one's remaining time.
+    // Each request gets a new id, even if its text and duration are unchanged.
+    // Compose compares message values structurally, so those alone cannot
+    // restart the expiry effect for an identical second notice.
     val after: Double? = channel.expiresAfterMs
 
     if (after != null) {
-        LaunchedEffect(channel.message, after) {
+        LaunchedEffect(channel.message, after, channel.noticeId) {
             delay(after.toLong())
             channel.clear()
         }
@@ -131,6 +131,9 @@ internal class ChromeMessageChannel(private val clock: TimeSource = TimeSource.M
     public var expiresAfterMs: Double? by mutableStateOf(null)
         private set
 
+    public var noticeId: Long by mutableStateOf(0L)
+        private set
+
     fun feedback(text: String, replaceFailure: Boolean = false) {
         if (!replaceFailure && message?.kind == ChromeMessage.Kind.Failure) return
         message = ChromeMessage(text, ChromeMessage.Kind.Feedback)
@@ -141,12 +144,14 @@ internal class ChromeMessageChannel(private val clock: TimeSource = TimeSource.M
     // Time tick, and neither follows a volume press.
     fun timed(text: String) {
         if (message?.kind == ChromeMessage.Kind.Failure) return
+        noticeId++
         message = ChromeMessage(text, ChromeMessage.Kind.Host)
         expiresAfterMs = TIMED_MESSAGE_MS
     }
 
     fun host(text: String, ms: Double?) {
         if (message?.kind == ChromeMessage.Kind.Failure) return
+        noticeId++
         message = ChromeMessage(text, ChromeMessage.Kind.Host)
         expiresAfterMs = ms
     }
