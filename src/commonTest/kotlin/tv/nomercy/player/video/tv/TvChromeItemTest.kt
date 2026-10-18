@@ -44,6 +44,15 @@ class TvChromeItemTest {
     }
 
     @Test
+    fun aNegativeSeasonIsDroppedLikeTheTitleBarDropsIt() {
+        // titleBarText shows only the episode for a season below one, so the
+        // line underneath must not print "S-1E3" for the same item.
+        val odd = TvChromeItem(title = "The Bridge", show = "Rail Wars", season = -1, episode = 3)
+
+        assertEquals("E3 • The Bridge", episodeLabel(odd))
+    }
+
+    @Test
     fun aCollectionIsNumberedWithoutInventingASeason() {
         // The failure this exists to stop. Numbering a collection like a series
         // produces a season that does not exist.
