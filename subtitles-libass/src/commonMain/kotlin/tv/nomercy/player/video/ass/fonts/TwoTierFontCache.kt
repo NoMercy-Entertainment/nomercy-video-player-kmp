@@ -78,7 +78,7 @@ public class TwoTierFontCache(
     private class IndexEntry(
         val path: Path,
         val assName: String?,
-        var lastUsedMs: Long,
+        var lastUsedMs: Long?,
     )
 
     public fun put(displayName: String, bytes: ByteArray, assName: String? = null) {
@@ -95,7 +95,7 @@ public class TwoTierFontCache(
         }
 
         val key: String = normalise(displayName)
-        index[key] = IndexEntry(path, assName, lastUsedMs = 0L)
+        index[key] = IndexEntry(path, assName, lastUsedMs = null)
         memory[key] = CachedFont(canonicalFamilies(displayName, bytes, assName), bytes)
     }
 
@@ -141,11 +141,14 @@ public class TwoTierFontCache(
             }
             if (!wanted) continue
 
+            // A repeat request still means this font is in use, even when the
+            // renderer already has every name and addFont has no work to do.
+            index[name]?.lastUsedMs = nowMs
+
             val fresh: List<String> = font.registerNames.filter { registered.add(normalise(it)) }
             if (fresh.isEmpty()) continue
 
             for (family in fresh) renderer.addFont(family, font.bytes)
-            index[name]?.lastUsedMs = nowMs
         }
     }
 
@@ -161,7 +164,15 @@ public class TwoTierFontCache(
     // nobody is returning to.
     public fun evictStale(nowMs: Long, maxAgeMs: Long = THIRTY_DAYS_MS) {
         for ((key, entry) in index.entries.toList()) {
-            if (nowMs - entry.lastUsedMs < maxAgeMs) continue
+            // put/adopt have no clock. Start the age window when eviction first
+            // sees a never-registered font instead of treating epoch zero as
+            // its insertion time. A real registration at zero remains valid.
+            val lastUsedMs = entry.lastUsedMs
+            if (lastUsedMs == null) {
+                entry.lastUsedMs = nowMs
+                continue
+            }
+            if (nowMs - lastUsedMs < maxAgeMs) continue
 
             if (fileSystem.exists(entry.path)) fileSystem.delete(entry.path)
             index.remove(key)
@@ -186,7 +197,7 @@ public class TwoTierFontCache(
             if (bytes.isEmpty()) continue
 
             val family: String = TtfNameParser.extractFontName(bytes, path.name.substringBefore('.'))
-            index[normalise(family)] = IndexEntry(path, assName = null, lastUsedMs = 0L)
+            index[normalise(family)] = IndexEntry(path, assName = null, lastUsedMs = null)
         }
     }
 
