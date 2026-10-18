@@ -163,6 +163,42 @@ class TwoTierFontCacheTest {
     }
 
     @Test
+    fun aNewFontSurvivesEvictionBeforeRegistration() {
+        cache.put("new.ttf", bytes(1), assName = "New")
+
+        cache.evictStale(nowMs = THIRTY_ONE_DAYS_MS)
+
+        assertEquals("New", cache.get("new.ttf")?.registerName)
+        assertEquals(1, fs.list("/cache/fonts".toPath()).size)
+    }
+
+    @Test
+    fun anAdoptedFontSurvivesEvictionBeforeRegistration() {
+        val orphan = "/cache/fonts/${"a".repeat(SHA256_HEX)}.ttf".toPath()
+        fs.createDirectories(orphan.parent!!)
+        fs.write(orphan) { write(bytes(3)) }
+        cache.adoptOrphans()
+
+        cache.evictStale(nowMs = THIRTY_ONE_DAYS_MS)
+
+        assertTrue(cache.families().isNotEmpty())
+        assertTrue(fs.exists(orphan))
+    }
+
+    @Test
+    fun aRepeatedRegistrationRefreshesTheLastUsedTime() {
+        cache.put("again.ttf", bytes(1), assName = "Again")
+        val renderer = RecordingRenderer()
+        cache.registerInto(renderer, emptySet(), nowMs = ONE_DAY_MS)
+        cache.registerInto(renderer, emptySet(), nowMs = THIRTY_ONE_DAYS_MS)
+
+        cache.evictStale(nowMs = THIRTY_ONE_DAYS_MS + ONE_DAY_MS)
+
+        assertEquals("Again", cache.get("again.ttf")?.registerName)
+        assertEquals(1, renderer.added.size)
+    }
+
+    @Test
     fun aFileLeftBehindByAForceKillIsAdoptedRatherThanDeleted() {
         // The font was written and the process died before the index reached
         // disk. Deleting it throws away something already downloaded and makes
