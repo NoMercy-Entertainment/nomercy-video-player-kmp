@@ -9,8 +9,10 @@
 package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.video.Stretching
 import kotlinx.coroutines.CoroutineScope
@@ -170,14 +172,18 @@ public fun rememberVideoCommands(
     onMenu: (MenuState) -> Unit,
 ): ChromeCommands {
     val scope: CoroutineScope = rememberCoroutineScope()
+    // The commands outlive a recomposition; the host's lambdas must not be frozen.
+    val latestMenu by rememberUpdatedState(onMenu)
+    val latestAutoSkip by rememberUpdatedState(autoSkip.onChange)
+    val latestClock by rememberUpdatedState(clock.onChange)
 
     return remember(player, scope) {
         VideoChromeCommands(
             player,
             scope,
-            onMenu = onMenu,
-            onAutoSkipChange = autoSkip.onChange,
-            onShowRemainingChange = clock.onChange,
+            onMenu = { latestMenu(it) },
+            onAutoSkipChange = { latestAutoSkip(it) },
+            onShowRemainingChange = { latestClock(it) },
         )
     }
 }
