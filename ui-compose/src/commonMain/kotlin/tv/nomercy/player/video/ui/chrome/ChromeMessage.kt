@@ -131,7 +131,8 @@ internal class ChromeMessageChannel(private val clock: TimeSource = TimeSource.M
     public var expiresAfterMs: Double? by mutableStateOf(null)
         private set
 
-    fun feedback(text: String) {
+    fun feedback(text: String, replaceFailure: Boolean = false) {
+        if (!replaceFailure && message?.kind == ChromeMessage.Kind.Failure) return
         message = ChromeMessage(text, ChromeMessage.Kind.Feedback)
         expiresAfterMs = null
     }
@@ -139,11 +140,13 @@ internal class ChromeMessageChannel(private val clock: TimeSource = TimeSource.M
     // A notice that clears itself. The feedback channel waits for a Playing or a
     // Time tick, and neither follows a volume press.
     fun timed(text: String) {
+        if (message?.kind == ChromeMessage.Kind.Failure) return
         message = ChromeMessage(text, ChromeMessage.Kind.Host)
         expiresAfterMs = TIMED_MESSAGE_MS
     }
 
     fun host(text: String, ms: Double?) {
+        if (message?.kind == ChromeMessage.Kind.Failure) return
         message = ChromeMessage(text, ChromeMessage.Kind.Host)
         expiresAfterMs = ms
     }
@@ -195,6 +198,7 @@ internal class ChromeMessageChannel(private val clock: TimeSource = TimeSource.M
     }
 
     fun clear() {
+        if (message?.kind == ChromeMessage.Kind.Failure) return
         message = null
         expiresAfterMs = null
     }
@@ -207,7 +211,7 @@ internal class ChromeMessageChannel(private val clock: TimeSource = TimeSource.M
         player.on(VideoEvents.Stalled) {
             if (waitIsWorthAnnouncing(player.phase())) feedback(strings.buffering)
         },
-        player.on(CoreEvents.Item) { feedback(strings.loading) },
+        player.on(CoreEvents.Item) { feedback(strings.loading, replaceFailure = true) },
         player.on(CoreEvents.Playing) { clearFeedback() },
         player.on(CoreEvents.Time) { clearFeedback() },
         // And a pause takes down whatever is already up.

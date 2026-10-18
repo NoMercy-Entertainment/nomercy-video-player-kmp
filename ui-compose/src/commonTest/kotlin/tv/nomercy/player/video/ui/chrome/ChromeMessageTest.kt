@@ -187,4 +187,41 @@ class ChromeMessageTest {
 
         assertNotEquals(buffering.kind, asked.kind)
     }
+
+    @Test
+    fun aTimedNoticeCannotEraseAPlaybackFailure() {
+        val channel = ChromeMessageChannel()
+        channel.failure("Decoder failed")
+
+        channel.timed("Volume 50")
+        channel.clear()
+
+        assertEquals(ChromeMessage("Decoder failed", ChromeMessage.Kind.Failure), channel.message)
+    }
+
+    @Test
+    fun aHostNoticeCannotEraseAPlaybackFailure() {
+        val channel = ChromeMessageChannel()
+        channel.failure("Decoder failed")
+
+        channel.host("Saved", 1_200.0)
+        channel.clear()
+
+        assertEquals(ChromeMessage("Decoder failed", ChromeMessage.Kind.Failure), channel.message)
+    }
+
+    @Test
+    fun aPlaybackFailureStaysUntilTheNextItemLoads() {
+        val player = NMVideoPlayer(RecordingVideoBackend())
+        val strings = tvChromeStrings("en")
+        val channel = ChromeMessageChannel()
+        channel.subscribeToPlayback(player, strings)
+        channel.failure("Decoder failed")
+
+        channel.feedback(strings.buffering)
+        assertEquals(ChromeMessage("Decoder failed", ChromeMessage.Kind.Failure), channel.message)
+
+        player.emit(CoreEvents.Item, ItemChange(item = null, index = 1))
+        assertEquals(ChromeMessage(strings.loading, ChromeMessage.Kind.Feedback), channel.message)
+    }
 }
