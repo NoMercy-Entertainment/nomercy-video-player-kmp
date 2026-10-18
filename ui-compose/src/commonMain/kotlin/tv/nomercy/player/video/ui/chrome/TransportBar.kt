@@ -166,7 +166,8 @@ public fun TransportBar(
             // in.
             val moved: List<ChromeControl> = buttonOrder.filter { it in fits }.distinct()
             val natural: Set<ChromeControl> = fits - moved.toSet()
-            val spec: VolumeSpec = volumeSpecFor(state, strings, volumeSlider, widthDp)
+            val hasHover: Boolean = !rememberDeviceCapabilities().hasTouch
+            val spec: VolumeSpec = volumeSpecFor(state, strings, volumeSlider, widthDp, hasHover)
 
             TransportButtons(state, commands, strings, natural)
             VolumeCluster(state, commands, natural, spec)

@@ -303,8 +303,10 @@ internal fun volumeSpecFor(
     strings: TvChromeStrings,
     mode: VolumeSliderMode,
     playerWidthDp: Int,
+    hasHover: Boolean = true,
 ): VolumeSpec = VolumeSpec(
     label = if (state.muted) strings.unmute else strings.mute,
     mode = mode,
     playerWidthDp = playerWidthDp,
+    hasHover = hasHover,
 )

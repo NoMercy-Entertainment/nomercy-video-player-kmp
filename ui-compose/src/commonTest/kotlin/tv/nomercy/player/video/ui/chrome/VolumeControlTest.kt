@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ui.chrome
 
 import androidx.compose.ui.unit.dp
+import tv.nomercy.player.video.ui.tv.TvChromeStrings
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -41,6 +42,17 @@ class VolumeControlTest {
     @Test
     fun theReservedWidthIsTheTrackPlusItsMargins() {
         assertEquals(CHROME_VOLUME_SLIDER_WIDTH.dp, expandedWidthFor(1280) + 8.dp + 8.dp)
+    }
+
+    @Test
+    fun autoUsesThePopupOnAWideTouchPlayer() {
+        val state = ChromeState(timeSeconds = 0.0, durationSeconds = 0.0)
+        val strings = TvChromeStrings()
+        val touch = volumeSpecFor(state, strings, VolumeSliderMode.Auto, 800, hasHover = false)
+        val mouse = volumeSpecFor(state, strings, VolumeSliderMode.Auto, 800, hasHover = true)
+
+        assertEquals(true, touch.vertical)
+        assertEquals(false, mouse.vertical)
     }
 
     @Test
