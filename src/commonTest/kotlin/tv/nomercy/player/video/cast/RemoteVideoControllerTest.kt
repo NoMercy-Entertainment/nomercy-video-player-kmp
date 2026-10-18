@@ -9,11 +9,15 @@
 package tv.nomercy.player.video.cast
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 // The television as one object, driven and followed.
@@ -42,6 +46,42 @@ class RemoteVideoControllerTest {
 
         assertEquals("Blade Runner 2049", controller.state.value?.itemTitle)
         assertEquals(RemoteStatus.CONNECTED, controller.status.value)
+    }
+
+    @Test
+    fun aCompletedEventStreamDisconnects() = runTest {
+        val client = object : TvControlClient by FakeTvControlClient() {
+            override fun events(): Flow<RemoteEvent> = emptyFlow()
+        }
+        val controller = RemoteVideoController(client, eager())
+
+        controller.connect()
+
+        assertEquals(RemoteStatus.DISCONNECTED, controller.status.value)
+    }
+
+    @Test
+    fun aFailedEventStreamDisconnects() = runTest {
+        val client = object : TvControlClient by FakeTvControlClient() {
+            override fun events(): Flow<RemoteEvent> = flow { throw IllegalStateException("stream lost") }
+        }
+        val controller = RemoteVideoController(client, eager())
+
+        controller.connect()
+
+        assertEquals(RemoteStatus.DISCONNECTED, controller.status.value)
+    }
+
+    @Test
+    fun aFailedSessionRequestDisconnects() = runTest {
+        val client = object : TvControlClient by FakeTvControlClient() {
+            override suspend fun getSession(): RemotePlayerState = error("TV unavailable")
+        }
+        val controller = RemoteVideoController(client, eager())
+
+        assertFailsWith<IllegalStateException> { controller.connect() }
+
+        assertEquals(RemoteStatus.DISCONNECTED, controller.status.value)
     }
 
     @Test

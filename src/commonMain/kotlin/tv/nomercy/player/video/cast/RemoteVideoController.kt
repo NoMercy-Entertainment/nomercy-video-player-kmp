@@ -8,6 +8,7 @@
 
 package tv.nomercy.player.video.cast
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,24 +49,43 @@ public open class RemoteVideoController(
     public val status: StateFlow<RemoteStatus> = currentStatus.asStateFlow()
 
     private var subscription: Job? = null
+    private var connectionId: Long = 0
 
     // Ask first, then listen.
     //
     // A phone joining a session already in progress would otherwise show nothing
     // until the set next changed something — which, on a paused film, is however
     // long the viewer stays paused.
+    @Suppress("TooGenericExceptionCaught")
     public open suspend fun connect() {
+        val id = ++connectionId
+        subscription?.cancel()
+        subscription = null
         currentStatus.value = RemoteStatus.CONNECTING
-        currentState.value = client.getSession()
+        try {
+            currentState.value = client.getSession()
+        } catch (failure: Throwable) {
+            if (id == connectionId) currentStatus.value = RemoteStatus.DISCONNECTED
+            throw failure
+        }
+        if (id != connectionId) return
         currentStatus.value = RemoteStatus.CONNECTED
 
-        subscription?.cancel()
         subscription = scope.launch {
-            client.events().collect(::apply)
+            try {
+                client.events().collect(::apply)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // A failed stream is a lost connection, just like a clean end.
+            } finally {
+                if (id == connectionId) currentStatus.value = RemoteStatus.DISCONNECTED
+            }
         }
     }
 
     public open fun disconnect() {
+        ++connectionId
         subscription?.cancel()
         subscription = null
         currentStatus.value = RemoteStatus.DISCONNECTED
