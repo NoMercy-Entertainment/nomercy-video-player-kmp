@@ -76,14 +76,20 @@ public class ComposedPlayerReceiverPlayback(
     }
 
     private suspend fun setAudioTrack(command: ReceiverCommand.SetAudioTrack) {
-        val index: Int = command.trackId.toIntOrNull() ?: return
+        val index: Int = trackIndex(player.audioTracks().map { it.id }, command.trackId) ?: return
         player.audioTrackMode(index)
     }
 
+    // A null id turns captions off; an id that matches nothing changes nothing.
     private suspend fun setSubtitleTrack(command: ReceiverCommand.SetSubtitleTrack) {
-        val index: Int? = command.trackId?.toIntOrNull()
-        player.subtitle(index?.let { player.subtitles().getOrNull(it) })
+        val id: String = command.trackId ?: return player.subtitle(null)
+        val index: Int = trackIndex(player.subtitles().map { it.id }, id) ?: return
+        player.subtitle(player.subtitles().getOrNull(index))
     }
+
+    // The state frame reports track ids, the web sender sends list indexes: take either.
+    private fun trackIndex(ids: List<String>, wanted: String): Int? =
+        ids.indexOf(wanted).takeIf { it >= 0 } ?: wanted.toIntOrNull()
 
     // Pick against the filtered (video-only) list, then re-derive the real
     // index against the UNFILTERED list qualityMode() indexes — same idiom as

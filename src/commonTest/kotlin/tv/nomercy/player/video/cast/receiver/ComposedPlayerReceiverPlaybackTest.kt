@@ -69,8 +69,16 @@ private data class Clip(override val id: String, override val url: String, overr
 // the minimum VideoBackend needs to prove SetQuality resolves against the
 // right list, which RecordingReceiverBackend above (a plain MediaBackend)
 // cannot do.
-private class RecordingVideoBackend(private val levels: List<QualityLevel>) : VideoBackend {
+private class RecordingVideoBackend(
+    private val levels: List<QualityLevel>,
+    private val audio: List<AudioTrack> = emptyList(),
+    private val subs: List<SubtitleTrack> = emptyList(),
+) : VideoBackend {
     var qualityPicked: QualityLevel? = null
+        private set
+    var audioPicked: AudioTrack? = null
+        private set
+    var subtitlePicked: SubtitleTrack? = null
         private set
     private var time: Double = 0.0
     private val listeners = mutableMapOf<String, MutableList<(Any?) -> Unit>>()
@@ -95,12 +103,12 @@ private class RecordingVideoBackend(private val levels: List<QualityLevel>) : Vi
     }
     override fun off(event: String, fn: (Any?) -> Unit) { listeners[event]?.remove(fn) }
 
-    override fun audioTracks(): List<AudioTrack> = emptyList()
-    override fun audioTrack(): AudioTrack? = null
-    override fun audioTrack(track: AudioTrack) = Unit
-    override fun subtitleTracks(): List<SubtitleTrack> = emptyList()
-    override fun subtitleTrack(): SubtitleTrack? = null
-    override fun subtitleTrack(track: SubtitleTrack?) = Unit
+    override fun audioTracks(): List<AudioTrack> = audio
+    override fun audioTrack(): AudioTrack? = audioPicked
+    override fun audioTrack(track: AudioTrack) { audioPicked = track }
+    override fun subtitleTracks(): List<SubtitleTrack> = subs
+    override fun subtitleTrack(): SubtitleTrack? = subtitlePicked
+    override fun subtitleTrack(track: SubtitleTrack?) { subtitlePicked = track }
     override fun qualityLevels(): List<QualityLevel> = levels
     override fun quality(): QualityLevel? = qualityPicked
     override fun quality(level: QualityLevel?) { qualityPicked = level }
@@ -214,5 +222,77 @@ class ComposedPlayerReceiverPlaybackTest {
         playback.apply(ReceiverCommand.SetQuality(tv.nomercy.player.video.cast.RemoteQualityLevel.AUTO))
 
         assertNull(backend.qualityPicked)
+    }
+
+    private fun twoAudio() = listOf(
+        AudioTrack(id = "audio:0", language = "en", label = "English"),
+        AudioTrack(id = "audio:1", language = "ja", label = "Japanese"),
+    )
+
+    private fun twoSubs() = listOf(
+        SubtitleTrack(id = "text:0", language = "en", label = "English"),
+        SubtitleTrack(id = "text:1", language = "nl", label = "Dutch"),
+    )
+
+    @Test
+    fun setAudioTrackAcceptsTheIdTheStateFrameReported() = runTest {
+        val backend = RecordingVideoBackend(emptyList(), audio = twoAudio())
+        val player = ComposedPlayer(backend = backend, video = backend, scope = backgroundScope)
+        player.setup(PlayerConfig())
+        val playback = ComposedPlayerReceiverPlayback(player, eager())
+
+        playback.apply(ReceiverCommand.SetAudioTrack("audio:1"))
+
+        assertEquals("audio:1", backend.audioPicked?.id)
+    }
+
+    @Test
+    fun setAudioTrackStillAcceptsANumericIndex() = runTest {
+        val backend = RecordingVideoBackend(emptyList(), audio = twoAudio())
+        val player = ComposedPlayer(backend = backend, video = backend, scope = backgroundScope)
+        player.setup(PlayerConfig())
+        val playback = ComposedPlayerReceiverPlayback(player, eager())
+
+        playback.apply(ReceiverCommand.SetAudioTrack("1"))
+
+        assertEquals("audio:1", backend.audioPicked?.id)
+    }
+
+    @Test
+    fun setSubtitleTrackAcceptsTheIdTheStateFrameReported() = runTest {
+        val backend = RecordingVideoBackend(emptyList(), subs = twoSubs())
+        val player = ComposedPlayer(backend = backend, video = backend, scope = backgroundScope)
+        player.setup(PlayerConfig())
+        val playback = ComposedPlayerReceiverPlayback(player, eager())
+
+        playback.apply(ReceiverCommand.SetSubtitleTrack("text:1"))
+
+        assertEquals("text:1", backend.subtitlePicked?.id)
+    }
+
+    @Test
+    fun anUnknownSubtitleIdLeavesTheCurrentTrackAlone() = runTest {
+        val backend = RecordingVideoBackend(emptyList(), subs = twoSubs())
+        val player = ComposedPlayer(backend = backend, video = backend, scope = backgroundScope)
+        player.setup(PlayerConfig())
+        player.subtitle(twoSubs()[0])
+        val playback = ComposedPlayerReceiverPlayback(player, eager())
+
+        playback.apply(ReceiverCommand.SetSubtitleTrack("nonsense"))
+
+        assertEquals("text:0", backend.subtitlePicked?.id)
+    }
+
+    @Test
+    fun aNullSubtitleIdTurnsCaptionsOff() = runTest {
+        val backend = RecordingVideoBackend(emptyList(), subs = twoSubs())
+        val player = ComposedPlayer(backend = backend, video = backend, scope = backgroundScope)
+        player.setup(PlayerConfig())
+        player.subtitle(twoSubs()[0])
+        val playback = ComposedPlayerReceiverPlayback(player, eager())
+
+        playback.apply(ReceiverCommand.SetSubtitleTrack(null))
+
+        assertNull(backend.subtitlePicked)
     }
 }
