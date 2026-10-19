@@ -30,6 +30,7 @@ public struct NMTvVideoPlayerView<Player: VideoChromePlayer>: View {
 
     private let title: String
     private let subtitle: String
+    private let episodes: [TvDialogRow]
 
     @MainActor
     public init(
@@ -37,8 +38,10 @@ public struct NMTvVideoPlayerView<Player: VideoChromePlayer>: View {
         controller: TvChromeController,
         subtitles: SubtitleRenderer,
         title: String = "",
-        subtitle: String = ""
+        subtitle: String = "",
+        episodes: [TvDialogRow] = []
     ) {
+        self.episodes = episodes
         self.player = player
         self.subtitles = subtitles
         self.title = title
@@ -60,8 +63,8 @@ public struct NMTvVideoPlayerView<Player: VideoChromePlayer>: View {
                 TvSeekStrip(seconds: player.currentTime, duration: player.duration)
             }
 
-            if chrome.model.showsAnyDialog {
-                TvDialogHost(model: chrome.model)
+            if let kind = chrome.model.dialogKind {
+                TvDialogHost(content: dialogContent(kind), onSelect: { select($0, in: kind) })
             }
         }
         // The whole surface takes the remote. A television has no pointer, so a
@@ -85,6 +88,39 @@ public struct NMTvVideoPlayerView<Player: VideoChromePlayer>: View {
         }
         .onChange(of: player.currentTime) { seconds in
             subtitles.update(currentTime: seconds)
+        }
+    }
+
+    private func dialogContent(_ kind: TvDialogKind) -> TvDialogContent {
+        TvDialogContent.make(
+            kind: kind,
+            audio: player.audioOptions,
+            selectedAudioID: player.selectedAudioID,
+            subtitles: player.subtitleOptions,
+            selectedSubtitleID: player.selectedSubtitleID,
+            episodes: episodes
+        )
+    }
+
+    // Choosing closes the list through the machine's back, so the pre-screen
+    // returns exactly as it does when a track is chosen on the shared controller.
+    private func select(_ row: TvDialogRow, in kind: TvDialogKind) {
+        switch kind {
+        case .audio:
+            if let option = player.audioOptions.first(where: { $0.id == row.id }) {
+                player.selectAudio(option)
+            }
+            chrome.back()
+
+        case .subtitles:
+            player.selectSubtitle(player.subtitleOptions.first { $0.id == row.id })
+            chrome.back()
+
+        case .episodes:
+            chrome.controller.chooseEpisode(id: row.id)
+
+        case .subtitleSearch:
+            break
         }
     }
 

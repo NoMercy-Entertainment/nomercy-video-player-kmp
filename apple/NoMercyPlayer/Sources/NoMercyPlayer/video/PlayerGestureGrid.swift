@@ -83,6 +83,25 @@ public struct GestureGrid: Sendable {
     }
 }
 
+/// Turns the running translation of one drag into the step since the last
+/// change. SwiftUI reports the distance from where the finger landed, and
+/// applying that on every change would compound.
+public struct VerticalDragTracker: Sendable {
+    private var last: Double = 0
+
+    public init() {}
+
+    public mutating func step(to translation: Double) -> Double {
+        let delta = translation - last
+        last = translation
+        return delta
+    }
+
+    public mutating func reset() {
+        last = 0
+    }
+}
+
 /// The grid, as a view.
 ///
 /// Transparent and over the whole picture, because on a phone the picture is the
@@ -111,6 +130,7 @@ public struct PlayerGestureGrid: View {
     }
 
     @State private var lastTouch: CGPoint = .zero
+    @State private var tracker = VerticalDragTracker()
 
     public var body: some View {
         GeometryReader { geometry in
@@ -126,11 +146,15 @@ public struct PlayerGestureGrid: View {
                             lastTouch = value.startLocation
 
                             let cell = grid.cell(at: value.startLocation, in: geometry.size)
-                            let action = grid.verticalDrag(column: cell.column, deltaY: value.translation.height)
+                            let step = tracker.step(to: Double(value.translation.height))
+                            guard step != 0 else { return }
+
+                            let action = grid.verticalDrag(column: cell.column, deltaY: step)
                             if action != .nothing {
                                 onAction(action)
                             }
                         }
+                        .onEnded { _ in tracker.reset() }
                 )
                 // The double tap before the single one. SwiftUI resolves the
                 // longer sequence first when both are attached, and a single tap

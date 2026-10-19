@@ -34,6 +34,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
     private let kind: VideoChromeKind
     private let onCast: (() -> Void)?
     private let onClose: (() -> Void)?
+    private let onBrightness: ((Double) -> Void)?
 
     // The renderer is not defaulted in the signature. A default argument is
     // evaluated in a nonisolated context, and SubtitleRenderer is main-actor
@@ -49,7 +50,8 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
         autohide: Bool = true,
         kind: VideoChromeKind = .full,
         onCast: (() -> Void)? = nil,
-        onClose: (() -> Void)? = nil
+        onClose: (() -> Void)? = nil,
+        onBrightness: ((Double) -> Void)? = nil
     ) {
         self.kind = kind
         self.player = player
@@ -59,6 +61,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
         self.strings = strings
         self.onCast = onCast
         self.onClose = onClose
+        self.onBrightness = onBrightness
 
         // The visibility outlives a redraw, so it is the view's own state rather
         // than something rebuilt each time the player publishes. Rebuilt, the
@@ -79,7 +82,8 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
         autohide: Bool = true,
         kind: VideoChromeKind = .full,
         onCast: (() -> Void)? = nil,
-        onClose: (() -> Void)? = nil
+        onClose: (() -> Void)? = nil,
+        onBrightness: ((Double) -> Void)? = nil
     ) {
         self.init(
             player: player,
@@ -90,7 +94,8 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
             autohide: autohide,
             kind: kind,
             onCast: onCast,
-            onClose: onClose
+            onClose: onClose,
+            onBrightness: onBrightness
         )
     }
 
@@ -125,11 +130,10 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
         }
     }
 
-    /// What a gesture asked for, routed to whoever owns it. Seeking is the
-    /// engine's; brightness and volume are the device's and are the host's to
-    /// wire, because a player that reached for the system brightness would be
-    /// fighting whatever else on the phone changes it.
-    private func handle(_ action: GestureAction) {
+    /// What a gesture asked for, routed to whoever owns it. Seeking and volume
+    /// are the player's; brightness goes to the host's closure when it gave
+    /// one, and to the screen otherwise.
+    func handle(_ action: GestureAction) {
         switch action {
         case .togglePlayPause:
             visibility.bumpActivity()
@@ -139,9 +143,22 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
             visibility.bumpActivity()
             player.seek(to: max(0, player.currentTime + delta))
 
-        case .brightness, .volume, .nothing:
+        case let .volume(amount):
+            visibility.bumpActivity()
+            player.setVolume(min(100, max(0, player.volume + amount * 100)))
+
+        case let .brightness(amount):
+            visibility.bumpActivity()
+            (onBrightness ?? Self.adjustScreenBrightness)(amount)
+
+        case .nothing:
             break
         }
+    }
+
+    private static func adjustScreenBrightness(by amount: Double) {
+        let screen = UIScreen.main
+        screen.brightness = min(1, max(0, screen.brightness + CGFloat(amount)))
     }
 }
 #endif

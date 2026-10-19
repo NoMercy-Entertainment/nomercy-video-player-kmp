@@ -129,29 +129,54 @@ public struct TvSeekStrip: View {
 @available(tvOS 15.0, *)
 public struct TvDialogHost: View {
 
-    private let model: TvChromeViewModel
+    private let content: TvDialogContent
+    private let onSelect: (TvDialogRow) -> Void
 
-    public init(model: TvChromeViewModel) {
-        self.model = model
+    @Namespace private var focusScope
+
+    public init(content: TvDialogContent, onSelect: @escaping (TvDialogRow) -> Void) {
+        self.content = content
+        self.onSelect = onSelect
     }
 
     public var body: some View {
-        VStack {
-            Text(heading)
+        VStack(spacing: 32) {
+            Text(content.heading)
                 .font(.title)
                 .foregroundColor(.white)
+
+            ScrollView {
+                VStack(spacing: 16) {
+                    ForEach(content.rows) { row in
+                        Button { onSelect(row) } label: { rowLabel(row) }
+                            .prefersDefaultFocus(row.isCurrent, in: focusScope)
+                    }
+                }
+                .padding(.horizontal, 120)
+            }
         }
+        .padding(.vertical, 80)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.black.opacity(0.85))
+        .focusScope(focusScope)
         .focusSection()
     }
 
-    private var heading: String {
-        if model.showsEpisodesDialog { return "Episodes" }
-        if model.showsLanguageDialog { return "Audio" }
-        if model.showsSubtitleDialog { return "Subtitles" }
-        if model.showsSubtitleSearchDialog { return "Find subtitles" }
-        return ""
+    private func rowLabel(_ row: TvDialogRow) -> some View {
+        HStack {
+            Text(row.title)
+
+            Spacer()
+
+            if let detail = row.detail {
+                Text(detail).foregroundColor(.secondary)
+            }
+
+            if row.isCurrent {
+                Image(systemName: "checkmark")
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 #endif

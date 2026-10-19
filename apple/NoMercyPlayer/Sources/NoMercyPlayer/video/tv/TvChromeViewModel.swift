@@ -45,6 +45,14 @@ public struct TvChromeViewModel: Sendable {
 
     public var showsSubtitleSearchDialog: Bool { ui.dialog == .subtitleSearch }
 
+    public var dialogKind: TvDialogKind? {
+        if showsEpisodesDialog { return .episodes }
+        if showsLanguageDialog { return .audio }
+        if showsSubtitleDialog { return .subtitles }
+        if showsSubtitleSearchDialog { return .subtitleSearch }
+        return nil
+    }
+
     public var showsAnyDialog: Bool {
         showsEpisodesDialog || showsLanguageDialog || showsSubtitleDialog || showsSubtitleSearchDialog
     }

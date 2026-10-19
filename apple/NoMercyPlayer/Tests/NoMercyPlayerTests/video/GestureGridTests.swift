@@ -46,6 +46,23 @@ final class GestureGridTests: XCTestCase {
         }
     }
 
+    func testADragReportsTheStepSinceTheLastChangeNotTheDistanceFromTheStart() {
+        var tracker = VerticalDragTracker()
+
+        XCTAssertEqual(tracker.step(to: -10), -10)
+        XCTAssertEqual(tracker.step(to: -25), -15)
+        XCTAssertEqual(tracker.step(to: -25), 0)
+    }
+
+    func testANewDragStartsFromZero() {
+        var tracker = VerticalDragTracker()
+        _ = tracker.step(to: -40)
+
+        tracker.reset()
+
+        XCTAssertEqual(tracker.step(to: -5), -5)
+    }
+
     func testDraggingUpAsksForMore() {
         // Up is more, which is the direction every hardware control on the
         // device already moves. A sign flip here is a player whose volume goes

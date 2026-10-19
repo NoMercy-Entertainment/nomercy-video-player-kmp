@@ -46,6 +46,8 @@ final class FakeVideoChromePlayer: VideoChromePlayer {
 
     let avPlayer = AVPlayer()
 
+    @Published private(set) var volume: Double = 50
+
     private(set) var recordedSeeks: [Double] = []
     private(set) var recordedQuality: QualityOption?
     private(set) var qualityWasSet = false
@@ -79,6 +81,10 @@ final class FakeVideoChromePlayer: VideoChromePlayer {
     func seek(to seconds: Double) {
         recordedSeeks.append(seconds)
         currentTime = seconds
+    }
+
+    func setVolume(_ percent: Double) {
+        volume = percent
     }
 
     func selectQuality(_ option: QualityOption?) {

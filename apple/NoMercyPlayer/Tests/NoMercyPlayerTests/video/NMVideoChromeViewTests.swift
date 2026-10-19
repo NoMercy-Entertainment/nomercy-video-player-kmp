@@ -53,6 +53,35 @@ final class NMVideoChromeViewTests: XCTestCase {
         XCTAssertEqual(player.recordedSeeks.last, 0)
     }
 
+    func testAVolumeDragMovesThePlayersVolume() {
+        let player = FakeVideoChromePlayer()
+        let view = NMVideoChromeView(player: player)
+
+        view.handle(.volume(0.2))
+
+        XCTAssertEqual(player.volume, 70, accuracy: 0.001)
+    }
+
+    func testAVolumeDragNeverLeavesZeroToOneHundred() {
+        let player = FakeVideoChromePlayer()
+        let view = NMVideoChromeView(player: player)
+
+        view.handle(.volume(5))
+        XCTAssertEqual(player.volume, 100, accuracy: 0.001)
+
+        view.handle(.volume(-5))
+        XCTAssertEqual(player.volume, 0, accuracy: 0.001)
+    }
+
+    func testABrightnessDragReachesTheHostsClosure() {
+        var received: [Double] = []
+        let view = NMVideoChromeView(player: FakeVideoChromePlayer(), onBrightness: { received.append($0) })
+
+        view.handle(.brightness(0.25))
+
+        XCTAssertEqual(received, [0.25])
+    }
+
     func testTheSubtitleRendererFollowsThePlayhead() {
         // The overlay is told the time by the assembly rather than reading a
         // clock of its own, so a paused film does not keep advancing its lines.
