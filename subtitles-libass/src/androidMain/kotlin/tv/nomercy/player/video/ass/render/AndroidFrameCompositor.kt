@@ -58,11 +58,11 @@ public class AndroidFrameCompositor(
     // colour. Expanding it to four channels here would cost four times the
     // memory to reach the same pixels.
     private fun coverageBitmap(image: AssImage): Bitmap? {
+        // Rows are stride wide in libass and width wide in the bitmap.
+        val tight: ByteArray = tightCoverage(image) ?: return null
         val mask: Bitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ALPHA_8)
-        val expected: Int = image.width * image.height
-        if (image.pixels.size < expected) return null
 
-        mask.copyPixelsFromBuffer(ByteBuffer.wrap(image.pixels, 0, expected))
+        mask.copyPixelsFromBuffer(ByteBuffer.wrap(tight))
         return mask
     }
 }
