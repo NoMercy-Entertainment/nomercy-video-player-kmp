@@ -14,6 +14,7 @@ import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.input.PlayerKey
 import tv.nomercy.player.core.input.keyCombo
 import tv.nomercy.player.core.media.Chapter
+import tv.nomercy.player.core.plugin.PluginOptionField
 import tv.nomercy.player.testing.FakeVideoBackend
 import tv.nomercy.player.video.NMVideoPlayer
 import kotlin.test.Test
@@ -73,6 +74,22 @@ class TvKeyHandlerPluginTest {
         plugin.handle(PlayerKey.Left)
 
         assertEquals(listOf(8f, -8f), commands.seeks)
+    }
+
+    @Test
+    fun aStepAppliedAfterRegistrationIsUsedOnTheNextPress() = runTest {
+        val commands = RecordingPlayerCommands()
+        val plugin: TvKeyHandlerPlugin = handler(commands)
+
+        val field = plugin.optionFields()
+            .filterIsInstance<PluginOptionField.Number>()
+            .first { it.key == "arrowSeekSeconds" }
+        field.apply(30.0)
+
+        plugin.handle(PlayerKey.Right)
+        plugin.handle(PlayerKey.Left)
+
+        assertEquals(listOf(30f, -30f), commands.seeks)
     }
 
     @Test

@@ -97,10 +97,14 @@ public open class TvKeyHandlerPlugin(
     // a magnitude with, so the one step it does have should be small enough to
     // land on a line of dialogue; the coloured buttons cover the long jumps.
     override fun addNavigationKeys() {
-        val step: Float = tvOptions.arrowSeekSeconds.toFloat()
-
-        bindings.replace(PlayerKey.Left.asCombo()) { commands.transport.seekBy(-step) }
-        bindings.replace(PlayerKey.Right.asCombo()) { commands.transport.seekBy(step) }
+        // Read inside the lambdas, so a step applied after registration is used
+        // on the next press instead of the one captured at bind time.
+        bindings.replace(PlayerKey.Left.asCombo()) {
+            commands.transport.seekBy(-tvOptions.arrowSeekSeconds.toFloat())
+        }
+        bindings.replace(PlayerKey.Right.asCombo()) {
+            commands.transport.seekBy(tvOptions.arrowSeekSeconds.toFloat())
+        }
     }
 
     // Enabled here, unlike everywhere else. Some boxes do deliver their volume
