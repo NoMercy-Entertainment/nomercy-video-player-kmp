@@ -53,12 +53,12 @@ class SeasonSidebarTest {
     }
 
     // Specials do not decide whether the rail shows, but once it does they get a
-    // button like the web's (menus.ts lists every season): else they are unreachable.
+    // button, after the last season as in the playlist (Stoney, 2026-10-21).
     @Test
-    fun specialsGetAButtonOnceTheRailShows() {
-        val queue = listOf(episode(0), episode(1), episode(2))
+    fun specialsGetAButtonAfterTheLastSeason() {
+        val queue = listOf(episode(0), episode(2), episode(1))
 
-        assertEquals(listOf(0, 1, 2), sidebarSeasons(queue))
+        assertEquals(listOf(1, 2, 0), sidebarSeasons(queue))
     }
 
     @Test

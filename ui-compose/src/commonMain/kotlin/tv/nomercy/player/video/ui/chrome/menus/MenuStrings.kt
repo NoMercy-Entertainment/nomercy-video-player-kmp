@@ -71,6 +71,8 @@ public data class MenuStrings(
     val season: String = "Season {number}",
     val seasonToken: String = "S{number}",
     val episodeToken: String = "E{number}",
+    // The season-0 button, the same word the top bar uses for specials.
+    val extras: String = "Extras",
 )
 
 /**
@@ -128,6 +130,7 @@ private fun playbackStrings(locale: String): MenuStrings = MenuStrings(
     season = menuString(locale, "season"),
     seasonToken = ChromeTranslations.get(locale, "plugin.desktop-ui.token.season"),
     episodeToken = ChromeTranslations.get(locale, "plugin.desktop-ui.token.episode"),
+    extras = ChromeTranslations.get(locale, "plugin.desktop-ui.token.extras"),
 )
 
 private fun menuString(locale: String, name: String): String =
@@ -152,7 +155,7 @@ internal fun playlistTitle(strings: MenuStrings, queue: List<TvChromeItem>): Str
 
 // `t('plugin.desktop-ui.menu.season', { number })`.
 internal fun seasonLabel(strings: MenuStrings, season: Int): String =
-    strings.season.withNumber(season)
+    if (season == 0) strings.extras else strings.season.withNumber(season)
 
 /**
  * The card's top-left label, from `buildPlaylistCard`.

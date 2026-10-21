@@ -87,4 +87,10 @@ class PlaylistLabelTest {
         // so a locale that puts the number first says so in its own string.
         assertEquals("Season 3", seasonLabel(strings, season = 3))
     }
+
+    // The specials button says what the top bar says ("Extras E2"), not "Season 0".
+    @Test
+    fun theSpecialsRowReadsExtras() {
+        assertEquals("Extras", seasonLabel(menuStrings("en"), season = 0))
+    }
 }
