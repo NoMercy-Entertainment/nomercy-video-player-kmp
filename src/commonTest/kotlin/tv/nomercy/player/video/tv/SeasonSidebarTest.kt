@@ -52,6 +52,15 @@ class SeasonSidebarTest {
         assertFalse(shouldShowSeasonSidebar(queue))
     }
 
+    // Specials do not decide whether the rail shows, but once it does they get a
+    // button like the web's (menus.ts lists every season): else they are unreachable.
+    @Test
+    fun specialsGetAButtonOnceTheRailShows() {
+        val queue = listOf(episode(0), episode(1), episode(2))
+
+        assertEquals(listOf(0, 1, 2), sidebarSeasons(queue))
+    }
+
     @Test
     fun onlySpecialsAreFlat() {
         assertFalse(shouldShowSeasonSidebar(listOf(episode(0), episode(0))))

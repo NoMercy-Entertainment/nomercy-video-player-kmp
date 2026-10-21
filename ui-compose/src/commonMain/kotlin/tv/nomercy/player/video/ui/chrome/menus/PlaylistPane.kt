@@ -162,9 +162,9 @@ internal data class PlaylistPicks(
 
 // The season the pane opens on: the playing item's, or the lowest there is.
 //
-// `seasons` is sorted and already excludes specials, so `first()` is the web's
+// `seasons` is sorted (specials included), so `first()` is the web's
 // `seasons[0] ?? 1` without a fallback that cannot happen — the rail is only
-// drawn when the rule found two of them.
+// drawn when the rule found two real seasons.
 internal fun openingSeason(state: ChromeState, seasons: List<Int>): Int =
     state.queue.getOrNull(state.queueIndex)?.season?.takeIf { it in seasons } ?: seasons.first()
 

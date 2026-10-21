@@ -44,12 +44,8 @@ public fun shouldShowSeasonSidebar(queue: List<TvChromeItem>): Boolean =
 public fun sidebarSeasons(queue: List<TvChromeItem>): List<Int> {
     if (!shouldShowSeasonSidebar(queue)) return emptyList()
 
-    return queue
-        .filter { it.videoType != MOVIE && it.playlistType != MOVIE }
-        .mapNotNull { it.season }
-        .filter { it >= FIRST_REAL_SEASON }
-        .distinct()
-        .sorted()
+    // Every season gets a button, specials included, as the web's menus.ts does.
+    return queue.mapNotNull { it.season }.distinct().sorted()
 }
 
 // The two fields disagree by design: a playlist says what kind of list it is
