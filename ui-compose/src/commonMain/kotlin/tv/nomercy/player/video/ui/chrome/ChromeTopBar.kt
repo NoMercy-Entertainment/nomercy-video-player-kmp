@@ -121,7 +121,8 @@ public fun ChromeTopBar(
             // the inset, so an embedded player halfway down a page does not get a
             // status bar's worth of empty space above its title.
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
-            .padding(start = BAR_PADDING, top = BAR_PADDING, end = BAR_PADDING, bottom = BAR_BOTTOM_PADDING),
+            // Top inset mirrors the bottom stack's, so both bars sit the same distance from their edge.
+            .padding(start = BAR_PADDING, top = BOTTOM_STACK_PADDING, end = BAR_PADDING, bottom = BAR_BOTTOM_PADDING),
     ) {
         val width: Int = maxWidth.value.toInt()
 
