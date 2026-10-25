@@ -31,14 +31,16 @@ class PluginIdsTest {
 
             root.walkTopDown()
                 .filter { it.isFile && it.extension == "kt" && it.name != "PluginIdsTest.kt" }
-                .flatMap { file -> literalId.findAll(file.readText()).map { match -> file.name to match.groupValues[1] } }
+                .flatMap { file ->
+                    literalId.findAll(file.readText()).map { match -> file.name to match.groupValues[1] }
+                }
                 .toList()
         }
 
     @Test
     fun theScanFindsTheShippedPlugins() {
         val ids = declaredIds().map { it.second }
-        assertTrue("subtitles-ass" in ids || "nomercy:subtitles-ass" in ids, "SubtitlePlugin was not found: $ids")
+        assertTrue("subtitles-ass" in ids, "SubtitlePlugin was not found: $ids")
         assertTrue(ids.size >= 15, "expected at least 15 declared ids, found ${ids.size}: $ids")
     }
 

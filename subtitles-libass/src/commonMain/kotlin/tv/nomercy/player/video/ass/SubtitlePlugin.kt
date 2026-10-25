@@ -625,6 +625,6 @@ private class ResolvedFont(
 public class SubtitleOptions
 
 private object SubtitleManifest : PluginManifest {
-    override val id: String = "nomercy:subtitles-ass"
+    override val id: String = "subtitles-ass"
     override val version: String = "0.1.0"
 }
