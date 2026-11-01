@@ -184,8 +184,10 @@ public class SubtitlePlugin(
         // consumer had loaded by hand.
         on(CoreEvents.Subtitles) { payload ->
             available = payload.tracks.filterIsInstance<SubtitleTrack>()
-            if (selectionSeen) reconcile()
+            if (selectionSeen) reconcile() else adoptCarriedSelection()
         }
+
+        on(CoreEvents.MediaReady) { adoptCarriedSelection() }
 
         // Which one, or none. libass has no concept of another renderer drawing
         // now, so a selection this plugin cannot draw reads here as "draw
@@ -213,6 +215,22 @@ public class SubtitlePlugin(
             manifestUrl = (item() as? VideoPlaylistItem)?.fontManifestUrl
             reconcile()
         }
+    }
+
+    // The host keeps the viewer's track across items and announces nothing for
+    // the next one, while `item` above forgot the selection. Nothing is adopted
+    // once a selection has been announced or a track is up: those are newer.
+    private fun adoptCarriedSelection() {
+        if (selectionSeen || currentSubtitleUrl != null) return
+        val carried: SubtitleTrack = selectedSubtitle() ?: return
+        val index: Int = available.indexOfFirst { it.id == carried.id }
+            .takeIf { it >= 0 }
+            ?: available.indexOfFirst {
+                it.language == carried.language && it.label == carried.label && it.format == carried.format
+            }
+        if (index < 0) return
+        selected = index
+        reconcile()
     }
 
     // What should be drawn, given everything currently known.
