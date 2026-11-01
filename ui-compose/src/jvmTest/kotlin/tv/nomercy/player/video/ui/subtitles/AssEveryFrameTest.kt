@@ -47,8 +47,9 @@ class AssEveryFrameTest {
             mainClock.advanceTimeBy(VSYNC_MS)
         }
 
-        val missed: List<Long> = video.framesMs.filter { it !in renderer.asked.toSet() }
-        assertTrue(missed.isEmpty(), "frames with no render at their own time: ${missed.size} of ${video.framesMs.size}")
+        val rendered: Set<Long> = renderer.asked.toSet()
+        val missed: List<Long> = video.framesMs.filter { it !in rendered }
+        assertTrue(missed.isEmpty(), "frames with no render at own time: ${missed.size} of ${video.framesMs.size}")
     }
 }
 

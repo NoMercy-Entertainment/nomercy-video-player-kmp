@@ -103,13 +103,10 @@ public fun AssSubtitleLayer(
 
     LaunchedEffect(renderer, surface, ready) {
         if (ready && hasSurface) {
-            val publish: (ImageBitmap) -> Unit = { drawn ->
+            renderer.drive(drawing, surface, AssFeed(positionMs, frames) { wantedScale }) { drawn ->
                 frame = drawn
                 shown += 1
             }
-            val feed = AssFeed(positionMs) { wantedScale }
-            if (frames != null) renderer.rasteriseOnFrames(drawing, surface, feed, frames, publish)
-            else renderer.rasterise(drawing, surface, feed, publish)
         }
     }
 
@@ -265,42 +262,63 @@ private suspend fun AssRenderer.rasterise(
 // Renders once per announced frame, for that frame's own time, and shows the
 // picture at that frame's release. With no announcement (a paused video, the
 // seek gap) it holds the last frame's time, so nothing is rendered for a guess.
+private suspend fun AssRenderer.drive(
+    drawing: AssDrawing,
+    surface: IntSize,
+    feed: AssFeed,
+    onFrame: (ImageBitmap) -> Unit,
+) {
+    if (feed.frames != null) rasteriseOnFrames(drawing, surface, feed, onFrame)
+    else rasterise(drawing, surface, feed, onFrame)
+}
+
 private suspend fun AssRenderer.rasteriseOnFrames(
     drawing: AssDrawing,
     surface: IntSize,
     feed: AssFeed,
-    frames: AssFrameSource,
     onFrame: (ImageBitmap) -> Unit,
 ) {
-    var target: IntSize = IntSize.Zero
-    var appliedScale: Double? = null
-    var repaint = false
+    val frames: AssFrameSource = feed.frames ?: return
+    val geometry = Geometry()
     var held: Long? = null
 
     while (coroutineContext.isActive) {
         val tick: AssFrameTick? = withTimeoutOrNull(IDLE_POLL_MS) { frames.next() }
         if (tick != null) held = tick.timeMs
 
-        val next: IntSize = rasterSize(storageSize(), surface)
-        if (next != target) {
-            target = next
-            withContext(Dispatchers.Default) { drawing.turn.withLock { frameSize(target.width, target.height) } }
-        }
-        val scale: Double = feed.wantedScale().coerceAtLeast(MIN_FONT_SCALE)
-        if (scale != appliedScale) {
-            appliedScale = scale
-            repaint = true
-            withContext(Dispatchers.Default) { drawing.turn.withLock { fontScale(scale) } }
-        }
+        syncGeometry(drawing, surface, feed, geometry)
 
         val timeMs: Long = held ?: feed.positionMs()
         val drawn: ImageBitmap? = withContext(NonCancellable + Dispatchers.Default) {
-            drawing.turn.withLock { nextPicture(this@rasteriseOnFrames, drawing, timeMs, target, repaint) }
+            drawing.turn.withLock {
+                nextPicture(this@rasteriseOnFrames, drawing, timeMs, geometry.target, geometry.repaint)
+            }
         }
         if (drawn == null) continue
-        repaint = false
+        geometry.repaint = false
         if (tick != null) frames.awaitRelease(tick)
         onFrame(drawn)
+    }
+}
+
+// What the loop has told libass so far: the frame size and the viewer's text scale.
+private class Geometry {
+    var target: IntSize = IntSize.Zero
+    var appliedScale: Double? = null
+    var repaint: Boolean = false
+}
+
+private suspend fun AssRenderer.syncGeometry(drawing: AssDrawing, surface: IntSize, feed: AssFeed, geometry: Geometry) {
+    val next: IntSize = rasterSize(storageSize(), surface)
+    if (next != geometry.target) {
+        geometry.target = next
+        withContext(Dispatchers.Default) { drawing.turn.withLock { frameSize(next.width, next.height) } }
+    }
+    val scale: Double = feed.wantedScale().coerceAtLeast(MIN_FONT_SCALE)
+    if (scale != geometry.appliedScale) {
+        geometry.appliedScale = scale
+        geometry.repaint = true
+        withContext(Dispatchers.Default) { drawing.turn.withLock { fontScale(scale) } }
     }
 }
 
@@ -309,6 +327,7 @@ private suspend fun AssRenderer.rasteriseOnFrames(
 // in the menu reaches the next frame without restarting the loop.
 private class AssFeed(
     val positionMs: () -> Long,
+    val frames: AssFrameSource?,
     val wantedScale: () -> Double,
 )
 

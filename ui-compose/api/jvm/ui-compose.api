@@ -1113,8 +1113,20 @@ public final class tv/nomercy/player/video/ui/chrome/menus/SubtitleSetting : jav
 	public static fun values ()[Ltv/nomercy/player/video/ui/chrome/menus/SubtitleSetting;
 }
 
+public abstract interface class tv/nomercy/player/video/ui/subtitles/AssFrameSource {
+	public abstract fun awaitRelease (Ltv/nomercy/player/video/ui/subtitles/AssFrameTick;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun next (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class tv/nomercy/player/video/ui/subtitles/AssFrameTick {
+	public static final field $stable I
+	public fun <init> (JJ)V
+	public final fun getReleaseNs ()J
+	public final fun getTimeMs ()J
+}
+
 public final class tv/nomercy/player/video/ui/subtitles/AssSubtitleLayerKt {
-	public static final fun AssSubtitleLayer (Ltv/nomercy/player/video/subtitles/AssRenderer;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ltv/nomercy/player/core/events/SubtitleStyle;Ltv/nomercy/player/video/NMVideoPlayer;Landroidx/compose/runtime/Composer;II)V
+	public static final fun AssSubtitleLayer (Ltv/nomercy/player/video/subtitles/AssRenderer;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ltv/nomercy/player/core/events/SubtitleStyle;Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/ui/subtitles/AssFrameSource;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/subtitles/PlainSubtitleLayerKt {
