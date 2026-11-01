@@ -30,6 +30,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -262,7 +264,7 @@ private suspend fun AssRenderer.rasterise(
 // Renders once per announced frame, for that frame's own time, and shows the
 // picture at that frame's release. With no announcement (a paused video, the
 // seek gap) it holds the last frame's time, so nothing is rendered for a guess.
-private suspend fun AssRenderer.drive(
+internal suspend fun AssRenderer.drive(
     drawing: AssDrawing,
     surface: IntSize,
     feed: AssFeed,
@@ -281,25 +283,39 @@ private suspend fun AssRenderer.rasteriseOnFrames(
     val frames: AssFrameSource = feed.frames ?: return
     val geometry = Geometry()
     var held: Long? = null
+    val rendered = Channel<RenderedPicture>(RENDERED_DEPTH)
 
-    while (coroutineContext.isActive) {
-        val tick: AssFrameTick? = withTimeoutOrNull(IDLE_POLL_MS) { frames.next() }
-        if (tick != null) held = tick.timeMs
-
-        syncGeometry(drawing, surface, feed, geometry)
-
-        val timeMs: Long = held ?: feed.positionMs()
-        val drawn: ImageBitmap? = withContext(NonCancellable + Dispatchers.Default) {
-            drawing.turn.withLock {
-                nextPicture(this@rasteriseOnFrames, drawing, timeMs, geometry.target, geometry.repaint)
+    // Two stages, so a slow render never holds up the next announcement and
+    // waiting for a release never holds up the next render.
+    // Whole loop off the main thread: each hop back to it cost up to a frame on a busy UI.
+    withContext(Dispatchers.Default) {
+        launch {
+            for (picture in rendered) {
+                picture.tick?.let { frames.awaitRelease(it) }
+                onFrame(picture.bitmap)
             }
         }
-        if (drawn == null) continue
-        geometry.repaint = false
-        if (tick != null) frames.awaitRelease(tick)
-        onFrame(drawn)
+        while (coroutineContext.isActive) {
+            val tick: AssFrameTick? = withTimeoutOrNull(IDLE_POLL_MS) { frames.next() }
+            if (tick != null) held = tick.timeMs
+
+            syncGeometry(drawing, surface, feed, geometry)
+
+            val timeMs: Long = held ?: feed.positionMs()
+            val drawn: ImageBitmap? = withContext(NonCancellable + Dispatchers.Default) {
+                drawing.turn.withLock {
+                    nextPicture(this@rasteriseOnFrames, drawing, timeMs, geometry.target, geometry.repaint)
+                }
+            }
+            if (drawn == null) continue
+            geometry.repaint = false
+            rendered.send(RenderedPicture(tick, drawn))
+        }
     }
 }
+
+// A picture and the frame it was rendered for; no tick means show it at once.
+private class RenderedPicture(val tick: AssFrameTick?, val bitmap: ImageBitmap)
 
 // What the loop has told libass so far: the frame size and the viewer's text scale.
 private class Geometry {
@@ -325,7 +341,7 @@ private suspend fun AssRenderer.syncGeometry(drawing: AssDrawing, surface: IntSi
 // What the loop reads from outside on every pass: where the video is, and how
 // big the viewer wants the text. Read, never captured, so a seek or a size picked
 // in the menu reaches the next frame without restarting the loop.
-private class AssFeed(
+internal class AssFeed(
     val positionMs: () -> Long,
     val frames: AssFrameSource?,
     val wantedScale: () -> Double,
@@ -503,6 +519,9 @@ private const val FRAME_FLOOR_MS = 16L
 // How long the frame-driven loop waits for an announcement before it looks at
 // the viewer's size setting again; a paused video announces nothing.
 private const val IDLE_POLL_MS = 100L
+
+// Rendered pictures waiting for their release; about a second of frames at 24 fps.
+private const val RENDERED_DEPTH = 32
 
 // The style stores the size as a percentage, 100 being the track's own.
 private const val PERCENT = 100.0

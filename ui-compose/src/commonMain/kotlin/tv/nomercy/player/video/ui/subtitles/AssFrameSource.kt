@@ -22,7 +22,7 @@ public class AssFrameTick(
  */
 public interface AssFrameSource {
 
-    /** Suspends until a frame is announced and answers the newest one not yet taken. */
+    /** Suspends until a frame is announced and answers the next one in order. */
     public suspend fun next(): AssFrameTick
 
     /** Suspends until [tick] is on screen; returns at once when it already is. */
