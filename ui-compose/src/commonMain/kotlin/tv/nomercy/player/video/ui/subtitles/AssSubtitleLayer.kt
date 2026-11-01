@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -156,10 +155,6 @@ private suspend fun AssRenderer.rasterise(
     var target: IntSize = IntSize.Zero
     var appliedScale: Double? = null
     var repaint = false
-    val lead = DisplayLead()
-    var lastPosition: Long? = null
-    var movedAt: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow() - MOVING_WINDOW * 2
-    var lastFrameNanos = 0L
 
     while (coroutineContext.isActive) {
         // Re-asked rather than set once, because the size to draw at is
@@ -187,11 +182,8 @@ private suspend fun AssRenderer.rasterise(
         // On the composition thread, not inside the block below: an engine's
         // own position is main-thread-only, so reading it there forced the
         // consumer to pass a cached snapshot and cues landed frames late.
-        val position: Long = feed.positionMs()
-        if (lastPosition != null && position != lastPosition) movedAt = TimeSource.Monotonic.markNow()
-        lastPosition = position
-        val now: Long = position + lead.leadMs(movedAt.elapsedNow() < MOVING_WINDOW)
-        val renderStart: TimeSource.Monotonic.ValueTimeMark = TimeSource.Monotonic.markNow()
+        // Handed to libass as is: the host gives the time of the frame on screen.
+        val now: Long = feed.positionMs()
 
         // Rasterising OFF the composition thread, which is the whole
         // point of this line.
@@ -217,7 +209,6 @@ private suspend fun AssRenderer.rasterise(
             }
         }
         if (drawn != null) repaint = false
-        lead.observeRender(renderStart.elapsedNow().inWholeMicroseconds / MICROS_PER_MS)
 
         // Paced by the display, not by a timer.
         //
@@ -261,9 +252,7 @@ private suspend fun AssRenderer.rasterise(
         if (elapsed < FRAME_FLOOR_MS) delay(FRAME_FLOOR_MS - elapsed)
         frameClock = TimeSource.Monotonic.markNow()
 
-        val frameNanos: Long = withFrameNanos { it }
-        if (lastFrameNanos != 0L) lead.observeFrame((frameNanos - lastFrameNanos) / NANOS_PER_MS)
-        lastFrameNanos = frameNanos
+        withFrameNanos { it }
     }
 }
 
@@ -443,12 +432,6 @@ internal const val ASS_SUBTITLE_TAG = "nm-ass-subtitles"
 // costs nothing, because the renderer answers null for a frame that has not
 // changed.
 private const val FRAME_FLOOR_MS = 16L
-
-// The playhead counts as moving for this long after its last change.
-private val MOVING_WINDOW = 100.milliseconds
-
-private const val MICROS_PER_MS = 1_000.0
-private const val NANOS_PER_MS = 1_000_000.0
 
 // The style stores the size as a percentage, 100 being the track's own.
 private const val PERCENT = 100.0

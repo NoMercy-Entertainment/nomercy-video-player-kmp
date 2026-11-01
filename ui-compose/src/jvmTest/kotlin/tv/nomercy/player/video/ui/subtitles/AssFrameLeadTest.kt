@@ -26,22 +26,30 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalTestApi::class)
 class AssFrameLeadTest {
 
-    // A slow render lands after the frame it was asked for is already gone, so
-    // the layer has to ask for where the video will be when the picture shows.
+    // The host hands over the time of the frame on screen. A lead on top of it
+    // draws the sign for a later frame than the one the viewer sees.
     @Test
-    fun aMovingVideoIsRenderedForWhereItWillBeWhenThePictureLands() = runComposeUiTest {
+    fun aMovingVideoIsRenderedForTheTimeOfTheFrameItWasGiven() = runComposeUiTest {
         val renderer = SlowRenderer()
+        val given: MutableSet<Long> = Collections.synchronizedSet(mutableSetOf())
+        var presentedMs = START_MS
 
         setContent {
             Box(modifier = Modifier.width(WIDTH.dp).height(HEIGHT.dp)) {
-                AssSubtitleLayer(renderer = renderer, positionMs = { System.nanoTime() / NANOS_PER_MS })
+                AssSubtitleLayer(
+                    renderer = renderer,
+                    positionMs = {
+                        presentedMs += FRAME_MS
+                        given += presentedMs
+                        presentedMs
+                    },
+                )
             }
         }
-        waitUntil(timeoutMillis = TIMEOUT_MS) { renderer.aheadMs.size >= SAMPLES }
+        waitUntil(timeoutMillis = TIMEOUT_MS) { renderer.asked.size >= SAMPLES }
 
-        val settled: List<Long> = renderer.aheadMs.toList().drop(WARM_UP).sorted()
-        val median: Long = settled[settled.size / 2]
-        assertTrue(median >= RENDER_MS - SLACK_MS, "asked for ${median}ms ahead of the playhead, wanted at least ${RENDER_MS - SLACK_MS}ms")
+        val off: List<Long> = renderer.asked.toList().filter { it !in given }
+        assertTrue(off.isEmpty(), "asked for times that no frame had: $off")
     }
 
     @Test
@@ -60,7 +68,6 @@ class AssFrameLeadTest {
 }
 
 private class SlowRenderer : AssRenderer {
-    val aheadMs: MutableList<Long> = Collections.synchronizedList(mutableListOf())
     val asked: MutableList<Long> = Collections.synchronizedList(mutableListOf())
 
     override fun addFont(name: String, data: ByteArray): Unit = Unit
@@ -76,7 +83,6 @@ private class SlowRenderer : AssRenderer {
     override fun frameSize(width: Int, height: Int): Unit = Unit
 
     override fun render(timeMillis: Long): AssFrame {
-        aheadMs += timeMillis - (System.nanoTime() / NANOS_PER_MS).toLong()
         asked += timeMillis
         Thread.sleep(RENDER_MS)
         return AssFrame(images = emptyList(), changed = false)
@@ -89,8 +95,7 @@ private const val WIDTH = 640
 private const val HEIGHT = 360
 private const val TIMEOUT_MS = 20_000L
 private const val SAMPLES = 40
-private const val WARM_UP = 10
 private const val RENDER_MS = 30L
-private const val SLACK_MS = 8L
+private const val START_MS = 115_000L
+private const val FRAME_MS = 42L
 private const val PAUSED_AT_MS = 90_000L
-private const val NANOS_PER_MS = 1_000_000L
