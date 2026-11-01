@@ -34,6 +34,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.isActive
 import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.video.subtitles.AssFrame
@@ -75,6 +76,8 @@ public fun AssSubtitleLayer(
     subtitleStyle: SubtitleStyle = SubtitleStyle(),
     /** When set, nothing renders until this player shows its first frame. */
     player: NMVideoPlayer? = null,
+    /** When set, a frame announcement drives each render instead of the polling loop. */
+    frames: AssFrameSource? = null,
 ) {
     var surface: IntSize by remember { mutableStateOf(IntSize.Zero) }
     var frame: ImageBitmap? by remember { mutableStateOf(null) }
@@ -100,10 +103,13 @@ public fun AssSubtitleLayer(
 
     LaunchedEffect(renderer, surface, ready) {
         if (ready && hasSurface) {
-            renderer.rasterise(drawing, surface, AssFeed(positionMs) { wantedScale }) { drawn ->
+            val publish: (ImageBitmap) -> Unit = { drawn ->
                 frame = drawn
                 shown += 1
             }
+            val feed = AssFeed(positionMs) { wantedScale }
+            if (frames != null) renderer.rasteriseOnFrames(drawing, surface, feed, frames, publish)
+            else renderer.rasterise(drawing, surface, feed, publish)
         }
     }
 
@@ -253,6 +259,48 @@ private suspend fun AssRenderer.rasterise(
         frameClock = TimeSource.Monotonic.markNow()
 
         withFrameNanos { it }
+    }
+}
+
+// Renders once per announced frame, for that frame's own time, and shows the
+// picture at that frame's release. With no announcement (a paused video, the
+// seek gap) it holds the last frame's time, so nothing is rendered for a guess.
+private suspend fun AssRenderer.rasteriseOnFrames(
+    drawing: AssDrawing,
+    surface: IntSize,
+    feed: AssFeed,
+    frames: AssFrameSource,
+    onFrame: (ImageBitmap) -> Unit,
+) {
+    var target: IntSize = IntSize.Zero
+    var appliedScale: Double? = null
+    var repaint = false
+    var held: Long? = null
+
+    while (coroutineContext.isActive) {
+        val tick: AssFrameTick? = withTimeoutOrNull(IDLE_POLL_MS) { frames.next() }
+        if (tick != null) held = tick.timeMs
+
+        val next: IntSize = rasterSize(storageSize(), surface)
+        if (next != target) {
+            target = next
+            withContext(Dispatchers.Default) { drawing.turn.withLock { frameSize(target.width, target.height) } }
+        }
+        val scale: Double = feed.wantedScale().coerceAtLeast(MIN_FONT_SCALE)
+        if (scale != appliedScale) {
+            appliedScale = scale
+            repaint = true
+            withContext(Dispatchers.Default) { drawing.turn.withLock { fontScale(scale) } }
+        }
+
+        val timeMs: Long = held ?: feed.positionMs()
+        val drawn: ImageBitmap? = withContext(NonCancellable + Dispatchers.Default) {
+            drawing.turn.withLock { nextPicture(this@rasteriseOnFrames, drawing, timeMs, target, repaint) }
+        }
+        if (drawn == null) continue
+        repaint = false
+        if (tick != null) frames.awaitRelease(tick)
+        onFrame(drawn)
     }
 }
 
@@ -432,6 +480,10 @@ internal const val ASS_SUBTITLE_TAG = "nm-ass-subtitles"
 // costs nothing, because the renderer answers null for a frame that has not
 // changed.
 private const val FRAME_FLOOR_MS = 16L
+
+// How long the frame-driven loop waits for an announcement before it looks at
+// the viewer's size setting again; a paused video announces nothing.
+private const val IDLE_POLL_MS = 100L
 
 // The style stores the size as a percentage, 100 being the track's own.
 private const val PERCENT = 100.0
