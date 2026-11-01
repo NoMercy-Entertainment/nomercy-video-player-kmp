@@ -100,6 +100,10 @@ public interface AssRenderer {
      */
     public fun hasTrack(): Boolean = true
 
+    // How many render calls were turned away because the renderer was busy
+    // with a track or font change. For measuring, not for control flow.
+    public fun droppedRenders(): Long = 0L
+
     /**
      * The viewer's text size, as a multiple of what the track was authored at.
      *

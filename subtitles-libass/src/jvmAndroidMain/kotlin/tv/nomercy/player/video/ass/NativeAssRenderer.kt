@@ -14,6 +14,7 @@ import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssImage
 import com.sun.jna.Pointer
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -43,6 +44,9 @@ internal class NativeAssRenderer(
     // run off the frame-render path (from the plugin's own suspend functions),
     // so blocking briefly there costs nothing a viewer can see.
     private val lock = ReentrantLock()
+    private val dropped = AtomicLong()
+
+    override fun droppedRenders(): Long = dropped.get()
 
     private var renderer: Pointer? = null
     private var track: Pointer? = null
@@ -157,7 +161,10 @@ internal class NativeAssRenderer(
     // treats as "keep what's on screen" — exactly right for one dropped
     // subtitle redraw, and it costs the video nothing.
     override fun render(timeMillis: Long): AssFrame? {
-        if (!lock.tryLock()) return AssFrame(images = emptyList(), changed = false)
+        if (!lock.tryLock()) {
+            dropped.incrementAndGet()
+            return AssFrame(images = emptyList(), changed = false)
+        }
         try {
             if (released) return null
             val target: Pointer = activeRenderer() ?: return null
