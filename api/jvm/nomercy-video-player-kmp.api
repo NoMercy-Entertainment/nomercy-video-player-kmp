@@ -1578,6 +1578,7 @@ public final class tv/nomercy/player/video/subtitles/AssImage {
 public abstract interface class tv/nomercy/player/video/subtitles/AssRenderer {
 	public abstract fun addFont (Ljava/lang/String;[B)V
 	public abstract fun clearFonts ()V
+	public fun droppedRenders ()J
 	public fun fontScale (D)V
 	public abstract fun frameSize (II)V
 	public fun hasTrack ()Z
@@ -1589,6 +1590,7 @@ public abstract interface class tv/nomercy/player/video/subtitles/AssRenderer {
 }
 
 public final class tv/nomercy/player/video/subtitles/AssRenderer$DefaultImpls {
+	public static fun droppedRenders (Ltv/nomercy/player/video/subtitles/AssRenderer;)J
 	public static fun fontScale (Ltv/nomercy/player/video/subtitles/AssRenderer;D)V
 	public static fun hasTrack (Ltv/nomercy/player/video/subtitles/AssRenderer;)Z
 }

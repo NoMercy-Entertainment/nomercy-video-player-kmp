@@ -72,8 +72,14 @@ class StyledCaptionsAreAnnouncedOnTheNextItemTest {
         override val durationSeconds: Double? = null
         override val progress: WatchProgress? = null
         override val subtitles: List<SubtitleTrack> = listOf(
-            SubtitleTrack(id = "$id-vtt", language = "eng", label = "English", format = "vtt", url = "https://media.example.test/$id/en.vtt"),
-            SubtitleTrack(id = "$id-ass", language = "eng", label = "English (Full)", format = "ass", url = "https://media.example.test/$id/full.ass"),
+            SubtitleTrack(
+                id = "$id-vtt", language = "eng", label = "English", format = "vtt",
+                url = "https://media.example.test/$id/en.vtt",
+            ),
+            SubtitleTrack(
+                id = "$id-ass", language = "eng", label = "English (Full)", format = "ass",
+                url = "https://media.example.test/$id/full.ass",
+            ),
         )
     }
 
