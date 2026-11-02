@@ -264,6 +264,13 @@ public class TvChromeController(
         return true
     }
 
+    // A new item must not inherit the last item's scrub bar or scrubbed time.
+    public fun onItemChanged() {
+        callbacks.overrideTime(null)
+        state.value = state.value.copy(seekMode = false)
+        scheduleAutoHide()
+    }
+
     // The top bar holds focus while a viewer reads it, so the controls must not
     // time out underneath them and the arrows must not turn into a scrub.
     public fun setTopBarFocus(focused: Boolean) {

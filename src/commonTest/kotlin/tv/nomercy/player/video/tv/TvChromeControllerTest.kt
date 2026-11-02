@@ -354,6 +354,19 @@ class TvChromeControllerTest {
     }
 
     @Test
+    fun aNewItemDropsTheScrubTheLastOneLeftBehind() {
+        // Skipping to another episode left the bar up on the old position, and
+        // the display still showing the time somebody had scrolled to.
+        val controller: TvChromeController = watching()
+        controller.onKey(PlayerKey.Left)
+
+        controller.onItemChanged()
+
+        assertFalse(controller.ui.value.seekMode)
+        assertEquals(listOf<Float?>(null), callbacks.overrides)
+    }
+
+    @Test
     fun abandoningAScrubMovesNothing() {
         val controller: TvChromeController = watching()
         controller.onKey(PlayerKey.Left)

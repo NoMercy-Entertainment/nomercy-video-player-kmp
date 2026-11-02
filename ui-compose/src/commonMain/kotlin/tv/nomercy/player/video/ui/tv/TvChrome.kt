@@ -9,6 +9,7 @@
 package tv.nomercy.player.video.ui.tv
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -107,6 +108,8 @@ public fun rememberTvChrome(
         TvChromeController(callbacks, scheduler, content = content)
     }
 
+    DropScrubOnItemChange(snapshot.item?.id, controller)
+
     return TvChrome(
         controller = controller,
         transport = TvTransportState(
@@ -123,6 +126,17 @@ public fun rememberTvChrome(
         ),
         sprite = previewSprite,
     )
+}
+
+@Composable
+private fun DropScrubOnItemChange(itemId: String?, controller: TvChromeController) {
+    var shownItemId: String? by remember { mutableStateOf(itemId) }
+    LaunchedEffect(itemId) {
+        if (itemId != shownItemId) {
+            shownItemId = itemId
+            controller.onItemChanged()
+        }
+    }
 }
 
 internal fun tvChapterOf(chapter: Chapter): TvChapter = TvChapter(chapter.startTime, chapter.title)
