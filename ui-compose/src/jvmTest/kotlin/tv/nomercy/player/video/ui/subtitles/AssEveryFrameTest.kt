@@ -50,7 +50,10 @@ class AssEveryFrameTest {
         val rendered: Set<Long> = renderer.asked.toSet()
         val missed: List<Long> = video.framesMs.filter { it !in rendered }
         println("AssEveryFrameTest missed ${missed.size} of ${video.framesMs.size}")
-        assertTrue(missed.size <= allowedMisses(), "frames with no render at own time: ${missed.size} of ${video.framesMs.size}")
+        assertTrue(
+            missed.size <= allowedMisses(),
+            "frames with no render at own time: ${missed.size} of ${video.framesMs.size}",
+        )
     }
 }
 
