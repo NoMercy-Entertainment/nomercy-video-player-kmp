@@ -124,4 +124,5 @@ private const val FRAME_NS = 41_708_333L
 private const val NS_PER_MS = 1_000_000L
 private const val LEAD_NS = 500_000_000L
 private const val ANNOUNCE_NS = 44_000_000L
-private const val RENDER_MS = 38L
+// Longer than a poll, short enough that a loaded CI runner still keeps up.
+private const val RENDER_MS = 30L

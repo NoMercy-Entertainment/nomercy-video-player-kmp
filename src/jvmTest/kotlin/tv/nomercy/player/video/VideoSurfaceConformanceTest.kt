@@ -138,6 +138,8 @@ class VideoSurfaceConformanceTest {
             // contract. LoadOptions carries no slot here because the engines
             // expose a real secondary rather than a browser cache to warm.
             "preloadNow",
+            // Core's frame-on-screen seam: the web reads it from requestVideoFrameCallback.
+            "presentedTime", "onFrameAnnounced",
             "context", "transport", "volume", "time", "state", "lifecycle", "bridge", "activity",
             "cueParsers", "streamFactories", "metrics", "bandwidth", "plugins", "queue",
             // The emitter methods. The web player extends EventEmitter, so these are
