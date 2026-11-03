@@ -23,6 +23,7 @@ class AssBlankFrameTest {
 
     private class SwitchableRenderer : AssRenderer {
         var track: Boolean = false
+        var changed: Boolean = true
         override fun addFont(name: String, data: ByteArray): Unit = Unit
         override fun clearFonts(): Unit = Unit
         override fun loadTrack(assContent: String): Unit = Unit
@@ -30,7 +31,7 @@ class AssBlankFrameTest {
         override fun storageSize(width: Int, height: Int): Unit = Unit
         override fun frameSize(width: Int, height: Int): Unit = Unit
         override fun render(timeMillis: Long): AssFrame? =
-            if (track) AssFrame(images = emptyList(), changed = true) else null
+            if (track) AssFrame(images = emptyList(), changed = changed) else null
         override fun hasTrack(): Boolean = track
         override fun release(): Unit = Unit
     }
@@ -61,6 +62,21 @@ class AssBlankFrameTest {
         val count: Int = published(renderer, drawing, ticks = 5)
 
         assertEquals(1, count, "the last cue stayed on screen after its track went away")
+    }
+
+    @Test
+    fun anItemChangeClearsTheOldPictureEvenWhenTheNewTrackHasNothingNew() {
+        val renderer = SwitchableRenderer().apply { track = true }
+        val drawing = AssDrawing(AssFrameCompositor(), AssPictureSurface())
+        published(renderer, drawing, ticks = 1)
+        renderer.changed = false
+        published(renderer, drawing, ticks = 3)
+
+        val cleared: Int = runBlocking {
+            (1..3).count { nextPicture(renderer, drawing, 1_000L, SIZE, clear = it == 1) != null }
+        }
+
+        assertEquals(1, cleared, "the old episode's picture stayed up until a new one was drawn")
     }
 }
 

@@ -70,7 +70,12 @@ public fun PlainSubtitleLayer(
 
     DisposableEffect(player) {
         val subscription = player.on(CoreEvents.SubtitleCue) { change -> cues = change.cues }
-        onDispose { subscription.dispose() }
+        // The old item's last cue must not outlive it; the tracker announces nothing on dispose.
+        val itemChange = player.on(CoreEvents.Item) { cues = emptyList() }
+        onDispose {
+            subscription.dispose()
+            itemChange.dispose()
+        }
     }
 
     if (cues.isEmpty()) return

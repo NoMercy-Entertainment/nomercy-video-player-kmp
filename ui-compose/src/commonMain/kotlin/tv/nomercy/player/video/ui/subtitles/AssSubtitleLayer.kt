@@ -105,7 +105,8 @@ public fun AssSubtitleLayer(
 
     LaunchedEffect(renderer, surface, ready) {
         if (ready && hasSurface) {
-            renderer.drive(drawing, surface, AssFeed(positionMs, frames) { wantedScale }) { drawn ->
+            val feed = AssFeed(positionMs, frames, { player?.stateFlow?.value?.item?.id }) { wantedScale }
+            renderer.drive(drawing, surface, feed) { drawn ->
                 frame = drawn
                 shown += 1
             }
@@ -160,6 +161,7 @@ private suspend fun AssRenderer.rasterise(
     var target: IntSize = IntSize.Zero
     var appliedScale: Double? = null
     var repaint = false
+    val watch = ItemWatch(feed.itemKey)
 
     while (coroutineContext.isActive) {
         // Re-asked rather than set once, because the size to draw at is
@@ -208,12 +210,13 @@ private suspend fun AssRenderer.rasterise(
         // NonCancellable, with the publish inside: libass reports a change once,
         // so a frame a restart dropped left the old cue up until the player closed.
         // Only a NEW picture is published; null means "keep what is on screen".
+        val clear: Boolean = watch.changed()
         val drawn: ImageBitmap? = withContext(NonCancellable + Dispatchers.Default) {
             drawing.turn.withLock {
-                nextPicture(this@rasterise, drawing, now, target, repaint)?.also(onFrame)
+                nextPicture(this@rasterise, drawing, now, target, repaint, clear)?.also(onFrame)
             }
         }
-        if (drawn != null) repaint = false
+        repaint = repaintAfter(repaint, clear, drawn)
 
         // Paced by the display, not by a timer.
         //
@@ -283,6 +286,7 @@ private suspend fun AssRenderer.rasteriseOnFrames(
     val frames: AssFrameSource = feed.frames ?: return
     val geometry = Geometry()
     var held: Long? = null
+    val watch = ItemWatch(feed.itemKey)
     val rendered = Channel<RenderedPicture>(RENDERED_DEPTH)
 
     // Two stages, so a slow render never holds up the next announcement and
@@ -301,18 +305,37 @@ private suspend fun AssRenderer.rasteriseOnFrames(
 
             syncGeometry(drawing, surface, feed, geometry)
 
+            val clear: Boolean = watch.changed()
+            held = held.takeUnless { clear }
+
             val timeMs: Long = held ?: feed.positionMs()
             val drawn: ImageBitmap? = withContext(NonCancellable + Dispatchers.Default) {
                 drawing.turn.withLock {
-                    nextPicture(this@rasteriseOnFrames, drawing, timeMs, geometry.target, geometry.repaint)
+                    nextPicture(this@rasteriseOnFrames, drawing, timeMs, geometry.target, geometry.repaint, clear)
                 }
             }
+            geometry.repaint = repaintAfter(geometry.repaint, clear, drawn)
             if (drawn == null) continue
-            geometry.repaint = false
             rendered.send(RenderedPicture(tick, drawn))
         }
     }
 }
+
+// True once per change of the item key the loop is watching.
+internal class ItemWatch(private val key: () -> Any?) {
+    private var last: Any? = key()
+
+    fun changed(): Boolean {
+        val now: Any? = key()
+        val moved: Boolean = now != last
+        last = now
+        return moved
+    }
+}
+
+// A clear always repaints the next frame; otherwise a repaint stays owed until one is drawn.
+internal fun repaintAfter(repaint: Boolean, clear: Boolean, drawn: Any?): Boolean =
+    clear || (repaint && drawn == null)
 
 // A picture and the frame it was rendered for; no tick means show it at once.
 private class RenderedPicture(val tick: AssFrameTick?, val bitmap: ImageBitmap)
@@ -344,19 +367,27 @@ private suspend fun AssRenderer.syncGeometry(drawing: AssDrawing, surface: IntSi
 internal class AssFeed(
     val positionMs: () -> Long,
     val frames: AssFrameSource?,
+    val itemKey: () -> Any? = { null },
     val wantedScale: () -> Double,
 )
 
 // Null means "keep what is on screen". The renderer answers null for a frame
 // that has not changed, which is most of them — a static line held for four
 // seconds is one render and ninety-five identical ones nobody should pay for.
+@Suppress("ReturnCount")
 internal suspend fun nextPicture(
     renderer: AssRenderer,
     drawing: AssDrawing,
     timeMs: Long,
     target: IntSize,
     repaint: Boolean = false,
+    clear: Boolean = false,
 ): ImageBitmap? {
+    // A new item drops the old picture; "unchanged" would keep it on screen.
+    if (clear) {
+        drawing.cleared = false
+        return blank(drawing, target)
+    }
     // Null from render() means "nothing changed", and the caller keeps what it
     // has — right for a still cue, wrong for no cue at all. One value carried
     // both answers, so a track that had been torn down left its last rasterised
