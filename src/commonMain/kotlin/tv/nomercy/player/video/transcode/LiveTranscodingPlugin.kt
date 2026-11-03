@@ -110,7 +110,7 @@ public open class LiveTranscodingPlugin(
         on(CoreEvents.BeforeLoad) { event ->
             head.value = 0.0
             jobId = event.data.item.id
-            event.delay { waitFor(0.0) }
+            event.delay { waitFor(opts.resumeAheadSeconds) }
         }
 
         on(CoreEvents.BeforeSeek) { event ->
