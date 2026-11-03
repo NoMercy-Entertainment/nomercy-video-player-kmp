@@ -197,6 +197,25 @@ class TvChromeControllerTest {
     }
 
     @Test
+    fun remoteBackClosesAnOpenSubtitleDialog() {
+        val controller: TvChromeController = watching()
+        controller.openDialog(TvDialog.Subtitle)
+
+        assertTrue(controller.onKey(PlayerKey.Back))
+        assertEquals(TvDialog.None, controller.ui.value.dialog)
+        assertTrue(controller.ui.value.preScreenVisible)
+    }
+
+    @Test
+    fun remoteBackReturnsFromSearchToSubtitleList() {
+        val controller: TvChromeController = watching()
+        controller.openDialog(TvDialog.SubtitleSearch)
+
+        assertTrue(controller.onKey(PlayerKey.Back))
+        assertEquals(TvDialog.Subtitle, controller.ui.value.dialog)
+    }
+
+    @Test
     fun backFromTheControlsJustHidesThem() {
         val controller: TvChromeController = watching()
         controller.onKey(PlayerKey.Up)

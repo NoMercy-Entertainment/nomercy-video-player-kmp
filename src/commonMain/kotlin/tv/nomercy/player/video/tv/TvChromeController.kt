@@ -62,7 +62,7 @@ public class TvChromeController(
         // A dialog owns every key while it is open. The one this replaces
         // checked one dialog and forgot the others, so a press meant for a list
         // moved the film behind it.
-        state.value.dialog != TvDialog.None -> false
+        state.value.dialog != TvDialog.None -> if (key == PlayerKey.Back) onBack() else false
 
         // So does the scrub bar. While it has focus the arrows are moving the
         // preview, and the chrome interpreting them as well would move it twice.
