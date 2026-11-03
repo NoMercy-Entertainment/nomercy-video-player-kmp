@@ -2147,6 +2147,7 @@ public final class tv/nomercy/player/video/tv/TvChromeController {
 	public final fun getCallbacks ()Ltv/nomercy/player/video/tv/TvChromeCallbacks;
 	public final fun getUi ()Lkotlinx/coroutines/flow/StateFlow;
 	public final fun onBack ()Z
+	public final fun onItemChanged ()V
 	public final fun onKey (Ltv/nomercy/player/core/input/PlayerKey;)Z
 	public final fun onPlaybackChanged (Z)V
 	public final fun openDialog (Ltv/nomercy/player/video/tv/TvDialog;)V
