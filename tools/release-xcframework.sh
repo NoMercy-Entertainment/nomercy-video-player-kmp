@@ -75,7 +75,14 @@ path, checksum, tag = sys.argv[1], sys.argv[2], sys.argv[3]
 text = io.open(path, encoding="utf-8", newline="").read()
 
 before = text
-text = text.replace('checksum: "REPLACED_BY_RELEASE_JOB"', 'checksum: "%s"' % checksum)
+text, count = re.subn(
+    r'checksum: "(?:REPLACED_BY_RELEASE_JOB|[0-9a-fA-F]{64})"',
+    'checksum: "%s"' % checksum,
+    text,
+    count=1,
+)
+if count != 1:
+    raise SystemExit("expected one engine checksum in manifest")
 text = re.sub(r"/download/v[^/]+/", "/download/%s/" % tag, text)
 
 if text == before:
