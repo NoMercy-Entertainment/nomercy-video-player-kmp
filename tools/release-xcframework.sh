@@ -68,34 +68,35 @@ fi
 # serve another one's asset.
 python3 - "$here/$manifest" "$checksum" "$tag" <<'PY'
 import io
+import pathlib
 import re
 import sys
 
 path, checksum, tag = sys.argv[1], sys.argv[2], sys.argv[3]
-text = io.open(path, encoding="utf-8", newline="").read()
-
-before = text
-text, count = re.subn(
-    r'checksum: "(?:REPLACED_BY_RELEASE_JOB|[0-9a-fA-F]{64})"',
-    'checksum: "%s"' % checksum,
-    text,
-    count=1,
-)
-if count != 1:
-    raise SystemExit("expected one engine checksum in manifest")
-text = re.sub(r"/download/v[^/]+/", "/download/%s/" % tag, text)
-
-if text == before:
-    print("manifest already carried this checksum and tag — nothing to stamp")
-else:
-    io.open(path, "w", encoding="utf-8", newline="").write(text)
-    print("stamped %s into %s" % (checksum, path))
+paths = [pathlib.Path(path)]
+if paths[0].as_posix().endswith("/apple/NoMercyPlayer/Package.swift"):
+    paths.append(paths[0].parents[2] / "Package.swift")
+for manifest_path in paths:
+    text = io.open(manifest_path, encoding="utf-8", newline="").read()
+    before = text
+    text, count = re.subn(
+        r'checksum: "(?:REPLACED_BY_RELEASE_JOB|[0-9a-fA-F]{64})"',
+        'checksum: "%s"' % checksum,
+        text,
+        count=1,
+    )
+    if count != 1:
+        raise SystemExit("expected one engine checksum in %s" % manifest_path)
+    text = re.sub(r"/download/v[^/]+/", "/download/%s/" % tag, text)
+    if text != before:
+        io.open(manifest_path, "w", encoding="utf-8", newline="").write(text)
+        print("stamped %s into %s" % (checksum, manifest_path))
 PY
 
-if ! git diff --quiet -- "$manifest"; then
+if ! git diff --quiet -- "$manifest" Package.swift; then
   git config user.name "Stoney_Eagle"
   git config user.email "45034970+StoneyEagle@users.noreply.github.com"
-  git add "$manifest"
+  git add "$manifest" Package.swift
   git commit -m "build(dist): stamp the $tag XCFramework checksum into $manifest"
   # Onto the default branch rather than the detached tag checkout, or the commit
   # exists only in the runner and the next consumer resolves the placeholder.

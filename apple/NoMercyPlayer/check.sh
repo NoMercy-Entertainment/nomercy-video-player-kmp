@@ -20,6 +20,7 @@ if [ ! -d "$FRAMEWORK" ]; then
 fi
 
 cd apple/NoMercyPlayer
+export NOMERCY_SPM_LOCAL=1
 
 # Both platforms build, because tvOS is the one with no app to fall back on and
 # a view that only ever compiled for iOS would be a surprise on the day someone

@@ -15,25 +15,22 @@ import PackageDescription
 // for core here: two copies of the same symbols in one process is a linker error
 // nobody can read.
 //
-// Two shapes of the engine target, chosen by an environment variable. A released
-// consumer resolves a checksummed zip from the tag; somebody working in this
-// repo has no tag and needs the framework they just built. The default is the
-// local path because that is who runs this manifest most — check.sh assembles
-// the framework first, and a release is a job that sets the variable.
-let releasing = ProcessInfo.processInfo.environment["NOMERCY_SPM_RELEASE"] == "1"
+// A checkout can opt into its local framework after building it. Consumers
+// resolve the tagged artifact without configuring their environment.
+let local = ProcessInfo.processInfo.environment["NOMERCY_SPM_LOCAL"] == "1"
 
-let engine: Target = releasing
+let engine: Target = local
     ? .binaryTarget(
+        name: "NoMercyVideoPlayer",
+        path: "../../build/XCFrameworks/release/NoMercyVideoPlayer.xcframework"
+    )
+    : .binaryTarget(
         name: "NoMercyVideoPlayer",
         url: "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/v0.2.25/NoMercyVideoPlayer.xcframework.zip",
         // Filled by the release job from tools/package-xcframework.sh. Without a
         // real one a binaryTarget resolves whatever the URL serves, which is a
         // build that changes under a consumer who changed nothing.
         checksum: "9724e9ac6d05e001630003cf8953c712bd0414fe4895fc447b33257b1b80b38f"
-    )
-    : .binaryTarget(
-        name: "NoMercyVideoPlayer",
-        path: "../../build/XCFrameworks/release/NoMercyVideoPlayer.xcframework"
     )
 
 let package = Package(
