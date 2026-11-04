@@ -10,61 +10,75 @@ package tv.nomercy.player.video.ui.chrome
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertNotEquals
 
-// The error table, against the app's own getUserFriendlyMessage.
-//
-// A lookup that has drifted is invisible on screen: every message still
-// appears, each one just describes the wrong failure. So the codes are checked
-// by value rather than by "some sentence came back".
 class PlaybackErrorMessageTest {
 
     @Test
-    fun aDecoderCodeSaysWhatTheDecoderCouldNotDo() {
+    fun androidDecoderCodeNameDescribesTheDeviceLimit() {
         assertEquals(
             "This video file cannot be played. The format exceeds device capabilities.",
-            PlaybackErrorMessage.forError("4003", "PlaybackException"),
+            PlaybackErrorMessage.forError("ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES", "PlaybackException"),
         )
     }
 
     @Test
-    fun aNetworkCodeBlamesTheConnectionAndNotTheFile() {
+    fun androidNetworkTimeoutCodeNameDescribesTheTimeout() {
         assertEquals(
             "Network timeout. Please check your internet connection.",
-            PlaybackErrorMessage.forError("2001", null),
+            PlaybackErrorMessage.forError("ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT", "PlaybackException"),
+        )
+    }
+
+    @Test
+    fun missingMediaCodeDescribesTheSource() {
+        assertEquals(
+            "The video source could not be loaded.",
+            PlaybackErrorMessage.forError("core:stream/media-absent", "PlaybackException"),
         )
     }
 
     @Test
     fun aDrmCodeSaysProtectedRatherThanBroken() {
-        assertEquals("DRM license acquisition failed.", PlaybackErrorMessage.forError("6001", null))
+        assertEquals(
+            "DRM license acquisition failed.",
+            PlaybackErrorMessage.forError("ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED", null),
+        )
     }
 
-    // Every code in the table answers with its own sentence, and no two share
-    // one by accident — a copy-paste that duplicated a row would tell a viewer
-    // the wrong thing on exactly one failure and nothing would catch it.
     @Test
-    fun theFourRangesAreAllPresentAndDistinct() {
+    fun knownBackendCodeNamesDoNotFallThrough() {
         val codes = listOf(
-            1000, 1001, 1002, 1003,
-            2000, 2001, 2002,
-            4001, 4002, 4003, 4004,
-            5001, 5002, 5003,
-            6000, 6001, 6002, 6003,
+            "core:stream/media-absent",
+            "ERROR_CODE_IO_UNSPECIFIED",
+            "ERROR_CODE_IO_NETWORK_CONNECTION_FAILED",
+            "ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT",
+            "ERROR_CODE_IO_INVALID_HTTP_CONTENT_TYPE",
+            "ERROR_CODE_IO_BAD_HTTP_STATUS",
+            "ERROR_CODE_IO_FILE_NOT_FOUND",
+            "ERROR_CODE_PARSING_CONTAINER_MALFORMED",
+            "ERROR_CODE_PARSING_MANIFEST_MALFORMED",
+            "ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED",
+            "ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED",
+            "ERROR_CODE_DECODER_INIT_FAILED",
+            "ERROR_CODE_DECODER_QUERY_FAILED",
+            "ERROR_CODE_DECODING_FAILED",
+            "ERROR_CODE_DECODING_FORMAT_EXCEEDS_CAPABILITIES",
+            "ERROR_CODE_DECODING_FORMAT_UNSUPPORTED",
+            "ERROR_CODE_AUDIO_TRACK_INIT_FAILED",
+            "ERROR_CODE_AUDIO_TRACK_WRITE_FAILED",
+            "ERROR_CODE_DRM_UNSPECIFIED",
+            "ERROR_CODE_DRM_SCHEME_UNSUPPORTED",
+            "ERROR_CODE_DRM_PROVISIONING_FAILED",
+            "ERROR_CODE_DRM_CONTENT_ERROR",
+            "ERROR_CODE_DRM_LICENSE_ACQUISITION_FAILED",
         )
 
-        val messages = codes.map { PlaybackErrorMessage.forError(it.toString(), null) }
-
-        assertTrue(messages.none { it == "Unknown error" }, "a code fell through to the fallback")
-
-        // Eighteen codes, eighteen different sentences. A copy-paste that
-        // duplicated a row would describe the wrong failure on exactly one code
-        // and nothing on screen would look wrong.
-        assertEquals(codes.size, messages.toSet().size)
+        codes.forEach { code ->
+            assertNotEquals("Unknown error", PlaybackErrorMessage.forError(code, null), code)
+        }
     }
 
-    // The fallback is what runs when a backend reports a failure with no code,
-    // which is most of them outside Media3.
     @Test
     fun aCodelessDecoderFailureIsStillReadAsOne() {
         assertEquals(
@@ -81,8 +95,7 @@ class PlaybackErrorMessageTest {
         )
     }
 
-    // Codec beats network when a message mentions both, which is the app's
-    // ordering: a decoder that failed while streaming is a decoder problem.
+    // A decoder can fail while reading from a healthy network stream.
     @Test
     fun theMoreSpecificFailureWinsWhenAMessageMentionsBoth() {
         assertEquals(

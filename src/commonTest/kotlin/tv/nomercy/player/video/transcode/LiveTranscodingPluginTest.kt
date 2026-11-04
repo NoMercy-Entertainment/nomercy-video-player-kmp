@@ -14,7 +14,9 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import tv.nomercy.player.core.events.CoreEvents
+import tv.nomercy.player.core.events.BeforeLoadPayload
 import tv.nomercy.player.core.events.SeekPosition
+import tv.nomercy.player.core.media.PlaylistItem
 import tv.nomercy.player.core.ports.RealtimeEvent
 import tv.nomercy.player.testing.FakePlayer
 import tv.nomercy.player.testing.FakeRealtimeChannel
@@ -44,6 +46,28 @@ class LiveTranscodingPluginTest {
         val plugin = LiveTranscodingPlugin(LiveTranscodingOptions(controlUrl = CONTROL_URL))
         player.plugins.register(plugin)
         return Rig(player, channel, plugin)
+    }
+
+    @Test
+    fun aNewLoadWaitsForTheInitialEncodedBuffer() = runTest {
+        val rig: Rig = rig(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
+        val item = object : PlaylistItem {
+            override val id: String = "episode-a"
+            override val url: String = "https://media.example.test/episode-a.m3u8"
+            override val title: String? = null
+        }
+
+        val load = async { rig.player.dispatchBefore(CoreEvents.BeforeLoad, BeforeLoadPayload(item)) }
+        runCurrent()
+        assertFalse(load.isCompleted, "load passed before the encoder reported a playable buffer")
+
+        rig.channel.deliver(RealtimeEvent.MESSAGE, progress(4.0))
+        runCurrent()
+        assertFalse(load.isCompleted, "load passed before the requested five seconds were encoded")
+
+        rig.channel.deliver(RealtimeEvent.MESSAGE, progress(5.0))
+        runCurrent()
+        assertTrue(load.isCompleted, "load stayed held after the initial buffer was encoded")
     }
 
     @Test
