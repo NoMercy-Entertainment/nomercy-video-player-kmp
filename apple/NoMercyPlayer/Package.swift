@@ -26,11 +26,11 @@ let engine: Target = local
     )
     : .binaryTarget(
         name: "NoMercyVideoPlayer",
-        url: "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/v0.2.25/NoMercyVideoPlayer.xcframework.zip",
+        url: "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/v0.2.26/NoMercyVideoPlayer.xcframework.zip",
         // Filled by the release job from tools/package-xcframework.sh. Without a
         // real one a binaryTarget resolves whatever the URL serves, which is a
         // build that changes under a consumer who changed nothing.
-        checksum: "9724e9ac6d05e001630003cf8953c712bd0414fe4895fc447b33257b1b80b38f"
+        checksum: "c11337ea16773d998f54b18bde95fc24bb472d3c62cc466aace236ea721cb438"
     )
 
 let package = Package(
