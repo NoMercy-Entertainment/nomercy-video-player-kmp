@@ -38,6 +38,45 @@ final class TvVideoChromeTests: XCTestCase {
         )
     }
 
+    func testResumeOnThePreScreenPlaysAndClosesIt() {
+        // The pre-screen the view draws is only usable if its two buttons reach
+        // the machine: play without dismissing leaves a film behind a menu.
+        let callbacks = RecordingTvCallbacks()
+        let machine = TvChromeController(
+            callbacks: callbacks,
+            scheduler: ImmediateScheduler(),
+            playing: false,
+            startOnPreScreen: true,
+            content: nil,
+            autoHideMs: 5_000
+        )
+        let observer = TvChromeObserver(controller: machine)
+        XCTAssertTrue(observer.model.showsPreScreen)
+
+        observer.resume()
+
+        XCTAssertEqual(callbacks.calls, ["play"])
+        XCTAssertFalse(machine.ui.value.preScreenVisible)
+    }
+
+    func testRestartOnThePreScreenRestartsAndClosesIt() {
+        let callbacks = RecordingTvCallbacks()
+        let machine = TvChromeController(
+            callbacks: callbacks,
+            scheduler: ImmediateScheduler(),
+            playing: false,
+            startOnPreScreen: true,
+            content: nil,
+            autoHideMs: 5_000
+        )
+        let observer = TvChromeObserver(controller: machine)
+
+        observer.restart()
+
+        XCTAssertEqual(callbacks.calls, ["restart"])
+        XCTAssertFalse(machine.ui.value.preScreenVisible)
+    }
+
     func testARemotePressReachesTheSharedMachine() {
         // The whole point of the move that made this file possible: the tvOS
         // view routes into the same controller the Compose television chrome
