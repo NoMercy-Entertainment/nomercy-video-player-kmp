@@ -23,7 +23,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
 
     @ObservedObject private var player: Player
     @StateObject private var visibility: ControlsVisibility
-    @ObservedObject private var subtitles: SubtitleRenderer
+    @StateObject var subtitles: SubtitleRenderer
 
     private let title: String
     private let subtitle: String
@@ -55,7 +55,7 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
     ) {
         self.kind = kind
         self.player = player
-        self.subtitles = subtitles
+        _subtitles = StateObject(wrappedValue: subtitles)
         self.title = title
         self.subtitle = subtitle
         self.strings = strings
@@ -129,6 +129,8 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
             subtitles.update(currentTime: seconds)
         }
     }
+
+    func syncSubtitles() {}
 
     /// What a gesture asked for, routed to whoever owns it. Seeking and volume
     /// are the player's; brightness goes to the host's closure when it gave

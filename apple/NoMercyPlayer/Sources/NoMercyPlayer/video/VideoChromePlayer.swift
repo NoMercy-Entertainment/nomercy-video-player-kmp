@@ -106,6 +106,10 @@ public protocol VideoChromePlayer: ObservableObject {
     var hasPrevious: Bool { get }
     var chapters: [ChapterMark] { get }
 
+    /// The lines of the selected subtitle track, parsed. The chrome's own
+    /// renderer is fed from here; empty by default draws nothing.
+    var subtitleCues: [SubtitleCue] { get }
+
     var volume: Double { get }
     var isMuted: Bool { get }
     var isFullscreen: Bool { get }
@@ -204,6 +208,7 @@ public extension VideoChromePlayer {
     var hasNext: Bool { false }
     var hasPrevious: Bool { false }
     var chapters: [ChapterMark] { [] }
+    var subtitleCues: [SubtitleCue] { [] }
 
     /// A percentage, as it is everywhere else in the ecosystem. Full by default:/n    /// a build that has not wired volume is not a silent one.
     var volume: Double { 100 }

@@ -37,6 +37,7 @@ final class FakeVideoChromePlayer: VideoChromePlayer {
     // implementations on the protocol, so what is being exercised is arithmetic
     // over these marks and the position, and both have to be arrangeable.
     var chapters: [ChapterMark] = []
+    var subtitleCues: [SubtitleCue] = []
 
     func placeAt(_ seconds: Double) {
         currentTime = seconds

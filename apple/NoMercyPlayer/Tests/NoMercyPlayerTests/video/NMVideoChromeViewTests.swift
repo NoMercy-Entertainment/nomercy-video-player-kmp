@@ -96,6 +96,19 @@ final class NMVideoChromeViewTests: XCTestCase {
         XCTAssertEqual(renderer.visible, ["World"])
     }
 
+    func testTheDropInPlayerShowsTheCuesOfItsPlayer() {
+        // The one-line init owns a renderer the host cannot reach, so the
+        // assembly has to feed it from the player or it draws nothing.
+        let player = FakeVideoChromePlayer()
+        player.subtitleCues = [SubtitleCue(start: 0, end: 5, lines: ["Hello"])]
+        player.placeAt(2)
+        let view = NMVideoChromeView(player: player)
+
+        view.syncSubtitles()
+
+        XCTAssertEqual(view.subtitles.visible, ["Hello"])
+    }
+
     func testTheChromeAndTheGesturesShareOneVisibility() {
         // Two copies is the failure this catches: a tap wakes one set of
         // controls and the bars read the other, so the picture is tapped and
