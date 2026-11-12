@@ -277,6 +277,15 @@ final enum class tv.nomercy.player.video/Stretching : kotlin/Enum<tv.nomercy.pla
     }
 }
 
+abstract fun interface tv.nomercy.player.video.cast.receiver/ReceiverAuthPolicy { // tv.nomercy.player.video.cast.receiver/ReceiverAuthPolicy|null[0]
+    abstract fun authorize(tv.nomercy.player.video.cast.receiver/ReceiverHandshake): kotlin/Boolean // tv.nomercy.player.video.cast.receiver/ReceiverAuthPolicy.authorize|authorize(tv.nomercy.player.video.cast.receiver.ReceiverHandshake){}[0]
+
+    final object Companion { // tv.nomercy.player.video.cast.receiver/ReceiverAuthPolicy.Companion|null[0]
+        final val DenyAll // tv.nomercy.player.video.cast.receiver/ReceiverAuthPolicy.Companion.DenyAll|{}DenyAll[0]
+            final fun <get-DenyAll>(): tv.nomercy.player.video.cast.receiver/ReceiverAuthPolicy // tv.nomercy.player.video.cast.receiver/ReceiverAuthPolicy.Companion.DenyAll.<get-DenyAll>|<get-DenyAll>(){}[0]
+    }
+}
+
 abstract fun interface tv.nomercy.player.video.tv/Cancellable { // tv.nomercy.player.video.tv/Cancellable|null[0]
     abstract fun cancel() // tv.nomercy.player.video.tv/Cancellable.cancel|cancel(){}[0]
 }
@@ -764,6 +773,25 @@ final class tv.nomercy.player.video.cast.receiver/ComposedPlayerReceiverPlayback
     constructor <init>(tv.nomercy.player.core.controllers/ComposedPlayer, kotlinx.coroutines/CoroutineScope) // tv.nomercy.player.video.cast.receiver/ComposedPlayerReceiverPlayback.<init>|<init>(tv.nomercy.player.core.controllers.ComposedPlayer;kotlinx.coroutines.CoroutineScope){}[0]
 
     final fun apply(tv.nomercy.player.video.cast.receiver/ReceiverCommand) // tv.nomercy.player.video.cast.receiver/ComposedPlayerReceiverPlayback.apply|apply(tv.nomercy.player.video.cast.receiver.ReceiverCommand){}[0]
+}
+
+final class tv.nomercy.player.video.cast.receiver/ReceiverHandshake { // tv.nomercy.player.video.cast.receiver/ReceiverHandshake|null[0]
+    constructor <init>(kotlin/String, kotlin/String?, kotlin/String) // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.<init>|<init>(kotlin.String;kotlin.String?;kotlin.String){}[0]
+
+    final val bearer // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.bearer|{}bearer[0]
+        final fun <get-bearer>(): kotlin/String? // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.bearer.<get-bearer>|<get-bearer>(){}[0]
+    final val remoteHost // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.remoteHost|{}remoteHost[0]
+        final fun <get-remoteHost>(): kotlin/String // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.remoteHost.<get-remoteHost>|<get-remoteHost>(){}[0]
+    final val senderId // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.senderId|{}senderId[0]
+        final fun <get-senderId>(): kotlin/String // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.senderId.<get-senderId>|<get-senderId>(){}[0]
+
+    final fun component1(): kotlin/String // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.component1|component1(){}[0]
+    final fun component2(): kotlin/String? // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.component2|component2(){}[0]
+    final fun component3(): kotlin/String // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.component3|component3(){}[0]
+    final fun copy(kotlin/String = ..., kotlin/String? = ..., kotlin/String = ...): tv.nomercy.player.video.cast.receiver/ReceiverHandshake // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.copy|copy(kotlin.String;kotlin.String?;kotlin.String){}[0]
+    final fun equals(kotlin/Any?): kotlin/Boolean // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.equals|equals(kotlin.Any?){}[0]
+    final fun hashCode(): kotlin/Int // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.hashCode|hashCode(){}[0]
+    final fun toString(): kotlin/String // tv.nomercy.player.video.cast.receiver/ReceiverHandshake.toString|toString(){}[0]
 }
 
 final class tv.nomercy.player.video.cast.receiver/ReceiverSession { // tv.nomercy.player.video.cast.receiver/ReceiverSession|null[0]

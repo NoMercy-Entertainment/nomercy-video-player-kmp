@@ -8,7 +8,9 @@
 
 package tv.nomercy.player.video.cast.receiver
 
+import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.plugins.origin
 import io.ktor.server.application.install
 import io.ktor.server.engine.EmbeddedServer
 import io.ktor.server.engine.embeddedServer
@@ -47,16 +49,19 @@ import tv.nomercy.player.video.cast.RemoteQualityLevel
 // reconnect after a dropped socket is a new sender as far as ReceiverSession
 // is concerned — exactly like a phone that force-quit and relaunched.
 //
-// What it deliberately does NOT do: authenticate. `nomercy-app-kmp`'s own
-// TvControlServer guards this port with offline JWT verification against
-// cached Keycloak JWKS — that policy belongs to the application, the same
-// way SystemTransport's OS integration is injected rather than owned here.
-// [authorize] is that seam; the default accepts everyone, which is correct
-// for a fake in a test and wrong for anything a real network can reach.
+// What it does NOT own: the credential check. That policy belongs to the
+// application, the same way SystemTransport's OS integration is injected.
+// [policy] is that seam; the default refuses every sender.
 public class KtorReceiverTransport(
     private val port: Int = DEFAULT_PORT,
-    private val authorize: (senderId: String) -> Boolean = { true },
+    private val policy: ReceiverAuthPolicy = ReceiverAuthPolicy.DenyAll,
 ) : ReceiverTransport {
+
+    @Deprecated("Pass a ReceiverAuthPolicy; this lambda never sees the bearer.")
+    public constructor(
+        port: Int = DEFAULT_PORT,
+        authorize: (senderId: String) -> Boolean,
+    ) : this(port, ReceiverAuthPolicy { authorize(it.senderId) })
 
     private var engine: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
     private val disconnectHandlers = MutableStateFlow<List<(String) -> Unit>>(emptyList())
@@ -83,7 +88,12 @@ public class KtorReceiverTransport(
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
             routing {
                 webSocket("/ws/receiver/{senderId}") {
-                    serve(call.parameters["senderId"], commandHandler)
+                    val bearer: String? = call.request.headers[HttpHeaders.Authorization]
+                        ?.takeIf { it.startsWith(BEARER_PREFIX, ignoreCase = true) }
+                        ?.substring(BEARER_PREFIX.length)
+                        ?.trim()
+                        ?: call.request.queryParameters["access_token"]
+                    serve(call.parameters["senderId"], bearer, call.request.origin.remoteHost, commandHandler)
                 }
             }
         }.also { it.start(wait = false) }
@@ -93,9 +103,11 @@ public class KtorReceiverTransport(
     // disconnect handlers that fire once its socket unwinds.
     private suspend fun DefaultWebSocketServerSession.serve(
         senderId: String?,
+        bearer: String?,
+        remoteHost: String,
         commandHandler: (senderId: String, command: ReceiverCommand) -> ReceiverOutcome,
     ) {
-        if (senderId.isNullOrBlank() || !authorize(senderId)) {
+        if (senderId.isNullOrBlank() || !policy.authorize(ReceiverHandshake(senderId, bearer, remoteHost))) {
             close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "unauthorized"))
             return
         }
@@ -172,6 +184,7 @@ public class KtorReceiverTransport(
     public companion object {
         public const val DEFAULT_PORT: Int = 7626
         private const val PORT_RANGE_END: Int = 7699
+        private const val BEARER_PREFIX: String = "Bearer "
     }
 }
 

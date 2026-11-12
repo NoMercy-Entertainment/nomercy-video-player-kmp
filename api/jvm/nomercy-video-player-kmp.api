@@ -790,6 +790,15 @@ public final class tv/nomercy/player/video/cast/receiver/NoReceiverTransport : t
 	public fun stop ()V
 }
 
+public abstract interface class tv/nomercy/player/video/cast/receiver/ReceiverAuthPolicy {
+	public static final field Companion Ltv/nomercy/player/video/cast/receiver/ReceiverAuthPolicy$Companion;
+	public abstract fun authorize (Ltv/nomercy/player/video/cast/receiver/ReceiverHandshake;)Z
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverAuthPolicy$Companion {
+	public final fun getDenyAll ()Ltv/nomercy/player/video/cast/receiver/ReceiverAuthPolicy;
+}
+
 public abstract interface class tv/nomercy/player/video/cast/receiver/ReceiverCommand {
 }
 
@@ -899,6 +908,21 @@ public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$SetVolu
 public final class tv/nomercy/player/video/cast/receiver/ReceiverCommand$Stop : tv/nomercy/player/video/cast/receiver/ReceiverCommand {
 	public static final field INSTANCE Ltv/nomercy/player/video/cast/receiver/ReceiverCommand$Stop;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tv/nomercy/player/video/cast/receiver/ReceiverHandshake {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ltv/nomercy/player/video/cast/receiver/ReceiverHandshake;
+	public static synthetic fun copy$default (Ltv/nomercy/player/video/cast/receiver/ReceiverHandshake;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ltv/nomercy/player/video/cast/receiver/ReceiverHandshake;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getBearer ()Ljava/lang/String;
+	public final fun getRemoteHost ()Ljava/lang/String;
+	public final fun getSenderId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
