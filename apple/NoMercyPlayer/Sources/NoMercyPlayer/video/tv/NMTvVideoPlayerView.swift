@@ -55,6 +55,15 @@ public struct NMTvVideoPlayerView<Player: VideoChromePlayer>: View {
 
             SubtitleOverlay(renderer: subtitles)
 
+            if chrome.model.showsPreScreen {
+                TvPreScreenView(
+                    title: title,
+                    subtitle: subtitle,
+                    onResume: chrome.resume,
+                    onRestart: chrome.restart
+                )
+            }
+
             if chrome.model.showsControls {
                 controls
             }

@@ -37,7 +37,14 @@ public struct TvChromeView<Surface: View>: View {
             surface
 
             if model.preScreenVisible {
-                TvPreScreenView(model: model)
+                TvPreScreenView(
+                    title: model.title,
+                    subtitle: model.subtitle,
+                    onResume: { model.play() },
+                    onRestart: { model.restart() },
+                    onEpisodes: model.hasEpisodes ? { model.openEpisodes() } : nil,
+                    onSubtitles: { model.openSubtitles() }
+                )
             } else if model.seekMode {
                 TvSeekView(model: model)
             } else if model.controlsVisible {
@@ -116,9 +123,14 @@ private struct TvSeekView: View {
 }
 
 /// Where a viewer lands when they press back, and where they start.
-private struct TvPreScreenView: View {
+struct TvPreScreenView: View {
 
-    @ObservedObject var model: TvChromeModel
+    let title: String
+    let subtitle: String
+    let onResume: () -> Void
+    let onRestart: () -> Void
+    var onEpisodes: (() -> Void)?
+    var onSubtitles: (() -> Void)?
 
     // Resume is focused because somebody who pressed back by accident wants
     // exactly that, and it should be one press away rather than a hunt.
@@ -126,21 +138,23 @@ private struct TvPreScreenView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(model.title).font(.largeTitle)
-            if !model.subtitle.isEmpty {
-                Text(model.subtitle).font(.title3).foregroundColor(.secondary)
+            Text(title).font(.largeTitle)
+            if !subtitle.isEmpty {
+                Text(subtitle).font(.title3).foregroundColor(.secondary)
             }
 
-            Button("Resume") { model.play() }
+            Button("Resume", action: onResume)
                 .focused($resumeFocused)
 
-            Button("Restart") { model.restart() }
+            Button("Restart", action: onRestart)
 
-            if model.hasEpisodes {
-                Button("Episodes") { model.openEpisodes() }
+            if let onEpisodes {
+                Button("Episodes", action: onEpisodes)
             }
 
-            Button("Subtitles") { model.openSubtitles() }
+            if let onSubtitles {
+                Button("Subtitles", action: onSubtitles)
+            }
         }
         .padding(60)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

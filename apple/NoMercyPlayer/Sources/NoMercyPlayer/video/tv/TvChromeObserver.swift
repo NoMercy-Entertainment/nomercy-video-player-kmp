@@ -55,9 +55,13 @@ public final class TvChromeObserver: ObservableObject {
         controller.onKey(key: TvRemote.key(for: gesture))
     }
 
-    public func resume() {}
+    public func resume() {
+        controller.resume()
+    }
 
-    public func restart() {}
+    public func restart() {
+        controller.restart()
+    }
 
     @discardableResult
     public func back() -> Bool {
