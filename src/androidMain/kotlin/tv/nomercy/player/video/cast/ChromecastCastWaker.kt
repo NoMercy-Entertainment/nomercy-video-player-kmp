@@ -68,24 +68,23 @@ private const val LOG_TAG = "nm-cast-waker"
 // library call site never repeats what the app's manifest already states.
 public open class ChromecastCastWaker(private val context: Context) : CastWaker {
 
-    private var warmCallback: MediaRouter.Callback? = null
+    private val warmScan = WarmScan<Pair<MediaRouteSelector, MediaRouter.Callback>>(
+        scope = CoroutineScope(Dispatchers.Main),
+        windowMs = WAKE_TIMEOUT_MS,
+        create = {
+            CastContext.getSharedInstance(context).mergedSelector?.let { it to object : MediaRouter.Callback() {} }
+        },
+        add = { (selector, callback) ->
+            runCatching {
+                MediaRouter.getInstance(context)
+                    .addCallback(selector, callback, MediaRouter.CALLBACK_FLAG_PERFORM_ACTIVE_SCAN)
+            }
+        },
+        remove = { (_, callback) -> runCatching { MediaRouter.getInstance(context).removeCallback(callback) } },
+    )
 
     override suspend fun warmUp() {
-        if (warmCallback != null) return
-        withContext(Dispatchers.Main) {
-            runCatching {
-                val selector: MediaRouteSelector? = CastContext.getSharedInstance(context).mergedSelector
-                if (selector != null) {
-                    val callback = object : MediaRouter.Callback() {}
-                    warmCallback = callback
-                    MediaRouter.getInstance(context).addCallback(
-                        selector,
-                        callback,
-                        MediaRouter.CALLBACK_FLAG_PERFORM_ACTIVE_SCAN,
-                    )
-                }
-            }
-        }
+        withContext(Dispatchers.Main) { runCatching { warmScan.start() } }
     }
 
     override suspend fun wake(deviceId: String): WakeOutcome = withMulticastLock {
