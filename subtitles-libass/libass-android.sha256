@@ -3,7 +3,7 @@
 # release of that pipeline, and update this list in the same commit.
 # NativeLibraryAlignmentTest fails when a file differs from its line here.
 #
-# release: NoMercy-Entertainment/nomercy-libass v0.17.5-1
-957e7d5f5ec11abe86fe846990d2725dd03f3fec6566b2bf90134076cba172d6  arm64-v8a
-476d805d0f192cb3337deef9c9a3456def909d4e6d2d3ab727ed456f49341f97  armeabi-v7a
-7e90e33d38279ef5247173adf8d4692f0e9315fd7f2025581036fda2a89d7d95  x86_64
+# release: NoMercy-Entertainment/nomercy-libass v0.17.5-2
+680b677a2187a053c4b78010c9c38e0b84adec79d978d9a09a8af3b57f9a8002  arm64-v8a
+4778b99e305d0f48fce63d3ba675827d16b4268262ec2356dd0a9630a45da47f  armeabi-v7a
+6a98d4a85e93f95a683dfe6f9405510b3ea080585f4477f29ed083d3584b6522  x86_64
