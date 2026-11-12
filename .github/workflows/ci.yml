@@ -70,7 +70,7 @@ jobs:
       # The Android SDK, which a GitHub-hosted ubuntu image carried and a
       # self-hosted runner does not. Without it every Android target fails to
       # configure, and the message names a licence rather than a missing SDK.
-      - uses: android-actions/setup-android@v4
+      - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
         with:
           packages: 'platform-tools'
 
@@ -89,7 +89,7 @@ jobs:
 
       # Without this every run downloads the Kotlin/Native distribution, the
       # Android SDK components and the whole dependency graph from cold.
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@48b5f213c81028ace310571dc5ec0fbbca0b2947 # v4
 
       # The libass gate skips itself when the library is absent, which on a bare
       # runner means the whole desktop subtitle surface is untested while the
@@ -198,7 +198,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@48b5f213c81028ace310571dc5ec0fbbca0b2947 # v4
 
       # This job builds core as a composite, and core assembles its macOS
       # libmpv payload out of the Homebrew keg. Without mpv here the payload
@@ -315,7 +315,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@48b5f213c81028ace310571dc5ec0fbbca0b2947 # v4
 
       # Only when missing, for the same reason the Linux job checks first: this
       # is a persistent machine, and `brew install` on every push is a package
