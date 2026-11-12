@@ -27,6 +27,7 @@ import tv.nomercy.player.core.device.FormFactor
 import tv.nomercy.player.core.events.CoreEvents
 import tv.nomercy.player.core.player.PlayerConfig
 import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssImage
 import tv.nomercy.player.video.subtitles.AssRenderer
@@ -199,6 +200,20 @@ class AssSubtitleLayerTest {
 
         assertEquals(1080, portrait.width, "the raster did not span the pane's width")
         assertEquals(607, portrait.height, "the raster was not the video's box: 1080 / (1280/720) = 607")
+    }
+
+    @Test
+    fun theSubtitleBoxIsThePaintedPictureClippedToThePane() {
+        val script = AssSize(1280, 720)
+        val phone = IntSize(1080, 2400)
+
+        assertEquals(IntSize(1080, 607), rasterSize(script, phone, Stretching.Uniform))
+        // Crop and stretch paint past or across the pane: the box is the pane.
+        assertEquals(phone, rasterSize(script, phone, Stretching.ExactFit))
+        assertEquals(phone, rasterSize(script, phone, Stretching.Fill))
+        // Native size: the picture centered when smaller, the pane when larger.
+        assertEquals(IntSize(1280, 720), rasterSize(script, IntSize(3840, 2160), Stretching.None))
+        assertEquals(IntSize(1280, 600), rasterSize(script, IntSize(1280, 600), Stretching.None))
     }
 
     @Test

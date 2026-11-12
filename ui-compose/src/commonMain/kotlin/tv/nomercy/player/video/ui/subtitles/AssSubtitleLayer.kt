@@ -42,6 +42,7 @@ import tv.nomercy.player.core.events.SubtitleStyle
 import tv.nomercy.player.video.subtitles.AssFrame
 import tv.nomercy.player.video.subtitles.AssRenderer
 import tv.nomercy.player.video.NMVideoPlayer
+import tv.nomercy.player.video.Stretching
 import tv.nomercy.player.video.subtitles.AssSize
 import tv.nomercy.player.video.ui.chrome.rememberFirstFrameShown
 import tv.nomercy.player.video.subtitles.AssFrameCompositor
@@ -80,6 +81,8 @@ public fun AssSubtitleLayer(
     player: NMVideoPlayer? = null,
     /** When set, a frame announcement drives each render instead of the polling loop. */
     frames: AssFrameSource? = null,
+    /** How the picture is painted in the pane; the cues follow the painted picture. */
+    stretching: Stretching = Stretching.Uniform,
 ) {
     var surface: IntSize by remember { mutableStateOf(IntSize.Zero) }
     var frame: ImageBitmap? by remember { mutableStateOf(null) }
@@ -127,7 +130,7 @@ public fun AssSubtitleLayer(
                 // resolution and scaled here, which is what every other player
                 // does and the only way an outline authored for 1080p stays
                 // proportional in a smaller window.
-                contentScale = ContentScale.Fit,
+                contentScale = if (stretching == Stretching.None) ContentScale.None else ContentScale.Fit,
                 // The report the surface frees on, made from the DRAW phase and
                 // naming the picture that was actually painted. Everything older
                 // is unreachable — the canvas draws one frame at a time and
@@ -470,12 +473,27 @@ internal class AssDrawing(
 // So: storage stays the script's PlayRes (see NativeAssRenderer.applySize) and
 // the frame is the surface, capped so a 4K pane does not cost eight million
 // pixels a frame for a line of text.
-internal fun rasterSize(source: AssSize?, surface: IntSize): IntSize {
+internal fun rasterSize(source: AssSize?, surface: IntSize, stretching: Stretching = Stretching.Uniform): IntSize {
     // Before the pane has been measured there is nothing to fit into, so the
     // track's own space stands in — it is the only size known at that point.
     val space: AssSize = source?.takeIf { it.width > 0 && it.height > 0 } ?: return surface
-    if (surface.width <= 0 || surface.height <= 0) return IntSize(space.width, space.height)
 
+    // The subtitle box is the painted picture clipped to the pane. Crop and
+    // stretch paint past or across the pane; native size is clipped when larger.
+    return when {
+        surface.width <= 0 || surface.height <= 0 -> IntSize(space.width, space.height)
+        stretching == Stretching.Fill || stretching == Stretching.ExactFit -> surface
+        stretching == Stretching.None -> nativeBox(space, surface)
+        else -> fittedBox(space, surface)
+    }
+}
+
+private fun nativeBox(space: AssSize, surface: IntSize): IntSize {
+    val inside: Boolean = space.width <= surface.width && space.height <= surface.height
+    return if (inside) IntSize(space.width, space.height) else surface
+}
+
+private fun fittedBox(space: AssSize, surface: IntSize): IntSize {
     // The video's BOX, in screen pixels: the script's aspect, as large as fits.
     //
     // Both halves matter and each was shipped alone. Rasterising at the script's

@@ -1126,11 +1126,11 @@ public final class tv/nomercy/player/video/ui/subtitles/AssFrameTick {
 }
 
 public final class tv/nomercy/player/video/ui/subtitles/AssSubtitleLayerKt {
-	public static final fun AssSubtitleLayer (Ltv/nomercy/player/video/subtitles/AssRenderer;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ltv/nomercy/player/core/events/SubtitleStyle;Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/ui/subtitles/AssFrameSource;Landroidx/compose/runtime/Composer;II)V
+	public static final fun AssSubtitleLayer (Ltv/nomercy/player/video/subtitles/AssRenderer;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ltv/nomercy/player/core/events/SubtitleStyle;Ltv/nomercy/player/video/NMVideoPlayer;Ltv/nomercy/player/video/ui/subtitles/AssFrameSource;Ltv/nomercy/player/video/Stretching;Landroidx/compose/runtime/Composer;II)V
 }
 
 public final class tv/nomercy/player/video/ui/subtitles/PlainSubtitleLayerKt {
-	public static final fun PlainSubtitleLayer (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/core/events/SubtitleStyle;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun PlainSubtitleLayer-KyrmSsM (Ltv/nomercy/player/core/controllers/ComposedPlayer;Landroidx/compose/ui/Modifier;Ltv/nomercy/player/core/events/SubtitleStyle;Lkotlin/jvm/functions/Function1;Ltv/nomercy/player/video/Stretching;Landroidx/compose/ui/unit/IntSize;Landroidx/compose/runtime/Composer;II)V
 	public static final fun getDefaultPlainSubtitleStyle ()Landroidx/compose/ui/text/TextStyle;
 }
 

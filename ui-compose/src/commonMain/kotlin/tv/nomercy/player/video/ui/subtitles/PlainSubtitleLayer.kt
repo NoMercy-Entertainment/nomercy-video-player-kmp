@@ -16,6 +16,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntSize
+import tv.nomercy.player.video.Stretching
+import tv.nomercy.player.video.subtitles.AssSize
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -65,6 +70,10 @@ public fun PlainSubtitleLayer(
     subtitleStyle: SubtitleStyle = SubtitleStyle(),
     /** The host's own faces, by the name the style's font stack asks for. */
     fontResolver: (String) -> FontFamily? = { null },
+    /** How the picture is painted in the pane; the cues sit inside the painted picture. */
+    stretching: Stretching = Stretching.Uniform,
+    /** The picture's own size when known; without it the cues use the whole pane. */
+    picture: IntSize? = null,
 ) {
     var cues: List<SubtitleCue> by remember { mutableStateOf(emptyList()) }
 
@@ -80,31 +89,41 @@ public fun PlainSubtitleLayer(
 
     if (cues.isEmpty()) return
 
-    BoxWithConstraints(modifier.fillMaxSize().testTag(PLAIN_SUBTITLE_TAG)) {
-        val fill: TextStyle = subtitleStyle.toTextStyle(maxWidth.value, fontResolver)
-        val outlineWidthPx: Float = with(LocalDensity.current) { fill.fontSize.toPx() } * SUBTITLE_OUTLINE_RATIO
-        val paint = CuePaint(
-            fill = fill,
-            outline = subtitleStyle.toOutlineStyle(fill, outlineWidthPx),
-            textBackground = subtitleStyle.toBackgroundColor(),
-            areaBackground = subtitleStyle.toAreaColor(),
-        )
+    BoxWithConstraints(modifier.fillMaxSize().testTag(PLAIN_SUBTITLE_TAG), contentAlignment = Alignment.Center) {
+        val box: DpSize = cueBox(picture, IntSize(constraints.maxWidth, constraints.maxHeight), stretching)
+        BoxWithConstraints(Modifier.size(box)) {
+            val fill: TextStyle = subtitleStyle.toTextStyle(maxWidth.value, fontResolver)
+            val outlineWidthPx: Float = with(LocalDensity.current) { fill.fontSize.toPx() } * SUBTITLE_OUTLINE_RATIO
+            val paint = CuePaint(
+                fill = fill,
+                outline = subtitleStyle.toOutlineStyle(fill, outlineWidthPx),
+                textBackground = subtitleStyle.toBackgroundColor(),
+                areaBackground = subtitleStyle.toAreaColor(),
+            )
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(
-                    bottom = maxHeight * SAFE_BLOCK,
-                    top = maxHeight * SAFE_BLOCK,
-                    start = maxWidth * SAFE_INLINE,
-                    end = maxWidth * SAFE_INLINE,
-                ),
-            verticalArrangement = Arrangement.Bottom,
-        ) {
-            cues.forEach { cue -> CueRow(cue, paint) }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(
+                        bottom = maxHeight * SAFE_BLOCK,
+                        top = maxHeight * SAFE_BLOCK,
+                        start = maxWidth * SAFE_INLINE,
+                        end = maxWidth * SAFE_INLINE,
+                    ),
+                verticalArrangement = Arrangement.Bottom,
+            ) {
+                cues.forEach { cue -> CueRow(cue, paint) }
+            }
         }
     }
+}
+
+// The painted picture clipped to the pane, the same box the styled layer draws in.
+@Composable
+private fun cueBox(picture: IntSize?, pane: IntSize, stretching: Stretching): DpSize {
+    val box: IntSize = rasterSize(picture?.let { AssSize(it.width, it.height) }, pane, stretching)
+    return with(LocalDensity.current) { DpSize(box.width.toDp(), box.height.toDp()) }
 }
 
 // One cue's row: the area band, the text background inside it, and the outline
