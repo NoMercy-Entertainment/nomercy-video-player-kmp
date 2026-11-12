@@ -125,12 +125,17 @@ public struct NMVideoChromeView<Player: VideoChromePlayer>: View {
                 onClose: onClose
             )
         }
+        .onAppear(perform: syncSubtitles)
+        .onChange(of: player.subtitleCues) { _ in syncSubtitles() }
         .onChange(of: player.currentTime) { seconds in
             subtitles.update(currentTime: seconds)
         }
     }
 
-    func syncSubtitles() {}
+    func syncSubtitles() {
+        subtitles.loadCues(player.subtitleCues)
+        subtitles.update(currentTime: player.currentTime)
+    }
 
     /// What a gesture asked for, routed to whoever owns it. Seeking and volume
     /// are the player's; brightness goes to the host's closure when it gave
