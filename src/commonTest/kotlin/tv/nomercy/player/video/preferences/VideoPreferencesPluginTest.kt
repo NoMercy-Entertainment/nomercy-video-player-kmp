@@ -27,6 +27,7 @@ import tv.nomercy.player.core.events.ItemChange
 import tv.nomercy.player.core.events.TimeUpdate
 import tv.nomercy.player.video.NMVideoPlayer
 import tv.nomercy.player.video.AudioTracksChange
+import tv.nomercy.player.video.QualityRequest
 import tv.nomercy.player.video.VideoEvents
 import tv.nomercy.player.video.VideoItem
 import tv.nomercy.player.video.item.VideoPlaylistItem
@@ -410,6 +411,40 @@ class VideoPreferencesPluginTest {
         assertEquals(1080, rig.player.quality()?.height, "the next item started on its own pick, not the viewer's")
     }
 
+    // No engine pins a rung its ladder does not hold: each falls back to Auto.
+    @Test
+    fun aPickTheLadderDoesNotHoldKeepsTheSavedPick() = runTest {
+        val rig: Rig = rig()
+        rig.backend.levels = listOf(fullHd, hd)
+        rig.player.quality(hd)
+        rig.plugin.awaitWrites()
+
+        rig.player.quality(ultraHd)
+        rig.plugin.awaitWrites()
+
+        // Straight at the backend, so the refused pick is not what is read back.
+        rig.backend.quality(null)
+        rig.plugin.restore()
+
+        assertEquals(HD_HEIGHT, rig.player.quality()?.height, "a refused pick replaced the saved one")
+    }
+
+    @Test
+    fun aRequestNamingARungPastTheLadderKeepsTheSavedPick() = runTest {
+        val rig: Rig = rig()
+        rig.backend.levels = listOf(fullHd, hd)
+        rig.player.quality(hd)
+        rig.plugin.awaitWrites()
+
+        rig.player.emit(VideoEvents.QualityRequested, QualityRequest(OUT_OF_RANGE_RUNG))
+        rig.plugin.awaitWrites()
+
+        rig.backend.quality(null)
+        rig.plugin.restore()
+
+        assertEquals(HD_HEIGHT, rig.player.quality()?.height, "a rung past the ladder replaced the saved pick")
+    }
+
     @Test
     fun aPinnedRungComesBackByHeightSoADifferentLadderStillMatches() = runTest {
         val rig: Rig = rig()
@@ -673,3 +708,5 @@ private const val SUBTITLE_KEY = "nmplayer-video-preferences-subtitle"
 
 private val fullHd = QualityLevel(height = 1080, bitrate = 6_000_000, codec = "avc1")
 private val hd = QualityLevel(height = HD_HEIGHT, bitrate = 2_500_000, codec = "avc1")
+private val ultraHd = QualityLevel(height = 2160, bitrate = 16_000_000, codec = "hvc1")
+private const val OUT_OF_RANGE_RUNG = 7

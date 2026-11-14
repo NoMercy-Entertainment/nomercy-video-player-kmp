@@ -18,6 +18,7 @@ import tv.nomercy.player.core.plugin.PluginManifest
 import tv.nomercy.player.core.plugin.PluginOptionField
 import tv.nomercy.player.core.ports.AudioTrack
 import tv.nomercy.player.core.ports.QualityLevel
+import tv.nomercy.player.core.ports.QualityMode
 import tv.nomercy.player.core.ports.SubtitleTrack
 import tv.nomercy.player.core.ports.subtitleKindOf
 import tv.nomercy.player.video.preferFullVariant
@@ -136,9 +137,14 @@ public open class VideoPreferencesPlugin(
         // having left it.
         // The rung the event NAMES: the engine applies a pick later, so reading
         // it back here stores the previous rung and the next restore undoes the pick.
+        // A rung the ladder does not hold is refused: the engine falls back to
+        // Auto, and saving that would replace the pick the viewer last had.
         on(VideoEvents.QualityRequested) { request ->
-            val saved: SavedQuality = chosenQuality(trackAt(player.qualityLevels(), request.level?.toDouble()))
-            remember { store.saveQuality(saved) }
+            val level: QualityLevel? = trackAt(player.qualityLevels(), request.level?.toDouble())
+            val askedForRung: Boolean = request.level != null || player.qualityMode() == QualityMode.MANUAL
+            if (level != null || !askedForRung) {
+                remember { store.saveQuality(chosenQuality(level)) }
+            }
         }
 
         installRestores()
