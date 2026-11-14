@@ -76,7 +76,12 @@ internal class VideoPreferencesStore(private val storage: Storage) {
         write(AUDIO, language)
     }
 
-    suspend fun quality(): SavedQuality? = storage.getJSON(QUALITY, SavedQuality.serializer())
+    // An older build saved the rung the engine still reported, not the pick, so
+    // a row under the old key is dropped unread and the viewer starts on Auto once.
+    suspend fun quality(): SavedQuality? {
+        if (storage.get(OLD_QUALITY) != null) storage.remove(OLD_QUALITY)
+        return storage.getJSON(QUALITY, SavedQuality.serializer())
+    }
 
     suspend fun saveQuality(quality: SavedQuality) {
         storage.setJSON(QUALITY, quality, SavedQuality.serializer())
@@ -140,7 +145,8 @@ private const val VOLUME = "volume"
 private const val MUTED = "muted"
 private const val SUBTITLE = "subtitle"
 private const val AUDIO = "audio"
-private const val QUALITY = "quality"
+private const val QUALITY = "quality-v2"
+private const val OLD_QUALITY = "quality"
 
 private const val MIN_VOLUME = 0
 private const val MAX_VOLUME = 100
