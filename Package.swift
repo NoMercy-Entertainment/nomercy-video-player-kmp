@@ -12,8 +12,8 @@ let engine: Target = local
     )
     : .binaryTarget(
         name: "NoMercyVideoPlayer",
-        url: "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/v0.2.27/NoMercyVideoPlayer.xcframework.zip",
-        checksum: "d788b5b8e941302850c678a2f1a618fd74434f82b332a1428c9ee52c3e2c443c"
+        url: "https://github.com/NoMercy-Entertainment/nomercy-video-player-kmp/releases/download/v0.2.28/NoMercyVideoPlayer.xcframework.zip",
+        checksum: "bd837cc1ef0cb6b13004e1a0b4628a60546ce691cb32b042efc3ba7005e039e0"
     )
 
 let package = Package(
