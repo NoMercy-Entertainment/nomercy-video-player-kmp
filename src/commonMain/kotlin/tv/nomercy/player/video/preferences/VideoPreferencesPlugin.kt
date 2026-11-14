@@ -134,7 +134,12 @@ public open class VideoPreferencesPlugin(
         // explicit pick; a level-switch event would persist whatever ABR landed
         // on and drag the viewer out of Auto on the next load without them ever
         // having left it.
-        on(VideoEvents.QualityRequested) { remember { store.saveQuality(chosenQuality()) } }
+        // The rung the event NAMES: the engine applies a pick later, so reading
+        // it back here stores the previous rung and the next restore undoes the pick.
+        on(VideoEvents.QualityRequested) { request ->
+            val saved: SavedQuality = chosenQuality(trackAt(player.qualityLevels(), request.level?.toDouble()))
+            remember { store.saveQuality(saved) }
+        }
 
         installRestores()
     }
@@ -400,11 +405,7 @@ public open class VideoPreferencesPlugin(
         player.quality(level)
     }
 
-    // Read from the player rather than from the request's index, for the reason
-    // the track handlers above give: the payload indexes a list the player is
-    // already holding, and a pin the engine refused would be stored as accepted.
-    private fun chosenQuality(): SavedQuality {
-        val level: QualityLevel? = player.quality()
+    private fun chosenQuality(level: QualityLevel?): SavedQuality {
         return if (level == null) SavedQuality(auto = true) else SavedQuality(auto = false, height = level.height)
     }
 }

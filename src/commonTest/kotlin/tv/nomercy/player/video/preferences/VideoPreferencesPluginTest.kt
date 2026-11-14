@@ -62,8 +62,8 @@ class VideoPreferencesPluginTest {
         opts: VideoPreferencesOptions = VideoPreferencesOptions(),
         storage: InMemoryStorage = InMemoryStorage(),
         config: PlayerConfig = PlayerConfig(),
+        backend: FakeVideoBackend = FakeVideoBackend(),
     ): Rig {
-        val backend = FakeVideoBackend()
         // Its own store, per rig.
         //
         // The default is the PLATFORM's, which is the point of it — a subtitle
@@ -345,6 +345,69 @@ class VideoPreferencesPluginTest {
         rig.plugin.restore()
 
         assertNull(rig.player.quality(), "the pin before the Auto came back, so Auto was stored as nothing")
+    }
+
+    // The engine applies a pick on its own thread, so its answer is the OLD rung
+    // for a moment after the viewer chose. This backend models that gap.
+    private class SlowApplyBackend : FakeVideoBackend() {
+        private var applied: QualityLevel? = null
+        private var pending: QualityLevel? = null
+        private var hasPending: Boolean = false
+
+        override fun quality(): QualityLevel? = applied
+
+        override fun quality(level: QualityLevel?) {
+            pending = level
+            hasPending = true
+        }
+
+        fun settle() {
+            if (hasPending) applied = pending
+            hasPending = false
+        }
+
+        fun startOn(level: QualityLevel) {
+            applied = level
+        }
+
+        fun startNextItem() {
+            applied = null
+            pending = null
+            hasPending = false
+        }
+    }
+
+    @Test
+    fun aPickIsSavedAsAskedNotAsTheEngineStillReportsIt() = runTest {
+        val backend = SlowApplyBackend()
+        val rig: Rig = rig(backend = backend)
+        backend.levels = listOf(fullHd, hd)
+        backend.startOn(hd)
+        rig.player.quality(fullHd)
+        rig.plugin.awaitWrites()
+        backend.settle()
+
+        // The ladder is announced again after the switch, which asks the plugin to restore.
+        rig.plugin.restore()
+        backend.settle()
+
+        assertEquals(1080, rig.player.quality()?.height, "the restore put the previous pick back over the new one")
+    }
+
+    @Test
+    fun aPickCarriesToTheNextItemOfTheQueue() = runTest {
+        val backend = SlowApplyBackend()
+        val rig: Rig = rig(backend = backend)
+        backend.levels = listOf(fullHd, hd)
+        rig.player.quality(fullHd)
+        rig.plugin.awaitWrites()
+        backend.settle()
+
+        backend.startNextItem()
+        rig.plugin.restore()
+        backend.settle()
+
+        assertEquals(1080, rig.player.quality()?.height, "the next item started on its own pick, not the viewer's")
     }
 
     @Test
