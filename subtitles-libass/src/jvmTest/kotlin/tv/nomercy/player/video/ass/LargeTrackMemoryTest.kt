@@ -78,6 +78,34 @@ private class SinkRenderer : AssRenderer {
     override fun release(): Unit = Unit
 }
 
+// Takes the track as bytes, the way the native renderers do, and keeps it.
+private class ByteSinkRenderer : AssRenderer, ByteTrackRenderer {
+    var held: ByteArray? = null
+        private set
+    var handOvers: MutableList<ByteArray> = mutableListOf()
+        private set
+    var stringLoads: Int = 0
+        private set
+
+    override fun addFont(name: String, data: ByteArray): Unit = Unit
+    override fun clearFonts(): Unit = Unit
+
+    override fun loadTrack(assContent: String) {
+        if (assContent.isEmpty()) held = null else stringLoads++
+    }
+
+    override fun loadTrackBytes(content: ByteArray) {
+        held = content
+        handOvers += content
+    }
+
+    override fun storageSize(width: Int, height: Int): Unit = Unit
+    override fun storageSize(): AssSize? = null
+    override fun frameSize(width: Int, height: Int): Unit = Unit
+    override fun render(timeMillis: Long): AssFrame? = null
+    override fun release(): Unit = Unit
+}
+
 // A 72 MB track is a 144 MB String on a UTF-16 runtime, and a 384 MB heap holds
 // two of those only if nothing keeps the previous one alive.
 class LargeTrackMemoryTest {
@@ -125,5 +153,31 @@ class LargeTrackMemoryTest {
 
         assertNotNull(heldRef.get(), "control: a string that is held must read as held")
         assertTrue(held.length >= TRACK_CHARS)
+    }
+
+    @Test
+    fun aByteRenderersTrackIsOneSharedArrayThatTheNextTrackReleases(): Unit = runBlocking {
+        val renderer = ByteSinkRenderer()
+        val player = player()
+        val plugin = SubtitlePlugin(renderer)
+        player.setup(PlayerConfig())
+        player.addPlugin(plugin)
+
+        assertTrue(plugin.load(FIRST_URL, MANIFEST_URL))
+        var first: ByteArray? = assertNotNull(renderer.held)
+        assertTrue(assertNotNull(first).size >= TRACK_CHARS, "control: the renderer was handed the whole track")
+        assertEquals(0, renderer.stringLoads, "a byte renderer was handed a String of the whole script")
+        assertTrue(isCollected(bodies.getValue(FIRST_URL)), "the downloaded body is still held after the parse")
+
+        plugin.addFontLate("Late.ttf", byteArrayOf(1, 2, 3))
+        assertEquals(2, renderer.handOvers.size, "the late font did not reload the track")
+        assertTrue(renderer.handOvers.all { it === first }, "the reload made a second copy of the script")
+
+        val firstRef = WeakReference(first)
+        first = null
+        renderer.handOvers.clear()
+        assertTrue(plugin.load(SECOND_URL, MANIFEST_URL))
+        assertEquals(true, firstBodyCollectedAtSecondFetch)
+        assertTrue(isCollected(firstRef), "the first track's bytes are still held after the second track loaded")
     }
 }

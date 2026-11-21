@@ -370,7 +370,7 @@ public class SubtitlePlugin(
             if (isCurrent(ticket) && showing != null && showing != subtitleUrl) blankLocked()
         }
 
-        val subtitle: String = get(subtitleUrl)?.body ?: run {
+        val fetched: FetchedTrack = fetchTrack(subtitleUrl, scanFonts = fontManifestUrl != null) ?: run {
             // A false with nothing said. The caller can fall back, and everyone
             // else — a consumer's error surface, a support ticket — had no way
             // to learn the track never arrived.
@@ -387,7 +387,7 @@ public class SubtitlePlugin(
         // that arrives after the renderer has drawn once is a font libass has
         // already decided not to use.
         val fonts: List<ResolvedFont> =
-            if (fontManifestUrl == null) emptyList() else fetchFonts(subtitle, fontManifestUrl)
+            if (fontManifestUrl == null || !fetched.namesFonts) emptyList() else fetchFonts(fontManifestUrl)
 
         // One critical section for the whole sequence. Attaching and loading
         // are one operation from libass's point of view, and a late font
@@ -426,7 +426,7 @@ public class SubtitlePlugin(
             loadedFonts = attached
 
             try {
-                renderer.loadTrack(subtitle)
+                handToRenderer(fetched.bytes)
             }
             catch (@Suppress("TooGenericExceptionCaught") cause: Throwable) {
                 // libass refusing a track is a rendering failure, not a missing
@@ -455,7 +455,7 @@ public class SubtitlePlugin(
                 )
                 return false
             }
-            currentTrack = subtitle
+            currentTrack = fetched.bytes
             installedUrl = subtitleUrl
         }
         return true
@@ -502,9 +502,7 @@ public class SubtitlePlugin(
     // its contents are what that subtitle needs; attaching one it turns out not
     // to use costs a download already paid for, and attaching none because a
     // name did not match costs the wrong typeface for the whole film.
-    private suspend fun fetchFonts(subtitle: String, manifestUrl: String): List<ResolvedFont> {
-        if (AssFontNames.parse(subtitle).isEmpty()) return emptyList()
-
+    private suspend fun fetchFonts(manifestUrl: String): List<ResolvedFont> {
         val manifest: Map<String, String> = get(manifestUrl)?.body
             ?.let { FontManifest.parse(it, manifestUrl) }
             .orEmpty()
@@ -570,7 +568,7 @@ public class SubtitlePlugin(
 
             // Only when there is a track to reload. Before one exists this is
             // the ordinary path with a different name.
-            currentTrack?.let(renderer::loadTrack)
+            currentTrack?.let(::handToRenderer)
         }
     }
 
@@ -595,7 +593,22 @@ public class SubtitlePlugin(
         )
     }
 
-    private var currentTrack: String? = null
+    // The one copy of the loaded track, as UTF-8. A renderer that takes bytes
+    // shares this array, so a 72 MB script is never held twice.
+    private var currentTrack: ByteArray? = null
+
+    // The body becomes bytes before anything else runs, so the text a 72 MB
+    // track downloads as is gone before the fonts are fetched.
+    private suspend fun fetchTrack(url: String, scanFonts: Boolean): FetchedTrack? {
+        val text: String = get(url)?.body ?: return null
+        val namesFonts: Boolean = scanFonts && AssFontNames.parse(text).isNotEmpty()
+        return FetchedTrack(text.encodeToByteArray(), namesFonts)
+    }
+
+    private fun handToRenderer(bytes: ByteArray) {
+        val target: AssRenderer = renderer
+        if (target is ByteTrackRenderer) target.loadTrackBytes(bytes) else target.loadTrack(bytes.decodeToString())
+    }
 
     private suspend fun get(url: String): FetchResponse? {
         val response: FetchResponse = runCatching { fetch(url, FetchOptions()) }.getOrNull() ?: return null
@@ -637,6 +650,14 @@ private class ResolvedFont(
     val families: List<String>,
     val bytes: ByteArray,
 )
+
+private class FetchedTrack(val bytes: ByteArray, val namesFonts: Boolean)
+
+// A renderer that keeps the track as bytes takes them directly, instead of a
+// String the size of the whole script.
+internal interface ByteTrackRenderer {
+    fun loadTrackBytes(content: ByteArray)
+}
 
 // Nothing yet, and named rather than Unit so adding one later is not a
 // signature change for every consumer.

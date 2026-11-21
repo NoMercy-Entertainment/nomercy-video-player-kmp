@@ -54,11 +54,14 @@ import libass.ass_set_storage_size
 // Font resolution is CoreText — the build drops fontconfig, which is the right
 // call on a platform that has a system font database of its own.
 @OptIn(ExperimentalForeignApi::class)
-internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : AssRenderer {
+internal class AppleAssRenderer(
+    private val library: CPointer<ASS_Library>,
+) : AssRenderer, ByteTrackRenderer {
 
     private var renderer: CPointer<ASS_Renderer>? = null
     private var track: CPointer<ASS_Track>? = null
-    private var trackContent: String? = null
+    // Bytes, not a String: the script is kept for as long as the track is loaded.
+    private var trackBytes: ByteArray? = null
     private var width: Int = 0
     private var height: Int = 0
     // Zero until a host or a track says otherwise, and zero means "the frame",
@@ -87,25 +90,28 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
         disposeRenderer()
     }
 
-    override fun loadTrack(assContent: String) {
+    override fun loadTrack(assContent: String) = loadTrackBytes(assContent.encodeToByteArray())
+
+    override fun loadTrackBytes(content: ByteArray) {
         if (released) return
+        val header: String = content.decodeToString(0, minOf(content.size, HEADER_BYTES))
         // Structural gate before ass_read_memory — see AssContentGuard.
         // Primary defence here: a libass trap generally isn't catchable
         // from Kotlin/Native, unlike the JVM binding's runCatching.
-        if (!looksLikeAssScript(assContent)) {
-            trackContent = null
+        if (!looksLikeAssScript(header)) {
+            trackBytes = null
             disposeTrack()
             return
         }
-        trackContent = assContent
+        trackBytes = content
         // Primed from the script, because one title ships tracks authored in
         // different spaces — No Game No Life's alternative track is 1280x720
         // where its full one is 1920x1080 — and a storage size left on the
         // previous track's value lays the new one out in the wrong coordinates.
         if (!hostStorage) {
             val primed: Pair<Int, Int>? = RenderGeometry.primeStorageFromScript(
-                playRes(assContent, "PlayResX:"),
-                playRes(assContent, "PlayResY:"),
+                playRes(header, "PlayResX:"),
+                playRes(header, "PlayResY:"),
             )
             storageWidth = primed?.first ?: 0
             storageHeight = primed?.second ?: 0
@@ -129,8 +135,8 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
 
     // The header only. The full parse walks thirteen thousand events on a track
     // like this one, and this runs on the thread that is about to draw a frame.
-    private fun playRes(assContent: String, key: String): Int =
-        assContent.lineSequence()
+    private fun playRes(header: String, key: String): Int =
+        header.lineSequence()
             .take(HEADER_LINES)
             .firstOrNull { it.trimStart().startsWith(key, ignoreCase = true) }
             ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
@@ -223,7 +229,7 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
     private fun activeTrack(): CPointer<ASS_Track>? {
         track?.let { return it }
 
-        val content: ByteArray = trackContent?.encodeToByteArray() ?: return null
+        val content: ByteArray = trackBytes ?: return null
         if (content.isEmpty()) return null
 
         val loaded: CPointer<ASS_Track>? = memScoped {
@@ -248,7 +254,7 @@ internal class AppleAssRenderer(private val library: CPointer<ASS_Library>) : As
         if (released) return
         released = true
         disposeRenderer()
-        trackContent = null
+        trackBytes = null
         ass_library_done(library)
     }
 }
@@ -271,3 +277,4 @@ private const val APPLE_BITMAP_CACHE_MEGABYTES: Int = 1
 // and one only macOS could see, because appleMain compiles nowhere else. It
 // reached CI as "Name expected" and had never failed a local build.
 private const val HEADER_LINES: Int = 200
+private const val HEADER_BYTES: Int = 128 * 1024

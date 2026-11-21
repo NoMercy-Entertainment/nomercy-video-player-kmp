@@ -37,7 +37,7 @@ internal class NativeAssRenderer(
     private val library: Pointer,
     private val glyphMax: Int,
     private val bitmapCacheMegabytes: Int,
-) : AssRenderer {
+) : AssRenderer, ByteTrackRenderer {
 
     // A ReentrantLock, not `synchronized`, because [render] needs `tryLock` —
     // see there for why. Every other call still takes it unconditionally: they
@@ -50,7 +50,9 @@ internal class NativeAssRenderer(
 
     private var renderer: Pointer? = null
     private var track: Pointer? = null
-    private var trackContent: String? = null
+    // Bytes, not a String: a 72 MB script is 144 MB as UTF-16, and this copy is
+    // kept for the whole time the track is loaded.
+    private var trackBytes: ByteArray? = null
     private var width: Int = 0
     private var height: Int = 0
     // Zero until a host or a track says otherwise, and zero means "the frame",
@@ -81,25 +83,30 @@ internal class NativeAssRenderer(
     // script is how this renderer is told to draw nothing, and without a way to
     // ask, the layer could not tell "no cue due" from "no track at all" and kept
     // the last rasterised frame painted over the next film.
-    override fun hasTrack(): Boolean = lock.withLock { !trackContent.isNullOrBlank() }
+    override fun hasTrack(): Boolean = lock.withLock { trackBytes != null }
 
-    override fun loadTrack(assContent: String): Unit = lock.withLock {
+    override fun loadTrack(assContent: String): Unit = loadTrackBytes(assContent.encodeToByteArray())
+
+    // Keeps [content] itself, not a copy: the caller hands it over.
+    override fun loadTrackBytes(content: ByteArray): Unit = lock.withLock {
         if (released) return
+        // Only the header is decoded; the guard and the PlayRes keys live there.
+        val header: String = content.decodeToString(0, minOf(content.size, HEADER_BYTES))
         // Structural gate before ass_read_memory — see AssContentGuard.
-        if (!looksLikeAssScript(assContent)) {
-            trackContent = null
+        if (!looksLikeAssScript(header)) {
+            trackBytes = null
             disposeTrack()
             return
         }
-        trackContent = assContent
+        trackBytes = content
         // Primed from the script, because one title ships tracks authored in
         // different spaces — No Game No Life's alternative track is 1280x720
         // where its full one is 1920x1080 — and a storage size left on the
         // previous track's value lays the new one out in the wrong coordinates.
         if (!hostStorage) {
             val primed: Pair<Int, Int>? = RenderGeometry.primeStorageFromScript(
-                playRes(assContent, "PlayResX:"),
-                playRes(assContent, "PlayResY:"),
+                playRes(header, "PlayResX:"),
+                playRes(header, "PlayResY:"),
             )
             storageWidth = primed?.first ?: 0
             storageHeight = primed?.second ?: 0
@@ -131,8 +138,8 @@ internal class NativeAssRenderer(
 
     // The header only. The full parse walks thirteen thousand events on a track
     // like this one, and this runs on the thread that is about to draw a frame.
-    private fun playRes(assContent: String, key: String): Int =
-        assContent.lineSequence()
+    private fun playRes(header: String, key: String): Int =
+        header.lineSequence()
             .take(HEADER_LINES)
             .firstOrNull { it.trimStart().startsWith(key, ignoreCase = true) }
             ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
@@ -297,13 +304,13 @@ internal class NativeAssRenderer(
     private fun activeTrack(): Pointer? {
         track?.let { return it }
 
-        val content: ByteArray = trackContent?.encodeToByteArray() ?: return null
+        val content: ByteArray = trackBytes ?: return null
         // Backstop for whatever looksLikeAssScript doesn't catch — JNA exceptions are catchable here.
         val loaded: Pointer? = runCatching {
             lib.ass_read_memory(library, content, content.size, null)
         }.getOrNull()
         if (loaded == null) {
-            trackContent = null
+            trackBytes = null
             return null
         }
         track = loaded
@@ -328,7 +335,7 @@ internal class NativeAssRenderer(
         if (released) return
         released = true
         disposeRenderer()
-        trackContent = null
+        trackBytes = null
         lib.ass_library_done(library)
     }
 
@@ -336,6 +343,9 @@ internal class NativeAssRenderer(
         // Every ASS header ends well inside this; [Events] on the densest track
         // here is line 40.
         const val HEADER_LINES = 200
+
+        // 200 header lines fit well inside this.
+        const val HEADER_BYTES = 128 * 1024
     }
 }
 

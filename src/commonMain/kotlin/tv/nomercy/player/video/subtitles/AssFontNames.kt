@@ -30,7 +30,7 @@ public object AssFontNames {
         val fonts: MutableSet<String> = linkedSetOf()
         var section: Section = Section.Other
 
-        for (raw in content.lines()) {
+        for (raw in content.lineSequence()) {
             val line: String = raw.trim()
             val heading: Section? = sectionOf(line)
             if (heading != null) {
